@@ -15,7 +15,7 @@ else
   gcloud storage buckets create "gs://${BUCKET_NAME}" \
     --project "${PROJECT_ID}" \
     --location "${LOCATION}" \
-    --public-access-prevention=ENFORCED \
+    --public-access-prevention \
     --uniform-bucket-level-access
 fi
 
