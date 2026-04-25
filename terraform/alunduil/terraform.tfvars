@@ -1,7 +1,7 @@
 repositories = {
   alunduil-infrastructure = {
     description    = "Personal infrastructure managed with Terraform"
-    classification = "infrastructure"
+    classification = "default"
     topics         = ["terraform", "infrastructure"]
   }
 }

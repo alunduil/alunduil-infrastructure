@@ -13,8 +13,11 @@ variable "repositories" {
     allow_merge_commit          = optional(bool)
     allow_squash_merge          = optional(bool)
     allow_rebase_merge          = optional(bool)
+    allow_auto_merge            = optional(bool)
     squash_merge_commit_title   = optional(string)
     squash_merge_commit_message = optional(string)
+    merge_commit_title          = optional(string)
+    merge_commit_message        = optional(string)
     delete_branch_on_merge      = optional(bool)
     vulnerability_alerts        = optional(bool)
     archived                    = optional(bool)
@@ -25,8 +28,8 @@ variable "repositories" {
   validation {
     condition = alltrue([
       for name, repo in var.repositories :
-      contains(["default", "library", "application", "infrastructure", "archived"], repo.classification)
+      contains(["default", "release-please", "git-flow", "archived"], repo.classification)
     ])
-    error_message = "Classification must be one of: default, library, application, infrastructure, archived."
+    error_message = "Classification must be one of: default, release-please, git-flow, archived."
   }
 }
