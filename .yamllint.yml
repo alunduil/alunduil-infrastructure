@@ -1,0 +1,11 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+extends: default
+
+rules:
+  # GitHub Actions uses 'on:' as a top-level key; disable truthy check on keys
+  # so workflow files don't have to quote it.
+  truthy:
+    check-keys: false
