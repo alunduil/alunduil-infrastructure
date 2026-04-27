@@ -21,6 +21,5 @@ resource "github_repository" "managed" {
   merge_commit_message        = local.effective_settings[each.key].merge_commit_message
   delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
   vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
-  archived                    = local.effective_settings[each.key].archived
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
 }

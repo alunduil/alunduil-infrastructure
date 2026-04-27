@@ -1,5 +1,4 @@
 repositories = {
-
   alunduil-chezmoi = {
     classification = "default"
   }
@@ -170,61 +169,6 @@ repositories = {
     description    = "ZFS Replication"
     classification = "default"
     topics         = ["zfs", "replication", "snapshots"]
-  }
-
-
-  # Archived
-  alunduil-home = {
-    description    = "home-manager Configurations"
-    classification = "archived"
-  }
-
-  alunduil-nixos = {
-    description    = "NixOS Configurations"
-    classification = "archived"
-  }
-
-  blog.alunduil.com = {
-    description    = "Personal Blog"
-    classification = "archived"
-  }
-
-  crumbs = {
-    description    = "Generalized all-in-one parameters module"
-    classification = "archived"
-  }
-
-  etest = {
-    description    = "ebuild testing framework"
-    classification = "archived"
-    topics         = ["deprecated", "python"]
-  }
-
-  margarine = {
-    description    = "Butter Cloudiness by Example"
-    classification = "archived"
-    topics         = ["deprecated", "python"]
-  }
-
-  minikube.erl = {
-    description    = "A minikube manager written in Erlang."
-    classification = "archived"
-  }
-
-  muaor = {
-    description    = "Mail User Agent Objects in Ruby.  A higher level interface for Mail interaction (a.k.a. over-the-net procmail)."
-    classification = "archived"
-  }
-
-  muniments = {
-    description    = "Composable Backup Micro-Services"
-    classification = "archived"
-  }
-
-  template.py = {
-    description    = "You can use template.py to create a new GitHub repository.  The repository will have poetry, VS Code devcontainers, and various GitHub actions ready to use."
-    classification = "archived"
-    topics         = ["poetry", "python", "template", "devcontainer-ready", "vscode"]
   }
 
 }

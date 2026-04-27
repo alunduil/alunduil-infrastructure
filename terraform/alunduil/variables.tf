@@ -20,7 +20,6 @@ variable "repositories" {
     merge_commit_message        = optional(string)
     delete_branch_on_merge      = optional(bool)
     vulnerability_alerts        = optional(bool)
-    archived                    = optional(bool)
     archive_on_destroy          = optional(bool)
   }))
   default = {}
@@ -28,8 +27,8 @@ variable "repositories" {
   validation {
     condition = alltrue([
       for name, repo in var.repositories :
-      contains(["default", "release-please", "git-flow", "archived"], repo.classification)
+      contains(["default", "release-please", "git-flow"], repo.classification)
     ])
-    error_message = "Classification must be one of: default, release-please, git-flow, archived."
+    error_message = "Classification must be one of: default, release-please, git-flow."
   }
 }

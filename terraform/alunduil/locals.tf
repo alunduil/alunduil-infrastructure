@@ -15,7 +15,6 @@ locals {
     merge_commit_message        = "PR_TITLE"
     delete_branch_on_merge      = true
     vulnerability_alerts        = true
-    archived                    = false
     archive_on_destroy          = true
   }
 
@@ -28,11 +27,6 @@ locals {
 
     git-flow = {
       allow_merge_commit = true
-    }
-
-    archived = {
-      archived   = true
-      has_issues = false
     }
   }
 
@@ -58,7 +52,6 @@ locals {
       merge_commit_message        = repo.merge_commit_message != null ? repo.merge_commit_message : local.classification_settings[repo.classification].merge_commit_message
       delete_branch_on_merge      = repo.delete_branch_on_merge != null ? repo.delete_branch_on_merge : local.classification_settings[repo.classification].delete_branch_on_merge
       vulnerability_alerts        = repo.vulnerability_alerts != null ? repo.vulnerability_alerts : local.classification_settings[repo.classification].vulnerability_alerts
-      archived                    = repo.archived != null ? repo.archived : local.classification_settings[repo.classification].archived
       archive_on_destroy          = repo.archive_on_destroy != null ? repo.archive_on_destroy : local.classification_settings[repo.classification].archive_on_destroy
     }
   }
