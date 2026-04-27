@@ -1,10 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
 locals {
   defaults = {
     visibility                  = "public"
     has_issues                  = true
     has_projects                = false
     has_wiki                    = false
-    has_discussions              = false
+    has_discussions             = false
     allow_merge_commit          = false
     allow_squash_merge          = true
     allow_rebase_merge          = false
@@ -42,7 +45,7 @@ locals {
       has_issues                  = repo.has_issues != null ? repo.has_issues : local.classification_settings[repo.classification].has_issues
       has_projects                = repo.has_projects != null ? repo.has_projects : local.classification_settings[repo.classification].has_projects
       has_wiki                    = repo.has_wiki != null ? repo.has_wiki : local.classification_settings[repo.classification].has_wiki
-      has_discussions              = repo.has_discussions != null ? repo.has_discussions : local.classification_settings[repo.classification].has_discussions
+      has_discussions             = repo.has_discussions != null ? repo.has_discussions : local.classification_settings[repo.classification].has_discussions
       allow_merge_commit          = repo.allow_merge_commit != null ? repo.allow_merge_commit : local.classification_settings[repo.classification].allow_merge_commit
       allow_squash_merge          = repo.allow_squash_merge != null ? repo.allow_squash_merge : local.classification_settings[repo.classification].allow_squash_merge
       allow_rebase_merge          = repo.allow_rebase_merge != null ? repo.allow_rebase_merge : local.classification_settings[repo.classification].allow_rebase_merge

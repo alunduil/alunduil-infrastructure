@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
 import {
   to = github_repository.managed["alunduil-chezmoi"]
   id = "alunduil-chezmoi"
@@ -162,4 +165,3 @@ import {
   to = github_repository.managed["zfs-replicate"]
   id = "zfs-replicate"
 }
-

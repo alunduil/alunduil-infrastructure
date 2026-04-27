@@ -1,4 +1,22 @@
-**/.terraform/
-*.tfstate
-*.tfstate.backup
-*.tfplan
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# GCP credentials
+*.json
+!*example*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets
+*.secrets.*
+.env
+.env.*
+!.env.example

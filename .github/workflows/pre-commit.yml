@@ -1,0 +1,40 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: pre-commit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: All hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Runs every pre-commit hook on all files. The terraform hooks need the
+    # terraform binary (installed below); the rest are Python-based and
+    # handled by pre-commit/action.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.9.0'
+
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+        env:
+          # no-commit-to-branch is a local guard and would always fail on
+          # push to main — skip it in CI.
+          SKIP: no-commit-to-branch

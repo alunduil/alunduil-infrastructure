@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
 resource "github_repository" "managed" {
   for_each = var.repositories
 
@@ -10,7 +13,7 @@ resource "github_repository" "managed" {
   has_issues                  = local.effective_settings[each.key].has_issues
   has_projects                = local.effective_settings[each.key].has_projects
   has_wiki                    = local.effective_settings[each.key].has_wiki
-  has_discussions              = local.effective_settings[each.key].has_discussions
+  has_discussions             = local.effective_settings[each.key].has_discussions
   allow_merge_commit          = local.effective_settings[each.key].allow_merge_commit
   allow_squash_merge          = local.effective_settings[each.key].allow_squash_merge
   allow_rebase_merge          = local.effective_settings[each.key].allow_rebase_merge
