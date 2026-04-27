@@ -13,6 +13,13 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
 
+# Claude Code / claustre tooling files
+[[annotations]]
+path = [".claude/**", ".claustre_session_id"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
+SPDX-License-Identifier = "MIT"
+
 # JSONC file — uses // comments that standard REUSE parsers may not recognise
 [[annotations]]
 path = ".devcontainer/devcontainer.json"
