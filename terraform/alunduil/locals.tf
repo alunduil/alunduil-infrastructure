@@ -27,6 +27,7 @@ locals {
 
     git-flow = {
       allow_merge_commit = true
+      allow_squash_merge = false
     }
   }
 
