@@ -163,9 +163,10 @@ repositories = {
   }
 
   "woodland-generators" = {
-    description    = "A CLI tool for generating resources for Root: The Tabletop RPG."
-    classification = "default"
-    topics         = ["cli", "generator", "root", "rpg", "tabletop"]
+    description     = "A CLI tool for generating resources for Root: The Tabletop RPG."
+    classification  = "default"
+    topics          = ["cli", "generator", "root", "rpg", "tabletop"]
+    has_discussions = true
   }
 
   "zfs-replicate" = {
