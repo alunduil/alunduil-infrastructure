@@ -63,9 +63,9 @@ The billing account ID is required but not committed. Create a local vars file
 (already gitignored) or export an environment variable:
 
 ```bash
-# Option A — local tfvars file (gitignored)
+# Option A — local tfvars file (gitignored, auto-loaded by terraform)
 echo 'billing_account_id = "00E1AD-4FD6FE-852B90"' \
-  > terraform/alunduil/terraform.local.tfvars
+  > terraform/alunduil/terraform.local.auto.tfvars
 
 # Option B — environment variable
 export TF_VAR_billing_account_id="00E1AD-4FD6FE-852B90"
@@ -104,12 +104,13 @@ automatically on the next plan/apply.
 ### 5. Review and apply
 
 ```bash
-# Using a local tfvars file:
-terraform plan -var-file=terraform.local.tfvars
-
+terraform plan
 # Review the plan, then apply:
-terraform apply -var-file=terraform.local.tfvars
+terraform apply
 ```
+
+`terraform.local.auto.tfvars` (or `TF_VAR_billing_account_id`) is picked
+up automatically — no `-var-file=` needed.
 
 ## Day-to-day workflow
 
@@ -121,7 +122,7 @@ terraform apply -var-file=terraform.local.tfvars
    ```bash
    cd terraform/alunduil
    terraform init
-   terraform plan -var-file=terraform.local.tfvars -out=tfplan
+   terraform plan -out=tfplan
    terraform apply tfplan
    ```
 
