@@ -44,7 +44,7 @@ resource "google_dns_record_set" "blog_cname" {
   managed_zone = google_dns_managed_zone.alunduil_com.name
   type         = "CNAME"
   ttl          = 86400
-  rrdatas      = ["c.storage.googleapis.com."]
+  rrdatas      = ["alunduil.github.io."]
 }
 
 import {

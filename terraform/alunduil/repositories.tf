@@ -25,4 +25,19 @@ resource "github_repository" "managed" {
   delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
   vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
+
+  dynamic "pages" {
+    for_each = each.value.pages != null ? [each.value.pages] : []
+    content {
+      cname      = pages.value.cname
+      build_type = pages.value.build_type
+    }
+  }
+}
+
+resource "github_branch_default" "managed" {
+  for_each = var.repositories
+
+  repository = github_repository.managed[each.key].name
+  branch     = each.value.default_branch
 }

@@ -15,10 +15,24 @@ site hosting configuration.
 - **GCP project** — the `alunduil` project itself (billing, labels)
 - **DNS** — `alunduil.com` zone and all records (`blog`, `home`, `groton`, …)
 - **Storage** — static website hosting buckets for `blog.alunduil.com`
+- **GitHub repos** — settings, default branch, and (opt-in) Pages for every
+  repo listed in `var.repositories`
 
 All Terraform lives in [`terraform/alunduil/`](terraform/alunduil/). There is
 one environment (this is personal homelab infrastructure, equivalent in scope
 to a single production project).
+
+### Stays manual
+
+A few repo-side knobs aren't covered by Terraform and have to be set in the
+GitHub UI before (or alongside) an apply:
+
+- **`develop` → `main` rename.** Terraform can't safely rename an existing
+  branch. Use GitHub's repository "Rename branch" feature so PR refs and
+  forks are preserved, then let `github_branch_default` lock `main` in.
+- **HTTPS enforcement on Pages.** GitHub provisions the certificate on its
+  own once the CNAME resolves; tick "Enforce HTTPS" in Pages settings after
+  the cert is ready. (The provider doesn't expose this cleanly enough yet.)
 
 ## Apply policy
 

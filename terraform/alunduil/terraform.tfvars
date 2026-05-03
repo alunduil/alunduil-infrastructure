@@ -26,6 +26,17 @@ repositories = {
     classification = "default"
   }
 
+  "blog.alunduil.com" = {
+    description    = "Personal blog at blog.alunduil.com"
+    homepage_url   = "https://blog.alunduil.com"
+    classification = "default"
+    topics         = ["blog", "github-pages"]
+    pages = {
+      cname      = "blog.alunduil.com"
+      build_type = "workflow"
+    }
+  }
+
   "cabal-parser" = {
     description    = "Cabal Parser Service for Libraries.io bibliothecary"
     classification = "default"

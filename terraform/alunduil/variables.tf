@@ -18,6 +18,7 @@ variable "repositories" {
     classification              = optional(string, "default")
     homepage_url                = optional(string)
     topics                      = optional(list(string), [])
+    default_branch              = optional(string, "main")
     visibility                  = optional(string)
     has_issues                  = optional(bool)
     has_projects                = optional(bool)
@@ -34,6 +35,10 @@ variable "repositories" {
     delete_branch_on_merge      = optional(bool)
     vulnerability_alerts        = optional(bool)
     archive_on_destroy          = optional(bool)
+    pages = optional(object({
+      cname      = optional(string)
+      build_type = optional(string, "workflow")
+    }))
   }))
   default = {}
 
