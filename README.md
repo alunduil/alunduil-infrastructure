@@ -42,7 +42,7 @@ Before you can run anything you need:
   gcloud auth application-default login
   ```
 
-- **Terraform ≥ 1.5** — required for `import` blocks
+- **Terraform ≥ 1.5**
 - **GitHub token** — exported as `GITHUB_TOKEN` with `repo` and
   `delete_repo` scopes. The simplest source is the `gh` CLI:
 
@@ -89,34 +89,7 @@ cd terraform/alunduil
 terraform init
 ```
 
-### 4. Import existing resources
-
-The `alunduil` project, its DNS records, and the GitHub repositories listed
-in [`terraform.tfvars`](terraform/alunduil/terraform.tfvars) already exist.
-Import them so Terraform can manage them without recreating them:
-
-```bash
-# The GCP project itself
-terraform import google_project.env alunduil
-
-# Foundational APIs (import if project was pre-existing)
-terraform import google_project_service.iam \
-  alunduil/iam.googleapis.com
-terraform import google_project_service.cloudresourcemanager \
-  alunduil/cloudresourcemanager.googleapis.com
-terraform import google_project_service.serviceusage \
-  alunduil/serviceusage.googleapis.com
-
-# Each GitHub repository in terraform.tfvars (repeat for every entry):
-terraform import 'github_repository.managed["alunduil-infrastructure"]' \
-  alunduil-infrastructure
-```
-
-The DNS zone and records have `import` blocks already written in
-[`dns.tf`](terraform/alunduil/dns.tf) — they are imported automatically on
-the next plan/apply.
-
-### 5. Review and apply
+### 4. Review and apply
 
 ```bash
 terraform plan
