@@ -19,6 +19,7 @@ locals {
     delete_branch_on_merge      = true
     vulnerability_alerts        = true
     archive_on_destroy          = true
+    default_branch              = "main"
   }
 
   classification_overrides = {
@@ -52,6 +53,7 @@ locals {
       delete_branch_on_merge      = repo.delete_branch_on_merge != null ? repo.delete_branch_on_merge : local.classification_settings[repo.classification].delete_branch_on_merge
       vulnerability_alerts        = repo.vulnerability_alerts != null ? repo.vulnerability_alerts : local.classification_settings[repo.classification].vulnerability_alerts
       archive_on_destroy          = repo.archive_on_destroy != null ? repo.archive_on_destroy : local.classification_settings[repo.classification].archive_on_destroy
+      default_branch              = repo.default_branch != null ? repo.default_branch : local.classification_settings[repo.classification].default_branch
     }
   }
 }

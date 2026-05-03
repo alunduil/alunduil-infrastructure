@@ -34,6 +34,12 @@ variable "repositories" {
     delete_branch_on_merge      = optional(bool)
     vulnerability_alerts        = optional(bool)
     archive_on_destroy          = optional(bool)
+    default_branch              = optional(string)
+    template = optional(object({
+      owner                = string
+      repository           = string
+      include_all_branches = optional(bool, false)
+    }))
   }))
   default = {}
 
