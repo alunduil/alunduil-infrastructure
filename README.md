@@ -34,7 +34,7 @@ locally before committing or pushing, and review it before applying.
 
 Before you can run anything you need:
 
-- **GCP access** — owner on the `alunduil` project (`alunduil@gmail.com`)
+- **GCP access** — must be an owner on the `alunduil` project
 - **`gcloud` CLI** — authenticated with both user and ADC credentials:
 
   ```bash
