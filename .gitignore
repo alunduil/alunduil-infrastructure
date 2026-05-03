@@ -4,6 +4,7 @@
 # GCP credentials
 *.json
 !*example*.json
+!renovate.json
 
 # OS
 .DS_Store
