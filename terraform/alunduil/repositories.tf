@@ -26,3 +26,31 @@ resource "github_repository" "managed" {
   vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
 }
+
+# github_repository.default_branch is deprecated; this resource is the supported path.
+resource "github_branch_default" "managed" {
+  for_each = var.repositories
+
+  repository = github_repository.managed[each.key].name
+  branch     = "main"
+}
+
+import {
+  to = github_branch_protection.managed["siren-json.hs"]
+  id = "siren-json.hs:main"
+}
+
+resource "github_branch_protection" "managed" {
+  for_each = var.repositories
+
+  repository_id = github_repository.managed[each.key].node_id
+  pattern       = github_branch_default.managed[each.key].branch
+
+  allows_deletions    = local.branch_protection_defaults.allows_deletions
+  allows_force_pushes = local.branch_protection_defaults.allows_force_pushes
+
+  required_pull_request_reviews {
+    required_approving_review_count = local.branch_protection_defaults.required_approving_review_count
+    dismiss_stale_reviews           = local.branch_protection_defaults.dismiss_stale_reviews
+  }
+}

@@ -40,8 +40,8 @@ variable "repositories" {
   validation {
     condition = alltrue([
       for name, repo in var.repositories :
-      contains(["default", "release-please", "git-flow"], repo.classification)
+      contains(["default", "release-please"], repo.classification)
     ])
-    error_message = "Classification must be one of: default, release-please, git-flow."
+    error_message = "Classification must be one of: default, release-please."
   }
 }

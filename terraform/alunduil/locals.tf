@@ -27,11 +27,13 @@ locals {
     release-please = {
       allow_auto_merge = true
     }
+  }
 
-    git-flow = {
-      allow_merge_commit = true
-      allow_squash_merge = false
-    }
+  branch_protection_defaults = {
+    required_approving_review_count = 1
+    dismiss_stale_reviews           = true
+    allows_force_pushes             = false
+    allows_deletions                = false
   }
 
   classification_settings = {
