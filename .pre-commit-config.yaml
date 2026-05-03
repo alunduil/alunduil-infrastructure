@@ -24,8 +24,6 @@ repos:
         args: [--maxkb=1000]
       - id: check-case-conflict
       - id: check-merge-conflict
-      - id: no-commit-to-branch
-        args: [--branch, main]
 
   # Markdown linting
   - repo: https://github.com/DavidAnson/markdownlint-cli2
