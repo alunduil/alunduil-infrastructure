@@ -3,18 +3,23 @@
 
 # alunduil-infrastructure
 
-Personal infrastructure as code for the `alunduil` GCP project, managed with
-Terraform. This repository is the single source of truth for DNS and static
-site hosting configuration.
+[![License](https://img.shields.io/github/license/alunduil/alunduil-infrastructure)](LICENSES/MIT.txt)
+
+Personal infrastructure as code, managed with Terraform. This repository is
+the single source of truth for the `alunduil` GCP project, its DNS, and the
+GitHub repositories owned by `alunduil`.
 
 **Repository:** <https://github.com/alunduil/alunduil-infrastructure>
 **Author:** Alex Brandt \<<alunduil@gmail.com>\>
 
 ## What this manages
 
-- **GCP project** — the `alunduil` project itself (billing, labels)
+- **GCP project** — the `alunduil` project itself (billing, labels,
+  foundational APIs)
 - **DNS** — `alunduil.com` zone and all records (`blog`, `home`, `groton`, …)
-- **Storage** — static website hosting buckets for `blog.alunduil.com`
+- **GitHub repositories** — settings (visibility, merge rules, discussions, …)
+  for repositories owned by `alunduil`, applied via classification
+  (`default`, `release-please`, `git-flow`)
 
 All Terraform lives in [`terraform/alunduil/`](terraform/alunduil/). There is
 one environment (this is personal homelab infrastructure, equivalent in scope
@@ -38,6 +43,12 @@ Before you can run anything you need:
   ```
 
 - **Terraform ≥ 1.5** — required for `import` blocks
+- **GitHub token** — exported as `GITHUB_TOKEN` with `repo` and
+  `delete_repo` scopes. The simplest source is the `gh` CLI:
+
+  ```bash
+  export GITHUB_TOKEN="$(gh auth token)"
+  ```
 
 ## First-time bootstrap
 
@@ -80,7 +91,8 @@ terraform init
 
 ### 4. Import existing resources
 
-The `alunduil` project and its DNS records and storage buckets already exist.
+The `alunduil` project, its DNS records, and the GitHub repositories listed
+in [`terraform.tfvars`](terraform/alunduil/terraform.tfvars) already exist.
 Import them so Terraform can manage them without recreating them:
 
 ```bash
@@ -94,12 +106,15 @@ terraform import google_project_service.cloudresourcemanager \
   alunduil/cloudresourcemanager.googleapis.com
 terraform import google_project_service.serviceusage \
   alunduil/serviceusage.googleapis.com
+
+# Each GitHub repository in terraform.tfvars (repeat for every entry):
+terraform import 'github_repository.managed["alunduil-infrastructure"]' \
+  alunduil-infrastructure
 ```
 
-The DNS zone, DNS records, and storage buckets have `import` blocks already
-written in [`dns.tf`](terraform/alunduil/dns.tf) and
-[`storage.tf`](terraform/alunduil/storage.tf) — they are imported
-automatically on the next plan/apply.
+The DNS zone and records have `import` blocks already written in
+[`dns.tf`](terraform/alunduil/dns.tf) — they are imported automatically on
+the next plan/apply.
 
 ### 5. Review and apply
 
@@ -145,6 +160,12 @@ The `pre-commit` workflow runs every hook in `.pre-commit-config.yaml` on
 every pull request and push to `main`. This covers whitespace, YAML and JSON
 syntax, Markdown and YAML linting, REUSE compliance, secrets detection, and
 `terraform_fmt` / `terraform_validate`.
+
+## Support and contributions
+
+This is personal infrastructure maintained for the author's own use. Issues
+and pull requests from outside collaborators are not actively solicited and
+may not be triaged.
 
 ## Licence
 
