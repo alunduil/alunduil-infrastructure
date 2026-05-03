@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "baseBranchPatterns": ["main"],
+  "reviewers": ["alunduil"],
+  "pre-commit": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.devcontainer/.*\\.sh$/"],
+      "matchStrings": ["pipx install reuse==(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "reuse",
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
+      "matchStrings": ["terraform_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
+      "depNameTemplate": "hashicorp/terraform",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
+      "groupName": "reuse"
+    }
+  ]
+}
