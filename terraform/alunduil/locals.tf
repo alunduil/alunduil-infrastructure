@@ -29,13 +29,6 @@ locals {
     }
   }
 
-  branch_protection_defaults = {
-    required_approving_review_count = 1
-    dismiss_stale_reviews           = true
-    allows_force_pushes             = false
-    allows_deletions                = false
-  }
-
   classification_settings = {
     for name, overrides in local.classification_overrides :
     name => merge(local.defaults, overrides)
