@@ -23,7 +23,6 @@ resource "github_repository" "managed" {
   merge_commit_title          = local.effective_settings[each.key].merge_commit_title
   merge_commit_message        = local.effective_settings[each.key].merge_commit_message
   delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
-  vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
 
   dynamic "template" {
@@ -48,6 +47,26 @@ import {
   id = "siren-json.hs:main"
 }
 
+import {
+  to = github_branch_protection.managed["network-uri-json"]
+  id = "network-uri-json:develop"
+}
+
+import {
+  to = github_branch_protection.managed["collection-json.hs"]
+  id = "collection-json.hs:develop"
+}
+
+import {
+  to = github_branch_protection.managed["network-arbitrary"]
+  id = "network-arbitrary:master"
+}
+
+import {
+  to = github_branch_protection.managed["zfs-replicate"]
+  id = "zfs-replicate:master"
+}
+
 resource "github_branch_protection" "managed" {
   for_each = var.repositories
 
@@ -56,4 +75,13 @@ resource "github_branch_protection" "managed" {
 
   allows_deletions    = false
   allows_force_pushes = false
+}
+
+resource "github_repository_vulnerability_alerts" "managed" {
+  for_each = {
+    for name, repo in var.repositories : name => repo
+    if local.effective_settings[name].vulnerability_alerts
+  }
+
+  repository = github_repository.managed[each.key].name
 }
