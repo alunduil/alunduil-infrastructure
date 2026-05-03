@@ -25,4 +25,35 @@ resource "github_repository" "managed" {
   delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
   vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
+
+  dynamic "template" {
+    for_each = each.value.template != null ? [each.value.template] : []
+    content {
+      owner                = template.value.owner
+      repository           = template.value.repository
+      include_all_branches = template.value.include_all_branches
+    }
+  }
+}
+
+resource "github_branch_default" "managed" {
+  for_each = var.repositories
+
+  repository = github_repository.managed[each.key].name
+  branch     = local.effective_settings[each.key].default_branch
+}
+
+import {
+  to = github_branch_protection.managed["siren-json.hs"]
+  id = "siren-json.hs:main"
+}
+
+resource "github_branch_protection" "managed" {
+  for_each = var.repositories
+
+  repository_id = github_repository.managed[each.key].node_id
+  pattern       = github_branch_default.managed[each.key].branch
+
+  allows_deletions    = false
+  allows_force_pushes = false
 }
