@@ -23,8 +23,16 @@ resource "github_repository" "managed" {
   merge_commit_title          = local.effective_settings[each.key].merge_commit_title
   merge_commit_message        = local.effective_settings[each.key].merge_commit_message
   delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
-  vulnerability_alerts        = local.effective_settings[each.key].vulnerability_alerts
   archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
+
+  dynamic "template" {
+    for_each = each.value.template != null ? [each.value.template] : []
+    content {
+      owner                = template.value.owner
+      repository           = template.value.repository
+      include_all_branches = template.value.include_all_branches
+    }
+  }
 
   dynamic "pages" {
     for_each = each.value.pages != null ? [each.value.pages] : []
@@ -39,5 +47,54 @@ resource "github_branch_default" "managed" {
   for_each = var.repositories
 
   repository = github_repository.managed[each.key].name
-  branch     = each.value.default_branch
+  branch     = local.effective_settings[each.key].default_branch
+}
+
+import {
+  to = github_repository.managed["blog.alunduil.com"]
+  id = "blog.alunduil.com"
+}
+
+import {
+  to = github_branch_protection.managed["siren-json.hs"]
+  id = "siren-json.hs:main"
+}
+
+import {
+  to = github_branch_protection.managed["network-uri-json"]
+  id = "network-uri-json:develop"
+}
+
+import {
+  to = github_branch_protection.managed["collection-json.hs"]
+  id = "collection-json.hs:develop"
+}
+
+import {
+  to = github_branch_protection.managed["network-arbitrary"]
+  id = "network-arbitrary:master"
+}
+
+import {
+  to = github_branch_protection.managed["zfs-replicate"]
+  id = "zfs-replicate:master"
+}
+
+resource "github_branch_protection" "managed" {
+  for_each = var.repositories
+
+  repository_id = github_repository.managed[each.key].node_id
+  pattern       = github_branch_default.managed[each.key].branch
+
+  allows_deletions    = false
+  allows_force_pushes = false
+}
+
+resource "github_repository_vulnerability_alerts" "managed" {
+  for_each = {
+    for name, repo in var.repositories : name => repo
+    if local.effective_settings[name].vulnerability_alerts
+  }
+
+  repository = github_repository.managed[each.key].name
 }

@@ -18,7 +18,6 @@ variable "repositories" {
     classification              = optional(string, "default")
     homepage_url                = optional(string)
     topics                      = optional(list(string), [])
-    default_branch              = optional(string, "main")
     visibility                  = optional(string)
     has_issues                  = optional(bool)
     has_projects                = optional(bool)
@@ -35,6 +34,12 @@ variable "repositories" {
     delete_branch_on_merge      = optional(bool)
     vulnerability_alerts        = optional(bool)
     archive_on_destroy          = optional(bool)
+    default_branch              = optional(string)
+    template = optional(object({
+      owner                = string
+      repository           = string
+      include_all_branches = optional(bool, false)
+    }))
     pages = optional(object({
       cname      = optional(string)
       build_type = optional(string, "workflow")
@@ -45,8 +50,8 @@ variable "repositories" {
   validation {
     condition = alltrue([
       for name, repo in var.repositories :
-      contains(["default", "release-please", "git-flow"], repo.classification)
+      contains(["default", "release-please"], repo.classification)
     ])
-    error_message = "Classification must be one of: default, release-please, git-flow."
+    error_message = "Classification must be one of: default, release-please."
   }
 }
