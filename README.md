@@ -45,10 +45,6 @@ terraform plan
 terraform apply
 ```
 
-Sensitive variable values (`billing_account_id`,
-`cloudflare_api_token`) live in a gitignored `secrets.auto.tfvars`
-in the same directory.
-
 ### Stays manual
 
 A few things sit outside Terraform — either the provider doesn't expose
