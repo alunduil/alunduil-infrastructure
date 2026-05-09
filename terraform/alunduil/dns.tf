@@ -133,3 +133,9 @@ import {
   to = cloudflare_dns_record.txt_keybase
   id = "${cloudflare_zone.alunduil_com.id}/f3408d9fed4eebf7fc2a941449a84c62"
 }
+
+# DS values for the Squarespace registrar are exposed via output.alunduil_com_ds.
+resource "cloudflare_zone_dnssec" "alunduil_com" {
+  zone_id = local.cloudflare_zone_id
+  status  = "active"
+}
