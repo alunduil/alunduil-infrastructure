@@ -68,6 +68,11 @@ import {
 }
 
 import {
+  to = github_branch_protection.managed["blog.alunduil.com"]
+  id = "blog.alunduil.com:main"
+}
+
+import {
   to = github_branch_protection.managed["siren-json.hs"]
   id = "siren-json.hs:main"
 }
