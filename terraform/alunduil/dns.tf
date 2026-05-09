@@ -8,18 +8,13 @@
 # defaults — add a `cloudflare_zone_setting` resource only when drift
 # detection on a specific one is wanted.
 
-locals {
-  cloudflare_account_id = "76626ec3f004e86f1a4d85faca9ac3a2"
-  cloudflare_zone_id    = "0ee2520bb84646200856ade7817daf2f"
-}
-
 # Recreating the zone mints a new Cloudflare NS pair, forcing a registrar
 # update and propagation outage. `prevent_destroy` blocks `terraform
 # destroy` from removing it; deletion has to go through a code change
 # first.
 resource "cloudflare_zone" "alunduil_com" {
   account = {
-    id = local.cloudflare_account_id
+    id = "76626ec3f004e86f1a4d85faca9ac3a2" # pragma: allowlist secret
   }
   name = "alunduil.com"
   type = "full"
@@ -31,61 +26,61 @@ resource "cloudflare_zone" "alunduil_com" {
 
 import {
   to = cloudflare_zone.alunduil_com
-  id = local.cloudflare_zone_id
+  id = "0ee2520bb84646200856ade7817daf2f" # pragma: allowlist secret
 }
 
 # Zone settings affect proxied records at the edge. All alunduil.com
 # records currently have `proxied = false`, so these are pre-staged for
 # any future proxy flip rather than gating today's traffic.
 resource "cloudflare_zone_setting" "ssl" {
-  zone_id    = local.cloudflare_zone_id
+  zone_id    = cloudflare_zone.alunduil_com.id
   setting_id = "ssl"
   value      = "strict"
 }
 
 resource "cloudflare_zone_setting" "min_tls_version" {
-  zone_id    = local.cloudflare_zone_id
+  zone_id    = cloudflare_zone.alunduil_com.id
   setting_id = "min_tls_version"
   value      = "1.2"
 }
 
 resource "cloudflare_zone_setting" "always_use_https" {
-  zone_id    = local.cloudflare_zone_id
+  zone_id    = cloudflare_zone.alunduil_com.id
   setting_id = "always_use_https"
   value      = "on"
 }
 
 resource "cloudflare_zone_setting" "automatic_https_rewrites" {
-  zone_id    = local.cloudflare_zone_id
+  zone_id    = cloudflare_zone.alunduil_com.id
   setting_id = "automatic_https_rewrites"
   value      = "on"
 }
 
 import {
   to = cloudflare_zone_setting.ssl
-  id = "${local.cloudflare_zone_id}/ssl"
+  id = "${cloudflare_zone.alunduil_com.id}/ssl"
 }
 
 import {
   to = cloudflare_zone_setting.min_tls_version
-  id = "${local.cloudflare_zone_id}/min_tls_version"
+  id = "${cloudflare_zone.alunduil_com.id}/min_tls_version"
 }
 
 import {
   to = cloudflare_zone_setting.always_use_https
-  id = "${local.cloudflare_zone_id}/always_use_https"
+  id = "${cloudflare_zone.alunduil_com.id}/always_use_https"
 }
 
 import {
   to = cloudflare_zone_setting.automatic_https_rewrites
-  id = "${local.cloudflare_zone_id}/automatic_https_rewrites"
+  id = "${cloudflare_zone.alunduil_com.id}/automatic_https_rewrites"
 }
 
 # blog cuts over from the legacy GCS bucket to GitHub Pages. Proxied stays off
 # so GitHub can provision a Let's Encrypt cert for the apex CNAME; flip to true
 # once the cert is in place if Cloudflare features are wanted in front.
 resource "cloudflare_dns_record" "blog_cname" {
-  zone_id = local.cloudflare_zone_id
+  zone_id = cloudflare_zone.alunduil_com.id
   name    = "blog.alunduil.com"
   type    = "CNAME"
   content = "alunduil.github.io"
@@ -94,7 +89,7 @@ resource "cloudflare_dns_record" "blog_cname" {
 }
 
 resource "cloudflare_dns_record" "home_cname" {
-  zone_id = local.cloudflare_zone_id
+  zone_id = cloudflare_zone.alunduil_com.id
   name    = "home.alunduil.com"
   type    = "CNAME"
   content = "alunduil.tplinkdns.com"
@@ -103,7 +98,7 @@ resource "cloudflare_dns_record" "home_cname" {
 }
 
 resource "cloudflare_dns_record" "plex_cname" {
-  zone_id = local.cloudflare_zone_id
+  zone_id = cloudflare_zone.alunduil_com.id
   name    = "plex.alunduil.com"
   type    = "CNAME"
   content = "home.alunduil.com"
@@ -112,7 +107,7 @@ resource "cloudflare_dns_record" "plex_cname" {
 }
 
 resource "cloudflare_dns_record" "txt_keybase" {
-  zone_id = local.cloudflare_zone_id
+  zone_id = cloudflare_zone.alunduil_com.id
   name    = "_keybase.alunduil.com"
   type    = "TXT"
   content = "\"keybase-site-verification=KcW7SfZNckcQxOunGDM_ukMY50f3SNovxVDgxAB5pLs\""
@@ -121,20 +116,20 @@ resource "cloudflare_dns_record" "txt_keybase" {
 
 import {
   to = cloudflare_dns_record.blog_cname
-  id = "${local.cloudflare_zone_id}/47c444ffbf44a0cd8d3aa9802e7107c8"
+  id = "${cloudflare_zone.alunduil_com.id}/47c444ffbf44a0cd8d3aa9802e7107c8"
 }
 
 import {
   to = cloudflare_dns_record.home_cname
-  id = "${local.cloudflare_zone_id}/506de57cc5722cdf3db23840786d47cd"
+  id = "${cloudflare_zone.alunduil_com.id}/506de57cc5722cdf3db23840786d47cd"
 }
 
 import {
   to = cloudflare_dns_record.plex_cname
-  id = "${local.cloudflare_zone_id}/e2dbf6462bacfbdd1e2897bfb261d01c"
+  id = "${cloudflare_zone.alunduil_com.id}/e2dbf6462bacfbdd1e2897bfb261d01c"
 }
 
 import {
   to = cloudflare_dns_record.txt_keybase
-  id = "${local.cloudflare_zone_id}/f3408d9fed4eebf7fc2a941449a84c62"
+  id = "${cloudflare_zone.alunduil_com.id}/f3408d9fed4eebf7fc2a941449a84c62"
 }
