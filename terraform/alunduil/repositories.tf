@@ -44,8 +44,14 @@ resource "github_repository_pages" "managed" {
   repository = github_repository.managed[each.key].name
   build_type = each.value.pages.build_type
   cname      = each.value.pages.cname
-  source {
-    branch = local.effective_settings[each.key].default_branch
+
+  # source is only valid for build_type = "legacy"; the GitHub API rejects it
+  # for workflow builds.
+  dynamic "source" {
+    for_each = each.value.pages.build_type == "legacy" ? [1] : []
+    content {
+      branch = local.effective_settings[each.key].default_branch
+    }
   }
 }
 
