@@ -3,10 +3,82 @@
 
 # alunduil.com is hosted on Cloudflare. Authoritative NS:
 #   brenna.ns.cloudflare.com, vick.ns.cloudflare.com
-# The zone itself is not Terraform-managed; only its records are.
+# The zone, a security-relevant subset of zone settings, and all records
+# are Terraform-managed. Settings not declared below track Cloudflare's
+# defaults — add a `cloudflare_zone_setting` resource only when drift
+# detection on a specific one is wanted.
 
 locals {
-  cloudflare_zone_id = "0ee2520bb84646200856ade7817daf2f"
+  cloudflare_account_id = "76626ec3f004e86f1a4d85faca9ac3a2"
+  cloudflare_zone_id    = "0ee2520bb84646200856ade7817daf2f"
+}
+
+# Recreating the zone mints a new Cloudflare NS pair, forcing a registrar
+# update and propagation outage. `prevent_destroy` blocks `terraform
+# destroy` from removing it; deletion has to go through a code change
+# first.
+resource "cloudflare_zone" "alunduil_com" {
+  account = {
+    id = local.cloudflare_account_id
+  }
+  name = "alunduil.com"
+  type = "full"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+import {
+  to = cloudflare_zone.alunduil_com
+  id = local.cloudflare_zone_id
+}
+
+# Zone settings affect proxied records at the edge. All alunduil.com
+# records currently have `proxied = false`, so these are pre-staged for
+# any future proxy flip rather than gating today's traffic.
+resource "cloudflare_zone_setting" "ssl" {
+  zone_id    = local.cloudflare_zone_id
+  setting_id = "ssl"
+  value      = "strict"
+}
+
+resource "cloudflare_zone_setting" "min_tls_version" {
+  zone_id    = local.cloudflare_zone_id
+  setting_id = "min_tls_version"
+  value      = "1.2"
+}
+
+resource "cloudflare_zone_setting" "always_use_https" {
+  zone_id    = local.cloudflare_zone_id
+  setting_id = "always_use_https"
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "automatic_https_rewrites" {
+  zone_id    = local.cloudflare_zone_id
+  setting_id = "automatic_https_rewrites"
+  value      = "on"
+}
+
+import {
+  to = cloudflare_zone_setting.ssl
+  id = "${local.cloudflare_zone_id}/ssl"
+}
+
+import {
+  to = cloudflare_zone_setting.min_tls_version
+  id = "${local.cloudflare_zone_id}/min_tls_version"
+}
+
+import {
+  to = cloudflare_zone_setting.always_use_https
+  id = "${local.cloudflare_zone_id}/always_use_https"
+}
+
+import {
+  to = cloudflare_zone_setting.automatic_https_rewrites
+  id = "${local.cloudflare_zone_id}/automatic_https_rewrites"
 }
 
 # blog cuts over from the legacy GCS bucket to GitHub Pages. Proxied stays off

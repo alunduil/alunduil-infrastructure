@@ -15,8 +15,10 @@ and `apply` are run manually after merge to `main`.
 
 - **GCP project** — the `alunduil` project itself (billing, labels,
   foundational APIs)
-- **DNS** — records under `alunduil.com` (the zone is hosted on Cloudflare;
-  Terraform manages records, not the zone itself)
+- **DNS** — the `alunduil.com` Cloudflare zone, a security-relevant subset of
+  zone settings (`ssl`, `min_tls_version`, `always_use_https`,
+  `automatic_https_rewrites`), and all records under it. Other zone settings
+  track Cloudflare's defaults.
 - **GitHub repositories** — settings (visibility, merge rules, discussions, …),
   default branch, branch protection, and (opt-in) Pages for repositories
   owned by `alunduil`, applied via classification (`default`,

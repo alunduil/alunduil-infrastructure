@@ -19,8 +19,12 @@ resource "google_project" "env" {
 
   # auto_create_network cannot be changed after project creation.
   # The alunduil project was created before Terraform and has a default network.
+  # prevent_destroy guards against `terraform destroy` taking out the project
+  # (and with it every resource managed in this state); deletion has to go
+  # through a code change first.
   lifecycle {
-    ignore_changes = [auto_create_network]
+    ignore_changes  = [auto_create_network]
+    prevent_destroy = true
   }
 }
 
