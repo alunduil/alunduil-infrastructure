@@ -19,8 +19,9 @@ terraform {
   }
 }
 
-# CLOUDFLARE_API_TOKEN env var supplies auth.
-provider "cloudflare" {}
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
 
 provider "github" {
   owner = "alunduil"

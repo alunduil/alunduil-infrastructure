@@ -40,9 +40,11 @@ alongside) an apply:
   its own once the CNAME resolves; tick "Enforce HTTPS" in Pages
   settings after the cert is ready.
 - **Cloudflare API token.** `terraform plan`/`apply` needs
-  `CLOUDFLARE_API_TOKEN` exported in the shell, scoped to `Zone:Read`,
-  `DNS:Edit`, and `Zone Settings:Edit` on `alunduil.com`. Mint at
-  <https://dash.cloudflare.com/profile/api-tokens>.
+  `TF_VAR_cloudflare_api_token` exported in the shell, scoped to
+  `Zone:Read`, `DNS:Edit`, and `Zone Settings:Edit` on `alunduil.com`.
+  Mint at <https://dash.cloudflare.com/profile/api-tokens>. (The
+  `TF_VAR_` form rather than `CLOUDFLARE_API_TOKEN` is a workaround
+  for an upstream bug in the v5 provider's import code path.)
 - **GCP DNS zone deletion.** The legacy `alunduil-com` Cloud DNS zone
   is no longer Terraform-managed. After the apply removes the
   `google_dns_*` resources, delete the empty zone in the GCP console

@@ -25,7 +25,6 @@ repositories = {
     description    = "Collection+JSON Tools for Haskell"
     classification = "default"
     topics         = ["haskell-library", "collection-json", "haskell", "hypermedia"]
-    default_branch = "develop"
   }
 
   "grafana" = {

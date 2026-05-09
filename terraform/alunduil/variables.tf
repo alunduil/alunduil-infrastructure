@@ -11,6 +11,16 @@ variable "billing_account_id" {
   }
 }
 
+# Set explicitly rather than relying on CLOUDFLARE_API_TOKEN: the v5 provider's
+# import code path doesn't propagate env-var auth, so import blocks fail with
+# "Missing X-Auth-Key, X-Auth-Email or Authorization headers" unless api_token
+# is wired through the provider config.
+variable "cloudflare_api_token" {
+  type        = string
+  description = "Cloudflare API token scoped to alunduil.com (Zone:Read + DNS:Edit + Zone Settings:Edit). Export as TF_VAR_cloudflare_api_token."
+  sensitive   = true
+}
+
 variable "repositories" {
   description = "Map of GitHub repositories to manage, keyed by repository name"
   type = map(object({
