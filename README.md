@@ -15,7 +15,8 @@ and `apply` are run manually after merge to `main`.
 
 - **GCP project** — the `alunduil` project itself (billing, labels,
   foundational APIs)
-- **DNS** — `alunduil.com` zone and all records (`blog`, `home`, `groton`, …)
+- **DNS** — records under `alunduil.com` (the zone is hosted on Cloudflare;
+  Terraform manages records, not the zone itself)
 - **GitHub repositories** — settings (visibility, merge rules, discussions, …),
   default branch, branch protection, and (opt-in) Pages for repositories
   owned by `alunduil`, applied via classification (`default`,
@@ -36,6 +37,14 @@ GitHub UI before (or alongside) an apply:
 - **HTTPS enforcement on Pages.** GitHub provisions the certificate on its
   own once the CNAME resolves; tick "Enforce HTTPS" in Pages settings after
   the cert is ready. (The provider doesn't expose this cleanly enough yet.)
+- **Cloudflare API token.** `terraform plan`/`apply` needs
+  `CLOUDFLARE_API_TOKEN` exported in the shell, scoped to `Zone:Read`,
+  `DNS:Edit`, and `Zone Settings:Edit` on `alunduil.com`. Mint at
+  <https://dash.cloudflare.com/profile/api-tokens>.
+- **GCP DNS zone deletion.** The legacy `alunduil-com` Cloud DNS zone is
+  no longer Terraform-managed. After the apply removes the
+  `google_dns_*` resources, delete the empty zone in the GCP console (or
+  `gcloud dns managed-zones delete alunduil-com`) to release it.
 
 ## Support and contributions
 
