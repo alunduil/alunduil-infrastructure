@@ -114,26 +114,6 @@ resource "cloudflare_dns_record" "txt_keybase" {
   ttl     = 1
 }
 
-import {
-  to = cloudflare_dns_record.blog_cname
-  id = "${cloudflare_zone.alunduil_com.id}/47c444ffbf44a0cd8d3aa9802e7107c8"
-}
-
-import {
-  to = cloudflare_dns_record.home_cname
-  id = "${cloudflare_zone.alunduil_com.id}/506de57cc5722cdf3db23840786d47cd"
-}
-
-import {
-  to = cloudflare_dns_record.plex_cname
-  id = "${cloudflare_zone.alunduil_com.id}/e2dbf6462bacfbdd1e2897bfb261d01c"
-}
-
-import {
-  to = cloudflare_dns_record.txt_keybase
-  id = "${cloudflare_zone.alunduil_com.id}/f3408d9fed4eebf7fc2a941449a84c62"
-}
-
 # DS values for the Squarespace registrar are exposed via output.alunduil_com_ds.
 resource "cloudflare_zone_dnssec" "alunduil_com" {
   zone_id = cloudflare_zone.alunduil_com.id

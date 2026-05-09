@@ -1,118 +1,87 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-resource "github_repository" "managed" {
-  for_each = var.repositories
+module "alunduil_chezmoi" {
+  source = "../modules/github_repository"
+  name   = "alunduil-chezmoi"
+}
 
-  name         = each.key
-  description  = each.value.description
-  homepage_url = each.value.homepage_url
-  topics       = each.value.topics
+module "alunduil_infrastructure" {
+  source = "../modules/github_repository"
+  name   = "alunduil-infrastructure"
+}
 
-  visibility                  = local.effective_settings[each.key].visibility
-  has_issues                  = local.effective_settings[each.key].has_issues
-  has_projects                = local.effective_settings[each.key].has_projects
-  has_wiki                    = local.effective_settings[each.key].has_wiki
-  has_discussions             = local.effective_settings[each.key].has_discussions
-  allow_merge_commit          = local.effective_settings[each.key].allow_merge_commit
-  allow_squash_merge          = local.effective_settings[each.key].allow_squash_merge
-  allow_rebase_merge          = local.effective_settings[each.key].allow_rebase_merge
-  allow_auto_merge            = local.effective_settings[each.key].allow_auto_merge
-  squash_merge_commit_title   = local.effective_settings[each.key].squash_merge_commit_title
-  squash_merge_commit_message = local.effective_settings[each.key].squash_merge_commit_message
-  merge_commit_title          = local.effective_settings[each.key].merge_commit_title
-  merge_commit_message        = local.effective_settings[each.key].merge_commit_message
-  delete_branch_on_merge      = local.effective_settings[each.key].delete_branch_on_merge
-  archive_on_destroy          = local.effective_settings[each.key].archive_on_destroy
-
-  dynamic "template" {
-    for_each = each.value.template != null ? [each.value.template] : []
-    content {
-      owner                = template.value.owner
-      repository           = template.value.repository
-      include_all_branches = template.value.include_all_branches
-    }
+module "blog_alunduil_com" {
+  source       = "../modules/github_repository"
+  name         = "blog.alunduil.com"
+  description  = "Personal blog at blog.alunduil.com"
+  homepage_url = "https://blog.alunduil.com"
+  topics       = ["blog", "github-pages"]
+  pages = {
+    cname          = "blog.alunduil.com"
+    build_type     = "workflow"
+    https_enforced = true
   }
 }
 
-resource "github_repository_pages" "managed" {
-  for_each = {
-    for name, repo in var.repositories : name => repo
-    if repo.pages != null
+module "collection_json_hs" {
+  source      = "../modules/github_repository"
+  name        = "collection-json.hs"
+  description = "Collection+JSON Tools for Haskell"
+  topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
+}
+
+module "grafana" {
+  source = "../modules/github_repository"
+  name   = "grafana"
+}
+
+module "murl" {
+  source         = "../modules/github_repository"
+  name           = "murl"
+  description    = "Small Toy URL Shortener in Haskell"
+  default_branch = "master"
+}
+
+module "network_arbitrary" {
+  source         = "../modules/github_repository"
+  name           = "network-arbitrary"
+  description    = "Arbitrary Instances for Network Types"
+  default_branch = "master"
+}
+
+module "network_uri_json" {
+  source         = "../modules/github_repository"
+  name           = "network-uri-json"
+  description    = "FromJSON and ToJSON Instances for Network.URI"
+  topics         = ["haskell-library", "haskell", "json", "network-uri", "uri"]
+  default_branch = "develop"
+}
+
+module "siren_json_hs" {
+  source      = "../modules/github_repository"
+  name        = "siren-json.hs"
+  description = "Siren+JSON Tools for Haskell"
+  topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+}
+
+module "woodland_generators" {
+  source          = "../modules/github_repository"
+  name            = "woodland-generators"
+  description     = "A CLI tool for generating resources for Root: The Tabletop RPG."
+  topics          = ["cli", "generator", "root", "rpg", "tabletop"]
+  has_discussions = true
+  default_branch  = "master"
+  template = {
+    owner      = "League-of-Foundry-Developers"
+    repository = "FoundryVTT-Module-Template"
   }
-
-  repository     = github_repository.managed[each.key].name
-  build_type     = each.value.pages.build_type
-  cname          = each.value.pages.cname
-  https_enforced = each.value.pages.https_enforced
-
-  # source is only valid for build_type = "legacy"; the GitHub API rejects it
-  # for workflow builds.
-  dynamic "source" {
-    for_each = each.value.pages.build_type == "legacy" ? [1] : []
-    content {
-      branch = local.effective_settings[each.key].default_branch
-    }
-  }
 }
 
-resource "github_branch_default" "managed" {
-  for_each = var.repositories
-
-  repository = github_repository.managed[each.key].name
-  branch     = local.effective_settings[each.key].default_branch
-}
-
-import {
-  to = github_repository.managed["blog.alunduil.com"]
-  id = "blog.alunduil.com"
-}
-
-import {
-  to = github_branch_protection.managed["blog.alunduil.com"]
-  id = "blog.alunduil.com:main"
-}
-
-import {
-  to = github_branch_protection.managed["siren-json.hs"]
-  id = "siren-json.hs:main"
-}
-
-import {
-  to = github_branch_protection.managed["network-uri-json"]
-  id = "network-uri-json:develop"
-}
-
-import {
-  to = github_branch_protection.managed["collection-json.hs"]
-  id = "collection-json.hs:main"
-}
-
-import {
-  to = github_branch_protection.managed["network-arbitrary"]
-  id = "network-arbitrary:master"
-}
-
-import {
-  to = github_branch_protection.managed["zfs-replicate"]
-  id = "zfs-replicate:master"
-}
-
-resource "github_branch_protection" "managed" {
-  for_each = var.repositories
-
-  repository_id = github_repository.managed[each.key].node_id
-  pattern       = github_branch_default.managed[each.key].branch
-
-  allows_deletions    = false
-  allows_force_pushes = false
-}
-
-resource "github_repository_vulnerability_alerts" "managed" {
-  for_each = {
-    for name, repo in var.repositories : name => repo
-    if local.effective_settings[name].vulnerability_alerts
-  }
-
-  repository = github_repository.managed[each.key].name
+module "zfs_replicate" {
+  source         = "../modules/github_repository"
+  name           = "zfs-replicate"
+  description    = "ZFS Replication"
+  topics         = ["zfs", "replication", "snapshots"]
+  default_branch = "master"
 }
