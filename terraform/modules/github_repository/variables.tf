@@ -48,9 +48,10 @@ variable "template" {
 
 variable "pages" {
   type = object({
-    cname      = optional(string)
-    build_type = optional(string, "workflow")
+    cname          = optional(string)
+    build_type     = optional(string, "workflow")
+    https_enforced = optional(bool)
   })
   default     = null
-  description = "Enable GitHub Pages with the given CNAME and build_type."
+  description = "Enable GitHub Pages with the given CNAME, build_type, and HTTPS enforcement."
 }

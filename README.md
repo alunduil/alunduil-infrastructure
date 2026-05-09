@@ -4,9 +4,10 @@
 # alunduil-infrastructure
 
 [![License](https://img.shields.io/github/license/alunduil/alunduil-infrastructure)](LICENSES/MIT.txt)
+[![pre-commit](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/pre-commit.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/pre-commit.yml)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](renovate.json)
 
-Personal infrastructure as code, managed with Terraform. `terraform plan`
-and `apply` are run manually after merge to `main`.
+Personal infrastructure as code, managed with Terraform.
 
 **Repository:** <https://github.com/alunduil/alunduil-infrastructure>
 **Author:** Alex Brandt \<<alunduil@gmail.com>\>
@@ -15,8 +16,10 @@ and `apply` are run manually after merge to `main`.
 
 - **GCP project** — the `alunduil` project itself (billing, labels,
   foundational APIs)
-- **DNS** — records under `alunduil.com` (the zone is hosted on Cloudflare;
-  Terraform manages records, not the zone itself)
+- **DNS** — the `alunduil.com` Cloudflare zone, a security-relevant subset of
+  zone settings (`ssl`, `min_tls_version`, `always_use_https`,
+  `automatic_https_rewrites`), and all records under it. Other zone settings
+  track Cloudflare's defaults.
 - **GitHub repositories** — settings (visibility, merge rules, discussions, …),
   default branch, branch protection, and (opt-in) Pages for repositories
   owned by `alunduil`, applied via classification (`default`,
@@ -25,6 +28,24 @@ and `apply` are run manually after merge to `main`.
 All Terraform lives in [`terraform/alunduil/`](terraform/alunduil/). There is
 one environment (this is personal homelab infrastructure, equivalent in scope
 to a single production project).
+
+## Running an apply
+
+`terraform plan`/`apply` are run manually after merge to `main`. The
+shell environment (Terraform, gcloud, pre-commit, REUSE) is prepared by
+chezmoi outside this repo.
+
+From `terraform/alunduil/`:
+
+```sh
+gcloud auth application-default login    # GCP creds (google provider + gcs backend)
+export TF_VAR_cloudflare_api_token=...   # see "Stays manual" below
+export GITHUB_TOKEN=...                  # scopes for repository administration
+
+terraform init
+terraform plan
+terraform apply
+```
 
 ### Stays manual
 

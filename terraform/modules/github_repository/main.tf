@@ -53,9 +53,10 @@ resource "github_repository_vulnerability_alerts" "this" {
 resource "github_repository_pages" "this" {
   count = var.pages != null ? 1 : 0
 
-  repository = github_repository.this.name
-  build_type = var.pages.build_type
-  cname      = var.pages.cname
+  repository     = github_repository.this.name
+  build_type     = var.pages.build_type
+  cname          = var.pages.cname
+  https_enforced = var.pages.https_enforced
 
   # source is only valid for build_type = "legacy"; the GitHub API rejects it
   # for workflow builds.

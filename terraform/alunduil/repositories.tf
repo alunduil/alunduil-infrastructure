@@ -18,8 +18,9 @@ module "blog_alunduil_com" {
   homepage_url = "https://blog.alunduil.com"
   topics       = ["blog", "github-pages"]
   pages = {
-    cname      = "blog.alunduil.com"
-    build_type = "workflow"
+    cname          = "blog.alunduil.com"
+    build_type     = "workflow"
+    https_enforced = true
   }
 }
 
