@@ -136,6 +136,6 @@ import {
 
 # DS values for the Squarespace registrar are exposed via output.alunduil_com_ds.
 resource "cloudflare_zone_dnssec" "alunduil_com" {
-  zone_id = local.cloudflare_zone_id
+  zone_id = cloudflare_zone.alunduil_com.id
   status  = "active"
 }
