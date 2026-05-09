@@ -20,7 +20,6 @@ output "alunduil_com_ds" {
     algorithm   = cloudflare_zone_dnssec.alunduil_com.algorithm
     digest_type = cloudflare_zone_dnssec.alunduil_com.digest_type
     digest      = cloudflare_zone_dnssec.alunduil_com.digest
-    ds          = cloudflare_zone_dnssec.alunduil_com.ds
   }
   description = "DS record fields to publish at the Squarespace registrar for alunduil.com"
 }
