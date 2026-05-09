@@ -51,8 +51,9 @@ variable "repositories" {
       include_all_branches = optional(bool, false)
     }))
     pages = optional(object({
-      cname      = optional(string)
-      build_type = optional(string, "workflow")
+      cname          = optional(string)
+      build_type     = optional(string, "workflow")
+      https_enforced = optional(bool)
     }))
   }))
   default = {}

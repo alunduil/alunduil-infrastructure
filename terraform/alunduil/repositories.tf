@@ -41,9 +41,10 @@ resource "github_repository_pages" "managed" {
     if repo.pages != null
   }
 
-  repository = github_repository.managed[each.key].name
-  build_type = each.value.pages.build_type
-  cname      = each.value.pages.cname
+  repository     = github_repository.managed[each.key].name
+  build_type     = each.value.pages.build_type
+  cname          = each.value.pages.cname
+  https_enforced = each.value.pages.https_enforced
 
   # source is only valid for build_type = "legacy"; the GitHub API rejects it
   # for workflow builds.
