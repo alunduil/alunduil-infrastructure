@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+variable "name" {
+  type        = string
+  description = "Repository name (the GitHub repository slug)."
+}
+
+variable "description" {
+  type        = string
+  default     = ""
+  description = "Short repository description."
+}
+
+variable "homepage_url" {
+  type        = string
+  default     = null
+  description = "Optional homepage URL surfaced on the repository page."
+}
+
+variable "topics" {
+  type        = list(string)
+  default     = []
+  description = "GitHub topics applied to the repository."
+}
+
+variable "default_branch" {
+  type        = string
+  default     = "main"
+  description = "Branch treated as default and protected. Override only for repos predating the main convention."
+}
+
+variable "has_discussions" {
+  type        = bool
+  default     = false
+  description = "Enable GitHub Discussions on the repository."
+}
+
+variable "template" {
+  type = object({
+    owner                = string
+    repository           = string
+    include_all_branches = optional(bool, false)
+  })
+  default     = null
+  description = "Template repository to seed this one from. Only meaningful at create time."
+}
+
+variable "pages" {
+  type = object({
+    cname      = optional(string)
+    build_type = optional(string, "workflow")
+  })
+  default     = null
+  description = "Enable GitHub Pages with the given CNAME and build_type."
+}

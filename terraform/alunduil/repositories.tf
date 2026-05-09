@@ -1,36 +1,86 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-module "github_repositories" {
-  source       = "../modules/github_repositories"
-  repositories = var.repositories
+module "alunduil_chezmoi" {
+  source = "../modules/github_repository"
+  name   = "alunduil-chezmoi"
 }
 
-# Migrate state addresses from the inline resources (pre-issue-#38) into the
-# module. Resource-level moves implicitly carry every for_each instance, so
-# five blocks cover all managed repos. Safe to delete once any state that
-# pre-dates the move has been applied.
-moved {
-  from = github_repository.managed
-  to   = module.github_repositories.github_repository.managed
+module "alunduil_infrastructure" {
+  source = "../modules/github_repository"
+  name   = "alunduil-infrastructure"
 }
 
-moved {
-  from = github_repository_pages.managed
-  to   = module.github_repositories.github_repository_pages.managed
+module "blog_alunduil_com" {
+  source       = "../modules/github_repository"
+  name         = "blog.alunduil.com"
+  description  = "Personal blog at blog.alunduil.com"
+  homepage_url = "https://blog.alunduil.com"
+  topics       = ["blog", "github-pages"]
+  pages = {
+    cname      = "blog.alunduil.com"
+    build_type = "workflow"
+  }
 }
 
-moved {
-  from = github_branch_default.managed
-  to   = module.github_repositories.github_branch_default.managed
+module "collection_json_hs" {
+  source      = "../modules/github_repository"
+  name        = "collection-json.hs"
+  description = "Collection+JSON Tools for Haskell"
+  topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
 }
 
-moved {
-  from = github_branch_protection.managed
-  to   = module.github_repositories.github_branch_protection.managed
+module "grafana" {
+  source = "../modules/github_repository"
+  name   = "grafana"
 }
 
-moved {
-  from = github_repository_vulnerability_alerts.managed
-  to   = module.github_repositories.github_repository_vulnerability_alerts.managed
+module "murl" {
+  source         = "../modules/github_repository"
+  name           = "murl"
+  description    = "Small Toy URL Shortener in Haskell"
+  default_branch = "master"
+}
+
+module "network_arbitrary" {
+  source         = "../modules/github_repository"
+  name           = "network-arbitrary"
+  description    = "Arbitrary Instances for Network Types"
+  default_branch = "master"
+}
+
+module "network_uri_json" {
+  source         = "../modules/github_repository"
+  name           = "network-uri-json"
+  description    = "FromJSON and ToJSON Instances for Network.URI"
+  topics         = ["haskell-library", "haskell", "json", "network-uri", "uri"]
+  default_branch = "develop"
+}
+
+module "siren_json_hs" {
+  source      = "../modules/github_repository"
+  name        = "siren-json.hs"
+  description = "Siren+JSON Tools for Haskell"
+  topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+}
+
+module "woodland_generators" {
+  source          = "../modules/github_repository"
+  name            = "woodland-generators"
+  description     = "A CLI tool for generating resources for Root: The Tabletop RPG."
+  topics          = ["cli", "generator", "root", "rpg", "tabletop"]
+  has_discussions = true
+  default_branch  = "master"
+  template = {
+    owner      = "League-of-Foundry-Developers"
+    repository = "FoundryVTT-Module-Template"
+  }
+}
+
+module "zfs_replicate" {
+  source         = "../modules/github_repository"
+  name           = "zfs-replicate"
+  description    = "ZFS Replication"
+  topics         = ["zfs", "replication", "snapshots"]
+  default_branch = "master"
 }
