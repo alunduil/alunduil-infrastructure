@@ -35,11 +35,41 @@ resource "github_repository" "managed" {
   }
 }
 
+resource "github_repository_pages" "managed" {
+  for_each = {
+    for name, repo in var.repositories : name => repo
+    if repo.pages != null
+  }
+
+  repository = github_repository.managed[each.key].name
+  build_type = each.value.pages.build_type
+  cname      = each.value.pages.cname
+
+  # source is only valid for build_type = "legacy"; the GitHub API rejects it
+  # for workflow builds.
+  dynamic "source" {
+    for_each = each.value.pages.build_type == "legacy" ? [1] : []
+    content {
+      branch = local.effective_settings[each.key].default_branch
+    }
+  }
+}
+
 resource "github_branch_default" "managed" {
   for_each = var.repositories
 
   repository = github_repository.managed[each.key].name
   branch     = local.effective_settings[each.key].default_branch
+}
+
+import {
+  to = github_repository.managed["blog.alunduil.com"]
+  id = "blog.alunduil.com"
+}
+
+import {
+  to = github_branch_protection.managed["blog.alunduil.com"]
+  id = "blog.alunduil.com:main"
 }
 
 import {
@@ -54,7 +84,7 @@ import {
 
 import {
   to = github_branch_protection.managed["collection-json.hs"]
-  id = "collection-json.hs:develop"
+  id = "collection-json.hs:main"
 }
 
 import {

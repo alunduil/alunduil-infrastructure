@@ -10,11 +10,21 @@ repositories = {
     classification = "default"
   }
 
+  "blog.alunduil.com" = {
+    description    = "Personal blog at blog.alunduil.com"
+    homepage_url   = "https://blog.alunduil.com"
+    classification = "default"
+    topics         = ["blog", "github-pages"]
+    pages = {
+      cname      = "blog.alunduil.com"
+      build_type = "workflow"
+    }
+  }
+
   "collection-json.hs" = {
     description    = "Collection+JSON Tools for Haskell"
     classification = "default"
     topics         = ["haskell-library", "collection-json", "haskell", "hypermedia"]
-    default_branch = "develop"
   }
 
   "grafana" = {

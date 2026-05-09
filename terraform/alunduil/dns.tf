@@ -1,104 +1,68 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-import {
-  to = google_dns_managed_zone.alunduil_com
-  id = "projects/alunduil/managedZones/alunduil-com"
+# alunduil.com is hosted on Cloudflare. Authoritative NS:
+#   brenna.ns.cloudflare.com, vick.ns.cloudflare.com
+# The zone itself is not Terraform-managed; only its records are.
+
+locals {
+  cloudflare_zone_id = "0ee2520bb84646200856ade7817daf2f"
 }
 
-resource "google_dns_managed_zone" "alunduil_com" {
-  name        = "alunduil-com"
-  dns_name    = "alunduil.com."
-  description = "alunduil.com"
-
-  dnssec_config {
-    state         = "on"
-    non_existence = "nsec3"
-
-    default_key_specs {
-      algorithm  = "rsasha256"
-      key_length = 2048
-      key_type   = "keySigning"
-    }
-
-    default_key_specs {
-      algorithm  = "rsasha256"
-      key_length = 1024
-      key_type   = "zoneSigning"
-    }
-  }
-
-  depends_on = [google_project_service.dns]
+# blog cuts over from the legacy GCS bucket to GitHub Pages. Proxied stays off
+# so GitHub can provision a Let's Encrypt cert for the apex CNAME; flip to true
+# once the cert is in place if Cloudflare features are wanted in front.
+resource "cloudflare_dns_record" "blog_cname" {
+  zone_id = local.cloudflare_zone_id
+  name    = "blog.alunduil.com"
+  type    = "CNAME"
+  content = "alunduil.github.io"
+  ttl     = 1
+  proxied = false
 }
 
-# NS and SOA records are managed automatically by Cloud DNS — do not import or manage them here.
-
-import {
-  to = google_dns_record_set.blog_cname
-  id = "alunduil/alunduil-com/blog.alunduil.com./CNAME"
+resource "cloudflare_dns_record" "home_cname" {
+  zone_id = local.cloudflare_zone_id
+  name    = "home.alunduil.com"
+  type    = "CNAME"
+  content = "alunduil.tplinkdns.com"
+  ttl     = 1
+  proxied = false
 }
 
-resource "google_dns_record_set" "blog_cname" {
-  project      = "alunduil"
-  name         = "blog.alunduil.com."
-  managed_zone = google_dns_managed_zone.alunduil_com.name
-  type         = "CNAME"
-  ttl          = 86400
-  rrdatas      = ["c.storage.googleapis.com."]
+resource "cloudflare_dns_record" "plex_cname" {
+  zone_id = local.cloudflare_zone_id
+  name    = "plex.alunduil.com"
+  type    = "CNAME"
+  content = "home.alunduil.com"
+  ttl     = 1
+  proxied = false
 }
 
-import {
-  to = google_dns_record_set.d_blog_cname
-  id = "alunduil/alunduil-com/d.blog.alunduil.com./CNAME"
-}
-
-resource "google_dns_record_set" "d_blog_cname" {
-  project      = "alunduil"
-  name         = "d.blog.alunduil.com."
-  managed_zone = google_dns_managed_zone.alunduil_com.name
-  type         = "CNAME"
-  ttl          = 86400
-  rrdatas      = ["c.storage.googleapis.com."]
+resource "cloudflare_dns_record" "txt_keybase" {
+  zone_id = local.cloudflare_zone_id
+  name    = "_keybase.alunduil.com"
+  type    = "TXT"
+  content = "\"keybase-site-verification=KcW7SfZNckcQxOunGDM_ukMY50f3SNovxVDgxAB5pLs\""
+  ttl     = 1
 }
 
 import {
-  to = google_dns_record_set.r_blog_cname
-  id = "alunduil/alunduil-com/r.blog.alunduil.com./CNAME"
-}
-
-resource "google_dns_record_set" "r_blog_cname" {
-  project      = "alunduil"
-  name         = "r.blog.alunduil.com."
-  managed_zone = google_dns_managed_zone.alunduil_com.name
-  type         = "CNAME"
-  ttl          = 86400
-  rrdatas      = ["c.storage.googleapis.com."]
+  to = cloudflare_dns_record.blog_cname
+  id = "${local.cloudflare_zone_id}/47c444ffbf44a0cd8d3aa9802e7107c8"
 }
 
 import {
-  to = google_dns_record_set.groton_a
-  id = "alunduil/alunduil-com/groton.alunduil.com./A"
-}
-
-resource "google_dns_record_set" "groton_a" {
-  project      = "alunduil"
-  name         = "groton.alunduil.com."
-  managed_zone = google_dns_managed_zone.alunduil_com.name
-  type         = "A"
-  ttl          = 300
-  rrdatas      = ["64.68.174.54"]
+  to = cloudflare_dns_record.home_cname
+  id = "${local.cloudflare_zone_id}/506de57cc5722cdf3db23840786d47cd"
 }
 
 import {
-  to = google_dns_record_set.home_cname
-  id = "alunduil/alunduil-com/home.alunduil.com./CNAME"
+  to = cloudflare_dns_record.plex_cname
+  id = "${local.cloudflare_zone_id}/e2dbf6462bacfbdd1e2897bfb261d01c"
 }
 
-resource "google_dns_record_set" "home_cname" {
-  project      = "alunduil"
-  name         = "home.alunduil.com."
-  managed_zone = google_dns_managed_zone.alunduil_com.name
-  type         = "CNAME"
-  ttl          = 300
-  rrdatas      = ["alunduil-home2.freemyip.com."]
+import {
+  to = cloudflare_dns_record.txt_keybase
+  id = "${local.cloudflare_zone_id}/f3408d9fed4eebf7fc2a941449a84c62"
 }

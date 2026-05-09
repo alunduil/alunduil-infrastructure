@@ -51,15 +51,6 @@ resource "google_project_service" "serviceusage" {
 }
 
 # APIs required by managed resources
-resource "google_project_service" "dns" {
-  project = google_project.env.project_id
-  service = "dns.googleapis.com"
-
-  disable_on_destroy = false
-
-  depends_on = [google_project_service.serviceusage]
-}
-
 resource "google_project_service" "storage_api" {
   project = google_project.env.project_id
   service = "storage-api.googleapis.com"
