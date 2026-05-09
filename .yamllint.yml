@@ -5,6 +5,14 @@
 extends: default
 
 rules:
+  # SHA-pinned GitHub Actions (e.g. `uses: org/repo@<40-char-sha> # vN`)
+  # exceed the 80-char default but cannot be wrapped.
+  line-length:
+    max: 100
+  # Renovate writes a single space before its trailing version comment
+  # (e.g. `... # v4`); accept that style.
+  comments:
+    min-spaces-from-content: 1
   # GitHub Actions uses 'on:' as a top-level key; disable truthy check on keys
   # so workflow files don't have to quote it.
   truthy:
