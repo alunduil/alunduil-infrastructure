@@ -46,23 +46,3 @@ resource "cloudflare_dns_record" "txt_keybase" {
   content = "\"keybase-site-verification=KcW7SfZNckcQxOunGDM_ukMY50f3SNovxVDgxAB5pLs\""
   ttl     = 1
 }
-
-import {
-  to = cloudflare_dns_record.blog_cname
-  id = "${local.cloudflare_zone_id}/47c444ffbf44a0cd8d3aa9802e7107c8"
-}
-
-import {
-  to = cloudflare_dns_record.home_cname
-  id = "${local.cloudflare_zone_id}/506de57cc5722cdf3db23840786d47cd"
-}
-
-import {
-  to = cloudflare_dns_record.plex_cname
-  id = "${local.cloudflare_zone_id}/e2dbf6462bacfbdd1e2897bfb261d01c"
-}
-
-import {
-  to = cloudflare_dns_record.txt_keybase
-  id = "${local.cloudflare_zone_id}/f3408d9fed4eebf7fc2a941449a84c62"
-}
