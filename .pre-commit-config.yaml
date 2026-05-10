@@ -18,7 +18,7 @@ repos:
       - id: check-yaml
         args: [--unsafe]
       - id: check-json
-        exclude: '\.jsonc$|\.devcontainer/'
+        exclude: '\.jsonc$'
       - id: check-toml
       - id: check-added-large-files
         args: [--maxkb=1000]
