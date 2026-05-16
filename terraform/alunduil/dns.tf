@@ -120,7 +120,7 @@ resource "cloudflare_dns_record" "txt_atproto" {
   zone_id = cloudflare_zone.alunduil_com.id
   name    = "_atproto.alunduil.com"
   type    = "TXT"
-  content = "\"did=did:plc:urcrp6xgybniubantb6asetr\""
+  content = "did=did:plc:urcrp6xgybniubantb6asetr"
   ttl     = 1
 }
 
