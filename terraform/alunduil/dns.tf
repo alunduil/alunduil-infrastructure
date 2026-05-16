@@ -114,6 +114,16 @@ resource "cloudflare_dns_record" "txt_keybase" {
   ttl     = 1
 }
 
+# Bluesky handle verification: proves alunduil.com controls the AT Protocol
+# DID, letting @alunduil.bsky.social switch its handle to @alunduil.com.
+resource "cloudflare_dns_record" "txt_atproto" {
+  zone_id = cloudflare_zone.alunduil_com.id
+  name    = "_atproto.alunduil.com"
+  type    = "TXT"
+  content = "\"did=did:plc:urcrp6xgybniubantb6asetr\""
+  ttl     = 1
+}
+
 # DS values for the Squarespace registrar are exposed via output.alunduil_com_ds.
 resource "cloudflare_zone_dnssec" "alunduil_com" {
   zone_id = cloudflare_zone.alunduil_com.id
