@@ -25,9 +25,20 @@ Personal infrastructure as code, managed with Terraform.
   owned by `alunduil`, applied via classification (`default`,
   `release-please`)
 
-All Terraform lives in [`terraform/alunduil/`](terraform/alunduil/). There is
-one environment (this is personal homelab infrastructure, equivalent in scope
-to a single production project).
+Terraform is split across two configs in [`terraform/`](terraform/):
+
+- [`terraform/alunduil/`](terraform/alunduil/) — day-to-day infrastructure
+  (Cloudflare zone, GitHub repos, project-level services). Applied on merge
+  to `main`.
+- [`terraform/bootstrap/`](terraform/bootstrap/) — the GCP project itself,
+  the foundational APIs (`iam`, `cloudresourcemanager`, `serviceusage`), the
+  GitHub Workload Identity Federation pool/provider, and the two scoped
+  deployer service accounts that the CI workflows impersonate. Applied
+  rarely, locally; keeps billing perms out of the main config (and out of
+  CI).
+
+There is one environment (this is personal homelab infrastructure,
+equivalent in scope to a single production project).
 
 ## Running an apply
 
@@ -46,6 +57,49 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+## First-time bootstrap
+
+Only run when standing up CI authentication from scratch, or when rotating
+the WIF pool / deployer service accounts. The state bucket itself
+(`alunduil-tfstate`) is created out-of-band by
+[`scripts/bootstrap-terraform-state.sh`](scripts/bootstrap-terraform-state.sh).
+
+From `terraform/bootstrap/`:
+
+```sh
+gcloud auth application-default login
+export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
+
+terraform init
+terraform plan
+terraform apply
+```
+
+The first apply imports the existing project and the three foundational
+APIs into bootstrap state. After it succeeds, run a one-off apply in
+`terraform/alunduil/` so its `removed{}` blocks forget the same four
+resources from main state (without destroying them).
+
+Then populate the eight GitHub Actions secrets:
+
+```sh
+scripts/configure-github-secrets.sh
+```
+
+The script reads four values from `terraform output` and prompts (via
+`read -s`) for the four externally-minted tokens — Cloudflare RO/RW and
+GitHub provider RO/RW — if their env vars aren't set. Re-running is a
+no-op. The required token scopes are:
+
+- **Cloudflare RO** — `Zone:Read`, `DNS:Read`, `Zone Settings:Read` on
+  `alunduil.com`
+- **Cloudflare RW** — `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit` on
+  `alunduil.com`
+- **GitHub RO PAT** — fine-grained, personal repos:
+  `Metadata:R + Contents:R + Administration:R + Pages:R`
+- **GitHub RW PAT** — fine-grained, personal repos:
+  `Metadata:R + Contents:RW + Administration:RW + Pages:RW`
 
 ### Stays manual
 
