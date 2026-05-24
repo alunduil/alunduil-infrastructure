@@ -51,11 +51,10 @@ module "network_arbitrary" {
 }
 
 module "network_uri_json" {
-  source         = "../modules/github_repository"
-  name           = "network-uri-json"
-  description    = "FromJSON and ToJSON Instances for Network.URI"
-  topics         = ["haskell-library", "haskell", "json", "network-uri", "uri"]
-  default_branch = "develop"
+  source      = "../modules/github_repository"
+  name        = "network-uri-json"
+  description = "FromJSON and ToJSON Instances for Network.URI"
+  topics      = ["haskell-library", "haskell", "json", "network-uri", "uri"]
 }
 
 module "siren_json_hs" {
