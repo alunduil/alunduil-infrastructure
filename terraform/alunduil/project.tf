@@ -41,14 +41,14 @@ removed {
 
 # APIs required by managed resources in this config.
 resource "google_project_service" "storage_api" {
-  project = "alunduil"
+  project = data.terraform_remote_state.bootstrap.outputs.project_id
   service = "storage-api.googleapis.com"
 
   disable_on_destroy = false
 }
 
 resource "google_project_service" "storage_component" {
-  project = "alunduil"
+  project = data.terraform_remote_state.bootstrap.outputs.project_id
   service = "storage-component.googleapis.com"
 
   disable_on_destroy = false

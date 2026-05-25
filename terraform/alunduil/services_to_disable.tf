@@ -61,7 +61,7 @@ resource "google_project_service" "legacy" {
     "resourceviews.googleapis.com",
   ])
 
-  project = "alunduil"
+  project = data.terraform_remote_state.bootstrap.outputs.project_id
   service = each.key
 
   disable_on_destroy = true
