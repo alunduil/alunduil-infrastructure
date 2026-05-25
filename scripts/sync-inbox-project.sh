@@ -14,16 +14,39 @@
 
 set -euo pipefail
 
-PROJECT_NUMBER=3
 PROJECT_OWNER=alunduil
-PROJECT_ID=PVT_kwHOAAKVIc4BX8Yt
-FILED_BY_FIELD_ID=PVTF_lAHOAAKVIc4BX8YtzhTFsz8
+PROJECT_TITLE=Inbox
+FILED_BY_FIELD_NAME='Filed by'
 SEARCH_LIMIT=1000
 # Comfortable headroom above the current ~520 items on the board.
 PROJECT_LIMIT=5000
 
 if [[ -n ${INBOX_SYNC_TOKEN:-} ]]; then
   export GH_TOKEN=${INBOX_SYNC_TOKEN}
+fi
+
+# Resolve project and field IDs by title/name so disaster-recovery (board
+# recreation) doesn't strand this script. Mirrors the lookup-by-title
+# pattern in scripts/bootstrap-projects.sh.
+project_match=$(
+  gh project list --owner "${PROJECT_OWNER}" --limit 100 --format json \
+    --jq ".projects | map(select(.title == \"${PROJECT_TITLE}\"))"
+)
+if [[ $(jq 'length' <<<"${project_match}") -ne 1 ]]; then
+  echo "expected exactly one project titled '${PROJECT_TITLE}' under @${PROJECT_OWNER}" >&2
+  exit 1
+fi
+PROJECT_ID=$(jq -r '.[0].id' <<<"${project_match}")
+PROJECT_NUMBER=$(jq -r '.[0].number' <<<"${project_match}")
+
+FILED_BY_FIELD_ID=$(
+  gh project field-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" \
+    --format json \
+    --jq ".fields | map(select(.name == \"${FILED_BY_FIELD_NAME}\"))[0].id"
+)
+if [[ -z ${FILED_BY_FIELD_ID} || ${FILED_BY_FIELD_ID} == null ]]; then
+  echo "no field named '${FILED_BY_FIELD_NAME}' on project '${PROJECT_TITLE}'" >&2
+  exit 1
 fi
 
 declare -A existing_id existing_filed
