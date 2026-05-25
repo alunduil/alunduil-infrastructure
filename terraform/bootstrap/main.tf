@@ -20,8 +20,4 @@ provider "google" {
   region  = "europe-west1"
 }
 
-# Operator sources CLOUDFLARE_API_TOKEN before `terraform apply` from a master
-# token scoped to `API Tokens Read` + `API Tokens Write` (+ access to the
-# alunduil.com zone, transitively, for the deployer tokens this config mints).
-# The master token never enters CI; only the minted deployer tokens do.
 provider "cloudflare" {}

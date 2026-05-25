@@ -1,10 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Workload Identity Federation lets GitHub Actions exchange its OIDC token for
-# short-lived GCP credentials, replacing long-lived service-account keys. The
-# attribute_condition pins token acceptance to this single repository.
-
 resource "google_project_service" "sts" {
   project = google_project.env.project_id
   service = "sts.googleapis.com"
@@ -56,7 +52,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 }
 
-# Principal that both deployer SAs accept impersonation from.
 locals {
   wif_principal = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.repository/alunduil/alunduil-infrastructure"
 }

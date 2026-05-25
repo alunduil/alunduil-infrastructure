@@ -1,11 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Owns the alunduil project and the three foundational APIs needed before any
-# IAM or service-management call works. Migrated from terraform/alunduil/ so
-# that CI never needs billing perms or the ability to mutate the project
-# itself.
-
 resource "google_project" "env" {
   name                = "alunduil"
   project_id          = "alunduil"
