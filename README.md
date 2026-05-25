@@ -70,36 +70,63 @@ From `terraform/bootstrap/`:
 ```sh
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
+export CLOUDFLARE_API_TOKEN=...   # master, see "Master Cloudflare token" below
 
 terraform init
 terraform plan
 terraform apply
 ```
 
-The first apply imports the existing project and the three foundational
-APIs into bootstrap state. After it succeeds, run a one-off apply in
+The first apply imports the existing project and three foundational APIs
+into bootstrap state, then mints two scoped Cloudflare API tokens for the
+CI deployers. After it succeeds, run a one-off apply in
 `terraform/alunduil/` so its `removed{}` blocks forget the same four
 resources from main state (without destroying them).
 
 Then populate the eight GitHub Actions secrets:
 
 ```sh
+export GH_APP_PRIVATE_KEY="$(cat /path/to/your-app.pem)"
 scripts/configure-github-secrets.sh
 ```
 
-The script reads four values from `terraform output` and prompts (via
-`read -s`) for the four externally-minted tokens — Cloudflare RO/RW and
-GitHub provider RO/RW — if their env vars aren't set. Re-running is a
-no-op. The required token scopes are:
+The script reads six values from `terraform output` (four GCP — WIF
+provider + RO/RW service-account emails — and two Cloudflare deployer
+token values). For the two GitHub App secrets (`GH_APP_ID`,
+`GH_APP_PRIVATE_KEY`), it prefers an env-var value, falls back to the
+existing repo secret if one is set, and prompts (or in the case of the
+PEM, exits with instructions) only when both are missing. Re-running is
+a no-op.
 
-- **Cloudflare RO** — `Zone:Read`, `DNS:Read`, `Zone Settings:Read` on
-  `alunduil.com`
-- **Cloudflare RW** — `Zone:Read`, `DNS:Edit`, `Zone Settings:Edit` on
-  `alunduil.com`
-- **GitHub RO PAT** — fine-grained, personal repos:
-  `Metadata:R + Contents:R + Administration:R + Pages:R`
-- **GitHub RW PAT** — fine-grained, personal repos:
-  `Metadata:R + Contents:RW + Administration:RW + Pages:RW`
+### Master Cloudflare token
+
+Bootstrap apply needs a token with the scopes to (a) read permission
+groups, (b) create user-owned tokens, and (c) be authorized for
+`alunduil.com`:
+
+- `User > API Tokens — Write`
+- `Zone > Zone — Read`, `DNS — Read`, `Zone Settings — Read` on
+  `alunduil.com` (read is enough; the token only references the zone)
+
+This token is operator-only — it never lives in CI. Mint at
+<https://dash.cloudflare.com/profile/api-tokens> for the bootstrap apply,
+revoke afterwards if you don't keep it around for rotation.
+
+### GitHub App
+
+The terraform `integrations/github` provider authenticates via a GitHub
+App that the workflow exchanges for short-lived installation tokens.
+One-time setup:
+
+1. Create at <https://github.com/settings/apps/new>:
+   - Webhook: uncheck "Active"
+   - Repository permissions: Administration RW, Contents RW, Metadata R
+     (auto), Pages RW
+2. Install on your account, select "All repositories" so new repos are
+   auto-covered.
+3. Note the App ID, generate and download a private key (.pem).
+4. Export `GH_APP_ID` and `GH_APP_PRIVATE_KEY` (the latter from the .pem
+   contents) before running `scripts/configure-github-secrets.sh`.
 
 ### Stays manual
 
