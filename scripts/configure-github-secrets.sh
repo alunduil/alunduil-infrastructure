@@ -20,11 +20,12 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
-
 command -v gh >/dev/null || { echo "error: gh CLI not found in PATH" >&2; exit 1; }
+command -v git >/dev/null || { echo "error: git CLI not found in PATH" >&2; exit 1; }
 command -v terraform >/dev/null || { echo "error: terraform CLI not found in PATH" >&2; exit 1; }
+
+REPO_ROOT="$(git rev-parse --show-toplevel)" || { echo "error: not inside a git work tree" >&2; exit 1; }
+BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
 
 gh auth status >/dev/null 2>&1 || { echo "error: gh is not authenticated; run 'gh auth login'" >&2; exit 1; }
 
