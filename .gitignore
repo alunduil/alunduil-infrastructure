@@ -5,6 +5,7 @@
 *.json
 !*example*.json
 !renovate.json
+!scripts/projects/*.json
 
 # OS
 .DS_Store

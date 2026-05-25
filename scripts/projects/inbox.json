@@ -1,0 +1,34 @@
+{
+  "owner": "alunduil",
+  "title": "Inbox",
+  "fields": [
+    {
+      "name": "Status",
+      "type": "SINGLE_SELECT",
+      "options": [
+        {
+          "id": "8080c408",
+          "name": "Backlog",
+          "color": "GRAY",
+          "description": "Filed, not yet picked up"
+        },
+        {
+          "id": "bcc940da",
+          "name": "Review",
+          "color": "YELLOW",
+          "description": "PR open"
+        },
+        {
+          "id": "c090564c",
+          "name": "Closed",
+          "color": "GREEN",
+          "description": "Done"
+        }
+      ]
+    },
+    {
+      "name": "Filed by",
+      "type": "TEXT"
+    }
+  ]
+}
