@@ -39,6 +39,18 @@ repos:
       - id: yamllint
         args: [--strict]
 
+  # Shell script linting and formatting
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        args: [-i, '2', -ci, -bn, -d]
+
   # Terraform formatting and validation
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.105.0
