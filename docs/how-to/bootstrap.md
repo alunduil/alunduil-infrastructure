@@ -13,7 +13,7 @@ credentials.
 - The state bucket `alunduil-tfstate` exists — created out-of-band by
   [bootstrap-terraform-state.sh](../../scripts/bootstrap-terraform-state.sh).
 - A master Cloudflare API token — see
-  [mint-master-cloudflare-token.md](mint-master-cloudflare-token.md).
+  [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
 - A GitHub App created and installed — see
   [create-github-app.md](create-github-app.md).
 
@@ -32,7 +32,7 @@ terraform apply
 ```
 
 The first apply imports the existing project and three foundational
-APIs into bootstrap state, then mints the two CI deployer Cloudflare
+APIs into bootstrap state, then creates the two CI deployer Cloudflare
 tokens.
 
 After it succeeds, run a one-off `terraform apply` in

@@ -20,7 +20,7 @@ into how-to (do this) and reference (look up the facts):
 
 - [docs/how-to/apply.md](docs/how-to/apply.md)
 - [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md)
-- [docs/how-to/mint-master-cloudflare-token.md](docs/how-to/mint-master-cloudflare-token.md)
+- [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
 - [docs/how-to/manual-operations.md](docs/how-to/manual-operations.md)
 - [docs/reference/credentials.md](docs/reference/credentials.md) —

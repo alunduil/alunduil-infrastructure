@@ -14,7 +14,7 @@
 # workflow exchanges for short-lived installation tokens via OIDC. For each:
 #   1. use env var if set
 #   2. else keep existing secret value if already present
-#   3. else print mint instructions and prompt via `read -s`
+#   3. else print App-creation instructions and prompt via `read -s`
 #
 # Re-running is a no-op: `gh secret set` upserts.
 
@@ -63,7 +63,7 @@ EOF
 }
 
 # For each GH App secret: env wins; existing secret wins next; else prompt.
-# Print mint instructions once upfront if either will need a prompt — running
+# Print App-creation instructions once upfront if either will need a prompt — running
 # the prompts inside command substitution would lose any state set in the
 # subshell.
 needs_prompt() {

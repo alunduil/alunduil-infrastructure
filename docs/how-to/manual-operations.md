@@ -6,12 +6,12 @@
 Procedures for the items in
 [reference/manual-items.md](../reference/manual-items.md).
 
-## Mint the Cloudflare API token for local apply
+## Create the Cloudflare API token for local apply
 
 Required scopes are in
 [reference/credentials.md#cloudflare-api-token-alunduil-apply](../reference/credentials.md#cloudflare-api-token-alunduil-apply).
 
-1. Mint at <https://dash.cloudflare.com/profile/api-tokens> with the
+1. Create at <https://dash.cloudflare.com/profile/api-tokens> with the
    scopes above.
 2. Export as `TF_VAR_cloudflare_api_token` (note the `TF_VAR_` prefix)
    before running `terraform plan`/`apply`.

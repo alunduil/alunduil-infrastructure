@@ -8,8 +8,8 @@ repo touches.
 
 ## Master Cloudflare token
 
-Used once during `terraform/bootstrap/` apply to mint the two deployer
-Cloudflare tokens. Operator-only — never enters CI.
+Used once during `terraform/bootstrap/` apply to create the two
+deployer Cloudflare tokens. Operator-only — never enters CI.
 
 Required scopes:
 
@@ -37,16 +37,16 @@ env-var form, so the variable has to be set explicitly via the
 
 ## CI deployer Cloudflare tokens
 
-Minted by `terraform/bootstrap/` into the bootstrap state and consumed
-by CI workflows. Two tokens, each scoped to `alunduil.com`:
+Created by `terraform/bootstrap/` into the bootstrap state and
+consumed by CI workflows. Two tokens, each scoped to `alunduil.com`:
 
 - RO: `Zone Read`, `DNS Read`, `Zone Settings Read`
 - RW: `Zone Read`, `DNS Write`, `Zone Settings Write`
 
 ## CI deployer GCP service accounts
 
-Minted by `terraform/bootstrap/` and impersonated via Workload Identity
-Federation:
+Created by `terraform/bootstrap/` and impersonated via Workload
+Identity Federation:
 
 - `github-deployer-ro` — `terraform plan` runs
 - `github-deployer-rw` — `terraform apply` on merge to `main`
