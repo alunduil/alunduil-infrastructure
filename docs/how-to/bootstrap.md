@@ -24,10 +24,3 @@ export CLOUDFLARE_API_TOKEN=...
 
 just bootstrap
 ```
-
-`just bootstrap` runs `scripts/bootstrap-terraform-state.sh`, then
-`terraform init && terraform apply` against `terraform/bootstrap/`,
-then `scripts/configure-github-secrets.sh` — all idempotent, safe to
-re-run after a partial failure. The secrets script prompts for the
-GitHub App ID and `.pem` path when those aren't already in env vars
-(`GH_APP_ID`, `GH_APP_PRIVATE_KEY_FILE`) or set as repo secrets.
