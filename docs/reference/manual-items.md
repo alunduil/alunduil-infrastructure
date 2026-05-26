@@ -7,14 +7,14 @@ Things that sit outside the Terraform configs, either because the
 provider doesn't expose them cleanly or because they're one-time
 bootstraps.
 
-- **`develop` → `main` default-branch rename** — Terraform can't safely
-  rename an existing default branch without losing PR refs and forks.
-- **HTTPS enforcement on GitHub Pages** — the certificate is provisioned
-  automatically once the CNAME resolves, and the "Enforce HTTPS"
-  toggle is set after the fact.
+- **Default-branch rename** — Terraform can't safely rename an
+  existing default branch without losing PR refs and forks. See
+  [how-to/rename-default-branch.md](../how-to/rename-default-branch.md).
+- **HTTPS enforcement on GitHub Pages** — the certificate is
+  provisioned automatically once the CNAME resolves, and the
+  "Enforce HTTPS" toggle is set after the fact. See
+  [how-to/enable-https-on-pages.md](../how-to/enable-https-on-pages.md).
 - **Cloudflare API token for local apply** — needed on every local
   apply against `terraform/alunduil/`; supplied by the operator at
-  apply time.
-
-Procedures for each item are in
-[how-to/manual-operations.md](../how-to/manual-operations.md).
+  apply time. See
+  [how-to/create-cloudflare-api-token-for-local-apply.md](../how-to/create-cloudflare-api-token-for-local-apply.md).
