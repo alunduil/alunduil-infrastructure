@@ -12,11 +12,10 @@ credentials.
 
 - The state bucket `alunduil-tfstate` exists — created out-of-band by
   [bootstrap-terraform-state.sh](../../scripts/bootstrap-terraform-state.sh).
-- A master Cloudflare API token (see
-  [Mint the master Cloudflare token](#mint-the-master-cloudflare-token)
-  below).
-- A GitHub App created and installed (see
-  [Create the GitHub App](#create-the-github-app) below).
+- A master Cloudflare API token — see
+  [mint-master-cloudflare-token.md](mint-master-cloudflare-token.md).
+- A GitHub App created and installed — see
+  [create-github-app.md](create-github-app.md).
 
 ## Apply
 
@@ -48,25 +47,3 @@ scripts/configure-github-secrets.sh
 ```
 
 Re-running is a no-op.
-
-## Mint the master Cloudflare token
-
-Required scopes are in
-[reference/credentials.md#master-cloudflare-token](../reference/credentials.md#master-cloudflare-token).
-
-1. Mint at <https://dash.cloudflare.com/profile/api-tokens> with the
-   scopes above.
-2. Export as `CLOUDFLARE_API_TOKEN` before bootstrap apply.
-3. Revoke afterwards if you don't keep it around for rotation.
-
-## Create the GitHub App
-
-Required permissions and install scope are in
-[reference/credentials.md#github-app](../reference/credentials.md#github-app).
-
-1. Create at <https://github.com/settings/apps/new> with the
-   permissions above. Uncheck the webhook "Active" box.
-2. Install on your account with the install scope above.
-3. Note the App ID, generate and download a private key (`.pem`).
-4. Export `GH_APP_ID` and `GH_APP_PRIVATE_KEY` (the latter from the
-   `.pem` contents) before running the secrets script.
