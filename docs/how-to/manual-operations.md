@@ -8,13 +8,15 @@ Procedures for the items in
 
 ## Create the Cloudflare API token for local apply
 
-Required scopes are in
-[reference/credentials.md#cloudflare-api-token-alunduil-apply](../reference/credentials.md#cloudflare-api-token-alunduil-apply).
-
 1. Create at <https://dash.cloudflare.com/profile/api-tokens> with the
-   scopes above.
-2. Export as `TF_VAR_cloudflare_api_token` (note the `TF_VAR_` prefix)
-   before running `terraform plan`/`apply`.
+   following scopes on `alunduil.com`:
+   - `Zone:Read`
+   - `DNS:Edit`
+   - `Zone Settings:Edit`
+2. Export as `TF_VAR_cloudflare_api_token` (note the `TF_VAR_` prefix
+   — the v5 Cloudflare provider's import code path doesn't propagate
+   the bare `CLOUDFLARE_API_TOKEN` env var, so `import {}` blocks
+   fail without the explicit variable wiring).
 
 ## Rename default branch from `develop` to `main`
 

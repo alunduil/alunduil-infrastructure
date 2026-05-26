@@ -21,8 +21,6 @@ up the facts):
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
 - [docs/how-to/manual-operations.md](docs/how-to/manual-operations.md)
-- [docs/reference/credentials.md](docs/reference/credentials.md) —
-  scopes, permissions, and conventions for every credential
 - [docs/reference/manual-items.md](docs/reference/manual-items.md) —
   what sits outside Terraform and why
 

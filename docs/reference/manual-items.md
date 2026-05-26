@@ -12,9 +12,9 @@ bootstraps.
 - **HTTPS enforcement on GitHub Pages** — the certificate is provisioned
   automatically once the CNAME resolves, and the "Enforce HTTPS"
   toggle is set after the fact.
-- **Cloudflare API token for local apply** — see
-  [credentials.md](credentials.md#cloudflare-api-token-alunduil-apply)
-  for required scopes.
+- **Cloudflare API token for local apply** — needed on every local
+  apply against `terraform/alunduil/`; supplied by the operator at
+  apply time.
 
 Procedures for each item are in
 [how-to/manual-operations.md](../how-to/manual-operations.md).

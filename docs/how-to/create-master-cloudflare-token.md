@@ -3,10 +3,14 @@
 
 # Create the master Cloudflare token
 
-Required scopes are in
-[reference/credentials.md#master-cloudflare-token](../reference/credentials.md#master-cloudflare-token).
+Used once during `terraform/bootstrap/` apply to create the two
+deployer Cloudflare tokens. Operator-only — never enters CI.
 
 1. Create at <https://dash.cloudflare.com/profile/api-tokens> with the
-   scopes above.
+   following scopes:
+   - `User > API Tokens — Write`
+   - `Zone > Zone — Read`, `DNS — Read`, `Zone Settings — Read` on
+     `alunduil.com` (read is enough; the token only references the
+     zone)
 2. Export as `CLOUDFLARE_API_TOKEN` before bootstrap apply.
 3. Revoke afterwards if you don't keep it around for rotation.
