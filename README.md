@@ -14,9 +14,15 @@ Personal infrastructure as code, managed with Terraform.
 
 ## Getting started
 
-How-tos for the operator-facing procedures:
+The two operator entrypoints:
 
-- [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md)
+- `just bootstrap` — first-time setup or credential rotation. See
+  [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
+- `just alunduil` — local `terraform apply` against the alunduil
+  environment, run after merging to `main`.
+
+Supporting how-tos:
+
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
 

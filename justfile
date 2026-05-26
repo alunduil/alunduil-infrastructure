@@ -9,7 +9,7 @@ bootstrap:
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-github-secrets.sh
 
-# Requires CLOUDFLARE_API_TOKEN and TF_VAR_cloudflare_api_token in env.
+# Requires TF_VAR_cloudflare_api_token in env (or terraform will prompt).
 [doc("Local post-merge apply for the alunduil environment.")]
 alunduil:
     terraform -chdir=terraform/alunduil init
