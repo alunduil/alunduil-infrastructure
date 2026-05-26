@@ -33,6 +33,8 @@ check what's already in place:
 
 - Helper scripts: `scripts/`. New shell helpers go here, not the
   repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+  GitHub Projects v2 schema: `bootstrap-projects.sh` (specs in
+  `scripts/projects/*.json`).
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
 - Credentials: README §"Running an apply" names the env vars
