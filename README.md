@@ -14,14 +14,17 @@ Personal infrastructure as code, managed with Terraform.
 
 ## Getting started
 
-Day-to-day apply runs from `terraform/alunduil/`; first-time setup runs
-from `terraform/bootstrap/`. Detailed runbooks:
+Day-to-day apply runs from `terraform/alunduil/`; first-time setup
+runs from `terraform/bootstrap/`. Detailed docs are split per Diátaxis
+into how-to (do this) and reference (look up the facts):
 
-- [docs/how-to/apply.md](docs/how-to/apply.md) — day-to-day apply
-- [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md) — first-time
-  bootstrap, master Cloudflare token, GitHub App setup
-- [docs/reference/manual-operations.md](docs/reference/manual-operations.md)
-  — things that stay outside Terraform
+- [docs/how-to/apply.md](docs/how-to/apply.md)
+- [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md)
+- [docs/how-to/manual-operations.md](docs/how-to/manual-operations.md)
+- [docs/reference/credentials.md](docs/reference/credentials.md) —
+  scopes, permissions, and conventions for every credential
+- [docs/reference/manual-items.md](docs/reference/manual-items.md) —
+  what sits outside Terraform and why
 
 ## Support and contributions
 
