@@ -27,7 +27,14 @@ variable "topics" {
 variable "default_branch" {
   type        = string
   default     = "main"
-  description = "Branch treated as default and protected. Override only for repos predating the main convention."
+  description = <<-EOT
+    Branch treated as default and protected. Override only for repos
+    predating the main convention. When changing this on an existing
+    repo, first use GitHub's "Rename branch" feature
+    (Settings → Branches → Rename) so PR refs and forks survive;
+    Terraform's github_branch_default only points at an existing
+    branch and won't rename anything on its own.
+  EOT
 }
 
 variable "has_discussions" {

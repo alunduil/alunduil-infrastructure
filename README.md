@@ -14,15 +14,11 @@ Personal infrastructure as code, managed with Terraform.
 
 ## Getting started
 
-Docs are split per Diátaxis into how-to (do this) and reference (look
-up the facts):
+How-tos for the operator-facing procedures:
 
 - [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md)
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
-- [docs/how-to/rename-default-branch.md](docs/how-to/rename-default-branch.md)
-- [docs/reference/manual-items.md](docs/reference/manual-items.md) —
-  what sits outside Terraform and why
 
 ## Support and contributions
 
