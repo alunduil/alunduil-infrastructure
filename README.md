@@ -21,7 +21,6 @@ up the facts):
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
 - [docs/how-to/rename-default-branch.md](docs/how-to/rename-default-branch.md)
-- [docs/how-to/enable-https-on-pages.md](docs/how-to/enable-https-on-pages.md)
 - [docs/reference/manual-items.md](docs/reference/manual-items.md) —
   what sits outside Terraform and why
 

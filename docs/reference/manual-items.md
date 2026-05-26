@@ -10,7 +10,3 @@ bootstraps.
 - **Default-branch rename** — Terraform can't safely rename an
   existing default branch without losing PR refs and forks. See
   [how-to/rename-default-branch.md](../how-to/rename-default-branch.md).
-- **HTTPS enforcement on GitHub Pages** — the certificate is
-  provisioned automatically once the CNAME resolves, and the
-  "Enforce HTTPS" toggle is set after the fact. See
-  [how-to/enable-https-on-pages.md](../how-to/enable-https-on-pages.md).

@@ -53,5 +53,12 @@ variable "pages" {
     https_enforced = optional(bool)
   })
   default     = null
-  description = "Enable GitHub Pages with the given CNAME, build_type, and HTTPS enforcement."
+  description = <<-EOT
+    Enable GitHub Pages with the given CNAME, build_type, and HTTPS
+    enforcement. https_enforced can only be set true once GitHub has
+    issued the Let's Encrypt cert (auto-provisioned shortly after the
+    apex CNAME resolves); for first-time setup, tick "Enforce HTTPS"
+    in Settings → Pages once the cert is ready and subsequent applies
+    will treat the flag as a no-op confirmation.
+  EOT
 }
