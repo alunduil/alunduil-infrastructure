@@ -21,14 +21,29 @@
 
 set -euo pipefail
 
-command -v gh >/dev/null || { echo "error: gh CLI not found in PATH" >&2; exit 1; }
-command -v git >/dev/null || { echo "error: git CLI not found in PATH" >&2; exit 1; }
-command -v terraform >/dev/null || { echo "error: terraform CLI not found in PATH" >&2; exit 1; }
+command -v gh >/dev/null || {
+  echo "error: gh CLI not found in PATH" >&2
+  exit 1
+}
+command -v git >/dev/null || {
+  echo "error: git CLI not found in PATH" >&2
+  exit 1
+}
+command -v terraform >/dev/null || {
+  echo "error: terraform CLI not found in PATH" >&2
+  exit 1
+}
 
-REPO_ROOT="$(git rev-parse --show-toplevel)" || { echo "error: not inside a git work tree" >&2; exit 1; }
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "error: not inside a git work tree" >&2
+  exit 1
+}
 BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
 
-gh auth status >/dev/null 2>&1 || { echo "error: gh is not authenticated; run 'gh auth login'" >&2; exit 1; }
+gh auth status >/dev/null 2>&1 || {
+  echo "error: gh is not authenticated; run 'gh auth login'" >&2
+  exit 1
+}
 
 WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
 RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
@@ -52,11 +67,11 @@ EOF
 }
 
 needs_id_prompt() {
-  [[ -z "${GH_APP_ID:-}" ]] && ! has_secret "GH_APP_ID"
+  [[ -z ${GH_APP_ID:-} ]] && ! has_secret "GH_APP_ID"
 }
 
 needs_key_prompt() {
-  [[ -z "${GH_APP_PRIVATE_KEY_FILE:-}" ]] && ! has_secret "GH_APP_PRIVATE_KEY"
+  [[ -z ${GH_APP_PRIVATE_KEY_FILE:-} ]] && ! has_secret "GH_APP_PRIVATE_KEY"
 }
 
 if needs_id_prompt || needs_key_prompt; then
@@ -64,7 +79,7 @@ if needs_id_prompt || needs_key_prompt; then
 fi
 
 resolve_gh_app_id() {
-  if [[ -n "${GH_APP_ID:-}" ]]; then
+  if [[ -n ${GH_APP_ID:-} ]]; then
     printf '%s' "${GH_APP_ID}"
   elif has_secret "GH_APP_ID"; then # pragma: allowlist secret
     echo "GH_APP_ID already set in repo secrets; leaving as-is" >&2
@@ -78,7 +93,7 @@ resolve_gh_app_id() {
 
 resolve_gh_app_private_key() {
   local path
-  if [[ -n "${GH_APP_PRIVATE_KEY_FILE:-}" ]]; then
+  if [[ -n ${GH_APP_PRIVATE_KEY_FILE:-} ]]; then
     path="${GH_APP_PRIVATE_KEY_FILE}"
   elif has_secret "GH_APP_PRIVATE_KEY"; then # pragma: allowlist secret
     echo "GH_APP_PRIVATE_KEY already set in repo secrets; leaving as-is" >&2
@@ -88,7 +103,10 @@ resolve_gh_app_private_key() {
     read -r -p "Path to GitHub App private key (.pem): " path
   fi
   path="${path/#\~/${HOME}}"
-  [[ -r "${path}" ]] || { echo "error: cannot read '${path}'" >&2; exit 1; }
+  [[ -r ${path} ]] || {
+    echo "error: cannot read '${path}'" >&2
+    exit 1
+  }
   cat "${path}"
 }
 
@@ -109,7 +127,7 @@ declare -A SECRETS=(
 )
 
 for name in "${!SECRETS[@]}"; do
-  if [[ "${SECRETS[${name}]}" == "__KEEP__" ]]; then
+  if [[ ${SECRETS[${name}]} == "__KEEP__" ]]; then
     continue
   fi
   echo "Setting secret: ${name}"
@@ -124,17 +142,17 @@ actual=$(gh secret list --json name --jq '.[].name' | sort)
 unexpected=$(comm -23 <(echo "${actual}") <(echo "${expected}") || true)
 missing=$(comm -13 <(echo "${actual}") <(echo "${expected}") || true)
 
-if [[ -n "${unexpected}" ]]; then
+if [[ -n ${unexpected} ]]; then
   echo "warn: unexpected secrets in repo (not managed by this script):"
   echo "${unexpected}" | sed 's/^/  - /'
 fi
 
-if [[ -n "${missing}" ]]; then
+if [[ -n ${missing} ]]; then
   echo "error: missing secrets (should have been set above — this is a bug):" >&2
   echo "${missing}" | sed 's/^/  - /' >&2
   exit 1
 fi
 
-if [[ -z "${unexpected}" && -z "${missing}" ]]; then
+if [[ -z ${unexpected} && -z ${missing} ]]; then
   echo "All eight secrets present, no drift."
 fi
