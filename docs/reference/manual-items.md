@@ -14,7 +14,3 @@ bootstraps.
   provisioned automatically once the CNAME resolves, and the
   "Enforce HTTPS" toggle is set after the fact. See
   [how-to/enable-https-on-pages.md](../how-to/enable-https-on-pages.md).
-- **Cloudflare API token for local apply** — needed on every local
-  apply against `terraform/alunduil/`; supplied by the operator at
-  apply time. See
-  [how-to/create-cloudflare-api-token-for-local-apply.md](../how-to/create-cloudflare-api-token-for-local-apply.md).
