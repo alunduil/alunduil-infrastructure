@@ -12,72 +12,21 @@ Personal infrastructure as code, managed with Terraform.
 **Repository:** <https://github.com/alunduil/alunduil-infrastructure>
 **Author:** Alex Brandt \<<alunduil@gmail.com>\>
 
-## What this manages
+## Getting started
 
-- **GCP project** — the `alunduil` project itself (billing, labels,
-  foundational APIs)
-- **DNS** — the `alunduil.com` Cloudflare zone, a security-relevant subset of
-  zone settings (`ssl`, `min_tls_version`, `always_use_https`,
-  `automatic_https_rewrites`), and all records under it. Other zone settings
-  track Cloudflare's defaults.
-- **GitHub repositories** — settings (visibility, merge rules, discussions, …),
-  default branch, branch protection, and (opt-in) Pages for repositories
-  owned by `alunduil`, applied via classification (`default`,
-  `release-please`)
+How-tos for the operator-facing procedures:
 
-All Terraform lives in [`terraform/alunduil/`](terraform/alunduil/). There is
-one environment (this is personal homelab infrastructure, equivalent in scope
-to a single production project).
-
-## Running an apply
-
-`terraform plan`/`apply` are run manually after merge to `main`. The
-shell environment (Terraform, gcloud, pre-commit, REUSE) is prepared by
-chezmoi outside this repo.
-
-From `terraform/alunduil/`:
-
-```sh
-gcloud auth application-default login    # GCP creds (google provider + gcs backend)
-export TF_VAR_cloudflare_api_token=...   # see "Stays manual" below
-export GITHUB_TOKEN=...                  # scopes for repository administration
-
-terraform init
-terraform plan
-terraform apply
-```
-
-### Stays manual
-
-A few things sit outside Terraform — either the provider doesn't expose
-them cleanly, or they're one-time bootstraps. Set them up before (or
-alongside) an apply:
-
-- **`develop` → `main` renames.** Terraform can't safely rename an
-  existing default branch. Use GitHub's repository "Rename branch"
-  feature so PR refs and forks are preserved, then let
-  `github_branch_default` lock `main` in.
-- **HTTPS enforcement on Pages.** GitHub provisions the certificate on
-  its own once the CNAME resolves; tick "Enforce HTTPS" in Pages
-  settings after the cert is ready.
-- **Cloudflare API token.** `terraform plan`/`apply` needs
-  `TF_VAR_cloudflare_api_token` exported in the shell, scoped to
-  `Zone:Read`, `DNS:Edit`, and `Zone Settings:Edit` on `alunduil.com`.
-  Mint at <https://dash.cloudflare.com/profile/api-tokens>. (The
-  `TF_VAR_` form rather than `CLOUDFLARE_API_TOKEN` is a workaround
-  for an upstream bug in the v5 provider's import code path.)
-- **GCP DNS zone deletion.** The legacy `alunduil-com` Cloud DNS zone
-  is no longer Terraform-managed. After the apply removes the
-  `google_dns_*` resources, delete the empty zone in the GCP console
-  (or `gcloud dns managed-zones delete alunduil-com`) to release it.
+- [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md)
+- [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
+- [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
 
 ## Support and contributions
 
-This is personal infrastructure maintained for the author's own use. Issues
-and pull requests from outside collaborators are not actively solicited and
-may not be triaged.
+This is personal infrastructure maintained for the author's own use.
+Issues and pull requests from outside collaborators are not actively
+solicited and may not be triaged.
 
-## Licence
+## License
 
-MIT — see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the `SPDX-License-Identifier`
-headers on each file.
+MIT — see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the
+`SPDX-License-Identifier` headers on each file.

@@ -4,7 +4,7 @@
 <!--
 Maintainer notes (HTML comments are stripped from Claude's context):
 - AI-targeted, loaded every session. Optimise for tokens; keep
-  under ~50 lines.
+  under ~75 lines.
 - Add an entry only when Claude has made the same mistake twice
   or a non-obvious convention bit a session.
 - Prefer pointers (README §..., file:line) over copies of content
@@ -25,6 +25,32 @@ Maintainer notes (HTML comments are stripped from Claude's context):
   PR body is welcome.
 - **Follow-ups land in a new session and a new PR.** A merged PR
   is done — don't keep iterating on it for adjacent work.
+
+## Tooling inventory
+
+Before scripting from first principles or hitting APIs by hand,
+check what's already in place:
+
+- Helper scripts: `scripts/`. New shell helpers go here, not the
+  repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+- Renovate (`renovate.json`) handles dependency PRs; extend the
+  config rather than pinning by hand.
+- Credentials: README §"Running an apply" names the env vars
+  needed; §"Stays manual" covers the Cloudflare scopes and the
+  `TF_VAR_cloudflare_api_token` workaround. Don't enumerate token
+  paths in committed files.
+
+## Scope discipline
+
+`terraform apply` runs out-of-band post-merge, so an unrelated edit
+in a scoped PR ships infra the reviewer didn't ask for.
+
+- Confirm scope doesn't overlap sibling or linked issues before
+  opening the PR; ask if uncertain.
+- An issue blocked by unshipped prerequisites: propose deferral
+  with a `blocked-by` edge rather than write premature code.
+- Revert incidental edits (formatting, drive-by tweaks) before
+  requesting review.
 
 ## Layout
 
