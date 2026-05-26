@@ -77,7 +77,7 @@ This is personal infrastructure maintained for the author's own use. Issues
 and pull requests from outside collaborators are not actively solicited and
 may not be triaged.
 
-## Licence
+## License
 
 MIT — see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the `SPDX-License-Identifier`
 headers on each file.
