@@ -27,7 +27,14 @@ variable "topics" {
 variable "default_branch" {
   type        = string
   default     = "main"
-  description = "Branch treated as default and protected. Override only for repos predating the main convention."
+  description = <<-EOT
+    Branch treated as default and protected. Override only for repos
+    predating the main convention. When changing this on an existing
+    repo, first use GitHub's "Rename branch" feature
+    (Settings → Branches → Rename) so PR refs and forks survive;
+    Terraform's github_branch_default only points at an existing
+    branch and won't rename anything on its own.
+  EOT
 }
 
 variable "has_discussions" {
@@ -53,5 +60,12 @@ variable "pages" {
     https_enforced = optional(bool)
   })
   default     = null
-  description = "Enable GitHub Pages with the given CNAME, build_type, and HTTPS enforcement."
+  description = <<-EOT
+    Enable GitHub Pages with the given CNAME, build_type, and HTTPS
+    enforcement. https_enforced can only be set true once GitHub has
+    issued the Let's Encrypt cert (auto-provisioned shortly after the
+    apex CNAME resolves); for first-time setup, tick "Enforce HTTPS"
+    in Settings → Pages once the cert is ready and subsequent applies
+    will treat the flag as a no-op confirmation.
+  EOT
 }
