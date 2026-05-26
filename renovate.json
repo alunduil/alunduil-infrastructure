@@ -3,6 +3,12 @@
   "extends": ["config:best-practices"],
   "baseBranchPatterns": ["main"],
   "reviewers": ["alunduil"],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days"
+  },
+  "osvVulnerabilityAlerts": true,
   "pre-commit": {
     "enabled": true
   },
