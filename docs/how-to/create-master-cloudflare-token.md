@@ -13,8 +13,6 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
      `alunduil.com` (read is enough; the token only references the
      zone)
 2. Export as `CLOUDFLARE_API_TOKEN` before bootstrap apply.
-3. After the apply succeeds, either revoke the token in the Cloudflare
-   dashboard or stash its value in a password manager for future
-   rotation runs. Cloudflare only shows the value at creation time, so
-   walking away without saving it forces you to mint a fresh one next
-   time.
+3. Revoke the token in the Cloudflare dashboard once the apply
+   succeeds. Cloudflare only shows the value at creation time, so any
+   future bootstrap apply needs a freshly created master token.
