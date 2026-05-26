@@ -34,8 +34,10 @@ terraform apply
 ## Configure GitHub Actions secrets
 
 ```sh
-export GH_APP_PRIVATE_KEY="$(cat /path/to/your-app.pem)"
 scripts/configure-github-secrets.sh
 ```
 
-Re-running is a no-op.
+Prompts for the GitHub App ID and a path to the `.pem` private key
+when those aren't already in env vars (`GH_APP_ID`,
+`GH_APP_PRIVATE_KEY_FILE`) or set in repo secrets. Re-running is a
+no-op.

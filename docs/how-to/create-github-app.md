@@ -23,5 +23,8 @@ tokens via OIDC.
    generate and download a private key (`.pem`).
 3. Install the App on your personal account with "All repositories"
    so new repos are picked up without re-issuing credentials.
-4. Export `GH_APP_ID` and `GH_APP_PRIVATE_KEY` (the latter from the
-   `.pem` contents) before running the secrets script.
+
+The App ID and the `.pem` file are inputs to
+`scripts/configure-github-secrets.sh` — pass them via `GH_APP_ID` and
+`GH_APP_PRIVATE_KEY_FILE` (path to the `.pem`) environment variables,
+or let the script prompt for them.

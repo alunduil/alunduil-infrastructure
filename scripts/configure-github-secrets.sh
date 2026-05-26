@@ -10,11 +10,12 @@
 #   - GCP_RW_WORKLOAD_IDENTITY_PROVIDER, GCP_RW_SERVICE_ACCOUNT_EMAIL
 #   - TF_VAR_CLOUDFLARE_API_TOKEN_RO, TF_VAR_CLOUDFLARE_API_TOKEN_RW
 #
-# Two come from a GitHub App (GH_APP_ID, GH_APP_PRIVATE_KEY) which the
-# workflow exchanges for short-lived installation tokens via OIDC. For each:
-#   1. use env var if set
-#   2. else keep existing secret value if already present
-#   3. else print App-creation instructions and prompt via `read -s`
+# Two come from a GitHub App that the workflow exchanges for short-lived
+# installation tokens via OIDC:
+#   - GH_APP_ID                — env var GH_APP_ID, existing secret, or prompt
+#   - GH_APP_PRIVATE_KEY       — read from a .pem file path supplied via
+#                                env var GH_APP_PRIVATE_KEY_FILE, existing
+#                                secret, or prompt for the path
 #
 # Re-running is a no-op: `gh secret set` upserts.
 
@@ -35,78 +36,64 @@ RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_r
 CF_TOKEN_RO="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw cloudflare_api_token_deployer_ro)"
 CF_TOKEN_RW="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw cloudflare_api_token_deployer_rw)"
 
-# Snapshot current secret names so we can tell which GH App values are
-# already populated and which need a prompt.
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
 
-print_gh_app_instructions() {
+# Print App-creation pointer once upfront if either GH App value needs a
+# prompt — running the prompts inside command substitution would lose any
+# state set in the subshell.
+print_gh_app_pointer() {
   cat >&2 <<'EOF'
 
-The GitHub App authenticates the terraform github provider for cross-repo
-management without a long-lived PAT. One-time setup:
-
-  1. https://github.com/settings/apps/new
-  2. Name: alunduil-infrastructure-deployer (or similar)
-  3. Webhook: uncheck "Active"
-  4. Repository permissions:
-       Administration: Read and write
-       Contents:       Read and write
-       Metadata:       Read (auto)
-       Pages:          Read and write
-  5. Install on: your account, "All repositories"
-  6. After create: copy the App ID; generate and download a private key
-     (.pem). The values below should be the App ID and the contents of
-     the .pem file.
+The GitHub App authenticates the terraform github provider in CI. If
+you haven't created one yet, see docs/how-to/create-github-app.md.
 
 EOF
 }
 
-# For each GH App secret: env wins; existing secret wins next; else prompt.
-# Print App-creation instructions once upfront if either will need a prompt — running
-# the prompts inside command substitution would lose any state set in the
-# subshell.
-needs_prompt() {
-  local var="$1"
-  [[ -z "${!var:-}" ]] && ! has_secret "${var}"
+needs_id_prompt() {
+  [[ -z "${GH_APP_ID:-}" ]] && ! has_secret "GH_APP_ID"
 }
 
-if needs_prompt GH_APP_ID || needs_prompt GH_APP_PRIVATE_KEY; then
-  print_gh_app_instructions
+needs_key_prompt() {
+  [[ -z "${GH_APP_PRIVATE_KEY_FILE:-}" ]] && ! has_secret "GH_APP_PRIVATE_KEY"
+}
+
+if needs_id_prompt || needs_key_prompt; then
+  print_gh_app_pointer
 fi
 
-# GH_APP_PRIVATE_KEY is a multi-line PEM; trying to prompt for it via `read`
-# is fiddly and burns the terminal scrollback. Fail with instructions instead
-# so the operator pipes the .pem into the env var and re-runs.
-if needs_prompt GH_APP_PRIVATE_KEY; then
-  cat >&2 <<'EOF'
-error: GH_APP_PRIVATE_KEY not in env and not in repo secrets.
-
-Source it from the downloaded .pem file, then re-run this script:
-
-  export GH_APP_PRIVATE_KEY="$(cat /path/to/your-app.pem)"
-
-EOF
-  exit 1
-fi
-
-resolve_gh_app_secret() {
-  local var="$1" prompt_label="$2"
-  if [[ -n "${!var:-}" ]]; then
-    printf '%s' "${!var}"
-  elif has_secret "${var}"; then
-    echo "${var} already set in repo secrets; leaving as-is" >&2
+resolve_gh_app_id() {
+  if [[ -n "${GH_APP_ID:-}" ]]; then
+    printf '%s' "${GH_APP_ID}"
+  elif has_secret "GH_APP_ID"; then # pragma: allowlist secret
+    echo "GH_APP_ID already set in repo secrets; leaving as-is" >&2
     printf '__KEEP__'
   else
     local value
-    read -r -s -p "Enter ${prompt_label}: " value >&2
-    echo >&2
+    read -r -p "Enter GH_APP_ID (numeric, visible on App settings page): " value
     printf '%s' "${value}"
   fi
 }
 
-GH_APP_ID_VALUE="$(resolve_gh_app_secret GH_APP_ID 'GH_APP_ID (numeric)')"
-GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_secret GH_APP_PRIVATE_KEY GH_APP_PRIVATE_KEY)"
+resolve_gh_app_private_key() {
+  local path
+  if [[ -n "${GH_APP_PRIVATE_KEY_FILE:-}" ]]; then
+    path="${GH_APP_PRIVATE_KEY_FILE}"
+  elif has_secret "GH_APP_PRIVATE_KEY"; then # pragma: allowlist secret
+    echo "GH_APP_PRIVATE_KEY already set in repo secrets; leaving as-is" >&2
+    printf '__KEEP__'
+    return
+  else
+    read -r -p "Path to GitHub App private key (.pem): " path
+  fi
+  path="${path/#\~/${HOME}}"
+  [[ -r "${path}" ]] || { echo "error: cannot read '${path}'" >&2; exit 1; }
+  cat "${path}"
+}
+
+GH_APP_ID_VALUE="$(resolve_gh_app_id)"
+GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
 
 # Same WIF provider value maps to both RO and RW secret names for symmetry
 # with the workflow consumers (see #63).
