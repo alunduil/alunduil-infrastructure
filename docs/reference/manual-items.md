@@ -15,8 +15,6 @@ bootstraps.
 - **Cloudflare API token for local apply** — see
   [credentials.md](credentials.md#cloudflare-api-token-alunduil-apply)
   for required scopes.
-- **Legacy `alunduil-com` Cloud DNS zone** — left behind after DNS
-  moved to Cloudflare; not re-imported.
 
 Procedures for each item are in
 [how-to/manual-operations.md](../how-to/manual-operations.md).

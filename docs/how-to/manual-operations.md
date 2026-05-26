@@ -35,12 +35,3 @@ resolves; the toggle is set after that.
 
 Once the cert is ready, `https_enforced = true` on the
 `github_repository_pages` resource keeps the toggle locked in.
-
-## Delete the legacy `alunduil-com` Cloud DNS zone
-
-DNS for `alunduil.com` now lives on Cloudflare; the empty Cloud DNS
-zone left behind can be released.
-
-```sh
-gcloud dns managed-zones delete alunduil-com
-```

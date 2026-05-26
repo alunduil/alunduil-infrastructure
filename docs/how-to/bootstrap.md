@@ -31,14 +31,6 @@ terraform plan
 terraform apply
 ```
 
-The first apply imports the existing project and three foundational
-APIs into bootstrap state, then creates the two CI deployer Cloudflare
-tokens.
-
-After it succeeds, run a one-off `terraform apply` in
-`terraform/alunduil/` so its `removed{}` blocks forget the same four
-resources from main state without destroying them.
-
 ## Configure GitHub Actions secrets
 
 ```sh
