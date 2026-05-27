@@ -25,14 +25,14 @@ output "github_deployer_rw_email" {
   sensitive   = false
 }
 
-output "cloudflare_api_token_deployer_ro" {
-  value       = cloudflare_api_token.deployer_ro.value
-  description = "Cloudflare API token value for the RO deployer (Zone Read + DNS Read + Zone Settings Read on alunduil.com)"
-  sensitive   = true
+output "cloudflare_api_token_deployer_ro_secret" {
+  value       = google_secret_manager_secret.cloudflare_api_token_deployer_ro.secret_id
+  description = "Secret Manager short name holding the RO deployer's Cloudflare API token; fetched at plan time via `gcloud secrets versions access`"
+  sensitive   = false
 }
 
-output "cloudflare_api_token_deployer_rw" {
-  value       = cloudflare_api_token.deployer_rw.value
-  description = "Cloudflare API token value for the RW deployer (Zone Read + DNS Write + Zone Settings Write on alunduil.com)"
-  sensitive   = true
+output "cloudflare_api_token_deployer_rw_secret" {
+  value       = google_secret_manager_secret.cloudflare_api_token_deployer_rw.secret_id
+  description = "Secret Manager short name holding the RW deployer's Cloudflare API token; fetched at apply time via `gcloud secrets versions access`"
+  sensitive   = false
 }

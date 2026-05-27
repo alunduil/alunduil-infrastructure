@@ -10,34 +10,17 @@ credentials.
 
 ## Prerequisites
 
-- The state bucket `alunduil-tfstate` exists — created out-of-band by
-  [bootstrap-terraform-state.sh](../../scripts/bootstrap-terraform-state.sh).
 - A master Cloudflare API token — see
   [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
 - A GitHub App created and installed — see
   [create-github-app.md](create-github-app.md).
 
-## Apply
-
-From `terraform/bootstrap/`:
+## Run
 
 ```sh
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
 export CLOUDFLARE_API_TOKEN=...
 
-terraform init
-terraform plan
-terraform apply
+just bootstrap
 ```
-
-## Configure GitHub Actions secrets
-
-```sh
-scripts/configure-github-secrets.sh
-```
-
-Prompts for the GitHub App ID and a path to the `.pem` private key
-when those aren't already in env vars (`GH_APP_ID`,
-`GH_APP_PRIVATE_KEY_FILE`) or set in repo secrets. Re-running is a
-no-op.

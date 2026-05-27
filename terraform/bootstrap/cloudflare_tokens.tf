@@ -59,3 +59,55 @@ resource "cloudflare_api_token" "deployer_rw" {
     resources = local.alunduil_com_zone_resource
   }]
 }
+
+# The deployer SAs hold `objectViewer`/`objectAdmin` on the shared
+# `alunduil-tfstate` bucket, which means anything that lands a plan job
+# could `gsutil cat` bootstrap state. Holding token values directly in
+# state — even with `sensitive = true` — leaks them at that layer. Per-
+# secret accessor IAM moves the authorization check off the bucket and
+# onto each secret: RO SA reaches only the RO token, RW SA only the RW.
+resource "google_secret_manager_secret" "cloudflare_api_token_deployer_ro" {
+  project   = google_project.env.project_id
+  secret_id = "cloudflare-api-token-deployer-ro"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "cloudflare_api_token_deployer_ro" {
+  secret      = google_secret_manager_secret.cloudflare_api_token_deployer_ro.id
+  secret_data = cloudflare_api_token.deployer_ro.value
+}
+
+resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_deployer_ro_accessor" {
+  project   = google_secret_manager_secret.cloudflare_api_token_deployer_ro.project
+  secret_id = google_secret_manager_secret.cloudflare_api_token_deployer_ro.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.github_deployer_ro.email}"
+}
+
+resource "google_secret_manager_secret" "cloudflare_api_token_deployer_rw" {
+  project   = google_project.env.project_id
+  secret_id = "cloudflare-api-token-deployer-rw"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "cloudflare_api_token_deployer_rw" {
+  secret      = google_secret_manager_secret.cloudflare_api_token_deployer_rw.id
+  secret_data = cloudflare_api_token.deployer_rw.value
+}
+
+resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_deployer_rw_accessor" {
+  project   = google_secret_manager_secret.cloudflare_api_token_deployer_rw.project
+  secret_id = google_secret_manager_secret.cloudflare_api_token_deployer_rw.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
+}

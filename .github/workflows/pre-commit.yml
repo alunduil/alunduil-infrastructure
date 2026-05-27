@@ -19,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    # Runs every pre-commit hook on all files. The terraform hooks need the
-    # terraform binary (installed below); the rest are Python-based and
-    # handled by pre-commit/action.
+    # Runs every pre-commit hook on all files. Terraform and just are
+    # installed below for hooks that shell out to those binaries; the
+    # rest are Python-based and handled by pre-commit/action.
 
     steps:
       - name: Checkout repository
@@ -31,6 +31,9 @@ jobs:
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: '1.15.4'
+
+      - name: Set up just
+        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
 
       - name: Run pre-commit hooks
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
