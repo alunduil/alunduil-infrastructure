@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alunduil/alunduil-infrastructure/scripts/projects/board.schema.json",
+  "title": "GitHub Projects v2 board spec",
+  "description": "Declarative schema for a Projects v2 board, applied by scripts/bootstrap-projects.sh. One file per board under scripts/projects/. The current spec format mixes desired state with continuity hints (option IDs) — see issue #90 for the cleaner split planned in a future tool.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "title", "fields"],
+  "properties": {
+    "owner": {
+      "type": "string",
+      "description": "GitHub login that owns the project (user or organisation)."
+    },
+    "title": {
+      "type": "string",
+      "description": "Project title. Lookup is by title, not number, so renaming the board in the UI requires updating this spec."
+    },
+    "fields": {
+      "type": "array",
+      "description": "Custom fields the script manages. Built-in fields (Title, Assignees, …) and any field not listed here are left alone.",
+      "items": {"$ref": "#/$defs/field"}
+    }
+  },
+  "$defs": {
+    "field": {
+      "oneOf": [
+        {"$ref": "#/$defs/singleSelectField"},
+        {"$ref": "#/$defs/simpleField"}
+      ]
+    },
+    "singleSelectField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "options"],
+      "properties": {
+        "name": {"type": "string"},
+        "type": {"const": "SINGLE_SELECT"},
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/option"}
+        }
+      }
+    },
+    "simpleField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": {"type": "string"},
+        "type": {"enum": ["TEXT", "NUMBER", "DATE"]}
+      }
+    },
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "color"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "GitHub-assigned option ID. Not declarative — it's a continuity hint so a UI rename can be reverted to the canonical name without orphaning items (matching is ID-first, name second). Capture the ID after creation; omit for new options. Tracked separately in the cleaner tool planned in #90.",
+          "pattern": "^[a-f0-9]{8}$"
+        },
+        "name": {"type": "string"},
+        "color": {
+          "type": "string",
+          "enum": ["GRAY", "BLUE", "GREEN", "YELLOW", "ORANGE", "RED", "PINK", "PURPLE"]
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    }
+  }
+}

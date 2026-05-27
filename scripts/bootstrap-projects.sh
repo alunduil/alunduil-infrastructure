@@ -12,6 +12,10 @@
 # the cheapest way to keep schema in version control without authoring and
 # maintaining a custom provider for one project board.
 #
+# Threshold: this approach is fine for one board but doesn't scale past two
+# or three. See #90 for the planned replacement (Python tool with separate
+# spec and state).
+#
 # Pairs with #62 (Inbox item sync workflow): bootstrap rarely, sync hourly.
 #
 # Spec shape (see scripts/projects/inbox.json):
@@ -49,7 +53,7 @@
 
 set -euo pipefail
 
-SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "$0")" && pwd)/projects}"
+SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/projects}"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -76,6 +80,46 @@ graphql() {
 # Normalize "Filed by" → "FILED_BY" etc. for variable-name use.
 to_key() {
   printf '%s' "$1" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9' '_' | sed 's/_*$//'
+}
+
+# Project the spec's desired options onto the current options, preserving IDs
+# where possible: match each spec option by ID first (rename recovery), then
+# by name, else emit with no id so GitHub assigns a new one. Description
+# defaults to "" for new options. Args: current-options-json,
+# spec-options-json. Echoes converged-options-json (jq -c).
+converge_options() {
+  local current=$1 spec=$2
+  jq -c -n \
+    --argjson current "$current" \
+    --argjson spec "$spec" \
+    '
+    $spec | map(
+      . as $s
+      | (
+          ($current | map(select(.id == $s.id))[0])
+          // ($current | map(select(.name == $s.name))[0])
+        ) as $match
+      | {
+          id: ($match.id // null),
+          name: $s.name,
+          color: $s.color,
+          description: ($s.description // "")
+        }
+      | with_entries(select(.value != null))
+    )
+    '
+}
+
+# Semantic deep-equal of current vs converged options on the fields we
+# manage (id, name, color, description). Args: current-options-json,
+# desired-options-json. Exit 0 if equal, 1 if not.
+options_equal() {
+  local current=$1 desired=$2
+  jq -e -n --argjson c "$current" --argjson d "$desired" '
+    ($c | map({id, name, color, description}))
+    ==
+    ($d | map({id: (.id // null), name, color, description: (.description // "")}))
+  ' >/dev/null
 }
 
 # Resolve a Project v2 by title under owner; create if missing.
@@ -162,47 +206,12 @@ apply_single_select() {
     return
   fi
 
-  local field_id current_options
+  local field_id current_options converged
   field_id=$(jq -r '.id' <<<"$existing")
   current_options=$(jq -c '.options' <<<"$existing")
+  converged=$(converge_options "$current_options" "$desired_options")
 
-  # Build desired options: match by spec.id first (rename recovery), then by
-  # spec.name, else new (no id → API generates one).
-  local converged
-  converged=$(
-    jq -c -n \
-      --argjson current "$current_options" \
-      --argjson spec "$desired_options" \
-      '
-      $spec | map(
-        . as $s
-        | (
-            ($current | map(select(.id == $s.id))[0])
-            // ($current | map(select(.name == $s.name))[0])
-          ) as $match
-        | {
-            id: ($match.id // null),
-            name: $s.name,
-            color: $s.color,
-            description: ($s.description // "")
-          }
-        | with_entries(select(.value != null))
-      )
-      '
-  )
-
-  local current_norm desired_norm
-  current_norm=$(jq -c '[.[] | {id, name, color, description}]' <<<"$current_options")
-  desired_norm=$(jq -c '
-    [.[] | {
-      id: (.id // null),
-      name,
-      color,
-      description: (.description // "")
-    }]
-  ' <<<"$converged")
-
-  if [[ $current_norm == "$desired_norm" ]]; then
+  if options_equal "$current_options" "$converged"; then
     echo "  '$name' (SINGLE_SELECT) up to date." >&2
     return
   fi
@@ -322,13 +331,22 @@ apply_spec() {
 # Main
 # ---------------------------------------------------------------------------
 
+# Skip main when sourced (e.g. by tests/bootstrap-projects.bats).
+if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  return 0 2>/dev/null || true
+fi
+
 if ! gh auth status >/dev/null 2>&1; then
   echo "gh is not authenticated. Run 'gh auth login' first." >&2
   exit 1
 fi
 
 shopt -s nullglob
-specs=("$SPECS_DIR"/*.json)
+specs=()
+for path in "$SPECS_DIR"/*.json; do
+  [[ $path == *.schema.json ]] && continue
+  specs+=("$path")
+done
 if [[ ${#specs[@]} -eq 0 ]]; then
   echo "No specs found in $SPECS_DIR" >&2
   exit 1

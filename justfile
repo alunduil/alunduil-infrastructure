@@ -14,3 +14,7 @@ bootstrap:
 alunduil:
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
+
+[doc("Run bats unit tests for shell helpers.")]
+test:
+    bats tests/
