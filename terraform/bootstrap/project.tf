@@ -44,3 +44,12 @@ resource "google_project_service" "serviceusage" {
 
   depends_on = [google_project_service.iam]
 }
+
+resource "google_project_service" "secretmanager" {
+  project = google_project.env.project_id
+  service = "secretmanager.googleapis.com"
+
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.iam]
+}
