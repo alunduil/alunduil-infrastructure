@@ -8,8 +8,8 @@
 # live Inbox project, which alunduil performs out-of-band.
 
 setup() {
-  # shellcheck source=../scripts/bootstrap-projects.sh
-  source "${BATS_TEST_DIRNAME}/../scripts/bootstrap-projects.sh"
+  # shellcheck source=bootstrap-projects.sh
+  source "${BATS_TEST_DIRNAME}/bootstrap-projects.sh"
 }
 
 # --- to_key ---------------------------------------------------------------

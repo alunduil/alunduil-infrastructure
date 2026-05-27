@@ -17,4 +17,4 @@ alunduil:
 
 [doc("Run bats unit tests for shell helpers.")]
 test:
-    bats tests/
+    bats scripts/*.bats

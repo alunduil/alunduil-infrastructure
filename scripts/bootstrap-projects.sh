@@ -331,7 +331,7 @@ apply_spec() {
 # Main
 # ---------------------------------------------------------------------------
 
-# Skip main when sourced (e.g. by tests/bootstrap-projects.bats).
+# Skip main when sourced (e.g. by scripts/bootstrap-projects.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi
