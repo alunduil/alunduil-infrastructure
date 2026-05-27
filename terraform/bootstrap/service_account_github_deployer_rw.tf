@@ -51,7 +51,7 @@ resource "google_storage_bucket_iam_member" "github_deployer_rw_state_bucket_rea
 resource "google_service_account_iam_member" "github_deployer_rw_workload_identity_user" {
   service_account_id = google_service_account.github_deployer_rw.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = local.wif_principal
+  member             = local.wif_principal_main
 
   depends_on = [google_iam_workload_identity_pool_provider.github]
 }
@@ -59,7 +59,7 @@ resource "google_service_account_iam_member" "github_deployer_rw_workload_identi
 resource "google_service_account_iam_member" "github_deployer_rw_token_creator" {
   service_account_id = google_service_account.github_deployer_rw.name
   role               = "roles/iam.serviceAccountTokenCreator"
-  member             = local.wif_principal
+  member             = local.wif_principal_main
 
   depends_on = [google_iam_workload_identity_pool_provider.github]
 }

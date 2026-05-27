@@ -43,6 +43,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository"       = "assertion.repository"
     "attribute.repository_owner" = "assertion.repository_owner"
     "attribute.environment"      = "assertion.environment"
+    "attribute.ref"              = "assertion.ref"
   }
 
   attribute_condition = "assertion.repository == 'alunduil/alunduil-infrastructure'"
@@ -53,5 +54,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 locals {
-  wif_principal = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.repository/alunduil/alunduil-infrastructure"
+  wif_principal      = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.repository/alunduil/alunduil-infrastructure"
+  wif_principal_main = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.ref/refs/heads/main"
 }
