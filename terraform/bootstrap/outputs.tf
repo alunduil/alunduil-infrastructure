@@ -36,15 +36,3 @@ output "cloudflare_api_token_deployer_rw_secret" {
   description = "Secret Manager short name holding the RW deployer's Cloudflare API token; fetched at apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
-
-output "github_deployer_sync_email" {
-  value       = google_service_account.github_deployer_sync.email
-  description = "Email of the service account that the Inbox sync workflow impersonates via WIF"
-  sensitive   = false
-}
-
-output "inbox_sync_token_secret" {
-  value       = google_secret_manager_secret.inbox_sync_token.secret_id
-  description = "Secret Manager short name holding the Inbox sync PAT; populated manually via `gcloud secrets versions add`"
-  sensitive   = false
-}

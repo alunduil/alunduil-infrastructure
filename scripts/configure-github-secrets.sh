@@ -2,25 +2,26 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Idempotently configures the eight GitHub Actions secrets that the
+# Idempotently configures the seven GitHub Actions secrets that the
 # Terraform CI workflows and the Inbox sync workflow consume.
 #
-# Six values come from `terraform output` against terraform/bootstrap/:
+# Four values come from `terraform output` against terraform/bootstrap/:
 #   - GCP_RO_WORKLOAD_IDENTITY_PROVIDER, GCP_RO_SERVICE_ACCOUNT_EMAIL
 #   - GCP_RW_WORKLOAD_IDENTITY_PROVIDER, GCP_RW_SERVICE_ACCOUNT_EMAIL
-#   - GCP_SYNC_WORKLOAD_IDENTITY_PROVIDER, GCP_SYNC_SERVICE_ACCOUNT_EMAIL
 #
-# The Cloudflare deployer tokens and the Inbox sync PAT are not GitHub
-# Actions secrets: the workflows authenticate to GCP via WIF and then
-# fetch the token from Secret Manager at run time. The token values
-# never live in Actions.
+# The Cloudflare deployer tokens are not GitHub Actions secrets: the
+# Terraform workflows authenticate to GCP via WIF and then fetch the
+# token from Secret Manager at apply time. The token value never lives
+# in Actions.
 #
-# Two come from a GitHub App that the workflow exchanges for short-lived
-# installation tokens via OIDC:
-#   - GH_APP_ID                — env var GH_APP_ID, existing secret, or prompt
+# Three are externally-minted and resolved env var → existing secret →
+# prompt (so re-running with neither env nor existing prompts once):
+#   - GH_APP_ID                — env var GH_APP_ID
 #   - GH_APP_PRIVATE_KEY       — read from a .pem file path supplied via
-#                                env var GH_APP_PRIVATE_KEY_FILE, existing
-#                                secret, or prompt for the path
+#                                env var GH_APP_PRIVATE_KEY_FILE
+#   - INBOX_SYNC_TOKEN         — env var INBOX_SYNC_TOKEN; fine-grained
+#                                PAT for the Inbox sync workflow. See
+#                                docs/how-to/create-inbox-sync-token.md.
 #
 # Re-running is a no-op: `gh secret set` upserts.
 
@@ -53,7 +54,6 @@ gh auth status >/dev/null 2>&1 || {
 WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
 RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
 RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
-SYNC_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_sync_email)"
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
@@ -78,8 +78,25 @@ needs_key_prompt() {
   [[ -z "${GH_APP_PRIVATE_KEY_FILE:-}" ]] && ! has_secret "GH_APP_PRIVATE_KEY"
 }
 
+needs_token_prompt() {
+  [[ -z "${INBOX_SYNC_TOKEN:-}" ]] && ! has_secret "INBOX_SYNC_TOKEN"
+}
+
+print_inbox_sync_token_pointer() {
+  cat >&2 <<'EOF'
+
+INBOX_SYNC_TOKEN authenticates the hourly Inbox sync workflow. If you
+haven't minted one yet, see docs/how-to/create-inbox-sync-token.md.
+
+EOF
+}
+
 if needs_id_prompt || needs_key_prompt; then
   print_gh_app_pointer
+fi
+
+if needs_token_prompt; then
+  print_inbox_sync_token_pointer
 fi
 
 resolve_gh_app_id() {
@@ -114,20 +131,34 @@ resolve_gh_app_private_key() {
   cat "${path}"
 }
 
+resolve_inbox_sync_token() {
+  if [[ -n "${INBOX_SYNC_TOKEN:-}" ]]; then
+    printf '%s' "${INBOX_SYNC_TOKEN}"
+  elif has_secret "INBOX_SYNC_TOKEN"; then # pragma: allowlist secret
+    echo "INBOX_SYNC_TOKEN already set in repo secrets; leaving as-is" >&2
+    printf '__KEEP__'
+  else
+    local value
+    read -r -s -p "Paste INBOX_SYNC_TOKEN (input hidden, then press Enter): " value
+    echo >&2
+    printf '%s' "${value}"
+  fi
+}
+
 GH_APP_ID_VALUE="$(resolve_gh_app_id)"
 GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
+INBOX_SYNC_TOKEN_VALUE="$(resolve_inbox_sync_token)"
 
-# Same WIF provider value maps to each role's secret name for symmetry
-# with the workflow consumers (see #63 and the sync workflow in #73).
+# Same WIF provider value maps to RO and RW secret names for symmetry
+# with the workflow consumers (see #63).
 declare -A SECRETS=(
   [GCP_RO_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
   [GCP_RO_SERVICE_ACCOUNT_EMAIL]="${RO_SA_EMAIL}"
   [GCP_RW_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
   [GCP_RW_SERVICE_ACCOUNT_EMAIL]="${RW_SA_EMAIL}"
-  [GCP_SYNC_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
-  [GCP_SYNC_SERVICE_ACCOUNT_EMAIL]="${SYNC_SA_EMAIL}"
   [GH_APP_ID]="${GH_APP_ID_VALUE}"
   [GH_APP_PRIVATE_KEY]="${GH_APP_PRIVATE_KEY_VALUE}"
+  [INBOX_SYNC_TOKEN]="${INBOX_SYNC_TOKEN_VALUE}"
 )
 
 for name in "${!SECRETS[@]}"; do
@@ -160,5 +191,5 @@ if [[ -n "${missing}" ]]; then
 fi
 
 if [[ -z "${unexpected}" && -z "${missing}" ]]; then
-  echo "All eight secrets present, no drift."
+  echo "All seven secrets present, no drift."
 fi

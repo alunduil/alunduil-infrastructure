@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write  # OIDC token for WIF exchange
 
 jobs:
   sync:
@@ -23,21 +22,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
-        with:
-          workload_identity_provider: ${{ secrets.GCP_SYNC_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SYNC_SERVICE_ACCOUNT_EMAIL }}
-
-      - name: Fetch Inbox sync token from Secret Manager
-        id: fetch-token
-        # yamllint disable-line rule:line-length
-        uses: google-github-actions/get-secretmanager-secrets@bc9c54b29fdffb8a47776820a7d26e77b379d262  # v3.0.0
-        with:
-          secrets: |  # pragma: allowlist secret
-            inbox_sync_token:alunduil/inbox-sync-token
-
       - name: Run sync script
         env:
-          INBOX_SYNC_TOKEN: ${{ steps.fetch-token.outputs.inbox_sync_token }}
+          # Fine-grained PAT minted out-of-band and pushed via
+          # scripts/configure-github-secrets.sh. See
+          # docs/how-to/create-inbox-sync-token.md for the required
+          # scopes.
+          INBOX_SYNC_TOKEN: ${{ secrets.INBOX_SYNC_TOKEN }}
         run: ./scripts/sync-inbox-project.sh
