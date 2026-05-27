@@ -80,3 +80,13 @@ repos:
     hooks:
       - id: renovate-config-validator
         args: [--strict, --no-global]
+
+  # justfile format and parse check
+  - repo: local
+    hooks:
+      - id: just-fmt-check
+        name: just --fmt --check
+        entry: just --fmt --check
+        language: system
+        files: ^justfile$
+        pass_filenames: false
