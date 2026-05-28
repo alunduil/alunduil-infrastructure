@@ -24,7 +24,7 @@ SPDX-License-Identifier = "MIT"
 
 # JSON config files — JSON does not permit comments for inline headers
 [[annotations]]
-path = ["renovate.json", "scripts/projects/*.json"]
+path = ["renovate.json", ".github/projects/*.json"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"

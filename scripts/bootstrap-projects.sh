@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # bootstrap-projects.sh — apply declarative GitHub Projects v2 schema specs
-# from scripts/projects/*.json. Idempotent: a clean re-run is a strict no-op.
+# from .github/projects/*.json. Idempotent: a clean re-run is a strict no-op.
 #
 # Why bash? The integrations/github Terraform provider does not support
 # Projects v2 — the feature request for the smallest piece was closed
@@ -18,7 +18,7 @@
 #
 # Pairs with #62 (Inbox item sync workflow): bootstrap rarely, sync hourly.
 #
-# Spec shape (see scripts/projects/inbox.json):
+# Spec shape (see .github/projects/inbox.json):
 #   {
 #     "owner": "<github-login>",
 #     "title": "<project title>",
@@ -53,7 +53,7 @@
 
 set -euo pipefail
 
-SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/projects}"
+SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.github/projects}"
 
 # ---------------------------------------------------------------------------
 # Helpers
