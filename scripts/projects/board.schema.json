@@ -3,6 +3,7 @@
   "$id": "https://github.com/alunduil/alunduil-infrastructure/scripts/projects/board.schema.json",
   "title": "GitHub Projects v2 board spec",
   "description": "Declarative schema for a Projects v2 board, applied by scripts/bootstrap-projects.sh. One file per board under scripts/projects/. The current spec format mixes desired state with continuity hints (option IDs) — see issue #90 for the cleaner split planned in a future tool.",
+  "$comment": "Enum values and the option-input shape mirror GitHub's GraphQL schema (which is the canonical source — GitHub does not publish a JSON Schema for Projects v2). To refresh against introspection, run:\n\n  gh api graphql -f query='{ color: __type(name: \"ProjectV2SingleSelectFieldOptionColor\") { enumValues { name } } fieldType: __type(name: \"ProjectV2CustomFieldType\") { enumValues { name } } optionInput: __type(name: \"ProjectV2SingleSelectFieldOptionInput\") { inputFields { name } } }'\n\nProjectV2CustomFieldType also includes ITERATION; the script does not yet provision iteration fields, so the type enums below intentionally omit it.",
   "type": "object",
   "additionalProperties": false,
   "required": ["owner", "title", "fields"],
@@ -34,7 +35,10 @@
       "required": ["name", "type", "options"],
       "properties": {
         "name": {"type": "string"},
-        "type": {"const": "SINGLE_SELECT"},
+        "type": {
+          "const": "SINGLE_SELECT",
+          "description": "Subset of GraphQL ProjectV2CustomFieldType. The script splits SINGLE_SELECT off into its own field variant because it has options + colors to converge."
+        },
         "options": {
           "type": "array",
           "minItems": 1,
@@ -48,10 +52,14 @@
       "required": ["name", "type"],
       "properties": {
         "name": {"type": "string"},
-        "type": {"enum": ["TEXT", "NUMBER", "DATE"]}
+        "type": {
+          "enum": ["TEXT", "NUMBER", "DATE"],
+          "description": "Subset of GraphQL ProjectV2CustomFieldType minus SINGLE_SELECT (handled separately) and minus ITERATION (not yet supported by the script)."
+        }
       }
     },
     "option": {
+      "description": "Mirrors GraphQL ProjectV2SingleSelectFieldOptionInput (id, name, color, description).",
       "type": "object",
       "additionalProperties": false,
       "required": ["name", "color"],
@@ -64,6 +72,7 @@
         "name": {"type": "string"},
         "color": {
           "type": "string",
+          "description": "GraphQL ProjectV2SingleSelectFieldOptionColor enum.",
           "enum": ["GRAY", "BLUE", "GREEN", "YELLOW", "ORANGE", "RED", "PINK", "PURPLE"]
         },
         "description": {
