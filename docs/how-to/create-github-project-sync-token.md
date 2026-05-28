@@ -3,40 +3,39 @@
 
 # Create the GitHub Projects sync PAT
 
-`GITHUB_PROJECT_SYNC_TOKEN` authenticates the hourly Projects sync
-workflow (`.github/workflows/sync-project.yml`), which mirrors open
-issues/PRs onto every board declared under `scripts/sync-specs/`.
-A fine-grained personal access token rather than a GitHub App so search
-can surface private items in repos outside `alunduil/`,
-`dungeon-studio/`, and `qua-world/` where the user is author or
-assignee.
+Mint and install the personal access token that the Projects sync
+workflow reads from `GITHUB_PROJECT_SYNC_TOKEN`. Follow this both
+for first-time setup and for rotation.
 
-One token serves every board the workflow syncs — its scopes aren't
-tied to any specific board.
+## Mint the token
 
-## Mint
+1. Open <https://github.com/settings/tokens?type=beta>.
+2. Click **Generate new token**.
+3. Fill in:
+    - **Token name**: any (e.g. `alunduil-infrastructure-project-sync`).
+    - **Resource owner**: `alunduil`.
+    - **Expiration**: 1 year (the fine-grained cap).
+    - **Repository access**: **All repositories**.
+4. Under **Account permissions**, grant **Projects: Read and write**.
+5. Under **Repository permissions**, grant:
+    - **Metadata: Read**
+    - **Issues: Read**
+    - **Pull requests: Read**
+6. Click **Generate token** and copy the value.
 
-<https://github.com/settings/tokens?type=beta>
+## Install the token
 
-- **Resource owner**: `alunduil`
-- **Repository access**: All repositories
-- **Permissions**:
-  - Projects (account): Read and write
-  - Metadata (repository): Read
-  - Issues (repository): Read
-  - Pull requests (repository): Read
-- **Expiration**: 1 year (fine-grained cap)
-
-## Use
-
-`scripts/configure-github-secrets.sh` pushes the token into the
-`GITHUB_PROJECT_SYNC_TOKEN` repo secret. Source the value, then run
-the script:
+Export the value and run the secrets script:
 
 ```sh
-export GITHUB_PROJECT_SYNC_TOKEN=...
+export GITHUB_PROJECT_SYNC_TOKEN=<paste-here>
 scripts/configure-github-secrets.sh
 ```
 
-If the secret is already populated, the script leaves it alone. Rotate
-by exporting a fresh value and re-running.
+The script upserts the secret; re-running with the same value is a
+no-op.
+
+## Rotate
+
+Repeat **Mint the token**, then re-run **Install the token** with the
+new value. The next workflow run picks it up.
