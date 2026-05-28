@@ -36,13 +36,13 @@ graph LR
     style 41 fill:#999999,stroke:#6b6b6b,color:#ffffff
     42["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, context7).<br />Containers documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
     style 42 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>LAN behind home.alunduil.com;<br />TP-Link Deco mesh, TrueNAS,<br />Home Assistant.</div>"]
+    43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>LAN behind home.alunduil.com;<br />TP-Link Deco mesh, TrueNAS<br />appliance, HAOS device.</div>"]
     style 43 fill:#999999,stroke:#6b6b6b,color:#ffffff
     55["<div style='font-weight: bold'>Tailscale</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mesh VPN control plane;<br />coordinates node membership<br />and ACLs.</div>"]
     style 55 fill:#999999,stroke:#6b6b6b,color:#ffffff
     56["<div style='font-weight: bold'>UptimeRobot</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>External availability<br />monitoring; HTTP probes +<br />heartbeat receivers.</div>"]
     style 56 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    57["<div style='font-weight: bold'>Remote Tailscale exit (Groton, SD)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>NanoPi-NEO3 running Tailscale<br />exit node only; physically<br />off-site.</div>"]
+    57["<div style='font-weight: bold'>Remote Tailscale exit (Groton, SD)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>NanoPi-NEO3 in Groton, SD;<br />physically off-site.</div>"]
     style 57 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
     30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10

@@ -10,7 +10,10 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)/docs/architecture"
 
+# Drop generated outputs so removed views don't linger as stale files.
+# README.md is hand-written and stays.
 find . -maxdepth 1 -name 'structurizr-*.mmd' -delete
+find . -maxdepth 1 -name '*.md' ! -name 'README.md' -delete
 
 docker run --rm --user "$(id -u):$(id -g)" \
     -v "$PWD:/usr/local/structurizr" \

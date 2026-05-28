@@ -99,20 +99,31 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         # ----- Home network (interview-discovered) -----
 
         homeNetwork = softwareSystem "Home network" {
-            description "LAN behind home.alunduil.com; TP-Link Deco mesh, TrueNAS, Home Assistant."
+            description "LAN behind home.alunduil.com; TP-Link Deco mesh, TrueNAS appliance, HAOS device."
             tags "External"
 
-            decoMesh = container "TP-Link Deco mesh" "3-node mesh; ingress node has 5G failover from G.Network fibre; port-forwards 32400 to Plex" "TP-Link Deco"
-            haosDevice = container "Home Assistant (HAOS)" "Separate device on LAN; home automation + Tailscale exit node" "HAOS"
-            truenas = container "TrueNAS server" "iXsystems TRUENAS-MINI-3.0-E (Atom C3338, 8GB ECC, TrueNAS 25.10.x); hostname 'truenas', 192.168.68.63" "TrueNAS SCALE" {
-                plexApp = component "Plex" "Media server; externally exposed via Deco port-forward; monitored by UptimeRobot" "TrueNAS app"
-                tailscaleApp = component "Tailscale" "Mesh node; subnet router for LAN access" "TrueNAS app"
-                netdataApp = component "Netdata" "Real-time system metrics" "TrueNAS app"
-                alloyApp = component "Grafana Alloy" "Telemetry collection agent" "TrueNAS app"
-                scrutinyApp = component "Scrutiny" "Disk S.M.A.R.T. monitoring" "TrueNAS app"
-                smbMedia = component "SMB share: media" "Plex media library + general media" "SMB"
-                smbScans = component "SMB share: scans" "Scanned documents" "SMB"
-                smbTakeout = component "SMB share: takeout" "Google Takeout archives" "SMB"
+            # Containers grouped by the hardware they run on. Per C4: independently
+            # installable apps and data stores are Containers; appliance hardware
+            # itself would be a Deployment Node, not modeled here.
+
+            group "TP-Link Deco mesh (3 nodes, 5G failover)" {
+                decoFirmware = container "Deco firmware" "Edge routing, port-forwards 32400 to Plex, 5G failover from G.Network fibre" "TP-Link Deco"
+            }
+
+            group "TrueNAS appliance (iXsystems MINI-3.0-E, 192.168.68.63)" {
+                plexApp = container "Plex" "Media server; externally exposed; monitored by UptimeRobot" "TrueNAS app"
+                tailscaleSubnetRouter = container "Tailscale subnet router" "Routes 192.168.68.0/24 over Tailscale mesh" "TrueNAS app"
+                netdataApp = container "Netdata" "Real-time system metrics" "TrueNAS app"
+                alloyApp = container "Grafana Alloy" "Telemetry collection agent" "TrueNAS app"
+                scrutinyApp = container "Scrutiny" "Disk S.M.A.R.T. monitoring" "TrueNAS app"
+                smbMedia = container "SMB share: media" "Plex media library + general media" "SMB share"
+                smbScans = container "SMB share: scans" "Scanned documents" "SMB share"
+                smbTakeout = container "SMB share: takeout" "Google Takeout archives" "SMB share"
+            }
+
+            group "HAOS device (separate hardware)" {
+                haCore = container "Home Assistant Core" "Home automation; heartbeats UptimeRobot" "Home Assistant"
+                haTailscaleExit = container "Tailscale exit node (HAOS)" "Tailscale exit node" "Tailscale"
             }
         }
 
@@ -124,10 +135,13 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         uptimerobot = softwareSystem "UptimeRobot" "External availability monitoring; HTTP probes + heartbeat receivers." {
             tags "External"
         }
-        grotonExit = softwareSystem "Remote Tailscale exit (Groton, SD)" "NanoPi-NEO3 running Tailscale exit node only; physically off-site." {
+        grotonExit = softwareSystem "Remote Tailscale exit (Groton, SD)" {
+            description "NanoPi-NEO3 in Groton, SD; physically off-site."
             tags "External"
 
-            nanoPi = container "NanoPi-NEO3" "Single-board computer; Tailscale exit node; heartbeats to UptimeRobot" "Hardware"
+            group "NanoPi-NEO3 (Groton, SD)" {
+                nanoPiTailscale = container "Tailscale exit node (NanoPi)" "Tailscale exit node; heartbeats UptimeRobot" "Tailscale"
+            }
         }
 
         # ----- Relationships -----
@@ -176,20 +190,20 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
 
         # Home network ingress: plex.alunduil.com → home.alunduil.com →
         # alunduil.tplinkdns.com → home WAN → Deco port-forward → Plex.
-        tplinkDdns -> decoMesh "Resolves to home WAN; ingress to Deco mesh"
-        decoMesh -> plexApp "Port-forward 32400 to TrueNAS Plex app"
+        tplinkDdns -> decoFirmware "Resolves to home WAN; ingress to Deco mesh"
+        decoFirmware -> plexApp "Port-forward 32400"
 
         # Tailscale mesh participation.
         workstation -> tailscale "Tailscale client; required path when off-LAN"
         workstation -> homeNetwork "Direct LAN access when at home"
-        tailscaleApp -> tailscale "Subnet router for 192.168.68.0/24"
-        haosDevice -> tailscale "Tailscale exit node"
-        nanoPi -> tailscale "Tailscale exit node"
+        tailscaleSubnetRouter -> tailscale "Subnet router for 192.168.68.0/24"
+        haTailscaleExit -> tailscale "Tailscale exit node"
+        nanoPiTailscale -> tailscale "Tailscale exit node"
 
         # UptimeRobot monitoring surface.
         uptimerobot -> plexApp "HTTP + HTTPS probes on home.alunduil.com:32400"
-        haosDevice -> uptimerobot "Heartbeat push (home)"
-        nanoPi -> uptimerobot "Heartbeat push (groton)"
+        haCore -> uptimerobot "Heartbeat push (home)"
+        nanoPiTailscale -> uptimerobot "Heartbeat push (groton)"
     }
 
     views {
@@ -227,13 +241,7 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         container homeNetwork "Container-HomeNetwork" {
             include *
             autolayout lr
-            description "Level 2 — home network containers (Deco mesh, TrueNAS, HAOS)."
-        }
-
-        component truenas "Component-TrueNAS" {
-            include *
-            autolayout lr
-            description "Level 3 — TrueNAS apps and SMB shares."
+            description "Level 2 — home network containers (Deco firmware, TrueNAS apps + shares, HAOS apps)."
         }
 
         styles {

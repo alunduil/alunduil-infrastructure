@@ -24,19 +24,50 @@ graph LR
     subgraph 43 ["Home network"]
       style 43 fill:#ffffff,stroke:#6b6b6b,color:#6b6b6b
 
-      44["<div style='font-weight: bold'>TP-Link Deco mesh</div><div style='font-size: 70%; margin-top: 0px'>[Container: TP-Link Deco]</div><div style='font-size: 80%; margin-top:10px'>3-node mesh; ingress node has<br />5G failover from G.Network<br />fibre; port-forwards 32400 to<br />Plex</div>"]
-      style 44 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      45["<div style='font-weight: bold'>Home Assistant (HAOS)</div><div style='font-size: 70%; margin-top: 0px'>[Container: HAOS]</div><div style='font-size: 80%; margin-top:10px'>Separate device on LAN; home<br />automation + Tailscale exit<br />node</div>"]
-      style 45 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      46["<div style='font-weight: bold'>TrueNAS server</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS SCALE]</div><div style='font-size: 80%; margin-top:10px'>iXsystems TRUENAS-MINI-3.0-E<br />(Atom C3338, 8GB ECC, TrueNAS<br />25.10.x); hostname 'truenas',<br />192.168.68.63</div>"]
-      style 46 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      subgraph group1 ["HAOS device (separate hardware)"]
+        style group1 fill:#ffffff,stroke:#cccccc,color:#cccccc,stroke-dasharray:5
+
+        53["<div style='font-weight: bold'>Home Assistant Core</div><div style='font-size: 70%; margin-top: 0px'>[Container: Home Assistant]</div><div style='font-size: 80%; margin-top:10px'>Home automation; heartbeats<br />UptimeRobot</div>"]
+        style 53 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        54["<div style='font-weight: bold'>Tailscale exit node (HAOS)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Tailscale]</div><div style='font-size: 80%; margin-top:10px'>Tailscale exit node</div>"]
+        style 54 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+      subgraph group2 ["TP-Link Deco mesh (3 nodes, 5G failover)"]
+        style group2 fill:#ffffff,stroke:#cccccc,color:#cccccc,stroke-dasharray:5
+
+        44["<div style='font-weight: bold'>Deco firmware</div><div style='font-size: 70%; margin-top: 0px'>[Container: TP-Link Deco]</div><div style='font-size: 80%; margin-top:10px'>Edge routing, port-forwards<br />32400 to Plex, 5G failover<br />from G.Network fibre</div>"]
+        style 44 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+      subgraph group3 ["TrueNAS appliance (iXsystems MINI-3.0-E, 192.168.68.63)"]
+        style group3 fill:#ffffff,stroke:#cccccc,color:#cccccc,stroke-dasharray:5
+
+        45["<div style='font-weight: bold'>Plex</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Media server; externally<br />exposed; monitored by<br />UptimeRobot</div>"]
+        style 45 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        46["<div style='font-weight: bold'>Tailscale subnet router</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Routes 192.168.68.0/24 over<br />Tailscale mesh</div>"]
+        style 46 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        47["<div style='font-weight: bold'>Netdata</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Real-time system metrics</div>"]
+        style 47 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        48["<div style='font-weight: bold'>Grafana Alloy</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Telemetry collection agent</div>"]
+        style 48 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        49["<div style='font-weight: bold'>Scrutiny</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Disk S.M.A.R.T. monitoring</div>"]
+        style 49 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        50["<div style='font-weight: bold'>SMB share: media</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Plex media library + general<br />media</div>"]
+        style 50 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        51["<div style='font-weight: bold'>SMB share: scans</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Scanned documents</div>"]
+        style 51 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        52["<div style='font-weight: bold'>SMB share: takeout</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Google Takeout archives</div>"]
+        style 52 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
     end
 
     38-. "<div>Resolves to home WAN; ingress<br />to Deco mesh</div><div style='font-size: 70%'></div>" .->44
-    44-. "<div>Port-forward 32400 to TrueNAS<br />Plex app</div><div style='font-size: 70%'></div>" .->46
+    44-. "<div>Port-forward 32400</div><div style='font-size: 70%'></div>" .->45
     46-. "<div>Subnet router for<br />192.168.68.0/24</div><div style='font-size: 70%'></div>" .->55
-    45-. "<div>Tailscale exit node</div><div style='font-size: 70%'></div>" .->55
-    56-. "<div>HTTP + HTTPS probes on<br />home.alunduil.com:32400</div><div style='font-size: 70%'></div>" .->46
-    45-. "<div>Heartbeat push (home)</div><div style='font-size: 70%'></div>" .->56
+    54-. "<div>Tailscale exit node</div><div style='font-size: 70%'></div>" .->55
+    56-. "<div>HTTP + HTTPS probes on<br />home.alunduil.com:32400</div><div style='font-size: 70%'></div>" .->45
+    53-. "<div>Heartbeat push (home)</div><div style='font-size: 70%'></div>" .->56
 
   end```
