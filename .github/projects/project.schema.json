@@ -10,15 +10,21 @@
   "properties": {
     "owner": {
       "type": "string",
-      "description": "GitHub login that owns the project (user or organisation)."
+      "description": "GitHub login that owns the project (user or organisation). Standard 1–39-char login rule: alphanumerics with single internal hyphens; no leading, trailing, or consecutive hyphens.",
+      "minLength": 1,
+      "maxLength": 39,
+      "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|-(?=[a-zA-Z\\d])){0,38}$"
     },
     "title": {
       "type": "string",
-      "description": "Project title. Lookup is by title, not number, so renaming the Project in the UI requires updating this spec."
+      "description": "Project title. Lookup is by title, not number, so renaming the Project in the UI requires updating this spec.",
+      "minLength": 1
     },
     "fields": {
       "type": "array",
       "description": "Custom fields the script manages. Built-in fields (Title, Assignees, …) and any field not listed here are left alone.",
+      "$comment": "GitHub Projects v2 documents a 50-field-per-project cap that includes built-ins (~13). Custom-field budget is therefore around 37; this is a generous outer bound rather than a precise budget.",
+      "maxItems": 50,
       "items": {"$ref": "#/$defs/field"}
     }
   },
@@ -34,7 +40,7 @@
       "additionalProperties": false,
       "required": ["name", "type", "options"],
       "properties": {
-        "name": {"type": "string"},
+        "name": {"type": "string", "minLength": 1},
         "type": {
           "const": "SINGLE_SELECT",
           "description": "Subset of GraphQL ProjectV2CustomFieldType. The script splits SINGLE_SELECT off into its own field variant because it has options + colors to converge."
@@ -51,7 +57,7 @@
       "additionalProperties": false,
       "required": ["name", "type"],
       "properties": {
-        "name": {"type": "string"},
+        "name": {"type": "string", "minLength": 1},
         "type": {
           "enum": ["TEXT", "NUMBER", "DATE"],
           "description": "Subset of GraphQL ProjectV2CustomFieldType minus SINGLE_SELECT (handled separately) and minus ITERATION (not yet supported by the script)."
@@ -69,7 +75,7 @@
           "description": "GitHub-assigned option ID. Not declarative — it's a continuity hint so a UI rename can be reverted to the canonical name without orphaning items (matching is ID-first, name second). Capture the ID after creation; omit for new options. Tracked separately in the cleaner tool planned in #90.",
           "pattern": "^[a-f0-9]{8}$"
         },
-        "name": {"type": "string"},
+        "name": {"type": "string", "minLength": 1},
         "color": {
           "type": "string",
           "description": "GraphQL ProjectV2SingleSelectFieldOptionColor enum.",
