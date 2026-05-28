@@ -3,11 +3,11 @@
 
 # Create the GitHub Projects sync PAT
 
-Mint and install the personal access token that the Projects sync
-workflow reads from `GITHUB_PROJECT_SYNC_TOKEN`. Follow this both
-for first-time setup and for rotation.
+Generate and install the personal access token that the Projects
+sync workflow reads from `GITHUB_PROJECT_SYNC_TOKEN`. Follow this
+both for first-time setup and for rotation.
 
-## Mint the token
+## Generate the token
 
 1. Open <https://github.com/settings/tokens?type=beta>.
 2. Click **Generate new token**.
@@ -37,5 +37,5 @@ no-op.
 
 ## Rotate
 
-Repeat **Mint the token**, then re-run **Install the token** with the
-new value. The next workflow run picks it up.
+Repeat **Generate the token**, then re-run **Install the token**
+with the new value. The next workflow run picks it up.

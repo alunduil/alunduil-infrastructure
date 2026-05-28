@@ -24,7 +24,7 @@ jobs:
 
       - name: Run sync against github/projects/inbox.json
         env:
-          # Fine-grained PAT minted out-of-band and pushed via
+          # Fine-grained PAT created out-of-band and pushed via
           # scripts/configure-github-secrets.sh. One token serves every
           # board the script syncs. See
           # docs/how-to/create-github-project-sync-token.md for scopes.

@@ -14,7 +14,7 @@
 # token from Secret Manager at apply time. The token value never lives
 # in Actions.
 #
-# Three are externally-minted and resolved env var → existing secret →
+# Three are externally provided and resolved env var → existing secret →
 # prompt (so re-running with neither env nor existing prompts once):
 #   - GH_APP_ID                — env var GH_APP_ID
 #   - GH_APP_PRIVATE_KEY       — read from a .pem file path supplied via
@@ -86,7 +86,7 @@ print_project_sync_token_pointer() {
   cat >&2 <<'EOF'
 
 GITHUB_PROJECT_SYNC_TOKEN authenticates the hourly Projects sync workflow.
-If you haven't minted one yet, see
+If you haven't created one yet, see
 docs/how-to/create-github-project-sync-token.md.
 
 EOF
