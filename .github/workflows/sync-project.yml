@@ -22,11 +22,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
 
-      - name: Run sync against scripts/sync-specs/inbox.json
+      - name: Run sync against github/projects/inbox.json
         env:
           # Fine-grained PAT minted out-of-band and pushed via
           # scripts/configure-github-secrets.sh. One token serves every
           # board the script syncs. See
           # docs/how-to/create-github-project-sync-token.md for scopes.
           GITHUB_PROJECT_SYNC_TOKEN: ${{ secrets.GITHUB_PROJECT_SYNC_TOKEN }}
-        run: ./scripts/sync-project.sh scripts/sync-specs/inbox.json
+        run: ./scripts/sync-project.sh github/projects/inbox.json
