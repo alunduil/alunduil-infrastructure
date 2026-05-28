@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/alunduil/alunduil-infrastructure/scripts/projects/board.schema.json",
-  "title": "GitHub Projects v2 board spec",
-  "description": "Declarative schema for a Projects v2 board, applied by scripts/bootstrap-projects.sh. One file per board under scripts/projects/. The current spec format mixes desired state with continuity hints (option IDs) — see issue #90 for the cleaner split planned in a future tool.",
+  "$id": "https://github.com/alunduil/alunduil-infrastructure/scripts/projects/project.schema.json",
+  "title": "GitHub Projects v2 spec",
+  "description": "Declarative schema for a GitHub Project (Projects v2), applied by scripts/bootstrap-projects.sh. One file per Project under scripts/projects/. The current spec format mixes desired state with continuity hints (option IDs) — see issue #90 for the cleaner split planned in a future tool.",
   "$comment": "Enum values and the option-input shape mirror GitHub's GraphQL schema (which is the canonical source — GitHub does not publish a JSON Schema for Projects v2). To refresh against introspection, run:\n\n  gh api graphql -f query='{ color: __type(name: \"ProjectV2SingleSelectFieldOptionColor\") { enumValues { name } } fieldType: __type(name: \"ProjectV2CustomFieldType\") { enumValues { name } } optionInput: __type(name: \"ProjectV2SingleSelectFieldOptionInput\") { inputFields { name } } }'\n\nProjectV2CustomFieldType also includes ITERATION; the script does not yet provision iteration fields, so the type enums below intentionally omit it.",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
     },
     "title": {
       "type": "string",
-      "description": "Project title. Lookup is by title, not number, so renaming the board in the UI requires updating this spec."
+      "description": "Project title. Lookup is by title, not number, so renaming the Project in the UI requires updating this spec."
     },
     "fields": {
       "type": "array",

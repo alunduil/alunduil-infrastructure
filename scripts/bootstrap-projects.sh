@@ -10,11 +10,11 @@
 # NOT_PLANNED in 2025-05. pulumi-github wraps the same provider and inherits
 # the gap. No maintained community provider exists. A spec-driven script is
 # the cheapest way to keep schema in version control without authoring and
-# maintaining a custom provider for one project board.
+# maintaining a custom provider for one Project.
 #
-# Threshold: this approach is fine for one board but doesn't scale past two
-# or three. See #90 for the planned replacement (Python tool with separate
-# spec and state).
+# Threshold: this approach is fine for one Project but doesn't scale past
+# two or three. See #90 for the planned replacement (Python tool with
+# separate spec and state).
 #
 # Pairs with #62 (Inbox item sync workflow): bootstrap rarely, sync hourly.
 #
