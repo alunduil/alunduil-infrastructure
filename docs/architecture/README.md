@@ -23,9 +23,8 @@ forgotten. Reader who wants the full picture reads both repos.
 - [Containers — GCP project](container-gcp.md) — Level 2.
 - [Containers — GitHub](container-github.md) — Level 2.
 - [Containers — Cloudflare](container-cloudflare.md) — Level 2.
-
-`Home network` is still a stub — Level 2 lands via interview-driven
-discovery.
+- [Containers — Home network](container-homenetwork.md) — Level 2.
+- [Components — TrueNAS](component-truenas.md) — Level 3.
 
 ## Tooling
 

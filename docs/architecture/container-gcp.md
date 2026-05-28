@@ -42,6 +42,7 @@ graph LR
       style 29 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
+    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
     10-. "<div>Presents OIDC token (repo<br />claim)</div><div style='font-size: 70%'></div>" .->23
     23-. "<div>Impersonate (plan jobs, any<br />branch)</div><div style='font-size: 70%'></div>" .->24
     23-. "<div>Impersonate (apply jobs,<br />refs/heads/main only)</div><div style='font-size: 70%'></div>" .->25
@@ -53,6 +54,5 @@ graph LR
     25-. "<div>Access value</div><div style='font-size: 70%'></div>" .->27
     30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->26
     30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->27
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
 
   end```

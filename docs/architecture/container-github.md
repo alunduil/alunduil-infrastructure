@@ -44,6 +44,7 @@ graph LR
       style 19 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
+    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->13
     2-. "<div>Applies via Workload Identity<br />Federation</div><div style='font-size: 70%'></div>" .->20
     2-. "<div>Applies via API token from<br />Secret Manager</div><div style='font-size: 70%'></div>" .->30
     2-. "<div>Runs on</div><div style='font-size: 70%'></div>" .->12
@@ -57,6 +58,5 @@ graph LR
     11-. "<div>Manages</div><div style='font-size: 70%'></div>" .->19
     30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
     16-. "<div>Built and published to</div><div style='font-size: 70%'></div>" .->13
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->13
 
   end```

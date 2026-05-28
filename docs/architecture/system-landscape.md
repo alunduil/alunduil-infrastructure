@@ -36,9 +36,28 @@ graph LR
     style 41 fill:#999999,stroke:#6b6b6b,color:#ffffff
     42["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, context7).<br />Containers documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
     style 42 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Behind home.alunduil.com:<br />TrueNAS, Plex, UPS,<br />switch/router/AP. Containers<br />TBD.</div>"]
-    style 43 fill:#cccccc,stroke:#8e8e8e,color:#555555
+    43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>LAN behind home.alunduil.com;<br />TP-Link Deco mesh, TrueNAS,<br />Home Assistant.</div>"]
+    style 43 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    55["<div style='font-weight: bold'>Tailscale</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mesh VPN control plane;<br />coordinates node membership<br />and ACLs.</div>"]
+    style 55 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    56["<div style='font-weight: bold'>UptimeRobot</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>External availability<br />monitoring; HTTP probes +<br />heartbeat receivers.</div>"]
+    style 56 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    57["<div style='font-weight: bold'>Remote Tailscale exit (Groton, SD)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>NanoPi-NEO3 running Tailscale<br />exit node only; physically<br />off-site.</div>"]
+    style 57 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
+    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
+    30-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->38
+    30-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->39
+    30-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->40
+    30-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->37
+    38-. "<div>Resolves to home WAN; ingress<br />to Deco mesh</div><div style='font-size: 70%'></div>" .->43
+    41-. "<div>Tailscale client; required<br />path when off-LAN</div><div style='font-size: 70%'></div>" .->55
+    41-. "<div>Direct LAN access when at<br />home</div><div style='font-size: 70%'></div>" .->43
+    43-. "<div>Subnet router for<br />192.168.68.0/24</div><div style='font-size: 70%'></div>" .->55
+    57-. "<div>Tailscale exit node</div><div style='font-size: 70%'></div>" .->55
+    56-. "<div>HTTP + HTTPS probes on<br />home.alunduil.com:32400</div><div style='font-size: 70%'></div>" .->43
+    43-. "<div>Heartbeat push (home)</div><div style='font-size: 70%'></div>" .->56
+    57-. "<div>Heartbeat push (groton)</div><div style='font-size: 70%'></div>" .->56
     1-. "<div>Operates</div><div style='font-size: 70%'></div>" .->41
     1-. "<div>Edits, opens PRs</div><div style='font-size: 70%'></div>" .->2
     41-. "<div>Local apply via 'just<br />alunduil' and 'just<br />bootstrap'</div><div style='font-size: 70%'></div>" .->2
@@ -48,11 +67,5 @@ graph LR
     2-. "<div>Applies via API token from<br />Secret Manager</div><div style='font-size: 70%'></div>" .->30
     10-. "<div>Presents OIDC token (repo<br />claim)</div><div style='font-size: 70%'></div>" .->20
     30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
-    30-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->38
-    30-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->39
-    30-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->40
-    38-. "<div>Resolves to home WAN</div><div style='font-size: 70%'></div>" .->43
-    30-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->37
 
   end```

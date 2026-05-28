@@ -44,15 +44,15 @@ graph LR
       style 36 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
+    33-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->38
+    33-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->39
+    33-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->40
+    31-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->37
     10-. "<div>Presents OIDC token (repo<br />claim)</div><div style='font-size: 70%'></div>" .->20
     36-. "<div>Mints once, then revoked</div><div style='font-size: 70%'></div>" .->34
     36-. "<div>Mints once, then revoked</div><div style='font-size: 70%'></div>" .->35
     34-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
     35-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
     33-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
-    33-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->38
-    33-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->39
-    33-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->40
-    31-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->37
 
   end```
