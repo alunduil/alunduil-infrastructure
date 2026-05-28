@@ -87,14 +87,17 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             tags "External"
         }
 
-        # ----- Stubs: systems whose Level 2 needs interview-driven discovery -----
+        # ----- External systems with Level 2 owned by alunduil-chezmoi -----
 
-        workstation = softwareSystem "alunduil workstation" "Local machine: chezmoi-managed dotfiles, Claude Code, MCP server hosting. Containers TBD." {
-            tags "External" "Stub"
+        workstation = softwareSystem "alunduil workstation" "Local machine: chezmoi-managed dotfiles, Claude Code, MCP server hosting. Containers documented in alunduil-chezmoi (issue #202)." {
+            tags "External"
         }
-        mcpFleet = softwareSystem "MCP fleet" "MCP servers Claude Code talks to (Notion, Readwise, GitHub, Cloudflare, TrueNAS, UptimeRobot, …). Containers TBD." {
-            tags "External" "Stub"
+        mcpFleet = softwareSystem "MCP fleet" "MCP servers Claude Code talks to (Notion, Readwise, GitHub, Cloudflare, TrueNAS, UptimeRobot, context7). Containers documented in alunduil-chezmoi (issue #202)." {
+            tags "External"
         }
+
+        # ----- Stub: Level 2 pending interview-driven discovery in this repo -----
+
         homeNetwork = softwareSystem "Home network" "Behind home.alunduil.com: TrueNAS, Plex, UPS, switch/router/AP. Containers TBD." {
             tags "External" "Stub"
         }

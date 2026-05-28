@@ -3,9 +3,18 @@
 
 # Architecture
 
-C4 model ([c4model.com](https://c4model.com)) of every system alunduil
-runs personally — repos, GCP and Cloudflare infra, workstation, MCP
-fleet, home systems. Diátaxis classification: *explanation*.
+C4 model ([c4model.com](https://c4model.com)) of the cloud and
+home-network slice of alunduil's personal systems — Terraform-managed
+GCP, Cloudflare, GitHub identity surface, plus the home network the
+zone's DNS points at. Diátaxis classification: *explanation*.
+
+The workstation-bounded slice — `workstation` and `MCP fleet` —
+appears on this repo's Level 1 landscape as external systems but
+its Level 2 lives in `alunduil-chezmoi`'s `docs/architecture/`,
+where the configs actually live (chezmoi-managed). Each repo's
+diagram updates in the same PR as the change that motivates it;
+cross-repo "remember to update the diagram next door" is reliably
+forgotten. Reader who wants the full picture reads both repos.
 
 ## Views
 
@@ -15,9 +24,8 @@ fleet, home systems. Diátaxis classification: *explanation*.
 - [Containers — GitHub](container-github.md) — Level 2.
 - [Containers — Cloudflare](container-cloudflare.md) — Level 2.
 
-Systems tagged `Stub` (workstation, MCP fleet, home network) are
-placeholders — their Level 2 containers land via interview-driven
-discovery as the surface is captured.
+`Home network` is still a stub — Level 2 lands via interview-driven
+discovery.
 
 ## Tooling
 

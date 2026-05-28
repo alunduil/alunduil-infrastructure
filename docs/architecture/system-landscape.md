@@ -32,10 +32,10 @@ graph LR
     style 39 fill:#999999,stroke:#6b6b6b,color:#ffffff
     40["<div style='font-weight: bold'>Bluesky (AT Protocol)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Handle verification via<br />_atproto.alunduil.com TXT.</div>"]
     style 40 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    41["<div style='font-weight: bold'>alunduil workstation</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Local machine:<br />chezmoi-managed dotfiles,<br />Claude Code, MCP server<br />hosting. Containers TBD.</div>"]
-    style 41 fill:#cccccc,stroke:#8e8e8e,color:#555555
-    42["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, …). Containers<br />TBD.</div>"]
-    style 42 fill:#cccccc,stroke:#8e8e8e,color:#555555
+    41["<div style='font-weight: bold'>alunduil workstation</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Local machine:<br />chezmoi-managed dotfiles,<br />Claude Code, MCP server<br />hosting. Containers<br />documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
+    style 41 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    42["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, context7).<br />Containers documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
+    style 42 fill:#999999,stroke:#6b6b6b,color:#ffffff
     43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Behind home.alunduil.com:<br />TrueNAS, Plex, UPS,<br />switch/router/AP. Containers<br />TBD.</div>"]
     style 43 fill:#cccccc,stroke:#8e8e8e,color:#555555
 
