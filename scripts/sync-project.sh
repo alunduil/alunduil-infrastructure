@@ -2,32 +2,53 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Mirrors every open issue/PR from alunduil, dungeon-studio, and qua-world
-# (plus anything authored by or assigned to alunduil anywhere) into
-# Projects v2 #3 (Inbox), and sets the custom "Filed by" field to the
-# author login. Runs hourly from CI; safe to invoke locally — falls back
-# to ambient `gh` auth when INBOX_SYNC_TOKEN is unset.
+# Mirror open issues/PRs from a set of GitHub search queries onto a
+# Projects v2 board, populating a configured text field with the author
+# login. Reads a JSON spec from scripts/sync-specs/<board>.json:
 #
-# Steady-state cost: one item-list + six search calls. Mutations (item-add,
-# item-edit) fire only for new URLs or stale Filed by values, so a board
-# that's already in sync costs ~7 API calls regardless of board size.
+#   {
+#     "owner": "alunduil",
+#     "title": "Inbox",
+#     "filed_by_field": "Filed by",
+#     "sources": [
+#       { "type": "owner", "logins": [...] },
+#       { "type": "author", "login": "..." },
+#       { "type": "assignee", "login": "..." }
+#     ]
+#   }
+#
+# Runs hourly from CI; safe to invoke locally — falls back to ambient
+# `gh` auth when GITHUB_PROJECT_SYNC_TOKEN is unset.
+#
+# Steady-state cost: one item-list + one search per source-leg. Mutations
+# (item-add, item-edit) fire only for new URLs or stale filed-by values.
 
 set -euo pipefail
 
-PROJECT_OWNER=alunduil
-PROJECT_TITLE=Inbox
-FILED_BY_FIELD_NAME='Filed by'
+if [[ $# -ne 1 ]]; then
+  echo "usage: $0 <spec.json>" >&2
+  exit 64
+fi
+
+SPEC=$1
+[[ -r ${SPEC} ]] || {
+  echo "error: cannot read spec '${SPEC}'" >&2
+  exit 1
+}
+
+PROJECT_OWNER=$(jq -r '.owner' "${SPEC}")
+PROJECT_TITLE=$(jq -r '.title' "${SPEC}")
+FILED_BY_FIELD_NAME=$(jq -r '.filed_by_field' "${SPEC}")
 SEARCH_LIMIT=1000
-# Comfortable headroom above the current ~520 items on the board.
+# Comfortable headroom above the current ~520 items on the largest board.
 PROJECT_LIMIT=5000
 
-if [[ -n ${INBOX_SYNC_TOKEN:-} ]]; then
-  export GH_TOKEN=${INBOX_SYNC_TOKEN}
+if [[ -n ${GITHUB_PROJECT_SYNC_TOKEN:-} ]]; then
+  export GH_TOKEN=${GITHUB_PROJECT_SYNC_TOKEN}
 fi
 
 # Resolve project and field IDs by title/name so disaster-recovery (board
-# recreation) doesn't strand this script. Mirrors the lookup-by-title
-# pattern in scripts/bootstrap-projects.sh.
+# recreation) doesn't strand this script.
 project_match=$(
   gh project list --owner "${PROJECT_OWNER}" --limit 100 --format json \
     --jq ".projects | map(select(.title == \"${PROJECT_TITLE}\"))"
@@ -49,6 +70,9 @@ if [[ -z ${FILED_BY_FIELD_ID} || ${FILED_BY_FIELD_ID} == null ]]; then
   exit 1
 fi
 
+# `gh project item-list` lower-cases custom field names as JSON keys.
+filed_by_key=${FILED_BY_FIELD_NAME,,}
+
 declare -A existing_id existing_filed
 
 while IFS=$'\t' read -r url filed item_id; do
@@ -58,11 +82,32 @@ while IFS=$'\t' read -r url filed item_id; do
 done < <(
   gh project item-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" \
     --format json --limit "${PROJECT_LIMIT}" \
-    --jq '.items[] | select(.content.url) | "\(.content.url)\t\(.["filed by"] // "")\t\(.id)"'
+    --jq ".items[] | select(.content.url) | \"\\(.content.url)\\t\\(.[\"${filed_by_key}\"] // \"\")\\t\\(.id)\""
 )
 
-owner_args=(--owner=alunduil --owner=dungeon-studio --owner=qua-world)
 jq_pair='.[] | "\(.url)\t\(.author.login // "unknown")"'
+
+# Emit one gh-search argument string per source-leg. Two legs per source
+# (issues + prs). The trailing word-split on $leg in the consumer is
+# intentional; arguments are jq-controlled, not user input.
+search_legs() {
+  jq -r '
+    .sources[] |
+    if .type == "owner" then
+      ([.logins[] | "--owner=" + .] | join(" ")) as $owners |
+      "issues " + $owners,
+      "prs " + $owners
+    elif .type == "author" then
+      "issues --author=" + .login,
+      "prs --author=" + .login
+    elif .type == "assignee" then
+      "issues --assignee=" + .login,
+      "prs --assignee=" + .login
+    else
+      error("unknown source type: " + .type)
+    end
+  ' "${SPEC}"
+}
 
 added=0
 updated=0
@@ -95,20 +140,11 @@ while IFS=$'\t' read -r url author; do
     skipped=$((skipped + 1))
   fi
 done < <(
-  {
-    gh search issues "${owner_args[@]}" --state=open --archived=false \
+  while IFS= read -r leg; do
+    # shellcheck disable=SC2086 # $leg holds jq-controlled gh-search arguments
+    gh search ${leg} --state=open --archived=false \
       --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-    gh search prs "${owner_args[@]}" --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-    gh search issues --author=alunduil --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-    gh search issues --assignee=alunduil --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-    gh search prs --author=alunduil --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-    gh search prs --assignee=alunduil --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-  } | sort -u
+  done < <(search_legs) | sort -u
 )
 
 printf 'done: added=%d updated=%d skipped=%d\n' "$added" "$updated" "$skipped"

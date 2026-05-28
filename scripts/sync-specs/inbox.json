@@ -1,0 +1,10 @@
+{
+  "owner": "alunduil",
+  "title": "Inbox",
+  "filed_by_field": "Filed by",
+  "sources": [
+    { "type": "owner", "logins": ["alunduil", "dungeon-studio", "qua-world"] },
+    { "type": "author", "login": "alunduil" },
+    { "type": "assignee", "login": "alunduil" }
+  ]
+}

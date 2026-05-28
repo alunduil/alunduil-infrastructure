@@ -1,13 +1,18 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the Inbox sync PAT
+# Create the GitHub Projects sync PAT
 
-`INBOX_SYNC_TOKEN` authenticates the hourly Inbox sync workflow
-(`.github/workflows/sync-inbox-project.yml`). It's a fine-grained
-personal access token rather than a GitHub App so search can surface
-private items in repos outside `alunduil/`, `dungeon-studio/`, and
-`qua-world/` where the user is author or assignee.
+`GITHUB_PROJECT_SYNC_TOKEN` authenticates the hourly Projects sync
+workflow (`.github/workflows/sync-project.yml`), which mirrors open
+issues/PRs onto every board declared under `scripts/sync-specs/`.
+A fine-grained personal access token rather than a GitHub App so search
+can surface private items in repos outside `alunduil/`,
+`dungeon-studio/`, and `qua-world/` where the user is author or
+assignee.
+
+One token serves every board the workflow syncs — its scopes aren't
+tied to any specific board.
 
 ## Mint
 
@@ -25,10 +30,11 @@ private items in repos outside `alunduil/`, `dungeon-studio/`, and
 ## Use
 
 `scripts/configure-github-secrets.sh` pushes the token into the
-`INBOX_SYNC_TOKEN` repo secret. Source the value, then run the script:
+`GITHUB_PROJECT_SYNC_TOKEN` repo secret. Source the value, then run
+the script:
 
 ```sh
-export INBOX_SYNC_TOKEN=...
+export GITHUB_PROJECT_SYNC_TOKEN=...
 scripts/configure-github-secrets.sh
 ```
 
