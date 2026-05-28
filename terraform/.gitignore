@@ -6,6 +6,10 @@
 *.tfstate.*
 .terraform/
 
+# Lock files under modules/ are side effects of the terraform_validate
+# pre-commit hook; only root configs pin providers.
+modules/**/.terraform.lock.hcl
+
 # Crash log files
 crash.log
 crash.*.log
