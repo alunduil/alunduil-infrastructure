@@ -2,28 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Idempotently configures the seven GitHub Actions secrets that the
-# Terraform CI workflows and the Projects sync workflow consume.
-#
-# Four values come from `terraform output` against terraform/bootstrap/:
-#   - GCP_RO_WORKLOAD_IDENTITY_PROVIDER, GCP_RO_SERVICE_ACCOUNT_EMAIL
-#   - GCP_RW_WORKLOAD_IDENTITY_PROVIDER, GCP_RW_SERVICE_ACCOUNT_EMAIL
-#
-# The Cloudflare deployer tokens are not GitHub Actions secrets: the
-# Terraform workflows authenticate to GCP via WIF and then fetch the
-# token from Secret Manager at apply time. The token value never lives
-# in Actions.
-#
-# Three are externally provided and resolved env var → existing secret →
-# prompt (so re-running with neither env nor existing prompts once):
-#   - GH_APP_ID                — env var GH_APP_ID
-#   - GH_APP_PRIVATE_KEY       — read from a .pem file path supplied via
-#                                env var GH_APP_PRIVATE_KEY_FILE
-#   - GITHUB_PROJECT_SYNC_TOKEN — env var GITHUB_PROJECT_SYNC_TOKEN;
-#                                fine-grained PAT for sync-project.yml.
-#                                See docs/how-to/create-github-project-sync-token.md.
-#
-# Re-running is a no-op: `gh secret set` upserts.
+# Configures the GitHub Actions secrets the CI workflows consume.
+# Re-running is a no-op.
 
 set -euo pipefail
 
@@ -58,9 +38,6 @@ RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_r
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
 
-# Print App-creation pointer once upfront if either GH App value needs a
-# prompt — running the prompts inside command substitution would lose any
-# state set in the subshell.
 print_gh_app_pointer() {
   cat >&2 <<'EOF'
 
@@ -150,8 +127,6 @@ GH_APP_ID_VALUE="$(resolve_gh_app_id)"
 GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
 GITHUB_PROJECT_SYNC_TOKEN_VALUE="$(resolve_project_sync_token)"
 
-# Same WIF provider value maps to RO and RW secret names for symmetry
-# with the workflow consumers (see #63).
 declare -A SECRETS=(
   [GCP_RO_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
   [GCP_RO_SERVICE_ACCOUNT_EMAIL]="${RO_SA_EMAIL}"
@@ -192,5 +167,5 @@ if [[ -n "${missing}" ]]; then
 fi
 
 if [[ -z "${unexpected}" && -z "${missing}" ]]; then
-  echo "All seven secrets present, no drift."
+  echo "No drift."
 fi
