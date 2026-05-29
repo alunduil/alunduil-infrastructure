@@ -69,7 +69,7 @@ repos:
       - id: renovate-config-validator
         args: [--strict, --no-global]
 
-  # justfile format and parse check
+  # Local hooks
   - repo: local
     hooks:
       - id: just-fmt-check
@@ -77,4 +77,13 @@ repos:
         entry: just --fmt --check
         language: system
         files: ^justfile$
+        pass_filenames: false
+
+      # Regenerate docs/architecture/*.md from workspace.dsl so the
+      # committed Mermaid views stay in sync with the DSL.
+      - id: architecture-export
+        name: docs/architecture Mermaid export
+        entry: scripts/architecture-export.sh
+        language: system
+        files: ^(docs/architecture/workspace\.dsl|scripts/architecture-export\.sh)$
         pass_filenames: false
