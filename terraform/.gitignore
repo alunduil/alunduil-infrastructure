@@ -6,6 +6,10 @@
 *.tfstate.*
 .terraform/
 
+# Only root configs are init'd; a lock file under modules/ is a stray
+# from `terraform init` in a child-module dir, not a committed lock.
+modules/**/.terraform.lock.hcl
+
 # Crash log files
 crash.log
 crash.*.log
