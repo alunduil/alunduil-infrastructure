@@ -16,6 +16,7 @@ jobs:
   inbox:
     name: Sync the Inbox board
     runs-on: ubuntu-latest
+    environment: project-sync
     timeout-minutes: 10
 
     steps:

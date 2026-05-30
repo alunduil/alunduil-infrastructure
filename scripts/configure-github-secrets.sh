@@ -26,6 +26,11 @@ REPO_ROOT="$(git rev-parse --show-toplevel)" || {
 }
 BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
 
+# The Projects sync token is scoped to this deployment environment
+# (restricted to main) so only the sync workflow, which declares the
+# environment, can read it. Every other secret stays repo-level.
+ENVIRONMENT="project-sync"
+
 gh auth status >/dev/null 2>&1 || {
   echo "error: gh is not authenticated; run 'gh auth login'" >&2
   exit 1
@@ -37,6 +42,9 @@ RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_r
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
+
+existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
+has_env_secret() { grep -Fxq "$1" <<<"${existing_env_secrets}"; }
 
 print_gh_app_pointer() {
   cat >&2 <<'EOF'
@@ -56,7 +64,7 @@ needs_key_prompt() {
 }
 
 needs_token_prompt() {
-  [[ -z "${GITHUB_PROJECT_SYNC_TOKEN:-}" ]] && ! has_secret "GITHUB_PROJECT_SYNC_TOKEN"
+  [[ -z "${GITHUB_PROJECT_SYNC_TOKEN:-}" ]] && ! has_env_secret "GITHUB_PROJECT_SYNC_TOKEN"
 }
 
 print_project_sync_token_pointer() {
@@ -112,14 +120,33 @@ resolve_gh_app_private_key() {
 resolve_project_sync_token() {
   if [[ -n "${GITHUB_PROJECT_SYNC_TOKEN:-}" ]]; then
     printf '%s' "${GITHUB_PROJECT_SYNC_TOKEN}"
-  elif has_secret "GITHUB_PROJECT_SYNC_TOKEN"; then # pragma: allowlist secret
-    echo "GITHUB_PROJECT_SYNC_TOKEN already set in repo secrets; leaving as-is" >&2
+  elif has_env_secret "GITHUB_PROJECT_SYNC_TOKEN"; then # pragma: allowlist secret
+    echo "GITHUB_PROJECT_SYNC_TOKEN already set in the ${ENVIRONMENT} environment; leaving as-is" >&2
     printf '__KEEP__'
   else
     local value
     read -r -s -p "Paste GITHUB_PROJECT_SYNC_TOKEN (input hidden, then press Enter): " value
     echo >&2
     printf '%s' "${value}"
+  fi
+}
+
+ensure_environment() {
+  gh api -X PUT "repos/{owner}/{repo}/environments/${ENVIRONMENT}" \
+    --input - >/dev/null <<'JSON'
+{
+  "deployment_branch_policy": {
+    "protected_branches": false,
+    "custom_branch_policies": true
+  }
+}
+JSON
+  local policies
+  policies="$(gh api "repos/{owner}/{repo}/environments/${ENVIRONMENT}/deployment-branch-policies" \
+    --jq '.branch_policies[].name' 2>/dev/null || true)"
+  if ! grep -Fxq "main" <<<"${policies}"; then
+    gh api -X POST "repos/{owner}/{repo}/environments/${ENVIRONMENT}/deployment-branch-policies" \
+      -f "name=main" >/dev/null
   fi
 }
 
@@ -134,7 +161,6 @@ declare -A SECRETS=(
   [GCP_RW_SERVICE_ACCOUNT_EMAIL]="${RW_SA_EMAIL}"
   [GH_APP_ID]="${GH_APP_ID_VALUE}"
   [GH_APP_PRIVATE_KEY]="${GH_APP_PRIVATE_KEY_VALUE}"
-  [GITHUB_PROJECT_SYNC_TOKEN]="${GITHUB_PROJECT_SYNC_TOKEN_VALUE}"
 )
 
 for name in "${!SECRETS[@]}"; do
@@ -144,6 +170,13 @@ for name in "${!SECRETS[@]}"; do
   echo "Setting secret: ${name}"
   gh secret set "${name}" --body "${SECRETS[${name}]}"
 done
+
+ensure_environment
+if [[ "${GITHUB_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
+  echo "Setting secret: GITHUB_PROJECT_SYNC_TOKEN (environment: ${ENVIRONMENT})"
+  gh secret set GITHUB_PROJECT_SYNC_TOKEN --env "${ENVIRONMENT}" \
+    --body "${GITHUB_PROJECT_SYNC_TOKEN_VALUE}"
+fi
 
 echo
 echo "== Drift check =="

@@ -23,6 +23,14 @@ both for first-time setup and for rotation.
     - **Pull requests: Read**
 6. Click **Generate token** and copy the value.
 
+Every grant is read-only except **Projects: Read and write**, which
+the sync needs to add and update board items. **All repositories** is
+required because the board mirrors issues and pull requests you're
+assigned to across repos the token can't enumerate ahead of time;
+narrowing the repository access would silently drop those items. Keep
+this set on rotation — don't add **Contents** or other write scopes
+the sync doesn't use.
+
 ## Install the token
 
 Export the value and run the secrets script:
@@ -33,7 +41,10 @@ scripts/configure-github-secrets.sh
 ```
 
 The script upserts the secret; re-running with the same value is a
-no-op.
+no-op. It stores the token on the `project-sync` deployment
+environment (restricted to `main`), not as a repo secret, so only the
+sync workflow — which declares that environment — can read it. The
+other CI secrets stay repo-level.
 
 ## Rotate
 
