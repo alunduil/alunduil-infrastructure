@@ -6,8 +6,8 @@
 *.tfstate.*
 .terraform/
 
-# Lock files under modules/ are side effects of the terraform_validate
-# pre-commit hook; only root configs pin providers.
+# Only root configs are init'd; a lock file under modules/ is a stray
+# from `terraform init` in a child-module dir, not a committed lock.
 modules/**/.terraform.lock.hcl
 
 # Crash log files
