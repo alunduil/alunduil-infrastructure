@@ -18,9 +18,11 @@ both for first-time setup and for rotation.
     - **`project`** — add and update board items.
     - **`repo`** — read issues and pull requests across the board's
       sources, private repos included.
+    - **`read:org`** — resolve the org-owned sources; `gh project`
+      also needs it to look up the board's owner, even a user one.
 5. Click **Generate token** and copy the value.
 
-Keep the scope set to `project` + `repo` on rotation. If
+Keep the scope set to `project` + `repo` + `read:org` on rotation. If
 `dungeon-studio` or `qua-world` restricts classic-token access in its
 org settings, approve this token there too or its items won't sync.
 
