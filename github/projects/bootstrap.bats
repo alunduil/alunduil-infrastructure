@@ -8,7 +8,7 @@
 # live Inbox project, which alunduil performs out-of-band.
 
 setup() {
-  # shellcheck source=bootstrap.sh
+  # shellcheck source=bootstrap.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/bootstrap.sh"
 }
 

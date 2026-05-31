@@ -66,8 +66,8 @@ graphql() {
   local response
   response=$(
     jq -n --arg q "$query" --argjson v "$variables" \
-      '{query: $q, variables: $v}' |
-      gh api graphql --input -
+      '{query: $q, variables: $v}' \
+      | gh api graphql --input -
   )
   if jq -e '.errors' <<<"$response" >/dev/null 2>&1; then
     echo "GraphQL request failed:" >&2
@@ -129,8 +129,8 @@ resolve_project() {
 
   local matches count
   matches=$(
-    gh project list --owner "$owner" --limit 100 --format json |
-      jq -c --arg title "$title" \
+    gh project list --owner "$owner" --limit 100 --format json \
+      | jq -c --arg title "$title" \
         '.projects | map(select(.title == $title))'
   )
   count=$(jq 'length' <<<"$matches")
@@ -146,8 +146,8 @@ resolve_project() {
   fi
 
   echo "  Creating project '$title' under @$owner..." >&2
-  gh project create --owner "$owner" --title "$title" --format json |
-    jq -r '"\(.id)|\(.number)|\(.url)"'
+  gh project create --owner "$owner" --title "$title" --format json \
+    | jq -r '"\(.id)|\(.number)|\(.url)"'
 }
 
 # Fetch all fields for a project, including SINGLE_SELECT option metadata
@@ -168,8 +168,8 @@ fetch_fields() {
         }
       }
     }
-  }' "$(jq -n --arg pid "$project_id" '{projectId: $pid}')" |
-    jq -c '.data.node.fields.nodes'
+  }' "$(jq -n --arg pid "$project_id" '{projectId: $pid}')" \
+    | jq -c '.data.node.fields.nodes'
 }
 
 # Apply one SINGLE_SELECT field spec. Creates if missing; converges options
@@ -333,6 +333,7 @@ apply_spec() {
 
 # Skip main when sourced (e.g. by bootstrap.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
   return 0 2>/dev/null || true
 fi
 

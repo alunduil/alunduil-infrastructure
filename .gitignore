@@ -5,7 +5,7 @@
 *.json
 !*example*.json
 !renovate.json
-!.github/projects/*.json
+!github/projects/*.json
 
 # OS
 .DS_Store

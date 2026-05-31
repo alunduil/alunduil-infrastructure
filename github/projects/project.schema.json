@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/alunduil/alunduil-infrastructure/github/projects/project.schema.json",
   "title": "GitHub Projects v2 spec",
-  "description": "Declarative schema for a GitHub Project (Projects v2), applied by github/projects/bootstrap.sh. One file per Project under github/projects/. The current spec format mixes desired state with continuity hints (option IDs) — see issue #90 for the cleaner split planned in a future tool.",
+  "description": "Declarative spec for a GitHub Project (Projects v2). The `fields` half is applied by github/projects/bootstrap.sh; the optional `filed_by_field`/`sources` half configures the #73 hourly sync workflow (sync-project.sh). One file per Project under github/projects/. The format mixes desired state with continuity hints (option IDs) and two tools' concerns — see issue #90 for the cleaner split planned in a future tool.",
   "$comment": "Enum values and the option-input shape mirror GitHub's GraphQL schema (which is the canonical source — GitHub does not publish a JSON Schema for Projects v2). To refresh against introspection, run:\n\n  gh api graphql -f query='{ color: __type(name: \"ProjectV2SingleSelectFieldOptionColor\") { enumValues { name } } fieldType: __type(name: \"ProjectV2CustomFieldType\") { enumValues { name } } optionInput: __type(name: \"ProjectV2SingleSelectFieldOptionInput\") { inputFields { name } } }'\n\nProjectV2CustomFieldType also includes ITERATION; the script does not yet provision iteration fields, so the type enums below intentionally omit it.",
   "type": "object",
   "additionalProperties": false,
@@ -26,9 +26,30 @@
       "$comment": "GitHub Projects v2 documents a 50-field-per-project cap that includes built-ins (~13). Custom-field budget is therefore around 37; this is a generous outer bound rather than a precise budget.",
       "maxItems": 50,
       "items": {"$ref": "#/$defs/field"}
+    },
+    "filed_by_field": {
+      "type": "string",
+      "description": "Name of the TEXT field the #73 sync workflow stamps with each item's source. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`.",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "description": "Issue/PR sources the #73 sync workflow mirrors into the board. Consumed by sync-project.sh, not by bootstrap.sh.",
+      "items": {"$ref": "#/$defs/source"}
     }
   },
   "$defs": {
+    "source": {
+      "description": "One issue/PR source for the #73 sync workflow. `owner` sources use `logins` (accounts whose repos are scanned); `author`/`assignee` use a single `login`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["owner", "author", "assignee"]},
+        "login": {"type": "string", "minLength": 1},
+        "logins": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
     "field": {
       "oneOf": [
         {"$ref": "#/$defs/singleSelectField"},
