@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# bootstrap-projects.sh — apply declarative GitHub Projects v2 schema specs
+# bootstrap.sh — apply declarative GitHub Projects v2 schema specs
 # from github/projects/*.json. Idempotent: a clean re-run is a strict no-op.
 #
 # Why bash? The integrations/github Terraform provider does not support
@@ -331,7 +331,7 @@ apply_spec() {
 # Main
 # ---------------------------------------------------------------------------
 
-# Skip main when sourced (e.g. by bootstrap-projects.bats).
+# Skip main when sourced (e.g. by bootstrap.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi
