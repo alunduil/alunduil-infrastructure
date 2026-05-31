@@ -64,13 +64,13 @@ needs_key_prompt() {
 }
 
 needs_token_prompt() {
-  [[ -z "${GITHUB_PROJECT_SYNC_TOKEN:-}" ]] && ! has_env_secret "GITHUB_PROJECT_SYNC_TOKEN"
+  [[ -z "${GH_PROJECT_SYNC_TOKEN:-}" ]] && ! has_env_secret "GH_PROJECT_SYNC_TOKEN"
 }
 
 print_project_sync_token_pointer() {
   cat >&2 <<'EOF'
 
-GITHUB_PROJECT_SYNC_TOKEN authenticates the hourly Projects sync workflow.
+GH_PROJECT_SYNC_TOKEN authenticates the hourly Projects sync workflow.
 If you haven't created one yet, see
 docs/how-to/create-github-project-sync-token.md.
 
@@ -118,14 +118,14 @@ resolve_gh_app_private_key() {
 }
 
 resolve_project_sync_token() {
-  if [[ -n "${GITHUB_PROJECT_SYNC_TOKEN:-}" ]]; then
-    printf '%s' "${GITHUB_PROJECT_SYNC_TOKEN}"
-  elif has_env_secret "GITHUB_PROJECT_SYNC_TOKEN"; then # pragma: allowlist secret
-    echo "GITHUB_PROJECT_SYNC_TOKEN already set in the ${ENVIRONMENT} environment; leaving as-is" >&2
+  if [[ -n "${GH_PROJECT_SYNC_TOKEN:-}" ]]; then
+    printf '%s' "${GH_PROJECT_SYNC_TOKEN}"
+  elif has_env_secret "GH_PROJECT_SYNC_TOKEN"; then # pragma: allowlist secret
+    echo "GH_PROJECT_SYNC_TOKEN already set in the ${ENVIRONMENT} environment; leaving as-is" >&2
     printf '__KEEP__'
   else
     local value
-    read -r -s -p "Paste GITHUB_PROJECT_SYNC_TOKEN (input hidden, then press Enter): " value
+    read -r -s -p "Paste GH_PROJECT_SYNC_TOKEN (input hidden, then press Enter): " value
     echo >&2
     printf '%s' "${value}"
   fi
@@ -152,7 +152,7 @@ JSON
 
 GH_APP_ID_VALUE="$(resolve_gh_app_id)"
 GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
-GITHUB_PROJECT_SYNC_TOKEN_VALUE="$(resolve_project_sync_token)"
+GH_PROJECT_SYNC_TOKEN_VALUE="$(resolve_project_sync_token)"
 
 declare -A SECRETS=(
   [GCP_RO_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
@@ -172,10 +172,10 @@ for name in "${!SECRETS[@]}"; do
 done
 
 ensure_environment
-if [[ "${GITHUB_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
-  echo "Setting secret: GITHUB_PROJECT_SYNC_TOKEN (environment: ${ENVIRONMENT})"
-  gh secret set GITHUB_PROJECT_SYNC_TOKEN --env "${ENVIRONMENT}" \
-    --body "${GITHUB_PROJECT_SYNC_TOKEN_VALUE}"
+if [[ "${GH_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
+  echo "Setting secret: GH_PROJECT_SYNC_TOKEN (environment: ${ENVIRONMENT})"
+  gh secret set GH_PROJECT_SYNC_TOKEN --env "${ENVIRONMENT}" \
+    --body "${GH_PROJECT_SYNC_TOKEN_VALUE}"
 fi
 
 echo
