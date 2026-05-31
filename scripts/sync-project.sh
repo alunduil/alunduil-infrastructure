@@ -18,7 +18,7 @@
 #   }
 #
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
-# `gh` auth when GITHUB_PROJECT_SYNC_TOKEN is unset.
+# `gh` auth when GH_PROJECT_SYNC_TOKEN is unset.
 #
 # Steady-state cost: one item-list + one search per source-leg. Mutations
 # (item-add, item-edit) fire only for new URLs or stale filed-by values.
@@ -43,8 +43,8 @@ SEARCH_LIMIT=1000
 # Comfortable headroom above the current ~520 items on the largest board.
 PROJECT_LIMIT=5000
 
-if [[ -n ${GITHUB_PROJECT_SYNC_TOKEN:-} ]]; then
-  export GH_TOKEN=${GITHUB_PROJECT_SYNC_TOKEN}
+if [[ -n ${GH_PROJECT_SYNC_TOKEN:-} ]]; then
+  export GH_TOKEN=${GH_PROJECT_SYNC_TOKEN}
 fi
 
 # Resolve project and field IDs by title/name so disaster-recovery (board

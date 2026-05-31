@@ -29,5 +29,5 @@ jobs:
           # scripts/configure-github-secrets.sh. One token serves every
           # board the script syncs. See
           # docs/how-to/create-github-project-sync-token.md for scopes.
-          GITHUB_PROJECT_SYNC_TOKEN: ${{ secrets.GITHUB_PROJECT_SYNC_TOKEN }}
+          GH_PROJECT_SYNC_TOKEN: ${{ secrets.GH_PROJECT_SYNC_TOKEN }}
         run: ./scripts/sync-project.sh github/projects/inbox.json

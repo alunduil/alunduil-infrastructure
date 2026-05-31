@@ -4,7 +4,7 @@
 # Create the GitHub Projects sync PAT
 
 Generate and install the personal access token that the Projects
-sync workflow reads from `GITHUB_PROJECT_SYNC_TOKEN`. Follow this
+sync workflow reads from `GH_PROJECT_SYNC_TOKEN`. Follow this
 both for first-time setup and for rotation.
 
 ## Generate the token
@@ -29,7 +29,7 @@ org settings, approve this token there too or its items won't sync.
 Export the value and run the secrets script:
 
 ```sh
-export GITHUB_PROJECT_SYNC_TOKEN=<paste-here>
+export GH_PROJECT_SYNC_TOKEN=<paste-here>
 scripts/configure-github-secrets.sh
 ```
 
