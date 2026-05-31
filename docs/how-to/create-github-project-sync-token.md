@@ -9,27 +9,20 @@ both for first-time setup and for rotation.
 
 ## Generate the token
 
-1. Open <https://github.com/settings/tokens?type=beta>.
-2. Click **Generate new token**.
-3. Fill in:
-    - **Token name**: any (e.g. `alunduil-infrastructure-project-sync`).
-    - **Resource owner**: `alunduil`.
-    - **Expiration**: 1 year (the fine-grained cap).
-    - **Repository access**: **All repositories**.
-4. Under **Account permissions**, grant **Projects: Read and write**.
-5. Under **Repository permissions**, grant:
-    - **Metadata: Read**
-    - **Issues: Read**
-    - **Pull requests: Read**
-6. Click **Generate token** and copy the value.
+1. Open <https://github.com/settings/tokens> and click
+   **Generate new token (classic)**. A fine-grained token can't write
+   a user-owned Projects v2 board.
+2. **Note**: any (e.g. `alunduil-infrastructure-project-sync`).
+3. **Expiration**: 1 year.
+4. Select scopes:
+    - **`project`** — add and update board items.
+    - **`repo`** — read issues and pull requests across the board's
+      sources, private repos included.
+5. Click **Generate token** and copy the value.
 
-Every grant is read-only except **Projects: Read and write**, which
-the sync needs to add and update board items. **All repositories** is
-required because the board mirrors issues and pull requests you're
-assigned to across repos the token can't enumerate ahead of time;
-narrowing the repository access would silently drop those items. Keep
-this set on rotation — don't add **Contents** or other write scopes
-the sync doesn't use.
+Keep the scope set to `project` + `repo` on rotation. If
+`dungeon-studio` or `qua-world` restricts classic-token access in its
+org settings, approve this token there too or its items won't sync.
 
 ## Install the token
 
