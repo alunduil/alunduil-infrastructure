@@ -53,7 +53,7 @@
 
 set -euo pipefail
 
-SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/github/projects}"
+SPECS_DIR="${SPECS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -331,7 +331,7 @@ apply_spec() {
 # Main
 # ---------------------------------------------------------------------------
 
-# Skip main when sourced (e.g. by scripts/bootstrap-projects.bats).
+# Skip main when sourced (e.g. by bootstrap-projects.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi

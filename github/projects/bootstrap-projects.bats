@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for the pure helpers in scripts/bootstrap-projects.sh
+# Unit tests for the pure helpers in bootstrap-projects.sh
 # (to_key, converge_options, options_equal). Network-touching code paths
 # are not exercised — they're covered by running the script against the
 # live Inbox project, which alunduil performs out-of-band.
