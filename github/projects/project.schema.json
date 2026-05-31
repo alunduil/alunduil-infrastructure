@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alunduil/alunduil-infrastructure/github/projects/project.schema.json",
+  "title": "GitHub Projects v2 spec",
+  "description": "Declarative spec for a GitHub Project (Projects v2). The `fields` half is applied by github/projects/bootstrap.sh; the optional `filed_by_field`/`sources` half configures the #73 hourly sync workflow (sync-project.sh). One file per Project under github/projects/. The format mixes desired state with continuity hints (option IDs) and two tools' concerns — see issue #90 for the cleaner split planned in a future tool.",
+  "$comment": "Enum values and the option-input shape mirror GitHub's GraphQL schema (which is the canonical source — GitHub does not publish a JSON Schema for Projects v2). To refresh against introspection, run:\n\n  gh api graphql -f query='{ color: __type(name: \"ProjectV2SingleSelectFieldOptionColor\") { enumValues { name } } fieldType: __type(name: \"ProjectV2CustomFieldType\") { enumValues { name } } optionInput: __type(name: \"ProjectV2SingleSelectFieldOptionInput\") { inputFields { name } } }'\n\nProjectV2CustomFieldType also includes ITERATION; the script does not yet provision iteration fields, so the type enums below intentionally omit it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "title", "fields"],
+  "properties": {
+    "owner": {
+      "type": "string",
+      "description": "GitHub login that owns the project (user or organisation). Standard 1–39-char login rule: alphanumerics with single internal hyphens; no leading, trailing, or consecutive hyphens.",
+      "minLength": 1,
+      "maxLength": 39,
+      "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|-(?=[a-zA-Z\\d])){0,38}$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Project title. Lookup is by title, not number, so renaming the Project in the UI requires updating this spec.",
+      "minLength": 1
+    },
+    "fields": {
+      "type": "array",
+      "description": "Custom fields the script manages. Built-in fields (Title, Assignees, …) and any field not listed here are left alone.",
+      "$comment": "GitHub Projects v2 documents a 50-field-per-project cap that includes built-ins (~13). Custom-field budget is therefore around 37; this is a generous outer bound rather than a precise budget.",
+      "maxItems": 50,
+      "items": {"$ref": "#/$defs/field"}
+    },
+    "filed_by_field": {
+      "type": "string",
+      "description": "Name of the TEXT field the #73 sync workflow stamps with each item's source. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`.",
+      "minLength": 1
+    },
+    "sources": {
+      "type": "array",
+      "description": "Issue/PR sources the #73 sync workflow mirrors into the board. Consumed by sync-project.sh, not by bootstrap.sh.",
+      "items": {"$ref": "#/$defs/source"}
+    }
+  },
+  "$defs": {
+    "source": {
+      "description": "One issue/PR source for the #73 sync workflow. `owner` sources use `logins` (accounts whose repos are scanned); `author`/`assignee` use a single `login`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["owner", "author", "assignee"]},
+        "login": {"type": "string", "minLength": 1},
+        "logins": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "field": {
+      "oneOf": [
+        {"$ref": "#/$defs/singleSelectField"},
+        {"$ref": "#/$defs/simpleField"}
+      ]
+    },
+    "singleSelectField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "options"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "type": {
+          "const": "SINGLE_SELECT",
+          "description": "Subset of GraphQL ProjectV2CustomFieldType. The script splits SINGLE_SELECT off into its own field variant because it has options + colors to converge."
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/option"}
+        }
+      }
+    },
+    "simpleField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "type": {
+          "enum": ["TEXT", "NUMBER", "DATE"],
+          "description": "Subset of GraphQL ProjectV2CustomFieldType minus SINGLE_SELECT (handled separately) and minus ITERATION (not yet supported by the script)."
+        }
+      }
+    },
+    "option": {
+      "description": "Mirrors GraphQL ProjectV2SingleSelectFieldOptionInput (id, name, color, description).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "color"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "GitHub-assigned option ID. Not declarative — it's a continuity hint so a UI rename can be reverted to the canonical name without orphaning items (matching is ID-first, name second). Capture the ID after creation; omit for new options. Tracked separately in the cleaner tool planned in #90.",
+          "pattern": "^[a-f0-9]{8}$"
+        },
+        "name": {"type": "string", "minLength": 1},
+        "color": {
+          "type": "string",
+          "description": "GraphQL ProjectV2SingleSelectFieldOptionColor enum.",
+          "enum": ["GRAY", "BLUE", "GREEN", "YELLOW", "ORANGE", "RED", "PINK", "PURPLE"]
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    }
+  }
+}

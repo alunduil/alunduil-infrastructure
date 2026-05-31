@@ -33,6 +33,12 @@ check what's already in place:
 
 - Helper scripts: `scripts/`. New shell helpers go here, not the
   repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+- GitHub Projects v2: self-contained module at `github/projects/`
+  (applier `bootstrap.sh` + `*.bats` tests + `*.json`
+  specs + `project.schema.json`), co-located for locality absent a
+  Projects v2 provider. #90 tracks the declarative replacement.
+  Deliberate exception to the `scripts/` rule above — don't move it
+  back.
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
 - Credentials: README §"Running an apply" names the env vars

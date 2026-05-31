@@ -39,6 +39,16 @@ repos:
       - id: yamllint
         args: [--strict]
 
+  # Project spec validation
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.37.2
+    hooks:
+      - id: check-jsonschema
+        name: check project spec schema
+        files: ^github/projects/[^/]+\.json$
+        exclude: \.schema\.json$
+        args: [--schemafile, github/projects/project.schema.json]
+
   # Shell script linting and formatting
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0
