@@ -47,6 +47,18 @@ if [[ -n ${GH_PROJECT_SYNC_TOKEN:-} ]]; then
   export GH_TOKEN=${GH_PROJECT_SYNC_TOKEN}
 fi
 
+# Fail fast with an actionable message instead of letting the first `gh`
+# call below die with an opaque exit 4. Catches the CI case (token unset
+# or invalid on the project-sync environment) and a local run with no
+# ambient `gh` auth.
+if ! gh auth status >/dev/null 2>&1; then
+  echo "error: no usable GitHub auth for the sync" >&2
+  echo "  CI: set GH_PROJECT_SYNC_TOKEN on the project-sync environment" >&2
+  echo "      (docs/how-to/create-github-project-sync-token.md)" >&2
+  echo "  local: run 'gh auth login'" >&2
+  exit 4
+fi
+
 # Resolve project and field IDs by title/name so disaster-recovery (board
 # recreation) doesn't strand this script.
 project_match=$(
