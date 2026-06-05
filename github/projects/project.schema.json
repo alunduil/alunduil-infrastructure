@@ -32,6 +32,21 @@
       "description": "Name of the TEXT field the #73 sync workflow stamps with each item's source. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`.",
       "minLength": 1
     },
+    "status_field": {
+      "type": "string",
+      "description": "Name of the SINGLE_SELECT field the #73 sync workflow sets per item type. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`. Requires `pr_status` and `issue_status`.",
+      "minLength": 1
+    },
+    "pr_status": {
+      "type": "string",
+      "description": "Option name in `status_field` assigned to pull requests. Consumed by sync-project.sh; must match an option declared on that field.",
+      "minLength": 1
+    },
+    "issue_status": {
+      "type": "string",
+      "description": "Option name in `status_field` assigned to issues. Consumed by sync-project.sh; must match an option declared on that field.",
+      "minLength": 1
+    },
     "sources": {
       "type": "array",
       "description": "Issue/PR sources the #73 sync workflow mirrors into the board. Consumed by sync-project.sh, not by bootstrap.sh.",
