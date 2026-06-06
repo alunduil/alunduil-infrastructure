@@ -24,14 +24,14 @@ forgotten. Reader who wants the full picture reads both repos.
 - [Containers — GitHub](container-github.md) — Level 2.
 - [Containers — Cloudflare](container-cloudflare.md) — Level 2.
 - [Containers — Home network](container-homenetwork.md) — Level 2.
+- [Deployment — Home network](deployment-homenetwork.md) — physical topology.
 
 C4 strict: independently installable apps are Containers, not
 Components. TrueNAS apps (Plex, Tailscale, observability) and SMB
-shares are modeled as Containers of `Home network`, visually grouped
-by the hardware they run on (TrueNAS / HAOS / Deco mesh / NanoPi).
-TrueNAS / HAOS / NanoPi hardware itself would belong in a C4
-Deployment View; not modeled today since the issue's threat-model
-purpose is covered by appliance-grouped Container views.
+shares are modeled as Containers of `Home network`. Where each runs —
+TrueNAS / HAOS / Deco mesh / off-site NanoPi — is the Deployment view's
+job, so the logical container view stays about what talks to what and
+the deployment view carries placement.
 
 ## Tooling
 
