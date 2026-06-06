@@ -25,6 +25,8 @@ forgotten. Reader who wants the full picture reads both repos.
 - [Containers — Cloudflare](container-cloudflare.md) — Level 2.
 - [Containers — Home network](container-homenetwork.md) — Level 2.
 - [Deployment — Home network](deployment-homenetwork.md) — physical topology.
+- [Trust model](trust-model.md) — hand-authored data-flow diagram of
+  an apply's identity + secret path and its trust boundaries.
 
 C4 strict: independently installable apps are Containers, not
 Components. TrueNAS apps (Plex, Tailscale, observability) and SMB
