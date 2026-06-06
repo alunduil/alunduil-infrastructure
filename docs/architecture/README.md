@@ -22,7 +22,6 @@ forgotten. Reader who wants the full picture reads both repos.
 - [Containers — alunduil-infrastructure](container-infra.md) — Level 2.
 - [Containers — GCP project](container-gcp.md) — Level 2.
 - [Containers — GitHub](container-github.md) — Level 2.
-- [Containers — Cloudflare](container-cloudflare.md) — Level 2.
 - [Containers — Home network](container-homenetwork.md) — Level 2.
 - [Deployment — Home network](deployment-homenetwork.md) — physical topology.
 - [Trust model](trust-model.md) — hand-authored data-flow diagram of

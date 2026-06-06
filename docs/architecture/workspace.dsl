@@ -60,16 +60,8 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             projectApis = container "Project services" "IAM, STS, ResourceManager, ServiceUsage, SecretManager, Storage" "Enabled APIs"
         }
 
-        cloudflare = softwareSystem "Cloudflare" {
-            description "DNS and zone settings for alunduil.com."
+        cloudflare = softwareSystem "Cloudflare" "Authoritative DNS, zone settings (SSL strict, DNSSEC), and deployer API tokens for alunduil.com." {
             tags "External"
-
-            zone = container "alunduil.com zone" "Authoritative NS = brenna/vick.ns.cloudflare.com; DNSSEC active" "Zone"
-            zoneSettings = container "Zone settings" "SSL=strict, min-TLS=1.2, always-use-https=on" "Settings"
-            dnsRecords = container "DNS records" "blog/home/plex CNAMEs; _keybase / _atproto TXT" "DNS"
-            cfTokenRO = container "deployer-ro token" "Zone+DNS+Settings Read on alunduil.com" "API token"
-            cfTokenRW = container "deployer-rw token" "Zone Read, DNS+Settings Write on alunduil.com" "API token"
-            cfMasterToken = container "master token" "Operator-only; minted before bootstrap apply, revoked after" "API token (ephemeral)"
         }
 
         # ----- External actors / systems (no Level 2 from this repo) -----
@@ -174,19 +166,15 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         tfApp -> haskellRepos "Manages"
         tfApp -> otherRepos "Manages"
 
-        # Cloudflare token flow
-        cfMasterToken -> cfTokenRO "Mints once, then revoked"
-        cfMasterToken -> cfTokenRW "Mints once, then revoked"
-        cfTokenRO -> secretCfRo "Value stored in"
-        cfTokenRW -> secretCfRw "Value stored in"
-
-        # DNS surface
+        # DNS surface. Cloudflare's deployer-token and zone-setting detail
+        # lives in the trust model; here it's the external box the zone's
+        # records point at.
         repoBlog -> pagesEdge "Built and published to"
-        dnsRecords -> pagesEdge "blog.alunduil.com → alunduil.github.io"
-        dnsRecords -> tplinkDdns "home.alunduil.com → alunduil.tplinkdns.com"
-        dnsRecords -> keybase "_keybase TXT"
-        dnsRecords -> bluesky "_atproto TXT"
-        zone -> squarespace "DS records delivered to registrar"
+        cloudflare -> pagesEdge "blog.alunduil.com → alunduil.github.io"
+        cloudflare -> tplinkDdns "home.alunduil.com → alunduil.tplinkdns.com"
+        cloudflare -> keybase "_keybase TXT"
+        cloudflare -> bluesky "_atproto TXT"
+        cloudflare -> squarespace "DS records delivered to registrar"
 
         # Home network ingress: plex.alunduil.com → home.alunduil.com →
         # alunduil.tplinkdns.com → home WAN → Deco port-forward → Plex.
@@ -259,12 +247,6 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             include *
             autolayout lr
             description "Level 2 — GitHub containers (App, Actions, managed repos)."
-        }
-
-        container cloudflare "Container-Cloudflare" {
-            include *
-            autolayout lr
-            description "Level 2 — Cloudflare containers."
         }
 
         container homeNetwork "Container-HomeNetwork" {

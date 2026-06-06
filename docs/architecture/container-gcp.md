@@ -16,8 +16,6 @@ graph LR
 
     10["<div style='font-weight: bold'>GitHub</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Source hosting, Actions<br />runtime, App identity<br />surface.</div>"]
     style 10 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    30["<div style='font-weight: bold'>Cloudflare</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>DNS and zone settings for<br />alunduil.com.</div>"]
-    style 30 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
     subgraph 20 ["GCP project (alunduil)"]
       style 20 fill:#ffffff,stroke:#6b6b6b,color:#6b6b6b
@@ -42,7 +40,6 @@ graph LR
       style 29 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
     10-. "<div>Presents OIDC token (repo<br />claim)</div><div style='font-size: 70%'></div>" .->23
     23-. "<div>Impersonate (plan jobs, any<br />branch)</div><div style='font-size: 70%'></div>" .->24
     23-. "<div>Impersonate (apply jobs,<br />refs/heads/main only)</div><div style='font-size: 70%'></div>" .->25
@@ -52,7 +49,5 @@ graph LR
     25-. "<div>Read+write state</div><div style='font-size: 70%'></div>" .->21
     24-. "<div>Access value</div><div style='font-size: 70%'></div>" .->26
     25-. "<div>Access value</div><div style='font-size: 70%'></div>" .->27
-    30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->26
-    30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->27
 
   end```

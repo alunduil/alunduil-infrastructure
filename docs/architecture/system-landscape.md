@@ -22,50 +22,49 @@ graph LR
     style 2 fill:#1168bd,stroke:#0b4884,color:#ffffff
     20["<div style='font-weight: bold'>GCP project (alunduil)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Single GCP project —<br />Terraform state + CI deployer<br />identity.</div>"]
     style 20 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    30["<div style='font-weight: bold'>Cloudflare</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>DNS and zone settings for<br />alunduil.com.</div>"]
+    30["<div style='font-weight: bold'>Cloudflare</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Authoritative DNS, zone<br />settings (SSL strict,<br />DNSSEC), and deployer API<br />tokens for alunduil.com.</div>"]
     style 30 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    37["<div style='font-weight: bold'>Squarespace registrar</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Holds the alunduil.com<br />registration and DS records<br />for DNSSEC.</div>"]
+    31["<div style='font-weight: bold'>Squarespace registrar</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Holds the alunduil.com<br />registration and DS records<br />for DNSSEC.</div>"]
+    style 31 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    32["<div style='font-weight: bold'>TP-Link DDNS</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>alunduil.tplinkdns.com —<br />tracks the home WAN address.</div>"]
+    style 32 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    33["<div style='font-weight: bold'>Keybase</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Domain verification via<br />_keybase.alunduil.com TXT.</div>"]
+    style 33 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    34["<div style='font-weight: bold'>Bluesky (AT Protocol)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Handle verification via<br />_atproto.alunduil.com TXT.</div>"]
+    style 34 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    35["<div style='font-weight: bold'>alunduil workstation</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Local machine:<br />chezmoi-managed dotfiles,<br />Claude Code, MCP server<br />hosting. Containers<br />documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
+    style 35 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    36["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, context7).<br />Containers documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
+    style 36 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    37["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>LAN behind home.alunduil.com;<br />TP-Link Deco mesh, TrueNAS<br />appliance, HAOS device.</div>"]
     style 37 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    38["<div style='font-weight: bold'>TP-Link DDNS</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>alunduil.tplinkdns.com —<br />tracks the home WAN address.</div>"]
-    style 38 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    39["<div style='font-weight: bold'>Keybase</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Domain verification via<br />_keybase.alunduil.com TXT.</div>"]
-    style 39 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    40["<div style='font-weight: bold'>Bluesky (AT Protocol)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Handle verification via<br />_atproto.alunduil.com TXT.</div>"]
-    style 40 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    41["<div style='font-weight: bold'>alunduil workstation</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Local machine:<br />chezmoi-managed dotfiles,<br />Claude Code, MCP server<br />hosting. Containers<br />documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
-    style 41 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    42["<div style='font-weight: bold'>MCP fleet</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>MCP servers Claude Code talks<br />to (Notion, Readwise, GitHub,<br />Cloudflare, TrueNAS,<br />UptimeRobot, context7).<br />Containers documented in<br />alunduil-chezmoi (issue<br />#202).</div>"]
-    style 42 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    43["<div style='font-weight: bold'>Home network</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>LAN behind home.alunduil.com;<br />TP-Link Deco mesh, TrueNAS<br />appliance, HAOS device.</div>"]
-    style 43 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    55["<div style='font-weight: bold'>Tailscale</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mesh VPN control plane;<br />coordinates node membership<br />and ACLs.</div>"]
-    style 55 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    56["<div style='font-weight: bold'>UptimeRobot</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>External availability<br />monitoring; HTTP probes +<br />heartbeat receivers.</div>"]
-    style 56 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    57["<div style='font-weight: bold'>Remote Tailscale exit (Groton, SD)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>NanoPi-NEO3 in Groton, SD;<br />physically off-site.</div>"]
-    style 57 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    49["<div style='font-weight: bold'>Tailscale</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Mesh VPN control plane;<br />coordinates node membership<br />and ACLs.</div>"]
+    style 49 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    50["<div style='font-weight: bold'>UptimeRobot</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>External availability<br />monitoring; HTTP probes +<br />heartbeat receivers.</div>"]
+    style 50 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    51["<div style='font-weight: bold'>Remote Tailscale exit (Groton, SD)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>NanoPi-NEO3 in Groton, SD;<br />physically off-site.</div>"]
+    style 51 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
-    30-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->38
-    30-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->39
-    30-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->40
-    30-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->37
-    38-. "<div>Resolves to home WAN; ingress<br />to Deco mesh</div><div style='font-size: 70%'></div>" .->43
-    41-. "<div>Tailscale client; required<br />path when off-LAN</div><div style='font-size: 70%'></div>" .->55
-    41-. "<div>Direct LAN access when at<br />home</div><div style='font-size: 70%'></div>" .->43
-    43-. "<div>Subnet router for<br />192.168.68.0/24</div><div style='font-size: 70%'></div>" .->55
-    57-. "<div>Tailscale exit node</div><div style='font-size: 70%'></div>" .->55
-    56-. "<div>HTTP + HTTPS probes on<br />home.alunduil.com:32400</div><div style='font-size: 70%'></div>" .->43
-    43-. "<div>Heartbeat push (home)</div><div style='font-size: 70%'></div>" .->56
-    57-. "<div>Heartbeat push (groton)</div><div style='font-size: 70%'></div>" .->56
-    1-. "<div>Operates</div><div style='font-size: 70%'></div>" .->41
+    50-. "<div>HTTP + HTTPS probes on<br />home.alunduil.com:32400</div><div style='font-size: 70%'></div>" .->37
+    37-. "<div>Heartbeat push (home)</div><div style='font-size: 70%'></div>" .->50
+    51-. "<div>Heartbeat push (groton)</div><div style='font-size: 70%'></div>" .->50
+    1-. "<div>Operates</div><div style='font-size: 70%'></div>" .->35
     1-. "<div>Edits, opens PRs</div><div style='font-size: 70%'></div>" .->2
-    41-. "<div>Local apply via 'just<br />alunduil' and 'just<br />bootstrap'</div><div style='font-size: 70%'></div>" .->2
-    41-. "<div>Tool surface for Claude Code</div><div style='font-size: 70%'></div>" .->42
+    35-. "<div>Local apply via 'just<br />alunduil' and 'just<br />bootstrap'</div><div style='font-size: 70%'></div>" .->2
+    35-. "<div>Tool surface for Claude Code</div><div style='font-size: 70%'></div>" .->36
     2-. "<div>Manages repos via<br />integrations/github provider</div><div style='font-size: 70%'></div>" .->10
     2-. "<div>Applies via Workload Identity<br />Federation</div><div style='font-size: 70%'></div>" .->20
     2-. "<div>Applies via API token from<br />Secret Manager</div><div style='font-size: 70%'></div>" .->30
     10-. "<div>Presents OIDC token (repo<br />claim)</div><div style='font-size: 70%'></div>" .->20
-    30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
+    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->10
+    30-. "<div>home.alunduil.com →<br />alunduil.tplinkdns.com</div><div style='font-size: 70%'></div>" .->32
+    30-. "<div>_keybase TXT</div><div style='font-size: 70%'></div>" .->33
+    30-. "<div>_atproto TXT</div><div style='font-size: 70%'></div>" .->34
+    30-. "<div>DS records delivered to<br />registrar</div><div style='font-size: 70%'></div>" .->31
+    32-. "<div>Resolves to home WAN; ingress<br />to Deco mesh</div><div style='font-size: 70%'></div>" .->37
+    35-. "<div>Tailscale client; required<br />path when off-LAN</div><div style='font-size: 70%'></div>" .->49
+    35-. "<div>Direct LAN access when at<br />home</div><div style='font-size: 70%'></div>" .->37
+    37-. "<div>Subnet router for<br />192.168.68.0/24</div><div style='font-size: 70%'></div>" .->49
+    51-. "<div>Tailscale exit node</div><div style='font-size: 70%'></div>" .->49
 
   end```

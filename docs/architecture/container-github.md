@@ -18,7 +18,7 @@ graph LR
     style 2 fill:#1168bd,stroke:#0b4884,color:#ffffff
     20["<div style='font-weight: bold'>GCP project (alunduil)</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Single GCP project —<br />Terraform state + CI deployer<br />identity.</div>"]
     style 20 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    30["<div style='font-weight: bold'>Cloudflare</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>DNS and zone settings for<br />alunduil.com.</div>"]
+    30["<div style='font-weight: bold'>Cloudflare</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Authoritative DNS, zone<br />settings (SSL strict,<br />DNSSEC), and deployer API<br />tokens for alunduil.com.</div>"]
     style 30 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
     subgraph 10 ["GitHub"]
@@ -44,7 +44,6 @@ graph LR
       style 19 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->13
     2-. "<div>Applies via Workload Identity<br />Federation</div><div style='font-size: 70%'></div>" .->20
     2-. "<div>Applies via API token from<br />Secret Manager</div><div style='font-size: 70%'></div>" .->30
     2-. "<div>Runs on</div><div style='font-size: 70%'></div>" .->12
@@ -56,7 +55,7 @@ graph LR
     11-. "<div>Manages</div><div style='font-size: 70%'></div>" .->17
     11-. "<div>Manages</div><div style='font-size: 70%'></div>" .->18
     11-. "<div>Manages</div><div style='font-size: 70%'></div>" .->19
-    30-. "<div>Value stored in</div><div style='font-size: 70%'></div>" .->20
     16-. "<div>Built and published to</div><div style='font-size: 70%'></div>" .->13
+    30-. "<div>blog.alunduil.com →<br />alunduil.github.io</div><div style='font-size: 70%'></div>" .->13
 
   end```
