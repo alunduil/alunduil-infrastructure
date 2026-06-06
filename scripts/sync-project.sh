@@ -30,9 +30,14 @@
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
 # `gh` auth when GH_PROJECT_SYNC_TOKEN is unset.
 #
-# Steady-state cost: one item-list + one search per source-leg. Mutations
-# (item-add, item-edit) fire only for new URLs, stale filed-by values, or
-# items whose Status doesn't match their type.
+# Steady-state cost: a paginated read of the board node plus one search
+# per source-leg. Mutations (item-add, item-edit) fire only for new URLs,
+# stale filed-by values, or items whose Status doesn't match their type.
+#
+# Reads go through hand-written GraphQL rather than `gh project
+# field-list`/`item-list`: the porcelain over-fetches every field of every
+# item (~100 GraphQL points per field-list, ~1 per item), and there is no
+# flag to trim it. The lean queries below cost ~1 point per 100-item page.
 
 set -euo pipefail
 
@@ -52,15 +57,13 @@ PROJECT_TITLE=$(jq -r '.title' "${SPEC}")
 FILED_BY_FIELD_NAME=$(jq -r '.filed_by_field' "${SPEC}")
 STATUS_FIELD_NAME=$(jq -r '.status_field // empty' "${SPEC}")
 SEARCH_LIMIT=1000
-# Comfortable headroom above the current ~520 items on the largest board.
-PROJECT_LIMIT=5000
 
 if [[ -n ${GH_PROJECT_SYNC_TOKEN:-} ]]; then
   export GH_TOKEN=${GH_PROJECT_SYNC_TOKEN}
 fi
 
-# Resolve project and field IDs by title/name so disaster-recovery (board
-# recreation) doesn't strand this script.
+# Resolve the project by title so disaster-recovery (board recreation)
+# doesn't strand this script on a hard-coded number.
 project_match=$(
   gh project list --owner "${PROJECT_OWNER}" --limit 100 --format json \
     --jq ".projects | map(select(.title == \"${PROJECT_TITLE}\"))"
@@ -72,18 +75,33 @@ fi
 PROJECT_ID=$(jq -r '.[0].id' <<<"${project_match}")
 PROJECT_NUMBER=$(jq -r '.[0].number' <<<"${project_match}")
 
-FILED_BY_FIELD_ID=$(
-  gh project field-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" \
-    --format json \
-    --jq ".fields | map(select(.name == \"${FILED_BY_FIELD_NAME}\"))[0].id"
+# Field IDs (and single-select option IDs) come from one lean GraphQL
+# query on the opaque project node ID, which works whether the owner is a
+# user or an org. Resolved once here; the item loop is then a pure lookup.
+fields_json=$(
+  # shellcheck disable=SC2016 # $id is a GraphQL variable, not shell
+  gh api graphql -F id="${PROJECT_ID}" --jq '.data.node.fields.nodes' -f query='
+    query($id: ID!) {
+      node(id: $id) {
+        ... on ProjectV2 {
+          fields(first: 50) {
+            nodes {
+              __typename
+              ... on ProjectV2FieldCommon { id name }
+              ... on ProjectV2SingleSelectField { id name options { id name } }
+            }
+          }
+        }
+      }
+    }'
 )
-if [[ -z ${FILED_BY_FIELD_ID} || ${FILED_BY_FIELD_ID} == null ]]; then
+
+FILED_BY_FIELD_ID=$(jq -r --arg n "${FILED_BY_FIELD_NAME}" \
+  'map(select(.name == $n))[0].id // empty' <<<"${fields_json}")
+if [[ -z ${FILED_BY_FIELD_ID} ]]; then
   echo "no field named '${FILED_BY_FIELD_NAME}' on project '${PROJECT_TITLE}'" >&2
   exit 1
 fi
-
-# `gh project item-list` lower-cases custom field names as JSON keys.
-filed_by_key=${FILED_BY_FIELD_NAME,,}
 
 # Status sync is opt-in. When status_field is set, resolve the field and
 # the per-type option IDs up front so the item loop is a pure ID lookup.
@@ -95,11 +113,8 @@ if [[ -n ${STATUS_FIELD_NAME} ]]; then
     exit 1
   fi
 
-  status_field_json=$(
-    gh project field-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" \
-      --format json \
-      --jq ".fields | map(select(.name == \"${STATUS_FIELD_NAME}\"))[0]"
-  )
+  status_field_json=$(jq --arg n "${STATUS_FIELD_NAME}" \
+    'map(select(.name == $n))[0]' <<<"${fields_json}")
   STATUS_FIELD_ID=$(jq -r '.id // empty' <<<"${status_field_json}")
   if [[ -z ${STATUS_FIELD_ID} ]]; then
     echo "no field named '${STATUS_FIELD_NAME}' on project '${PROJECT_TITLE}'" >&2
@@ -111,7 +126,6 @@ if [[ -n ${STATUS_FIELD_NAME} ]]; then
     echo "field '${STATUS_FIELD_NAME}' is missing option '${PR_STATUS_NAME}' or '${ISSUE_STATUS_NAME}'" >&2
     exit 1
   fi
-  status_key=${STATUS_FIELD_NAME,,}
 fi
 
 # Emit the desired Status option id + name for a URL: PRs (/pull/) take
@@ -124,24 +138,57 @@ desired_status() {
   fi
 }
 
+# Mirror the board as url<TAB>filed<TAB>status<TAB>item-id, paginating the
+# project node and pulling only the two field values we act on. An item
+# with no value for a field simply omits it, hence the empty-string
+# defaults (which also match the "" used in the comparisons below).
+board_items() {
+  local cursor="" resp
+  while :; do
+    # shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
+    resp=$(
+      gh api graphql -F id="${PROJECT_ID}" -F cursor="${cursor}" -f query='
+        query($id: ID!, $cursor: String) {
+          node(id: $id) {
+            ... on ProjectV2 {
+              items(first: 100, after: $cursor) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  id
+                  content { ... on Issue { url } ... on PullRequest { url } }
+                  fieldValues(first: 8) {
+                    nodes {
+                      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
+                      ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name } } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }'
+    )
+    jq -r --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
+      .data.node.items.nodes[]
+      | select(.content.url)
+      | [ .content.url,
+          ([.fieldValues.nodes[]? | select(.field.name == $filed) | .text] | first // ""),
+          ([.fieldValues.nodes[]? | select(.field.name == $status) | .name] | first // ""),
+          .id ]
+      | @tsv
+    ' <<<"${resp}"
+    [[ $(jq -r '.data.node.items.pageInfo.hasNextPage' <<<"${resp}") == true ]] || break
+    cursor=$(jq -r '.data.node.items.pageInfo.endCursor' <<<"${resp}")
+  done
+}
+
 declare -A existing_id existing_filed existing_status
-
-if [[ -n ${STATUS_FIELD_NAME} ]]; then
-  status_jq="(.[\"${status_key}\"] // \"\")"
-else
-  status_jq='""'
-fi
-
 while IFS=$'\t' read -r url filed status item_id; do
   [[ -z $url ]] && continue
   existing_id[$url]=$item_id
   existing_filed[$url]=$filed
   existing_status[$url]=$status
-done < <(
-  gh project item-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" \
-    --format json --limit "${PROJECT_LIMIT}" \
-    --jq ".items[] | select(.content.url) | \"\\(.content.url)\\t\\(.[\"${filed_by_key}\"] // \"\")\\t${status_jq}\\t\\(.id)\""
-)
+done < <(board_items)
 
 jq_pair='.[] | "\(.url)\t\(.author.login // "unknown")"'
 
