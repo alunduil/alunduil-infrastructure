@@ -204,6 +204,35 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         uptimerobot -> plexApp "HTTP + HTTPS probes on home.alunduil.com:32400"
         haCore -> uptimerobot "Heartbeat push (home)"
         nanoPiTailscale -> uptimerobot "Heartbeat push (groton)"
+
+        # ----- Deployment: physical topology -----
+        # Appliances/devices are Deployment Nodes; the containers above are
+        # placed onto the hardware that runs them. This is the home network's
+        # physical graph — the C4 axis that maps to where things actually live,
+        # kept separate from the logical "what talks to what" container views.
+
+        deploymentEnvironment "Home network" {
+            deploymentNode "TP-Link Deco mesh" "3 nodes; G.Network fibre with 5G failover" "TP-Link Deco" {
+                containerInstance decoFirmware
+            }
+            deploymentNode "TrueNAS appliance" "iXsystems MINI-3.0-E; 192.168.68.63" "TrueNAS SCALE" {
+                containerInstance plexApp
+                containerInstance tailscaleSubnetRouter
+                containerInstance netdataApp
+                containerInstance alloyApp
+                containerInstance scrutinyApp
+                containerInstance smbMedia
+                containerInstance smbScans
+                containerInstance smbTakeout
+            }
+            deploymentNode "HAOS device" "Dedicated Home Assistant hardware" "Home Assistant OS" {
+                containerInstance haCore
+                containerInstance haTailscaleExit
+            }
+            deploymentNode "NanoPi-NEO3" "Off-site; Groton, SD" "Armbian" {
+                containerInstance nanoPiTailscale
+            }
+        }
     }
 
     views {
@@ -242,6 +271,12 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             include *
             autolayout lr
             description "Level 2 — home network containers (Deco firmware, TrueNAS apps + shares, HAOS apps)."
+        }
+
+        deployment * "Home network" "Deployment-HomeNetwork" {
+            include *
+            autolayout lr
+            description "Physical topology — devices/appliances and the containers they run."
         }
 
         styles {
