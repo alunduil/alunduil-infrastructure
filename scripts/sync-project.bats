@@ -39,6 +39,16 @@ setup() {
   [[ $output == $'bak0\tBacklog' ]]
 }
 
+@test "desired_status is newline-terminated so the per-item read returns 0" {
+  # Regression: desired_status emitted no trailing newline, so the reconcile
+  # loop's `read` hit EOF and returned 1, aborting the script under set -e on
+  # the first item. The read must succeed and populate both fields.
+  rc=0
+  IFS=$'\t' read -r id name < <(desired_status "https://github.com/o/r/issues/9") || rc=$?
+  [[ $rc -eq 0 ]]
+  [[ $id == bak0 && $name == Backlog ]]
+}
+
 # --- parse_items ----------------------------------------------------------
 
 # Minimal shape of a `node(id:){ items{ nodes } }` GraphQL response.

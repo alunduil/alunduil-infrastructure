@@ -48,12 +48,14 @@
 set -Eeuo pipefail
 
 # Desired Status option id + name for a URL: PRs (/pull/) take pr_status,
-# everything else issue_status. Tab-separated for `read`.
+# everything else issue_status. Tab-separated, newline-terminated so the
+# consuming `read` returns 0 (a line without a trailing newline makes `read`
+# hit EOF and exit 1, which aborts the loop under `set -e`).
 desired_status() {
   if [[ $1 == */pull/* ]]; then
-    printf '%s\t%s' "${PR_STATUS_OPTION_ID}" "${PR_STATUS_NAME}"
+    printf '%s\t%s\n' "${PR_STATUS_OPTION_ID}" "${PR_STATUS_NAME}"
   else
-    printf '%s\t%s' "${ISSUE_STATUS_OPTION_ID}" "${ISSUE_STATUS_NAME}"
+    printf '%s\t%s\n' "${ISSUE_STATUS_OPTION_ID}" "${ISSUE_STATUS_NAME}"
   fi
 }
 
