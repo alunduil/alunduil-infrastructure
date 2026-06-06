@@ -28,7 +28,11 @@
 # can't tell a PR from an issue and so lands everything in one column).
 #
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
-# `gh` auth when GH_PROJECT_SYNC_TOKEN is unset.
+# `gh` auth when GH_PROJECT_SYNC_TOKEN is unset. The scheduled job can't be
+# reproduced from a PR (the project-sync secret isn't exposed there), so in
+# CI it traces every command and an ERR trap names the failing line; see the
+# verbosity block past the source guard. Local runs stay quiet unless
+# SYNC_DEBUG is set.
 #
 # Steady-state cost: a paginated read of the board node plus one search
 # per source-leg. Mutations (item-add, item-edit) fire only for new URLs,
@@ -39,7 +43,9 @@
 # item (~100 GraphQL points per field-list, ~1 per item), and there is no
 # flag to trim it. The lean queries below cost ~1 point per 100-item page.
 
-set -euo pipefail
+# -E (errtrace) propagates the ERR trap set in the executable body into the
+# helper functions and the search subshells so a failure anywhere is located.
+set -Eeuo pipefail
 
 # Desired Status option id + name for a URL: PRs (/pull/) take pr_status,
 # everything else issue_status. Tab-separated for `read`.
@@ -129,6 +135,20 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi
 
+# CI troubleshooting verbosity. The ERR trap turns a silent `exit 1` into a
+# located, named failure (it disables xtrace first so its own echo isn't
+# traced). xtrace then shows every gh/jq call. Single-quoted trap body so
+# $LINENO/$BASH_COMMAND expand when it fires, not when it's installed.
+# shellcheck disable=SC2154 # rc is assigned (rc=$?) at the top of the trap body
+trap 'rc=$?; { set +x; } 2>/dev/null; echo "sync-project: failed (exit ${rc}) at ${BASH_SOURCE##*/}:${LINENO}: ${BASH_COMMAND}" >&2' ERR
+
+want_xtrace=""
+if [[ -n ${CI:-} || -n ${SYNC_DEBUG:-} ]]; then
+  want_xtrace=1
+  PS4='+ ${BASH_SOURCE##*/}:${LINENO}: '
+  set -x
+fi
+
 if [[ $# -ne 1 ]]; then
   echo "usage: $0 <spec.json>" >&2
   exit 64
@@ -147,7 +167,11 @@ STATUS_FIELD_NAME=$(jq -r '.status_field // empty' "${SPEC}")
 SEARCH_LIMIT=1000
 
 if [[ -n ${GH_PROJECT_SYNC_TOKEN:-} ]]; then
+  # Assign with xtrace off so the token never lands in the trace stream.
+  # (Actions also masks the secret, but don't rely on masking alone.)
+  { set +x; } 2>/dev/null
   export GH_TOKEN=${GH_PROJECT_SYNC_TOKEN}
+  if [[ -n ${want_xtrace} ]]; then set -x; fi
 fi
 
 # Resolve the project by title so disaster-recovery (board recreation)
