@@ -41,6 +41,94 @@
 
 set -euo pipefail
 
+# Desired Status option id + name for a URL: PRs (/pull/) take pr_status,
+# everything else issue_status. Tab-separated for `read`.
+desired_status() {
+  if [[ $1 == */pull/* ]]; then
+    printf '%s\t%s' "${PR_STATUS_OPTION_ID}" "${PR_STATUS_NAME}"
+  else
+    printf '%s\t%s' "${ISSUE_STATUS_OPTION_ID}" "${ISSUE_STATUS_NAME}"
+  fi
+}
+
+# Read a project-items GraphQL response on stdin and emit one
+# url<TAB>filed<TAB>status<TAB>item-id row per item that has a content URL.
+# An item with no value for a field omits it from fieldValues, hence the
+# empty-string defaults (which match the "" used in the comparisons below).
+parse_items() {
+  jq -r --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
+    .data.node.items.nodes[]
+    | select(.content.url)
+    | [ .content.url,
+        ([.fieldValues.nodes[]? | select(.field.name == $filed) | .text] | first // ""),
+        ([.fieldValues.nodes[]? | select(.field.name == $status) | .name] | first // ""),
+        .id ]
+    | @tsv'
+}
+
+# Mirror the board, paginating the project node and pulling only the two
+# field values the sync acts on; see the header for why this beats
+# `gh project item-list`.
+board_items() {
+  local cursor="" resp
+  while :; do
+    # shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
+    resp=$(
+      gh api graphql -F id="${PROJECT_ID}" -F cursor="${cursor}" -f query='
+        query($id: ID!, $cursor: String) {
+          node(id: $id) {
+            ... on ProjectV2 {
+              items(first: 100, after: $cursor) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  id
+                  content { ... on Issue { url } ... on PullRequest { url } }
+                  fieldValues(first: 8) {
+                    nodes {
+                      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
+                      ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name } } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }'
+    )
+    parse_items <<<"${resp}"
+    [[ $(jq -r '.data.node.items.pageInfo.hasNextPage' <<<"${resp}") == true ]] || break
+    cursor=$(jq -r '.data.node.items.pageInfo.endCursor' <<<"${resp}")
+  done
+}
+
+# Emit one gh-search argument string per source-leg. Two legs per source
+# (issues + prs). The trailing word-split on $leg in the consumer is
+# intentional; arguments are jq-controlled, not user input.
+search_legs() {
+  jq -r '
+    .sources[] |
+    if .type == "owner" then
+      ([.logins[] | "--owner=" + .] | join(" ")) as $owners |
+      "issues " + $owners,
+      "prs " + $owners
+    elif .type == "author" then
+      "issues --author=" + .login,
+      "prs --author=" + .login
+    elif .type == "assignee" then
+      "issues --assignee=" + .login,
+      "prs --assignee=" + .login
+    else
+      error("unknown source type: " + .type)
+    end
+  ' "${SPEC}"
+}
+
+# Skip the executable body when sourced (e.g. by sync-project.bats).
+if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
+  return 0 2>/dev/null || true
+fi
+
 if [[ $# -ne 1 ]]; then
   echo "usage: $0 <spec.json>" >&2
   exit 64
@@ -128,60 +216,6 @@ if [[ -n ${STATUS_FIELD_NAME} ]]; then
   fi
 fi
 
-# Emit the desired Status option id + name for a URL: PRs (/pull/) take
-# pr_status, everything else issue_status. Tab-separated for `read`.
-desired_status() {
-  if [[ $1 == */pull/* ]]; then
-    printf '%s\t%s' "${PR_STATUS_OPTION_ID}" "${PR_STATUS_NAME}"
-  else
-    printf '%s\t%s' "${ISSUE_STATUS_OPTION_ID}" "${ISSUE_STATUS_NAME}"
-  fi
-}
-
-# Mirror the board as url<TAB>filed<TAB>status<TAB>item-id, paginating the
-# project node and pulling only the two field values we act on. An item
-# with no value for a field simply omits it, hence the empty-string
-# defaults (which also match the "" used in the comparisons below).
-board_items() {
-  local cursor="" resp
-  while :; do
-    # shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
-    resp=$(
-      gh api graphql -F id="${PROJECT_ID}" -F cursor="${cursor}" -f query='
-        query($id: ID!, $cursor: String) {
-          node(id: $id) {
-            ... on ProjectV2 {
-              items(first: 100, after: $cursor) {
-                pageInfo { hasNextPage endCursor }
-                nodes {
-                  id
-                  content { ... on Issue { url } ... on PullRequest { url } }
-                  fieldValues(first: 8) {
-                    nodes {
-                      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
-                      ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name } } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }'
-    )
-    jq -r --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
-      .data.node.items.nodes[]
-      | select(.content.url)
-      | [ .content.url,
-          ([.fieldValues.nodes[]? | select(.field.name == $filed) | .text] | first // ""),
-          ([.fieldValues.nodes[]? | select(.field.name == $status) | .name] | first // ""),
-          .id ]
-      | @tsv
-    ' <<<"${resp}"
-    [[ $(jq -r '.data.node.items.pageInfo.hasNextPage' <<<"${resp}") == true ]] || break
-    cursor=$(jq -r '.data.node.items.pageInfo.endCursor' <<<"${resp}")
-  done
-}
-
 declare -A existing_id existing_filed existing_status
 while IFS=$'\t' read -r url filed status item_id; do
   [[ -z $url ]] && continue
@@ -191,28 +225,6 @@ while IFS=$'\t' read -r url filed status item_id; do
 done < <(board_items)
 
 jq_pair='.[] | "\(.url)\t\(.author.login // "unknown")"'
-
-# Emit one gh-search argument string per source-leg. Two legs per source
-# (issues + prs). The trailing word-split on $leg in the consumer is
-# intentional; arguments are jq-controlled, not user input.
-search_legs() {
-  jq -r '
-    .sources[] |
-    if .type == "owner" then
-      ([.logins[] | "--owner=" + .] | join(" ")) as $owners |
-      "issues " + $owners,
-      "prs " + $owners
-    elif .type == "author" then
-      "issues --author=" + .login,
-      "prs --author=" + .login
-    elif .type == "assignee" then
-      "issues --assignee=" + .login,
-      "prs --assignee=" + .login
-    else
-      error("unknown source type: " + .type)
-    end
-  ' "${SPEC}"
-}
 
 added=0
 updated=0
