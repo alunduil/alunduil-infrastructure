@@ -136,9 +136,8 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         infra -> gcp "Applies via Workload Identity Federation"
         infra -> cloudflare "Applies via API token from Secret Manager"
 
-        # GitHub provider auth and CI identity. The deployer identity flow —
-        # OIDC federation, SA impersonation, secret access — is data-flow
-        # detail, kept as a single landscape edge here.
+        # GitHub provider auth and CI identity. GCP is an external dependency,
+        # not decomposed here; the deployer federation is one landscape edge.
         actionsCI -> actionsRuntime "Runs on"
         github -> gcp "Actions OIDC federates to deployer SAs"
         actionsRuntime -> tfApp "Authenticates Terraform GH provider via installation token"
@@ -149,9 +148,8 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         tfApp -> haskellRepos "Manages"
         tfApp -> otherRepos "Manages"
 
-        # DNS surface. Cloudflare's deployer-token and zone-setting detail
-        # lives in the trust model; here it's the external box the zone's
-        # records point at.
+        # DNS surface. Cloudflare is an external dependency, not decomposed
+        # here; these edges are where its records route.
         repoBlog -> pagesEdge "Built and published to"
         cloudflare -> pagesEdge "blog.alunduil.com → alunduil.github.io"
         cloudflare -> tplinkDdns "home.alunduil.com → alunduil.tplinkdns.com"
