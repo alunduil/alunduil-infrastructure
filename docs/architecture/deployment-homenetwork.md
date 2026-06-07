@@ -14,50 +14,50 @@ graph LR
   subgraph diagram ["Deployment View: Home network"]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    subgraph 105 ["TP-Link Deco mesh"]
-      style 105 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 100 ["NanoPi-NEO3"]
+      style 100 fill:#ffffff,stroke:#444444,color:#444444
 
-      106["<div style='font-weight: bold'>Deco firmware</div><div style='font-size: 70%; margin-top: 0px'>[Container: TP-Link Deco]</div><div style='font-size: 80%; margin-top:10px'>Edge routing, port-forwards<br />32400 to Plex, 5G failover<br />from G.Network fibre</div>"]
-      style 106 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      101["<div style='font-weight: bold'>Tailscale exit node (NanoPi)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Tailscale]</div><div style='font-size: 80%; margin-top:10px'>Tailscale exit node;<br />heartbeats UptimeRobot</div>"]
+      style 101 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    subgraph 107 ["TrueNAS appliance"]
-      style 107 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 85 ["TP-Link Deco mesh"]
+      style 85 fill:#ffffff,stroke:#444444,color:#444444
 
-      108["<div style='font-weight: bold'>Plex</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Media server; externally<br />exposed; monitored by<br />UptimeRobot</div>"]
-      style 108 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      110["<div style='font-weight: bold'>Tailscale subnet router</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Routes 192.168.68.0/24 over<br />Tailscale mesh</div>"]
-      style 110 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      111["<div style='font-weight: bold'>Netdata</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Real-time system metrics</div>"]
-      style 111 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      112["<div style='font-weight: bold'>Grafana Alloy</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Telemetry collection agent</div>"]
-      style 112 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      113["<div style='font-weight: bold'>Scrutiny</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Disk S.M.A.R.T. monitoring</div>"]
-      style 113 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      114["<div style='font-weight: bold'>SMB share: media</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Plex media library + general<br />media</div>"]
-      style 114 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      115["<div style='font-weight: bold'>SMB share: scans</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Scanned documents</div>"]
-      style 115 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      116["<div style='font-weight: bold'>SMB share: takeout</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Google Takeout archives</div>"]
-      style 116 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      86["<div style='font-weight: bold'>Deco firmware</div><div style='font-size: 70%; margin-top: 0px'>[Container: TP-Link Deco]</div><div style='font-size: 80%; margin-top:10px'>Edge routing, port-forwards<br />32400 to Plex, 5G failover<br />from G.Network fibre</div>"]
+      style 86 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    subgraph 117 ["HAOS device"]
-      style 117 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 87 ["TrueNAS appliance"]
+      style 87 fill:#ffffff,stroke:#444444,color:#444444
 
-      118["<div style='font-weight: bold'>Home Assistant Core</div><div style='font-size: 70%; margin-top: 0px'>[Container: Home Assistant]</div><div style='font-size: 80%; margin-top:10px'>Home automation; heartbeats<br />UptimeRobot</div>"]
-      style 118 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      119["<div style='font-weight: bold'>Tailscale exit node (HAOS)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Tailscale]</div><div style='font-size: 80%; margin-top:10px'>Tailscale exit node</div>"]
-      style 119 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      88["<div style='font-weight: bold'>Plex</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Media server; externally<br />exposed; monitored by<br />UptimeRobot</div>"]
+      style 88 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      90["<div style='font-weight: bold'>Tailscale subnet router</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Routes 192.168.68.0/24 over<br />Tailscale mesh</div>"]
+      style 90 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      91["<div style='font-weight: bold'>Netdata</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Real-time system metrics</div>"]
+      style 91 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      92["<div style='font-weight: bold'>Grafana Alloy</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Telemetry collection agent</div>"]
+      style 92 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      93["<div style='font-weight: bold'>Scrutiny</div><div style='font-size: 70%; margin-top: 0px'>[Container: TrueNAS app]</div><div style='font-size: 80%; margin-top:10px'>Disk S.M.A.R.T. monitoring</div>"]
+      style 93 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      94["<div style='font-weight: bold'>SMB share: media</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Plex media library + general<br />media</div>"]
+      style 94 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      95["<div style='font-weight: bold'>SMB share: scans</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Scanned documents</div>"]
+      style 95 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      96["<div style='font-weight: bold'>SMB share: takeout</div><div style='font-size: 70%; margin-top: 0px'>[Container: SMB share]</div><div style='font-size: 80%; margin-top:10px'>Google Takeout archives</div>"]
+      style 96 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    subgraph 120 ["NanoPi-NEO3"]
-      style 120 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 97 ["HAOS device"]
+      style 97 fill:#ffffff,stroke:#444444,color:#444444
 
-      121["<div style='font-weight: bold'>Tailscale exit node (NanoPi)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Tailscale]</div><div style='font-size: 80%; margin-top:10px'>Tailscale exit node;<br />heartbeats UptimeRobot</div>"]
-      style 121 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      98["<div style='font-weight: bold'>Home Assistant Core</div><div style='font-size: 70%; margin-top: 0px'>[Container: Home Assistant]</div><div style='font-size: 80%; margin-top:10px'>Home automation; heartbeats<br />UptimeRobot</div>"]
+      style 98 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      99["<div style='font-weight: bold'>Tailscale exit node (HAOS)</div><div style='font-size: 70%; margin-top: 0px'>[Container: Tailscale]</div><div style='font-size: 80%; margin-top:10px'>Tailscale exit node</div>"]
+      style 99 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    106-. "<div>Port-forward 32400</div><div style='font-size: 70%'></div>" .->108
+    86-. "<div>Port-forward 32400</div><div style='font-size: 70%'></div>" .->88
 
   end```

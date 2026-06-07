@@ -45,19 +45,8 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             otherRepos = container "Other repos" "woodland-generators, zfs-replicate" "Git repos"
         }
 
-        gcp = softwareSystem "GCP project (alunduil)" {
-            description "Single GCP project — Terraform state + CI deployer identity."
+        gcp = softwareSystem "GCP project (alunduil)" "Terraform state bucket plus the CI deployer identity — WIF, deployer SAs, and Cloudflare-token secrets." {
             tags "External"
-
-            stateBucket = container "alunduil-tfstate" "Holds bootstrap and alunduil state; shared bucket (#80 splits it)" "Cloud Storage"
-            wifPool = container "WIF pool 'github'" "Workload Identity Federation; trusts token.actions.githubusercontent.com" "IAM"
-            wifProvider = container "WIF provider 'github-provider'" "Gated by assertion.repository; maps assertion.ref for branch-scoped principals" "IAM"
-            deployerRO = container "github-deployer-ro SA" "Plan-job identity; impersonable from any branch (repo-scoped)" "Service Account"
-            deployerRW = container "github-deployer-rw SA" "Apply-job identity; impersonable only from refs/heads/main" "Service Account"
-            secretCfRo = container "cloudflare-api-token-deployer-ro" "RO CF token value; per-secret accessor IAM (RO SA only)" "Secret Manager"
-            secretCfRw = container "cloudflare-api-token-deployer-rw" "RW CF token value; per-secret accessor IAM (RW SA only)" "Secret Manager"
-            auditConfigs = container "Audit log configs" "Data Access logs: storage (READ+WRITE), secretmanager (READ)" "google_project_iam_audit_config"
-            projectApis = container "Project services" "IAM, STS, ResourceManager, ServiceUsage, SecretManager, Storage" "Enabled APIs"
         }
 
         cloudflare = softwareSystem "Cloudflare" "Authoritative DNS, zone settings (SSL strict, DNSSEC), and deployer API tokens for alunduil.com." {
@@ -147,17 +136,11 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         infra -> gcp "Applies via Workload Identity Federation"
         infra -> cloudflare "Applies via API token from Secret Manager"
 
-        # GitHub identity flow
+        # GitHub provider auth and CI identity. The deployer identity flow —
+        # OIDC federation, SA impersonation, secret access — is data-flow
+        # detail, kept as a single landscape edge here.
         actionsCI -> actionsRuntime "Runs on"
-        actionsRuntime -> wifProvider "Presents OIDC token (repo claim)"
-        wifProvider -> deployerRO "Impersonate (plan jobs, any branch)"
-        wifProvider -> deployerRW "Impersonate (apply jobs, refs/heads/main only)"
-        deployerRO -> auditConfigs "Reads logged via DATA_READ on storage / secretmanager"
-        deployerRW -> auditConfigs "Reads + writes logged via DATA_READ/WRITE on storage / secretmanager"
-        deployerRO -> stateBucket "Read state"
-        deployerRW -> stateBucket "Read+write state"
-        deployerRO -> secretCfRo "Access value"
-        deployerRW -> secretCfRw "Access value"
+        github -> gcp "Actions OIDC federates to deployer SAs"
         actionsRuntime -> tfApp "Authenticates Terraform GH provider via installation token"
         tfApp -> repoChezmoi "Manages (install scope today = all repos; #82 narrows)"
         tfApp -> repoInfra "Manages"
@@ -235,12 +218,6 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             include *
             autolayout lr
             description "Level 2 — alunduil-infrastructure containers."
-        }
-
-        container gcp "Container-GCP" {
-            include *
-            autolayout lr
-            description "Level 2 — GCP project containers."
         }
 
         container github "Container-GitHub" {

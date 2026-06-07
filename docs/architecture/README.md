@@ -20,7 +20,6 @@ forgotten. Reader who wants the full picture reads both repos.
 
 - [System Landscape](system-landscape.md) — Level 1, every system.
 - [Containers — alunduil-infrastructure](container-infra.md) — Level 2.
-- [Containers — GCP project](container-gcp.md) — Level 2.
 - [Containers — GitHub](container-github.md) — Level 2.
 - [Containers — Home network](container-homenetwork.md) — Level 2.
 - [Deployment — Home network](deployment-homenetwork.md) — physical topology.
