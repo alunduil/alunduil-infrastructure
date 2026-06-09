@@ -31,6 +31,11 @@ TrueNAS / HAOS / Deco mesh / off-site NanoPi — is the Deployment view's
 job, so the logical container view stays about what talks to what and
 the deployment view carries placement.
 
+GCP and Cloudflare stay external boxes with no Level 2. Their internals
+— WIF, deployer SAs, Secret Manager secrets, zone, records, tokens —
+are identity/secret/DNS data flows, better captured as a data-flow
+diagram than cracked open as C4 containers.
+
 ## Tooling
 
 [Structurizr DSL](https://docs.structurizr.com/dsl) as the
