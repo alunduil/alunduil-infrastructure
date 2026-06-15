@@ -41,7 +41,7 @@ repos:
 
   # Project spec validation
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: 0.37.3
     hooks:
       - id: check-jsonschema
         name: check project spec schema
