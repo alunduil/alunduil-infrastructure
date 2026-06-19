@@ -65,7 +65,7 @@ in a scoped PR ships infra the reviewer didn't ask for.
 slice (cloud, GitHub, home network). When you add a system,
 container, or significant relationship, update the DSL in the same
 PR. Pre-commit re-runs `scripts/architecture-export.sh` (Docker
-required) and regenerates the Mermaid `*.md` views.
+required) and regenerates the SVG `*.svg` views.
 
 Workstation and MCP-fleet Level 2 live in `alunduil-chezmoi`'s C4 —
 same contract, different repo. Don't add chezmoi-managed surface

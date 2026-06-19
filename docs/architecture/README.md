@@ -18,11 +18,11 @@ forgotten. Reader who wants the full picture reads both repos.
 
 ## Views
 
-- [System Landscape](system-landscape.md) — Level 1, every system.
-- [Containers — alunduil-infrastructure](container-infra.md) — Level 2.
-- [Containers — GitHub](container-github.md) — Level 2.
-- [Containers — Home network](container-homenetwork.md) — Level 2.
-- [Deployment — Home network](deployment-homenetwork.md) — physical topology.
+- [System Landscape](system-landscape.svg) — Level 1, every system.
+- [Containers — alunduil-infrastructure](container-infra.svg) — Level 2.
+- [Containers — GitHub](container-github.svg) — Level 2.
+- [Containers — Home network](container-homenetwork.svg) — Level 2.
+- [Deployment — Home network](deployment-homenetwork.svg) — physical topology.
 
 C4 strict: independently installable apps are Containers, not
 Components. TrueNAS apps (Plex, Tailscale, observability) and SMB
@@ -40,15 +40,16 @@ diagram than cracked open as C4 containers.
 
 [Structurizr DSL](https://docs.structurizr.com/dsl) as the
 single-source-of-truth model in [`workspace.dsl`](workspace.dsl).
-Per-view Mermaid markdown is generated from the DSL and committed
-alongside so GitHub renders the diagrams natively in PR diffs.
+Each view is rendered to SVG and committed alongside so GitHub shows
+the diagrams natively. Structurizr exports the DSL to standalone
+PlantUML, then PlantUML renders the SVG.
 
-Why Structurizr over hand-written Mermaid: one model, many views.
-Adding a system or container shows up in every view that references
-it, with no parallel updates to keep in sync. The cost is
-`structurizr-cli` in the dev loop — wrapped in
+Why Structurizr: one model, many views. Adding a system or container
+shows up in every view that references it, with no parallel updates
+to keep in sync. The cost is the export toolchain in the dev loop —
+wrapped in
 [`scripts/architecture-export.sh`](../../scripts/architecture-export.sh),
-which runs the published Docker image.
+which runs the published Structurizr and PlantUML Docker images.
 
 ## Regenerating after a DSL change
 
@@ -56,6 +57,6 @@ which runs the published Docker image.
 scripts/architecture-export.sh
 ```
 
-Re-runs the export and overwrites the per-view `*.md` files in this
+Re-runs the export and overwrites the per-view `*.svg` files in this
 directory. Requires Docker. Pre-commit invokes the same script
 automatically on changes to `workspace.dsl`.
