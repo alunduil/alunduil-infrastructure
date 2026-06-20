@@ -1,0 +1,24 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/alunduil/**'
+      - 'terraform/modules/**'
+      - '.github/workflows/terraform-apply.yml'
+      - '.github/workflows/terraform-apply-reusable.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  alunduil:
+    uses: ./.github/workflows/terraform-apply-reusable.yml
+    secrets: inherit # pragma: allowlist secret
