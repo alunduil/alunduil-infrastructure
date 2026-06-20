@@ -12,7 +12,9 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
    - `Zone > Zone — Read`, `DNS — Read`, `Zone Settings — Read` on
      `alunduil.com` (read is enough; the token only references the
      zone)
-2. Export as `CLOUDFLARE_API_TOKEN` before bootstrap apply.
+2. Supply it to the bootstrap apply: either `export
+   TF_VAR_cloudflare_master_token=...`, or paste it when `just
+   bootstrap` prompts for `cloudflare_master_token`.
 3. Revoke the token in the Cloudflare dashboard once the apply
    succeeds. Cloudflare only shows the value at creation time, so any
    future bootstrap apply needs a freshly created master token.
