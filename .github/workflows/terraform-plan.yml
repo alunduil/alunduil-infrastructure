@@ -19,8 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  terraform-plan:
-    name: terraform plan
+  run:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
