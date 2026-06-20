@@ -2,27 +2,27 @@
 # SPDX-License-Identifier: MIT
 
 data "cloudflare_api_token_permission_groups_list" "zone_read" {
-  name  = "Zone%20Read"
+  name  = "Zone Read"
   scope = "com.cloudflare.api.account.zone"
 }
 
 data "cloudflare_api_token_permission_groups_list" "dns_read" {
-  name  = "DNS%20Read"
+  name  = "DNS Read"
   scope = "com.cloudflare.api.account.zone"
 }
 
 data "cloudflare_api_token_permission_groups_list" "dns_write" {
-  name  = "DNS%20Write"
+  name  = "DNS Write"
   scope = "com.cloudflare.api.account.zone"
 }
 
 data "cloudflare_api_token_permission_groups_list" "zone_settings_read" {
-  name  = "Zone%20Settings%20Read"
+  name  = "Zone Settings Read"
   scope = "com.cloudflare.api.account.zone"
 }
 
 data "cloudflare_api_token_permission_groups_list" "zone_settings_write" {
-  name  = "Zone%20Settings%20Write"
+  name  = "Zone Settings Write"
   scope = "com.cloudflare.api.account.zone"
 }
 

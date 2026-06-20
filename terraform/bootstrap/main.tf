@@ -20,4 +20,6 @@ provider "google" {
   region  = "europe-west1"
 }
 
-provider "cloudflare" {}
+provider "cloudflare" {
+  api_token = var.cloudflare_master_token
+}
