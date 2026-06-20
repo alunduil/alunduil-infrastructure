@@ -108,6 +108,13 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+resource "github_repository_environment" "this" {
+  for_each = var.environments
+
+  repository  = github_repository.this.name
+  environment = each.value
+}
+
 resource "github_repository_pages" "this" {
   count = var.pages != null ? 1 : 0
 

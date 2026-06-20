@@ -32,6 +32,8 @@ module "collection_json_hs" {
   name        = "collection-json.hs"
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
+  # Deployment environment for Hackage releases.
+  environments = ["hackage"]
 }
 
 module "grafana" {

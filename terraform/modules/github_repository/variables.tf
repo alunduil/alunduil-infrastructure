@@ -68,6 +68,17 @@ variable "template" {
   description = "Template repository to seed this one from. Only meaningful at create time."
 }
 
+variable "environments" {
+  type        = set(string)
+  default     = []
+  description = <<-EOT
+    Deployment environment names to create on the repository. An
+    environment scopes its own secrets (e.g. a Hackage upload token) and
+    gives a release workflow a target to declare via `environment: <name>`.
+    Secret values are injected out of band, not by Terraform.
+  EOT
+}
+
 variable "pages" {
   type = object({
     cname          = optional(string)
