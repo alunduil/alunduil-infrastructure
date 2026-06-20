@@ -69,19 +69,13 @@ variable "template" {
 }
 
 variable "environments" {
-  type = map(object({
-    reviewers  = optional(list(string), [])
-    wait_timer = optional(number, 0)
-  }))
-  default     = {}
+  type        = set(string)
+  default     = []
   description = <<-EOT
-    Deployment environments keyed by name. An environment scopes its own
-    secrets (e.g. a Hackage upload token) and gives a release workflow a
-    target to declare via `environment: <name>`. reviewers (GitHub
-    usernames, resolved to user IDs) impose a deploy-time approval gate;
-    leave it empty when branch protection already gates the change and a
-    second gate would only add friction. wait_timer delays the job by the
-    given number of minutes after it is triggered.
+    Deployment environment names to create on the repository. An
+    environment scopes its own secrets (e.g. a Hackage upload token) and
+    gives a release workflow a target to declare via `environment: <name>`.
+    Secret values are injected out of band, not by Terraform.
   EOT
 }
 

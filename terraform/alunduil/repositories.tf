@@ -32,11 +32,9 @@ module "collection_json_hs" {
   name        = "collection-json.hs"
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
-  environments = {
-    # Scopes HACKAGE_TOKEN and gives the tag-driven release workflow a
-    # publish target. No reviewers: PR review already gates the change.
-    hackage = {}
-  }
+  # Scopes HACKAGE_TOKEN and gives the tag-driven release workflow a
+  # publish target. No deploy gate: PR review already gates the change.
+  environments = ["hackage"]
 }
 
 module "grafana" {
