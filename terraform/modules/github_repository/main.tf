@@ -74,6 +74,10 @@ resource "github_repository_ruleset" "default_branch" {
     bypass_mode = "always"
   }
 
+  # No required_signatures: GitHub already signs squash merges, so it would be
+  # redundant on the default branch while adding friction to direct pushes.
+  # No required_status_checks here: contexts differ per repo, so each repo adds
+  # its own as it's walked against this baseline.
   rules {
     deletion                = true
     non_fast_forward        = true
