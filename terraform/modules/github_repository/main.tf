@@ -23,6 +23,15 @@ resource "github_repository" "this" {
   delete_branch_on_merge      = true
   archive_on_destroy          = true
 
+  security_and_analysis {
+    secret_scanning {
+      status = "enabled"
+    }
+    secret_scanning_push_protection {
+      status = "enabled"
+    }
+  }
+
   dynamic "template" {
     for_each = var.template != null ? [var.template] : []
     content {
@@ -44,6 +53,14 @@ resource "github_branch_protection" "this" {
 
   allows_deletions    = false
   allows_force_pushes = false
+
+  dynamic "required_status_checks" {
+    for_each = var.required_status_checks != null ? [var.required_status_checks] : []
+    content {
+      strict   = required_status_checks.value.strict
+      contexts = required_status_checks.value.contexts
+    }
+  }
 }
 
 resource "github_repository_vulnerability_alerts" "this" {
