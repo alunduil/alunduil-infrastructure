@@ -87,3 +87,22 @@ module "zfs_replicate" {
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
 }
+
+# These three repos already had a hand-created ruleset named "default" before
+# the baseline module introduced one, so the first apply hit GitHub's
+# "Name must be unique" (422) instead of creating. Adopt the existing rulesets
+# into state so apply reconciles them. Remove once applied.
+import {
+  to = module.alunduil_chezmoi.github_repository_ruleset.default_branch
+  id = "alunduil-chezmoi:15615310"
+}
+
+import {
+  to = module.alunduil_infrastructure.github_repository_ruleset.default_branch
+  id = "alunduil-infrastructure:15541031"
+}
+
+import {
+  to = module.woodland_generators.github_repository_ruleset.default_branch
+  id = "woodland-generators:6845434"
+}
