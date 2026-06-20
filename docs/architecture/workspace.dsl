@@ -22,10 +22,7 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
                 description "GitHub repos, Cloudflare zone + records + settings, project APIs. Applied post-merge to main."
             }
             githubRepoModule = container "terraform/modules/github_repository/" "Reusable repo module" "Terraform"
-            justfile = container "justfile" "Operator entrypoints (bootstrap, alunduil)" "just"
-            actionsCI = container ".github/workflows/" "pre-commit + (future) plan/apply pipelines" "GitHub Actions"
-            archDocs = container "docs/architecture/" "C4 model (this directory)" "Structurizr DSL + Mermaid"
-            howtoDocs = container "docs/how-to/" "Operator how-tos" "Markdown"
+            actionsCI = container ".github/workflows/" "pre-commit checks" "GitHub Actions"
         }
 
         # ----- External software systems with containers we manage -----
@@ -70,10 +67,10 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
 
         # ----- External systems with Level 2 owned by alunduil-chezmoi -----
 
-        workstation = softwareSystem "alunduil workstation" "Local machine: chezmoi-managed dotfiles, Claude Code, MCP server hosting. Containers documented in alunduil-chezmoi (issue #202)." {
+        workstation = softwareSystem "alunduil workstation" "Local machine: chezmoi-managed dotfiles, Claude Code, MCP server hosting. Containers documented in alunduil-chezmoi." {
             tags "External"
         }
-        mcpFleet = softwareSystem "MCP fleet" "MCP servers Claude Code talks to (Notion, Readwise, GitHub, Cloudflare, TrueNAS, UptimeRobot, context7). Containers documented in alunduil-chezmoi (issue #202)." {
+        mcpFleet = softwareSystem "MCP fleet" "MCP servers Claude Code talks to (Notion, Readwise, GitHub, Cloudflare, TrueNAS, UptimeRobot, context7). Containers documented in alunduil-chezmoi." {
             tags "External"
         }
 
@@ -136,12 +133,12 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         infra -> gcp "Applies via Workload Identity Federation"
         infra -> cloudflare "Applies via API token from Secret Manager"
 
-        # GitHub provider auth and CI identity. GCP is an external dependency,
-        # not decomposed here; the deployer federation is one landscape edge.
+        # GitHub provider auth and CI identity. GCP isn't decomposed here; the
+        # runner's federation to the deployer SAs is the edge into it.
         actionsCI -> actionsRuntime "Runs on"
-        github -> gcp "Actions OIDC federates to deployer SAs"
+        actionsRuntime -> gcp "OIDC federates to deployer SAs (Workload Identity Federation)"
         actionsRuntime -> tfApp "Authenticates Terraform GH provider via installation token"
-        tfApp -> repoChezmoi "Manages (install scope today = all repos; #82 narrows)"
+        tfApp -> repoChezmoi "Manages (install scope = all repos today)"
         tfApp -> repoInfra "Manages"
         tfApp -> repoBlog "Manages"
         tfApp -> repoGrafana "Manages"
@@ -170,7 +167,7 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
         nanoPiTailscale -> tailscale "Tailscale exit node"
 
         # UptimeRobot monitoring surface.
-        uptimerobot -> plexApp "HTTP + HTTPS probes on home.alunduil.com:32400"
+        uptimerobot -> plexApp "HTTP + HTTPS probes on plex.alunduil.com:32400"
         haCore -> uptimerobot "Heartbeat push (home)"
         nanoPiTailscale -> uptimerobot "Heartbeat push (groton)"
 
@@ -249,10 +246,6 @@ workspace "alunduil personal-systems" "C4 model of every system alunduil runs pe
             element "External" {
                 background #999999
                 color #ffffff
-            }
-            element "Stub" {
-                background #cccccc
-                color #555555
             }
             element "Container" {
                 background #438dd5
