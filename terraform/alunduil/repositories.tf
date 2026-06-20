@@ -80,6 +80,20 @@ module "woodland_generators" {
   }
 }
 
+module "zellij_conductor" {
+  source      = "../modules/github_repository"
+  name        = "zellij-conductor"
+  description = "Zellij-native plugin that orchestrates Claude Code sessions: projects, tasks, worktrees, and autonomous task chains."
+  topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm", "orchestration"]
+}
+
+module "zellij_claude_pair" {
+  source      = "../modules/github_repository"
+  name        = "zellij-claude-pair"
+  description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
+  topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
+}
+
 module "zfs_replicate" {
   source         = "../modules/github_repository"
   name           = "zfs-replicate"
