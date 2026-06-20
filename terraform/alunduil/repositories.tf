@@ -80,13 +80,6 @@ module "woodland_generators" {
   }
 }
 
-module "zellij_conductor" {
-  source      = "../modules/github_repository"
-  name        = "zellij-conductor"
-  description = "Zellij-native plugin that orchestrates Claude Code sessions: projects, tasks, worktrees, and autonomous task chains."
-  topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm", "orchestration"]
-}
-
 module "zellij_claude_pair" {
   source      = "../modules/github_repository"
   name        = "zellij-claude-pair"
