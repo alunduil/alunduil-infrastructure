@@ -14,5 +14,20 @@ variable "billing_account_id" {
 variable "cloudflare_master_token" {
   type        = string
   sensitive   = true
-  description = "Master Cloudflare token: User > API Tokens — Write plus Zone/DNS/Zone-Settings Read on alunduil.com. Create at https://dash.cloudflare.com/profile/api-tokens and revoke after apply. Full steps: docs/how-to/create-master-cloudflare-token.md"
+  description = <<-EOT
+    Master Cloudflare token, created by hand and revoked after apply.
+
+    At https://dash.cloudflare.com/profile/api-tokens choose
+    Create Custom Token. Each Permissions row has three dropdowns —
+    group (defaults to Account), permission, access. Add these rows:
+
+      User | API Tokens    | Edit
+      Zone | Zone          | Read
+      Zone | DNS           | Read
+      Zone | Zone Settings | Read
+
+    Set Zone Resources to: Include | Specific zone | alunduil.com.
+
+    Full steps: docs/how-to/create-master-cloudflare-token.md
+  EOT
 }
