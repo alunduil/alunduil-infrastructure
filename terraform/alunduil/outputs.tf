@@ -11,3 +11,9 @@ output "alunduil_com_ds" {
   }
   description = "DS record fields to publish at the Squarespace registrar for alunduil.com"
 }
+
+# Public beacon token (shipped in the blog's client-side JS), not a secret.
+output "blog_web_analytics_token" {
+  value       = cloudflare_web_analytics_site.blog_alunduil_com.site_token
+  description = "Web Analytics beacon token for blog.alunduil.com (paste into blog.alunduil.com src/config.ts cloudflareWebAnalyticsToken)"
+}
