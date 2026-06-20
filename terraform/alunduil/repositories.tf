@@ -87,6 +87,18 @@ module "zellij_claude_pair" {
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
 }
 
+# zellij-claude-pair was created out-of-band with a user token: the CI GitHub
+# App cannot POST /user/repos (403 Resource not accessible by integration), so
+# Terraform adopts the existing repository here rather than creating it. The
+# default branch, ruleset, and vulnerability alerts are created on apply, which
+# the App can do against an existing repo. Remove once applied. The import lives
+# in the root module beside its target because import blocks are not allowed in
+# child modules.
+import {
+  to = module.zellij_claude_pair.github_repository.this
+  id = "zellij-claude-pair"
+}
+
 module "zfs_replicate" {
   source         = "../modules/github_repository"
   name           = "zfs-replicate"
@@ -112,14 +124,4 @@ import {
 import {
   to = module.woodland_generators.github_repository_ruleset.default_branch
   id = "woodland-generators:6845434"
-}
-
-# zellij-claude-pair was created out-of-band with a user token: the CI GitHub
-# App cannot POST /user/repos (403 Resource not accessible by integration), so
-# Terraform adopts the existing repository here rather than creating it. The
-# default branch, ruleset, and vulnerability alerts are created on apply, which
-# the App can do against an existing repo. Remove once applied.
-import {
-  to = module.zellij_claude_pair.github_repository.this
-  id = "zellij-claude-pair"
 }
