@@ -108,6 +108,26 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+data "github_user" "reviewer" {
+  for_each = toset(flatten([for env in var.environments : env.reviewers]))
+  username = each.value
+}
+
+resource "github_repository_environment" "this" {
+  for_each = var.environments
+
+  repository  = github_repository.this.name
+  environment = each.key
+  wait_timer  = each.value.wait_timer
+
+  dynamic "reviewers" {
+    for_each = length(each.value.reviewers) > 0 ? [each.value.reviewers] : []
+    content {
+      users = [for username in reviewers.value : data.github_user.reviewer[username].id]
+    }
+  }
+}
+
 resource "github_repository_pages" "this" {
   count = var.pages != null ? 1 : 0
 

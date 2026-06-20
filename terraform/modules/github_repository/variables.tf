@@ -68,6 +68,23 @@ variable "template" {
   description = "Template repository to seed this one from. Only meaningful at create time."
 }
 
+variable "environments" {
+  type = map(object({
+    reviewers  = optional(list(string), [])
+    wait_timer = optional(number, 0)
+  }))
+  default     = {}
+  description = <<-EOT
+    Deployment environments keyed by name. An environment scopes its own
+    secrets (e.g. a Hackage upload token) and gives a release workflow a
+    target to declare via `environment: <name>`. reviewers (GitHub
+    usernames, resolved to user IDs) impose a deploy-time approval gate;
+    leave it empty when branch protection already gates the change and a
+    second gate would only add friction. wait_timer delays the job by the
+    given number of minutes after it is triggered.
+  EOT
+}
+
 variable "pages" {
   type = object({
     cname          = optional(string)
