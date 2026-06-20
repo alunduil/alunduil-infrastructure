@@ -76,8 +76,6 @@ resource "github_repository_ruleset" "default_branch" {
 
   # No required_signatures: GitHub already signs squash merges, so it would be
   # redundant on the default branch while adding friction to direct pushes.
-  # No required_status_checks here: contexts differ per repo, so each repo adds
-  # its own as it's walked against this baseline.
   rules {
     deletion                = true
     non_fast_forward        = true
@@ -86,6 +84,22 @@ resource "github_repository_ruleset" "default_branch" {
     pull_request {
       required_approving_review_count   = 0
       required_review_thread_resolution = true
+    }
+
+    # Status check contexts differ per repo, so the baseline leaves this
+    # ungated and each repo opts in via var.required_status_checks.
+    dynamic "required_status_checks" {
+      for_each = var.required_status_checks != null ? [var.required_status_checks] : []
+      content {
+        strict_required_status_checks_policy = required_status_checks.value.strict
+
+        dynamic "required_check" {
+          for_each = required_status_checks.value.contexts
+          content {
+            context = required_check.value
+          }
+        }
+      }
     }
   }
 }

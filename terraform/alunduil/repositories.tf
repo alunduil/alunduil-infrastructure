@@ -17,6 +17,9 @@ module "blog_alunduil_com" {
   description  = "Personal blog at blog.alunduil.com"
   homepage_url = "https://blog.alunduil.com"
   topics       = ["blog", "github-pages"]
+  required_status_checks = {
+    contexts = ["build"]
+  }
   pages = {
     cname          = "blog.alunduil.com"
     build_type     = "workflow"

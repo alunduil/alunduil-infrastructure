@@ -37,6 +37,21 @@ variable "default_branch" {
   EOT
 }
 
+variable "required_status_checks" {
+  type = object({
+    contexts = list(string)
+    strict   = optional(bool, true)
+  })
+  default     = null
+  description = <<-EOT
+    Status checks that must pass before merging into the default branch.
+    contexts are matched by check-run name; strict requires the branch to
+    be up to date first. Omit to leave the branch ungated (the baseline
+    for most repos). Only require check names that are unique on a PR —
+    a name shared by several workflows can't be pinned to one of them.
+  EOT
+}
+
 variable "has_discussions" {
   type        = bool
   default     = false
