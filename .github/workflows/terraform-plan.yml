@@ -65,10 +65,6 @@ jobs:
         working-directory: terraform/alunduil
         run: terraform init
 
-      - name: Terraform Validate
-        working-directory: terraform/alunduil
-        run: terraform validate
-
       - name: Terraform Plan
         working-directory: terraform/alunduil
         env:
