@@ -28,3 +28,11 @@ path = ["renovate.json", "github/projects/*.json"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
+
+# Generated SVG diagram views, rendered from docs/architecture/workspace.dsl
+# by scripts/architecture-export.sh (Structurizr -> PlantUML -> SVG).
+[[annotations]]
+path = "docs/architecture/*.svg"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
+SPDX-License-Identifier = "MIT"

@@ -12,9 +12,12 @@ repos:
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
+        exclude: ^docs/architecture/.*\.svg$
       - id: end-of-file-fixer
+        exclude: ^docs/architecture/.*\.svg$
       - id: mixed-line-ending
         args: [--fix=lf]
+        exclude: ^docs/architecture/.*\.svg$
       - id: check-yaml
         args: [--unsafe]
       - id: check-json
@@ -91,7 +94,7 @@ repos:
       - id: renovate-config-validator
         args: [--strict, --no-global]
 
-  # justfile format and parse check
+  # Local hooks
   - repo: local
     hooks:
       - id: just-fmt-check
@@ -99,4 +102,13 @@ repos:
         entry: just --fmt --check
         language: system
         files: ^justfile$
+        pass_filenames: false
+
+      # Regenerate docs/architecture/*.svg from workspace.dsl so the
+      # committed diagram views stay in sync with the DSL.
+      - id: architecture-export
+        name: docs/architecture SVG export
+        entry: scripts/architecture-export.sh
+        language: system
+        files: ^(docs/architecture/workspace\.dsl|scripts/architecture-export\.sh)$
         pass_filenames: false

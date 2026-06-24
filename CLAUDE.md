@@ -65,6 +65,18 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - Manual steps that stay outside Terraform: README §"Stays manual".
   Check there before assuming a thing should live in `.tf`.
 
+## Architecture model
+
+`docs/architecture/workspace.dsl` is the C4 model for this repo's
+slice (cloud, GitHub, home network). When you add a system,
+container, or significant relationship, update the DSL in the same
+PR. Pre-commit re-runs `scripts/architecture-export.sh` (Docker
+required) and regenerates the SVG `*.svg` views.
+
+Workstation and MCP-fleet Level 2 live in `alunduil-chezmoi`'s C4 —
+same contract, different repo. Don't add chezmoi-managed surface
+here.
+
 ## Gotchas
 
 - `alunduil.com` DNS is on Cloudflare, not Cloud DNS. Run
