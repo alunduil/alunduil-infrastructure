@@ -55,13 +55,6 @@ module "network_arbitrary" {
   default_branch = "master"
 }
 
-module "network_uri_json" {
-  source      = "../modules/github_repository"
-  name        = "network-uri-json"
-  description = "FromJSON and ToJSON Instances for Network.URI"
-  topics      = ["haskell-library", "haskell", "json", "network-uri", "uri"]
-}
-
 module "siren_json_hs" {
   source      = "../modules/github_repository"
   name        = "siren-json.hs"
