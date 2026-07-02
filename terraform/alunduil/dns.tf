@@ -3,10 +3,10 @@
 
 # alunduil.com is hosted on Cloudflare. Authoritative NS:
 #   brenna.ns.cloudflare.com, vick.ns.cloudflare.com
-# The zone, a security-relevant subset of zone settings, and all records
-# are Terraform-managed. Settings not declared below track Cloudflare's
-# defaults — add a `cloudflare_zone_setting` resource only when drift
-# detection on a specific one is wanted.
+# The zone, a security-relevant subset of zone settings, and every record
+# except home.alunduil.com are Terraform-managed. Settings not declared
+# below track Cloudflare's defaults — add a `cloudflare_zone_setting`
+# resource only when drift detection on a specific one is wanted.
 
 # Recreating the zone mints a new Cloudflare NS pair, forcing a registrar
 # update and propagation outage. `prevent_destroy` blocks `terraform
@@ -88,14 +88,12 @@ resource "cloudflare_dns_record" "blog_cname" {
   proxied = false
 }
 
-resource "cloudflare_dns_record" "home_cname" {
-  zone_id = cloudflare_zone.alunduil_com.id
-  name    = "home.alunduil.com"
-  type    = "CNAME"
-  content = "alunduil.tplinkdns.com"
-  ttl     = 1
-  proxied = false
-}
+# home.alunduil.com is intentionally absent: a Cloudflare-native DDNS client
+# on TrueNAS owns its A record, writing the dynamic home IP straight into
+# Cloudflare. A Terraform-managed record would fight that client on every
+# plan. plex_cname below still points at it. This replaces a CNAME to
+# alunduil.tplinkdns.com, whose flaky TP-Link nameservers dropped ~25% of
+# queries and tripped UptimeRobot's DNS-resolution checks.
 
 resource "cloudflare_dns_record" "plex_cname" {
   zone_id = cloudflare_zone.alunduil_com.id
