@@ -50,7 +50,7 @@ print_gh_app_pointer() {
   cat >&2 <<'EOF'
 
 The GitHub App authenticates the terraform github provider in CI. If
-you haven't created one yet, see docs/how-to/create-github-app.md.
+you haven't created one yet, see docs/how-to/create-deployer-github-app.md.
 
 EOF
 }

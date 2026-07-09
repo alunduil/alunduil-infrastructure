@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 7.19"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = ">= 4.28.1, < 5.0"
+    }
   }
 }
 
@@ -22,4 +26,11 @@ provider "google" {
 
 provider "cloudflare" {
   api_token = var.cloudflare_master_token
+}
+
+# Cloud mode (cloud_access_policy_token) to read the stack and derive a
+# provisioning service-account token. The alunduil layer configures a separate
+# grafana provider in App Platform mode against the same stack.
+provider "grafana" {
+  cloud_access_policy_token = var.grafana_cloud_access_policy_token
 }

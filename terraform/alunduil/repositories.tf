@@ -36,11 +36,6 @@ module "collection_json_hs" {
   environments = ["hackage"]
 }
 
-module "grafana" {
-  source = "../modules/github_repository"
-  name   = "grafana"
-}
-
 module "network_arbitrary" {
   source         = "../modules/github_repository"
   name           = "network-arbitrary"

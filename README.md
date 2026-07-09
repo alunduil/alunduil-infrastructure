@@ -30,7 +30,9 @@ The two operator entrypoints:
 Supporting how-tos:
 
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
-- [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
+- [docs/how-to/create-deployer-github-app.md](docs/how-to/create-deployer-github-app.md)
+- [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
+- [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
 
 ## Support and contributions

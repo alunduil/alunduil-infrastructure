@@ -13,7 +13,11 @@ credentials.
 - A master Cloudflare API token — see
   [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
 - A GitHub App created and installed — see
-  [create-github-app.md](create-github-app.md).
+  [create-deployer-github-app.md](create-deployer-github-app.md).
+- Grafana Cloud credentials — see
+  [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
+- A Git Sync GitHub App created and installed — see
+  [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
 ## Run
 
@@ -21,6 +25,10 @@ credentials.
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
 export CLOUDFLARE_API_TOKEN=...
+export TF_VAR_grafana_cloud_access_policy_token=...
+export TF_VAR_grafana_git_sync_app_id=...
+export TF_VAR_grafana_git_sync_app_installation_id=...
+export TF_VAR_grafana_git_sync_app_private_key_file=path/to/key.pem
 
 just bootstrap
 ```
