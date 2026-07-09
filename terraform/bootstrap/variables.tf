@@ -43,9 +43,17 @@ variable "grafana_cloud_access_policy_token" {
   sensitive   = true
   description = <<-EOT
     Master Grafana Cloud access-policy token, created by hand and revoked
-    after apply. Needs scopes stacks:read and stack-service-accounts:write.
-    Used only to read the stack and derive the provisioning service-account
-    token stored in Secret Manager.
+    after apply. Used only to read the stack and create the provisioning
+    service-account token stored in Secret Manager.
+
+    In the Cloud Portal (grafana.com, then your org) go to
+    Security > Access Policies > Create access policy. The Scopes grid
+    lists only data-plane resources by default; click Add scope to add:
+
+      stacks                 read
+      stack-service-accounts write
+
+    Save, then Add token on the policy and copy the value (shown once).
 
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT

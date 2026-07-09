@@ -8,7 +8,15 @@ workflow exchanges App ID + private key for short-lived installation
 tokens via OIDC.
 
 1. Create at <https://github.com/settings/apps/new> with:
+   - **GitHub App name**: any name unique across GitHub, e.g.
+     `alunduil-infra-deployer`. Display only.
+   - **Homepage URL** (required): the repo,
+     `https://github.com/alunduil/alunduil-infrastructure`.
    - Webhook: uncheck "Active"
+   - Leave the user-authorization checkboxes under Callback URL
+     (Expire user authorization tokens, Request user authorization on
+     install, Enable Device Flow) at their defaults — the deployer
+     authenticates as an installation, not a user.
    - Where can this GitHub App be installed: **Only on this account**
      (the App's private key mints installation tokens for every
      account the App is installed on, so limiting installation to

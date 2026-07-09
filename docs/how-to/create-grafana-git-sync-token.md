@@ -24,10 +24,19 @@ Used only to read the stack and create the provisioning service-account
 token that lands in Secret Manager. Create it by hand and revoke it once
 `just bootstrap` finishes; recreate when you next need to run bootstrap.
 
-1. Grafana Cloud portal → **Security → Access Policies → Create access
-   policy**.
-2. Scopes: **`stacks:read`** and **`stack-service-accounts:write`**.
-3. Create a token under the policy and copy the value.
+1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
+   Access Policies → Create access policy**. Give it a display name
+   (e.g. `alunduil-infrastructure-bootstrap`); there is no realm field.
+2. The **Scopes** grid lists only data-plane resources (metrics, logs,
+   …) by default. Click **Add scope** to add the two control-plane
+   resources and tick:
+    - `stacks` → **read**
+    - `stack-service-accounts` → **write**
+
+   Leave every other resource unchecked, then **Create**.
+3. Select the policy → **Add token** → name it, set a short expiration
+   (it is revoked right after bootstrap), **Create**, and copy the value
+   — it is shown once.
 
 Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
