@@ -40,7 +40,7 @@ alunduil layer:
 ```sh
 export TF_VAR_grafana_git_sync_app_id=<app-id>
 export TF_VAR_grafana_git_sync_app_installation_id=<installation-id>
-export TF_VAR_grafana_git_sync_app_private_key="$(cat path/to/key.pem)"
+export TF_VAR_grafana_git_sync_app_private_key_file=<path-to-key.pem>
 ```
 
 Git Sync uses the `branch` workflow (the default-branch ruleset blocks
@@ -50,5 +50,6 @@ as pull requests to review.
 ## Rotate
 
 Generate a new private key on the App's settings page, delete the old
-one, re-export `TF_VAR_grafana_git_sync_app_private_key`, and re-run
-`just bootstrap`. The App ID and installation ID are unchanged.
+one, point `TF_VAR_grafana_git_sync_app_private_key_file` at the new
+`.pem`, and re-run `just bootstrap`. The App ID and installation ID are
+unchanged.

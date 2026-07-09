@@ -69,14 +69,14 @@ variable "grafana_git_sync_app_installation_id" {
   description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Not a secret; output for the alunduil layer."
 }
 
-variable "grafana_git_sync_app_private_key" {
+variable "grafana_git_sync_app_private_key_file" {
   type        = string
-  sensitive   = true
   description = <<-EOT
-    PEM private key of the dedicated Git Sync GitHub App, installed only on
-    alunduil-infrastructure with Contents and Pull requests: write. Grafana
-    uses it to mint installation tokens. Hand-created (GitHub has no API to
-    create Apps or their keys), then stored in Secret Manager here.
+    Path to the PEM private key of the dedicated Git Sync GitHub App,
+    installed only on alunduil-infrastructure with Contents and Pull
+    requests: write. Read straight into Secret Manager here; Grafana uses
+    it to mint installation tokens. A path (like GH_APP_PRIVATE_KEY_FILE)
+    rather than the contents, so the multi-line PEM never rides an env var.
 
     Full steps: docs/how-to/create-grafana-git-sync-app.md
   EOT

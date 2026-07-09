@@ -76,7 +76,7 @@ resource "google_secret_manager_secret" "grafana_git_sync_app_private_key" {
 
 resource "google_secret_manager_secret_version" "grafana_git_sync_app_private_key" {
   secret      = google_secret_manager_secret.grafana_git_sync_app_private_key.id
-  secret_data = var.grafana_git_sync_app_private_key
+  secret_data = sensitive(file(pathexpand(var.grafana_git_sync_app_private_key_file)))
 }
 
 resource "google_secret_manager_secret_iam_member" "grafana_git_sync_app_private_key_ro" {
