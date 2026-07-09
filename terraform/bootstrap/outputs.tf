@@ -55,8 +55,20 @@ output "grafana_provisioner_token_secret" {
   sensitive   = false
 }
 
-output "grafana_git_sync_github_token_secret" {
-  value       = google_secret_manager_secret.grafana_git_sync_github_token.secret_id
-  description = "Secret Manager short name holding the Git Sync GitHub PAT; fetched by both plan and apply via `gcloud secrets versions access`"
+output "grafana_git_sync_app_id" {
+  value       = var.grafana_git_sync_app_id
+  description = "App ID of the Git Sync GitHub App, consumed by terraform/alunduil/ for the Grafana connection resource"
+  sensitive   = false
+}
+
+output "grafana_git_sync_app_installation_id" {
+  value       = var.grafana_git_sync_app_installation_id
+  description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure, consumed by terraform/alunduil/"
+  sensitive   = false
+}
+
+output "grafana_git_sync_app_private_key_secret" {
+  value       = google_secret_manager_secret.grafana_git_sync_app_private_key.secret_id
+  description = "Secret Manager short name holding the Git Sync GitHub App private key; fetched by both plan and apply via `gcloud secrets versions access`"
   sensitive   = false
 }

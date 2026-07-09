@@ -25,6 +25,7 @@ Supporting how-tos:
 
 - [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
 - [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md)
+- [docs/how-to/create-grafana-git-sync-app.md](docs/how-to/create-grafana-git-sync-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
 

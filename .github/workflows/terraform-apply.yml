@@ -64,20 +64,22 @@ jobs:
           echo "TF_VAR_cloudflare_api_token=${value}" >> "${GITHUB_ENV}" # pragma: allowlist secret
 
       # Grafana provisioning has no read-only role, so plan and apply share the
-      # same tokens. Both secrets are populated by the bootstrap layer.
-      - name: Export Grafana tokens
+      # same credentials. Both secrets are populated by the bootstrap layer. The
+      # App key is a multi-line PEM, so it is written with GITHUB_ENV's heredoc
+      # form; both values go straight into GITHUB_ENV and never reach the log.
+      - name: Export Grafana credentials
         run: |
           sa_name=grafana-provisioner-token # pragma: allowlist secret
-          pat_name=grafana-git-sync-github-token # pragma: allowlist secret
+          key_name=grafana-git-sync-app-private-key # pragma: allowlist secret
           sa="$(gcloud secrets versions access latest \
             --secret="${sa_name}" --project=alunduil)"
-          pat="$(gcloud secrets versions access latest \
-            --secret="${pat_name}" --project=alunduil)"
           echo "::add-mask::${sa}"
-          echo "::add-mask::${pat}"
           {
             echo "TF_VAR_grafana_service_account_token=${sa}" # pragma: allowlist secret
-            echo "TF_VAR_grafana_git_sync_github_token=${pat}" # pragma: allowlist secret
+            echo "TF_VAR_grafana_git_sync_app_private_key<<__PEM__" # pragma: allowlist secret
+            gcloud secrets versions access latest \
+              --secret="${key_name}" --project=alunduil
+            echo "__PEM__"
           } >> "${GITHUB_ENV}"
 
       - name: Terraform Init

@@ -14,8 +14,10 @@ credentials.
   [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
 - A GitHub App created and installed — see
   [create-github-app.md](create-github-app.md).
-- Grafana Git Sync credentials — see
+- Grafana Cloud credentials — see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
+- A Git Sync GitHub App created and installed — see
+  [create-grafana-git-sync-app.md](create-grafana-git-sync-app.md).
 
 ## Run
 
@@ -25,7 +27,9 @@ export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
 export CLOUDFLARE_API_TOKEN=...
 export TF_VAR_grafana_stack_slug=...
 export TF_VAR_grafana_cloud_access_policy_token=...
-export TF_VAR_grafana_git_sync_github_token=...
+export TF_VAR_grafana_git_sync_app_id=...
+export TF_VAR_grafana_git_sync_app_installation_id=...
+export TF_VAR_grafana_git_sync_app_private_key="$(cat path/to/key.pem)"
 
 just bootstrap
 ```

@@ -26,10 +26,10 @@ resource "grafana_cloud_stack_service_account_token" "provisioner" {
 }
 
 # Unlike the Cloudflare deployer tokens, these two secrets have no RO/RW split:
-# Grafana provisioning has no read-only-yet-plannable role, and the GitHub PAT is
-# a single external credential shared by plan and apply. Both deployer SAs
+# Grafana provisioning has no read-only-yet-plannable role, and the Git Sync App
+# key is a single credential shared by plan and apply. Both deployer SAs
 # therefore read both secrets. The per-secret accessor isolation from
-# cloudflare_tokens.tf still applies — the tokens never live in bucket-readable
+# cloudflare_tokens.tf still applies — the values never live in bucket-readable
 # state, only behind secretAccessor IAM. For personal infra whose PRs are
 # owner-originated this shared access is acceptable; revisit if plan ever runs
 # from less-trusted refs.
@@ -63,9 +63,9 @@ resource "google_secret_manager_secret_iam_member" "grafana_provisioner_token_rw
   member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }
 
-resource "google_secret_manager_secret" "grafana_git_sync_github_token" {
+resource "google_secret_manager_secret" "grafana_git_sync_app_private_key" {
   project   = google_project.env.project_id
-  secret_id = "grafana-git-sync-github-token"
+  secret_id = "grafana-git-sync-app-private-key"
 
   replication {
     auto {}
@@ -74,21 +74,21 @@ resource "google_secret_manager_secret" "grafana_git_sync_github_token" {
   depends_on = [google_project_service.secretmanager]
 }
 
-resource "google_secret_manager_secret_version" "grafana_git_sync_github_token" {
-  secret      = google_secret_manager_secret.grafana_git_sync_github_token.id
-  secret_data = var.grafana_git_sync_github_token
+resource "google_secret_manager_secret_version" "grafana_git_sync_app_private_key" {
+  secret      = google_secret_manager_secret.grafana_git_sync_app_private_key.id
+  secret_data = var.grafana_git_sync_app_private_key
 }
 
-resource "google_secret_manager_secret_iam_member" "grafana_git_sync_github_token_ro" {
-  project   = google_secret_manager_secret.grafana_git_sync_github_token.project
-  secret_id = google_secret_manager_secret.grafana_git_sync_github_token.secret_id
+resource "google_secret_manager_secret_iam_member" "grafana_git_sync_app_private_key_ro" {
+  project   = google_secret_manager_secret.grafana_git_sync_app_private_key.project
+  secret_id = google_secret_manager_secret.grafana_git_sync_app_private_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.github_deployer_ro.email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "grafana_git_sync_github_token_rw" {
-  project   = google_secret_manager_secret.grafana_git_sync_github_token.project
-  secret_id = google_secret_manager_secret.grafana_git_sync_github_token.secret_id
+resource "google_secret_manager_secret_iam_member" "grafana_git_sync_app_private_key_rw" {
+  project   = google_secret_manager_secret.grafana_git_sync_app_private_key.project
+  secret_id = google_secret_manager_secret.grafana_git_sync_app_private_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }

@@ -50,15 +50,25 @@ variable "grafana_cloud_access_policy_token" {
   EOT
 }
 
-variable "grafana_git_sync_github_token" {
+variable "grafana_git_sync_app_id" {
+  type        = string
+  description = "App ID of the dedicated Git Sync GitHub App. Not a secret; output for the alunduil layer's Grafana connection resource."
+}
+
+variable "grafana_git_sync_app_installation_id" {
+  type        = string
+  description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Not a secret; output for the alunduil layer."
+}
+
+variable "grafana_git_sync_app_private_key" {
   type        = string
   sensitive   = true
   description = <<-EOT
-    Fine-grained GitHub PAT scoped to only alunduil-infrastructure with
-    Contents and Pull requests: write. Git Sync uses it to open dashboard
-    PRs. Hand-created (GitHub has no API to mint user PATs), then stored in
-    Secret Manager here.
+    PEM private key of the dedicated Git Sync GitHub App, installed only on
+    alunduil-infrastructure with Contents and Pull requests: write. Grafana
+    uses it to mint installation tokens. Hand-created (GitHub has no API to
+    create Apps or their keys), then stored in Secret Manager here.
 
-    Full steps: docs/how-to/create-grafana-git-sync-token.md
+    Full steps: docs/how-to/create-grafana-git-sync-app.md
   EOT
 }

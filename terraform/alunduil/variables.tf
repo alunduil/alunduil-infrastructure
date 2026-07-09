@@ -21,8 +21,8 @@ variable "grafana_service_account_token" {
   sensitive   = true
 }
 
-variable "grafana_git_sync_github_token" {
+variable "grafana_git_sync_app_private_key" {
   type        = string
-  description = "Fine-grained GitHub PAT Git Sync uses to read and open pull requests against alunduil-infrastructure (Contents + Pull requests: write). Export as TF_VAR_grafana_git_sync_github_token."
+  description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to mint installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key. App id/installation come from the bootstrap remote state."
   sensitive   = true
 }
