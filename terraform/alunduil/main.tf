@@ -43,7 +43,7 @@ provider "google" {
 # coordinates come from the bootstrap layer; the token is a Secret-Manager-backed
 # var exported by the workflows, mirroring cloudflare_api_token.
 provider "grafana" {
-  url      = data.terraform_remote_state.bootstrap.outputs.grafana_stack_url
+  url      = local.bootstrap.grafana_stack_url
   auth     = var.grafana_service_account_token
-  stack_id = data.terraform_remote_state.bootstrap.outputs.grafana_stack_id
+  stack_id = local.bootstrap.grafana_stack_id
 }

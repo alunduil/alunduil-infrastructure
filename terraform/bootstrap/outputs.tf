@@ -3,7 +3,7 @@
 
 output "project_id" {
   value       = google_project.env.project_id
-  description = "alunduil GCP project ID, consumed by terraform/alunduil/ via terraform_remote_state"
+  description = "alunduil GCP project ID, consumed by terraform/alunduil/"
   sensitive   = false
 }
 
@@ -38,29 +38,30 @@ output "cloudflare_api_token_deployer_rw_secret" {
 }
 
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates and App
-# identifiers reach the alunduil layer via terraform_remote_state; the two
-# secrets are fetched from Secret Manager by the plan and apply workflows.
+# identifiers reach the alunduil layer through the published bootstrap-outputs.json
+# object (see published_outputs.tf); the two secrets are fetched from Secret
+# Manager by the plan and apply workflows.
 output "grafana_stack_url" {
   value       = data.grafana_cloud_stack.this.url
-  description = "Grafana Cloud stack URL, consumed by terraform/alunduil/ via terraform_remote_state"
+  description = "Grafana Cloud stack URL, consumed by terraform/alunduil/"
   sensitive   = false
 }
 
 output "grafana_stack_id" {
   value       = data.grafana_cloud_stack.this.id
-  description = "Numeric Grafana Cloud stack ID (the stacks-<id> App Platform namespace), consumed by terraform/alunduil/ via terraform_remote_state"
+  description = "Numeric Grafana Cloud stack ID (the stacks-<id> App Platform namespace), consumed by terraform/alunduil/"
   sensitive   = false
 }
 
 output "grafana_git_sync_app_id" {
   value       = var.grafana_git_sync_app_id
-  description = "Git Sync GitHub App ID, consumed by terraform/alunduil/ via terraform_remote_state"
+  description = "Git Sync GitHub App ID, consumed by terraform/alunduil/"
   sensitive   = false
 }
 
 output "grafana_git_sync_app_installation_id" {
   value       = var.grafana_git_sync_app_installation_id
-  description = "Git Sync GitHub App installation ID on alunduil-infrastructure, consumed by terraform/alunduil/ via terraform_remote_state"
+  description = "Git Sync GitHub App installation ID on alunduil-infrastructure, consumed by terraform/alunduil/"
   sensitive   = false
 }
 

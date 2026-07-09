@@ -23,8 +23,8 @@ resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
     url         = "https://github.com"
 
     github {
-      app_id          = data.terraform_remote_state.bootstrap.outputs.grafana_git_sync_app_id
-      installation_id = data.terraform_remote_state.bootstrap.outputs.grafana_git_sync_app_installation_id
+      app_id          = local.bootstrap.grafana_git_sync_app_id
+      installation_id = local.bootstrap.grafana_git_sync_app_installation_id
     }
   }
 
