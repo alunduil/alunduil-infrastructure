@@ -42,9 +42,9 @@ check what's already in place:
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
-  bootstrap needs and its "Stays manual" surface; the Cloudflare
-  scopes live in `docs/how-to/create-master-cloudflare-token.md`.
-  Don't enumerate token paths in committed files.
+  bootstrap needs; the Cloudflare scopes live in
+  `docs/how-to/create-master-cloudflare-token.md`. Don't enumerate
+  token paths in committed files.
 
 ## Scope discipline
 
@@ -63,8 +63,8 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - Terraform: `terraform/alunduil/`. One environment (personal infra;
   no dev/prod split).
 - Manual steps that stay outside Terraform:
-  `docs/how-to/bootstrap.md` §"Stays manual". Check there before
-  assuming a thing should live in `.tf`.
+  `docs/reference/manual-surface.md`. Check there before assuming a
+  thing should live in `.tf`.
 
 ## Gotchas
 
