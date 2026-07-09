@@ -5,66 +5,63 @@ description: Scaffold a new GitHub repository for the alunduil org end to end. C
 
 # Scaffold a new repository
 
-Drive a new repo from name + intent to a draft PR that CI can apply
-cleanly: classify the module inputs, create the repo (confirmed) so
-Terraform can adopt it, and land the adoption `import` in the same PR. The
+Drive a new repo from name + intent to a draft PR CI can apply cleanly. The
 `github_repository` module and the `repositories.tf` files are the source
-of truth for the shared-vs-specific split — derive it every run, not from a
-snapshot.
+of truth for the shared-vs-specific split — derive it every run, never from
+a snapshot.
 
-Never run `terraform apply`/`plan` locally — CI applies on merge and posts
-the plan on the PR. Repo creation goes through `gh` under the operator's
-token as a confirmed step (the CI GitHub App can't create user repos); it
-is never silent and never uses the Terraform GitHub provider to side-effect
-the repo into existence.
+Two hard rules:
+
+- Never run `terraform apply`/`plan` locally. CI applies on merge and posts
+  the plan on the PR — that comment is the clean/not-clean signal.
+- Create the repo through `gh` under the operator's token, as a confirmed
+  step — never the Terraform provider (the CI App can't create user repos).
 
 ## Gather
 
 - Repo name — help pick one when the intent is firmer than the name.
-- Intent: language / archetype, release flow, GitHub Pages, discussions,
-  template seed. Whether the repo already exists, and on what default
-  branch.
+- Intent: language / archetype, release flow, Pages, discussions, template
+  seed.
+- Does the repo already exist, and on what default branch? Picks the path.
 
-## Classify (source of truth = the code)
+## Classify (the code is the source of truth)
 
-1. Read `modules/github_repository/variables.tf` (inputs + defaults) and
-   `main.tf` (settings hardcoded on every repo — public visibility,
-   squash-only merges, secret scanning, the default ruleset, vulnerability
-   alerts). Those hardcoded ones are not inputs; never restate them.
-2. Read every `terraform/*/repositories.tf` and tally each input's value
-   distribution across the module blocks.
-3. Classify each input for the new repo:
+1. Read `modules/github_repository/variables.tf` for inputs + defaults, and
+   `main.tf` for settings hardcoded on every repo (public visibility,
+   squash-only merges, secret scanning, the default ruleset, vuln alerts).
+   Those aren't inputs — never restate them in a block.
+2. Read every `terraform/*/repositories.tf`; tally each input's values.
+3. Classify each input:
    - **Shared** — matches the module default; leave it unset.
-   - **Archetype-shared** — set across the cluster the repo joins; copy
-     the cluster's value.
+   - **Archetype-shared** — set across the cluster the repo joins; copy its
+     value.
    - **Specific** — varies per repo; ask (`description`, `topics`,
      `homepage_url`).
-4. Archetype clusters — re-derive values from the members, this is a hint
-   not an inventory:
-   - Haskell library (`*.hs` name or `haskell-library` topic): haskell /
-     hypermedia topics; published ones set `environments = ["hackage"]`;
-     older ones predate `main` (`default_branch = "master"`).
-   - Static site / Pages: `pages` block + `homepage_url` + a build status
-     check; `github-pages` topic.
-   - Rust/WASM plugin, CLI: topic conventions only so far.
-5. Draft `module "<name_underscored>"` (dots and dashes → underscores)
-   setting only archetype-shared and specific values, in the module's
-   declaration order. Leave `=` alignment to `terraform_fmt`.
+4. Archetype clusters (re-derive values from the members — hint, not
+   inventory):
+   - Haskell library (`*.hs` / `haskell-library` topic): haskell +
+     hypermedia topics; published → `environments = ["hackage"]`; older →
+     `default_branch = "master"`.
+   - Static site / Pages: `pages` + `homepage_url` + a build check;
+     `github-pages` topic.
+   - Rust/WASM plugin, CLI: topic conventions only.
+5. Draft `module "<name_underscored>"` (dots/dashes → underscores), setting
+   only archetype-shared and specific values in declaration order. Leave
+   `=` alignment to `terraform_fmt`.
 
-## Path A — net-new repo (you're inventing it)
+## Path A — net-new repo
 
-1. Create the repo as a confirmed step (external state — show the command
-   and pause before running):
+1. Confirm, then create (external state — show the command, pause):
 
    ```bash
    gh repo create alunduil/<name> --public --add-readme --description "<desc>"
    ```
 
-   `--add-readme` is required: it seeds an initial commit on `main` so
-   `github_branch_default` has a branch to point at. Against an empty repo,
-   apply fails when it tries to set the default branch.
-2. Add the module block **and** its adoption import beside it — import
-   blocks are illegal in child modules, so they live in `repositories.tf`:
+   `--add-readme` is required: it seeds a commit on `main` so
+   `github_branch_default` has a branch to point at. Empty repo → apply
+   fails setting the default branch.
+2. Add the module block and, beside it, the repository import (import
+   blocks are illegal in child modules):
 
    ```hcl
    import {
@@ -73,21 +70,15 @@ the repo into existence.
    }
    ```
 
-   Import only the repository resource. A fresh repo has no `default`
-   ruleset, so the module creates it — do **not** import the ruleset here.
-3. pre-commit, commit, push, draft PR. The body notes the import adopts the
-   repo on first apply and is removed afterward.
-4. File a follow-up issue (use the `issue-create` skill) to remove the
-   import block once apply has landed — it can't be removed until the
-   resource is in state, which happens post-merge. Link it from the PR
-   body.
+   Repository resource only — a fresh repo has no `default` ruleset, so the
+   module creates it. Don't import the ruleset.
 
 ## Path B — adopt an existing untracked repo
 
-1. No create. Add the module block + the repository import (as in Path A).
-2. If the repo already carries a hand-made `default` ruleset, the first
-   apply hits 422 "Name must be unique" — add its import too, with the id
-   from `gh api repos/alunduil/<name>/rulesets` (the entry named `default`):
+1. Add the module block + repository import (as in Path A, no create).
+2. Repo already has a hand-made `default` ruleset → first apply hits 422
+   "Name must be unique". Import it too, id from
+   `gh api repos/alunduil/<name>/rulesets` (the `default` entry):
 
    ```hcl
    import {
@@ -96,23 +87,24 @@ the repo into existence.
    }
    ```
 
-3. If the live default branch is `master`, set `default_branch = "master"`
-   or rename via GitHub's UI first — the module's `check` block fails the
-   plan on a mismatch.
-4. pre-commit, commit, push, draft PR; follow-up issue to remove the
-   import(s) post-apply.
+3. Live default branch is `master` → set `default_branch = "master"`, or
+   rename via GitHub's UI first (the module's `check` block fails the plan
+   on a mismatch).
 
-## Remaining out-of-Terraform notes (include whichever apply)
+## Land it (both paths)
+
+1. pre-commit → commit → push → draft PR; the body notes the import(s)
+   adopt on first apply and are removed afterward.
+2. File a follow-up issue (`issue-create` skill) to remove the import(s) —
+   they can't go until apply puts the resource in state, post-merge. Link
+   it from the PR body.
+
+## Out-of-Terraform notes (whichever apply)
 
 - SPDX/REUSE headers on new files (`.tf` inline; `REUSE.toml` covers
   `.claude/**`, JSON, lock files).
 - Environment secrets (e.g. the Hackage token for
-  `environments = ["hackage"]`) are injected out of band, not by Terraform.
-- Pages: `https_enforced` can only be set `true` after GitHub issues the
-  cert — tick "Enforce HTTPS" in the UI first. The apex CNAME lives in
-  Cloudflare DNS, not Cloud DNS; add it there.
-
-## Finish
-
-Show the module block, the create command (Path A), and the checklist.
-Never apply. Open the draft PR per the repo's contribution flow.
+  `environments = ["hackage"]`) are injected out of band.
+- Pages: set `https_enforced = true` only after GitHub issues the cert
+  (tick "Enforce HTTPS" in the UI first). The apex CNAME lives in
+  Cloudflare DNS, not Cloud DNS.
