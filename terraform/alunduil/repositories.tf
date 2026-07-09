@@ -36,13 +36,6 @@ module "collection_json_hs" {
   environments = ["hackage"]
 }
 
-module "murl" {
-  source         = "../modules/github_repository"
-  name           = "murl"
-  description    = "Small Toy URL Shortener in Haskell"
-  default_branch = "master"
-}
-
 module "network_arbitrary" {
   source         = "../modules/github_repository"
   name           = "network-arbitrary"
