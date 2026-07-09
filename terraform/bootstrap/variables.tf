@@ -34,7 +34,8 @@ variable "cloudflare_master_token" {
 
 variable "grafana_stack_slug" {
   type        = string
-  description = "Grafana Cloud stack slug (the <slug> in https://<slug>.grafana.net). Identifies the stack to read and provision against; not a secret."
+  default     = "alunduil"
+  description = "Grafana Cloud stack slug (the <slug> in https://<slug>.grafana.net). Defaults to the sole stack for this personal infrastructure; override only for a different stack. Not a secret."
 }
 
 variable "grafana_cloud_access_policy_token" {

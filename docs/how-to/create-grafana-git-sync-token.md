@@ -5,17 +5,18 @@
 
 The bootstrap layer reads the Grafana Cloud stack and derives the
 credentials that let `terraform/alunduil` provision dashboards through
-Git Sync. This covers the two Grafana Cloud inputs; the GitHub side is a
+Git Sync. This covers the Grafana Cloud inputs; the GitHub side is a
 dedicated App in
 [create-grafana-git-sync-app.md](create-grafana-git-sync-app.md).
 Follow this before `just bootstrap`, both first-time and on rotation.
 
-## Stack slug
+## Stack slug (optional)
 
 `TF_VAR_grafana_stack_slug` — the `<slug>` in
-`https://<slug>.grafana.net`. Not a secret. The bootstrap layer reads
-the stack by this slug and outputs its URL and numeric ID for the
-alunduil layer.
+`https://<slug>.grafana.net`. Defaults to `alunduil`, the sole stack
+for this infrastructure; only export it to target a different stack.
+The bootstrap layer reads the stack by this slug and outputs its URL
+and numeric ID for the alunduil layer.
 
 ## Master access-policy token
 
@@ -32,11 +33,10 @@ Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
 ## Run
 
-Export both alongside the Git Sync App inputs and the other bootstrap
+Export it alongside the Git Sync App inputs and the other bootstrap
 inputs, then run `just bootstrap` (see [bootstrap.md](bootstrap.md)):
 
 ```sh
-export TF_VAR_grafana_stack_slug=<slug>
 export TF_VAR_grafana_cloud_access_policy_token=<paste-here>
 
 just bootstrap
