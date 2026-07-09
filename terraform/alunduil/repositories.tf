@@ -36,11 +36,6 @@ module "collection_json_hs" {
   environments = ["hackage"]
 }
 
-module "grafana" {
-  source = "../modules/github_repository"
-  name   = "grafana"
-}
-
 module "murl" {
   source         = "../modules/github_repository"
   name           = "murl"

@@ -22,9 +22,11 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
 
-# JSON config files — JSON does not permit comments for inline headers
+# JSON config files — JSON does not permit comments for inline headers. The
+# grafana/ glob also covers dashboards Git Sync writes back on UI edits, which
+# bypass pre-commit and would otherwise trip the REUSE hook.
 [[annotations]]
-path = ["renovate.json", "github/projects/*.json"]
+path = ["renovate.json", "github/projects/*.json", "grafana/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"

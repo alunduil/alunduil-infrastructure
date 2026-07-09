@@ -36,3 +36,27 @@ output "cloudflare_api_token_deployer_rw_secret" {
   description = "Secret Manager short name holding the RW deployer's Cloudflare API token; fetched at apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
+
+output "grafana_stack_url" {
+  value       = data.grafana_cloud_stack.this.url
+  description = "Grafana Cloud stack URL, consumed by terraform/alunduil/ via terraform_remote_state to configure the App Platform provider"
+  sensitive   = false
+}
+
+output "grafana_stack_id" {
+  value       = data.grafana_cloud_stack.this.id
+  description = "Numeric Grafana Cloud stack ID; selects the stacks-<id> App Platform namespace in terraform/alunduil/"
+  sensitive   = false
+}
+
+output "grafana_provisioner_token_secret" {
+  value       = google_secret_manager_secret.grafana_provisioner_token.secret_id
+  description = "Secret Manager short name holding the Grafana provisioning service-account token; fetched by both plan and apply via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
+output "grafana_git_sync_github_token_secret" {
+  value       = google_secret_manager_secret.grafana_git_sync_github_token.secret_id
+  description = "Secret Manager short name holding the Git Sync GitHub PAT; fetched by both plan and apply via `gcloud secrets versions access`"
+  sensitive   = false
+}

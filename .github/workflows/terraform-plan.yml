@@ -60,6 +60,24 @@ jobs:
           echo "::add-mask::${value}"
           echo "TF_VAR_cloudflare_api_token=${value}" >> "${GITHUB_ENV}" # pragma: allowlist secret
 
+      # Grafana provisioning has no read-only role, so the RO deployer reads the
+      # same tokens the RW apply uses. Both secrets are populated by the
+      # bootstrap layer.
+      - name: Export Grafana tokens
+        run: |
+          sa_name=grafana-provisioner-token # pragma: allowlist secret
+          pat_name=grafana-git-sync-github-token # pragma: allowlist secret
+          sa="$(gcloud secrets versions access latest \
+            --secret="${sa_name}" --project=alunduil)"
+          pat="$(gcloud secrets versions access latest \
+            --secret="${pat_name}" --project=alunduil)"
+          echo "::add-mask::${sa}"
+          echo "::add-mask::${pat}"
+          {
+            echo "TF_VAR_grafana_service_account_token=${sa}" # pragma: allowlist secret
+            echo "TF_VAR_grafana_git_sync_github_token=${pat}" # pragma: allowlist secret
+          } >> "${GITHUB_ENV}"
+
       - name: Terraform Init
         working-directory: terraform/alunduil
         run: terraform init

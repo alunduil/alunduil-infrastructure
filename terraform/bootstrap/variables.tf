@@ -31,3 +31,34 @@ variable "cloudflare_master_token" {
     Full steps: docs/how-to/create-master-cloudflare-token.md
   EOT
 }
+
+variable "grafana_stack_slug" {
+  type        = string
+  description = "Grafana Cloud stack slug (the <slug> in https://<slug>.grafana.net). Identifies the stack to read and provision against; not a secret."
+}
+
+variable "grafana_cloud_access_policy_token" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    Master Grafana Cloud access-policy token, created by hand and revoked
+    after apply. Needs scopes stacks:read and stack-service-accounts:write.
+    Used only to read the stack and derive the provisioning service-account
+    token stored in Secret Manager.
+
+    Full steps: docs/how-to/create-grafana-git-sync-token.md
+  EOT
+}
+
+variable "grafana_git_sync_github_token" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    Fine-grained GitHub PAT scoped to only alunduil-infrastructure with
+    Contents and Pull requests: write. Git Sync uses it to open dashboard
+    PRs. Hand-created (GitHub has no API to mint user PATs), then stored in
+    Secret Manager here.
+
+    Full steps: docs/how-to/create-grafana-git-sync-token.md
+  EOT
+}

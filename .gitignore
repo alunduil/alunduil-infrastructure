@@ -6,6 +6,7 @@
 !*example*.json
 !renovate.json
 !github/projects/*.json
+!grafana/*.json
 
 # OS
 .DS_Store
