@@ -18,10 +18,9 @@ tokens via OIDC.
      install, Enable Device Flow) at their defaults — the deployer
      authenticates as an installation, not a user.
    - Where can this GitHub App be installed: **Only on this account**
-     (the App's private key mints installation tokens for every
-     account the App is installed on, so limiting installation to
-     your own account keeps the blast radius matched to what this
-     repo actually manages)
+     (the private key generates installation tokens for every account
+     the App is installed on, so limiting it to yours matches the blast
+     radius to what this repo manages)
    - Repository permissions:
      - `Administration: Read and write`
      - `Contents: Read and write`

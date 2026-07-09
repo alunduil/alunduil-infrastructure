@@ -75,7 +75,7 @@ variable "grafana_git_sync_app_private_key_file" {
     Path to the PEM private key of the dedicated Git Sync GitHub App,
     installed only on alunduil-infrastructure with Contents and Pull
     requests: write. Read straight into Secret Manager here; Grafana uses
-    it to mint installation tokens. A path (like GH_APP_PRIVATE_KEY_FILE)
+    it to generate installation tokens. A path (like GH_APP_PRIVATE_KEY_FILE)
     rather than the contents, so the multi-line PEM never rides an env var.
 
     Full steps: docs/how-to/create-git-sync-github-app.md

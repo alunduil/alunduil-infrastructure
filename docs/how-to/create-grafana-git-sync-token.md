@@ -3,12 +3,10 @@
 
 # Create the Grafana Git Sync credentials
 
-The bootstrap layer reads the Grafana Cloud stack and derives the
-credentials that let `terraform/alunduil` provision dashboards through
-Git Sync. This covers the Grafana Cloud inputs; the GitHub side is a
+The Grafana Cloud inputs for `just bootstrap`; the GitHub side is a
 dedicated App in
-[create-git-sync-github-app.md](create-git-sync-github-app.md).
-Follow this before `just bootstrap`, both first-time and on rotation.
+[create-git-sync-github-app.md](create-git-sync-github-app.md). Do this
+first-time and on rotation.
 
 ## Stack slug (optional)
 
@@ -51,12 +49,7 @@ export TF_VAR_grafana_cloud_access_policy_token=<paste-here>
 just bootstrap
 ```
 
-Bootstrap creates a Grafana provisioning service account, stores its
-token and the Git Sync App private key in Secret Manager, and grants the
-plan/apply deployer service accounts access. The `terraform-plan` and
-`terraform-apply` workflows fetch both at run time; the stack URL and ID
-reach the alunduil layer through the bootstrap remote state. Revoke the
-access-policy token afterward.
+Revoke the access-policy token once bootstrap finishes.
 
 ## Rotate
 
