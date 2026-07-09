@@ -37,38 +37,41 @@ output "cloudflare_api_token_deployer_rw_secret" {
   sensitive   = false
 }
 
+# Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates and App
+# identifiers reach the alunduil layer via terraform_remote_state; the two
+# secrets are fetched from Secret Manager by the plan and apply workflows.
 output "grafana_stack_url" {
   value       = data.grafana_cloud_stack.this.url
-  description = "Grafana Cloud stack URL, consumed by terraform/alunduil/ via terraform_remote_state to configure the App Platform provider"
+  description = "Grafana Cloud stack URL, consumed by terraform/alunduil/ via terraform_remote_state"
   sensitive   = false
 }
 
 output "grafana_stack_id" {
   value       = data.grafana_cloud_stack.this.id
-  description = "Numeric Grafana Cloud stack ID; selects the stacks-<id> App Platform namespace in terraform/alunduil/"
-  sensitive   = false
-}
-
-output "grafana_provisioner_token_secret" {
-  value       = google_secret_manager_secret.grafana_provisioner_token.secret_id
-  description = "Secret Manager short name holding the Grafana provisioning service-account token; fetched by both plan and apply via `gcloud secrets versions access`"
+  description = "Numeric Grafana Cloud stack ID (the stacks-<id> App Platform namespace), consumed by terraform/alunduil/ via terraform_remote_state"
   sensitive   = false
 }
 
 output "grafana_git_sync_app_id" {
   value       = var.grafana_git_sync_app_id
-  description = "App ID of the Git Sync GitHub App, consumed by terraform/alunduil/ for the Grafana connection resource"
+  description = "Git Sync GitHub App ID, consumed by terraform/alunduil/ via terraform_remote_state"
   sensitive   = false
 }
 
 output "grafana_git_sync_app_installation_id" {
   value       = var.grafana_git_sync_app_installation_id
-  description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure, consumed by terraform/alunduil/"
+  description = "Git Sync GitHub App installation ID on alunduil-infrastructure, consumed by terraform/alunduil/ via terraform_remote_state"
+  sensitive   = false
+}
+
+output "grafana_provisioner_token_secret" {
+  value       = google_secret_manager_secret.grafana_provisioner_token.secret_id
+  description = "Secret Manager short name holding the Grafana provisioning service-account token; fetched at plan and apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
 
 output "grafana_git_sync_app_private_key_secret" {
   value       = google_secret_manager_secret.grafana_git_sync_app_private_key.secret_id
-  description = "Secret Manager short name holding the Git Sync GitHub App private key; fetched by both plan and apply via `gcloud secrets versions access`"
+  description = "Secret Manager short name holding the Git Sync GitHub App private key; fetched at plan and apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
