@@ -7,7 +7,7 @@ The bootstrap layer reads the Grafana Cloud stack and derives the
 credentials that let `terraform/alunduil` provision dashboards through
 Git Sync. This covers the Grafana Cloud inputs; the GitHub side is a
 dedicated App in
-[create-grafana-git-sync-app.md](create-grafana-git-sync-app.md).
+[create-git-sync-github-app.md](create-git-sync-github-app.md).
 Follow this before `just bootstrap`, both first-time and on rotation.
 
 ## Stack slug (optional)
@@ -63,4 +63,4 @@ access-policy token afterward.
 Regenerate the access-policy token, re-export, and re-run
 `just bootstrap`. The next workflow run picks up the new Secret Manager
 version. To rotate the GitHub App key, see
-[create-grafana-git-sync-app.md](create-grafana-git-sync-app.md).
+[create-git-sync-github-app.md](create-git-sync-github-app.md).

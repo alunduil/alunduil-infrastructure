@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the GitHub App
+# Create the deployer GitHub App
 
 Authenticates the `integrations/github` Terraform provider in CI. The
 workflow exchanges App ID + private key for short-lived installation

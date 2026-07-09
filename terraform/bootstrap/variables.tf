@@ -78,6 +78,6 @@ variable "grafana_git_sync_app_private_key_file" {
     it to mint installation tokens. A path (like GH_APP_PRIVATE_KEY_FILE)
     rather than the contents, so the multi-line PEM never rides an env var.
 
-    Full steps: docs/how-to/create-grafana-git-sync-app.md
+    Full steps: docs/how-to/create-git-sync-github-app.md
   EOT
 }

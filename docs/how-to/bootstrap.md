@@ -13,11 +13,11 @@ credentials.
 - A master Cloudflare API token — see
   [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
 - A GitHub App created and installed — see
-  [create-github-app.md](create-github-app.md).
+  [create-deployer-github-app.md](create-deployer-github-app.md).
 - Grafana Cloud credentials — see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed — see
-  [create-grafana-git-sync-app.md](create-grafana-git-sync-app.md).
+  [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
 ## Run
 

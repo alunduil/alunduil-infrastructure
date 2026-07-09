@@ -5,9 +5,9 @@
 
 A dedicated GitHub App that Grafana Git Sync authenticates through to
 open dashboard pull requests. Separate from the deployer App in
-[create-github-app.md](create-github-app.md): this one is installed on
-only `alunduil-infrastructure`, so the private key handed to Grafana
-Cloud can reach nothing else.
+[create-deployer-github-app.md](create-deployer-github-app.md): this App
+is installed on only `alunduil-infrastructure`, so the private key
+handed to Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, e.g.
