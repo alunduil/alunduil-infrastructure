@@ -62,9 +62,11 @@ in a scoped PR ships infra the reviewer didn't ask for.
 
 - Terraform: `terraform/alunduil/`. One environment (personal infra;
   no dev/prod split).
-- Manual steps that stay outside Terraform:
-  `docs/reference/manual-surface.md`. Check there before assuming a
-  thing should live in `.tf`.
+- Repository settings — default branch, protection ruleset, Pages,
+  topics, environments — are declarative in
+  `terraform/alunduil/repositories.tf` via the `github_repository`
+  module. Assume a repo setting lives there before treating it as
+  manual.
 
 ## Gotchas
 
