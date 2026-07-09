@@ -41,6 +41,11 @@ check what's already in place:
   back.
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
+- Adding a new repo to the org? The `scaffold-repo` skill
+  (`.claude/skills/scaffold-repo/`) drives the module-block workflow:
+  classifies each `github_repository` input as shared/archetype/specific
+  against the existing `repositories.tf` and lists the out-of-Terraform
+  steps.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
   `docs/how-to/create-master-cloudflare-token.md`. Don't enumerate
