@@ -20,7 +20,6 @@ resource "google_project_service" "legacy" {
     "smartdevicemanagement.googleapis.com", # Nest / Google Home
 
     # Observability — GCP often re-enables automatically
-    "logging.googleapis.com",
     "monitoring.googleapis.com",
 
     # Compute Engine and related

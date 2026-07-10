@@ -18,5 +18,6 @@ resource "google_storage_bucket_object" "published_outputs" {
     grafana_stack_id                     = data.grafana_cloud_stack.this.id
     grafana_git_sync_app_id              = var.grafana_git_sync_app_id
     grafana_git_sync_app_installation_id = var.grafana_git_sync_app_installation_id
+    grafana_gcp_reader_email             = google_service_account.grafana_gcp_reader.email
   })
 }
