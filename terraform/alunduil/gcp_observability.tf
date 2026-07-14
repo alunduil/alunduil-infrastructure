@@ -44,3 +44,86 @@ resource "google_logging_metric" "audit_data_access" {
 
   depends_on = [google_project_service.logging]
 }
+
+# Folder holding the alert rules that query GCP. Kept separate from the Git
+# Sync dashboard folders so a dashboard sync can't disturb alerting.
+resource "grafana_folder" "gcp_observability" {
+  title = "GCP Observability"
+  uid   = "gcp-observability"
+}
+
+# Audit alert, fully declarative: it references the data source by UID, so the
+# out-of-band credential (scripts/set-grafana-gcp-credentials.sh) is the only
+# manual step. The query aligns the DELTA counter per period (A), reduces to the
+# last value (B), and fires when it exceeds the threshold (C). Threshold 0 fires
+# on any Data Access event; raise it in the rule to alert only on bursts.
+resource "grafana_rule_group" "audit_data_access" {
+  name             = "GCP audit"
+  folder_uid       = grafana_folder.gcp_observability.uid
+  interval_seconds = 60
+
+  rule {
+    name           = "Data Access audit events"
+    condition      = "C"
+    for            = "0s"
+    no_data_state  = "OK"
+    exec_err_state = "Error"
+    labels         = { severity = "warning" }
+
+    data {
+      ref_id         = "A"
+      datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
+      relative_time_range {
+        from = 600
+        to   = 0
+      }
+      model = jsonencode({
+        refId     = "A"
+        queryType = "timeSeriesList"
+        datasource = {
+          type = "stackdriver"
+          uid  = grafana_data_source.gcp_cloud_monitoring.uid
+        }
+        timeSeriesList = {
+          projectName        = local.bootstrap.project_id
+          filters            = ["metric.type", "=", "logging.googleapis.com/user/${google_logging_metric.audit_data_access.name}"]
+          perSeriesAligner   = "ALIGN_DELTA"
+          crossSeriesReducer = "REDUCE_SUM"
+          alignmentPeriod    = "cloud-monitoring-auto"
+        }
+      })
+    }
+
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
+      relative_time_range {
+        from = 600
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "B"
+        type       = "reduce"
+        datasource = { type = "__expr__", uid = "__expr__" }
+        expression = "A"
+        reducer    = "last"
+      })
+    }
+
+    data {
+      ref_id         = "C"
+      datasource_uid = "__expr__"
+      relative_time_range {
+        from = 600
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "C"
+        type       = "threshold"
+        datasource = { type = "__expr__", uid = "__expr__" }
+        expression = "B"
+        conditions = [{ evaluator = { type = "gt", params = [0] } }]
+      })
+    }
+  }
+}
