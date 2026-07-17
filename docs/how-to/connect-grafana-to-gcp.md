@@ -3,12 +3,12 @@
 
 # Connect Grafana Cloud to GCP metrics and audit logs
 
-Terraform creates the Cloud Monitoring data source, the Data Access
-log-based metric, and the audit alert. The one step it can't do is inject the
-read-only service-account key: `grafana_data_source` would persist it in the
-bucket-readable alunduil state, so the key is set through the Grafana API
-instead. Run this after each apply that (re)creates the data source, and on key
-rotation.
+Terraform creates the data source, log-based metric, and audit alert but can't
+set the data source's service-account key without persisting it in
+bucket-readable state — so you set the key through the Grafana API. Run this
+when the data source is first created or recreated (initial rollout, or a rare
+UID or type change), and on key rotation; routine applies leave the key
+untouched.
 
 ## Prerequisites
 
