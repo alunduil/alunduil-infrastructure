@@ -4,7 +4,7 @@
 module "alunduil_chezmoi" {
   source      = "../modules/github_repository"
   name        = "alunduil-chezmoi"
-  description = "Personal chezmoi-managed dotfiles: bare Debian/Crostini host to a full dev environment in one command."
+  description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
   topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
 }
 
