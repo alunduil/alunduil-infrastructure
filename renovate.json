@@ -26,6 +26,10 @@
     {
       "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
       "groupName": "reuse"
+    },
+    {
+      "matchUpdateTypes": ["digest", "pinDigest", "lockFileMaintenance"],
+      "minimumReleaseAge": "0 days"
     }
   ]
 }
