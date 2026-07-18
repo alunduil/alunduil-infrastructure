@@ -81,6 +81,8 @@ module "network_arbitrary" {
   name        = "network-arbitrary"
   description = "Arbitrary Instances for Network Types"
   topics      = ["haskell-library", "haskell", "network", "quickcheck"]
+  # Deployment environment for Hackage releases.
+  environments = { hackage = {} }
 }
 
 module "projects_v2_sync" {
