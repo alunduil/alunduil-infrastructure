@@ -76,3 +76,15 @@ output "grafana_git_sync_app_private_key_secret" {
   description = "Secret Manager short name holding the Git Sync GitHub App private key; fetched at plan and apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
+
+output "tailscale_oauth_client_id_secret" {
+  value       = google_secret_manager_secret.tailscale_oauth_client_id.secret_id
+  description = "Secret Manager short name holding the Tailscale OAuth client ID; fetched at plan and apply time via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
+output "tailscale_oauth_client_secret_secret" {
+  value       = google_secret_manager_secret.tailscale_oauth_client_secret.secret_id
+  description = "Secret Manager short name holding the Tailscale OAuth client secret; fetched at plan and apply time via `gcloud secrets versions access`"
+  sensitive   = false
+}
