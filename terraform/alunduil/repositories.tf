@@ -77,11 +77,10 @@ import {
 }
 
 module "network_arbitrary" {
-  source      = "../modules/github_repository"
-  name        = "network-arbitrary"
-  description = "Arbitrary Instances for Network Types"
-  topics      = ["haskell-library", "haskell", "network", "quickcheck"]
-  # Deployment environment for Hackage releases.
+  source       = "../modules/github_repository"
+  name         = "network-arbitrary"
+  description  = "Arbitrary Instances for Network Types"
+  topics       = ["haskell-library", "haskell", "network", "quickcheck"]
   environments = { hackage = {} }
 }
 
