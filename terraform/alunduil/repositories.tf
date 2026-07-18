@@ -141,7 +141,8 @@ import {
 module "zfs_replicate" {
   source         = "../modules/github_repository"
   name           = "zfs-replicate"
-  description    = "ZFS Replication"
+  description    = "Replicate ZFS snapshots to a remote host over SSH (Python CLI; replication only — it doesn't create snapshots)."
+  homepage_url   = "https://pypi.org/project/zfs-replicate/"
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
 }
