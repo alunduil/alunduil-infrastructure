@@ -11,6 +11,40 @@ module "alunduil_infrastructure" {
   name   = "alunduil-infrastructure"
 }
 
+# The sync-project workflow reads GH_PROJECT_SYNC_TOKEN from this environment.
+# Modeled here rather than via the module's `environments` (which creates plain
+# environments) because it carries a branch policy restricting deployments — and
+# thus the token — to `main`, so a workflow_dispatch from an arbitrary branch
+# can't reach the secret. The token itself is injected out of band.
+resource "github_repository_environment" "project_sync" {
+  repository  = module.alunduil_infrastructure.name
+  environment = "project-sync"
+
+  deployment_branch_policy {
+    protected_branches     = false
+    custom_branch_policies = true
+  }
+}
+
+resource "github_repository_environment_deployment_policy" "project_sync_main" {
+  repository     = module.alunduil_infrastructure.name
+  environment    = github_repository_environment.project_sync.environment
+  branch_pattern = "main"
+}
+
+# Both objects predate this config; adopt the existing environment and its
+# branch policy into state so the first apply reconciles rather than 422s on
+# "already exists". Remove once applied.
+import {
+  to = github_repository_environment.project_sync
+  id = "alunduil-infrastructure:project-sync"
+}
+
+import {
+  to = github_repository_environment_deployment_policy.project_sync_main
+  id = "alunduil-infrastructure:project-sync:50792082"
+}
+
 module "blog_alunduil_com" {
   source       = "../modules/github_repository"
   name         = "blog.alunduil.com"
