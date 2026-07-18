@@ -21,8 +21,9 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   })
 
   lifecycle {
-    # privateKey is set out of band from Secret Manager, so ignore the secure
-    # payload — otherwise each apply would send an empty value and wipe it.
+    # privateKey is injected out of band from Secret Manager, so Terraform does
+    # not manage the secure payload. Grafana merges secureJsonData on update
+    # (omitted keys are preserved), so this is intent, not wipe-protection.
     ignore_changes = [secure_json_data_encoded]
   }
 }
