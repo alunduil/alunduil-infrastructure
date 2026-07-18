@@ -77,10 +77,10 @@ import {
 }
 
 module "network_arbitrary" {
-  source         = "../modules/github_repository"
-  name           = "network-arbitrary"
-  description    = "Arbitrary Instances for Network Types"
-  default_branch = "master"
+  source      = "../modules/github_repository"
+  name        = "network-arbitrary"
+  description = "Arbitrary Instances for Network Types"
+  topics      = ["haskell-library", "haskell", "network", "quickcheck"]
 }
 
 module "projects_v2_sync" {
