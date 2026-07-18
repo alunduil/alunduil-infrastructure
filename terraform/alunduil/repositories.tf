@@ -11,6 +11,25 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
+  # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
+  # branch policy pins the token to main so a workflow_dispatch from an
+  # arbitrary branch can't reach it. Token injected out of band.
+  environments = {
+    "project-sync" = { deployment_branches = ["main"] }
+  }
+}
+
+# The project-sync environment and its branch policy predate this config; adopt
+# both into state so the first apply reconciles rather than 422s on "already
+# exists". Remove once applied.
+import {
+  to = module.alunduil_infrastructure.github_repository_environment.this["project-sync"]
+  id = "alunduil-infrastructure:project-sync"
+}
+
+import {
+  to = module.alunduil_infrastructure.github_repository_environment_deployment_policy.this["project-sync:main"]
+  id = "alunduil-infrastructure:project-sync:50792082"
 }
 
 module "blog_alunduil_com" {
@@ -35,7 +54,7 @@ module "collection_json_hs" {
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
-  environments = ["hackage"]
+  environments = { hackage = {} }
 }
 
 module "git_worktree_poi" {

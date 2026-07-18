@@ -112,7 +112,28 @@ resource "github_repository_environment" "this" {
   for_each = var.environments
 
   repository  = github_repository.this.name
-  environment = each.value
+  environment = each.key
+
+  dynamic "deployment_branch_policy" {
+    for_each = length(each.value.deployment_branches) > 0 ? [1] : []
+    content {
+      protected_branches     = false
+      custom_branch_policies = true
+    }
+  }
+}
+
+resource "github_repository_environment_deployment_policy" "this" {
+  for_each = merge([
+    for env_name, env in var.environments : {
+      for pattern in env.deployment_branches :
+      "${env_name}:${pattern}" => { environment = env_name, pattern = pattern }
+    }
+  ]...)
+
+  repository     = github_repository.this.name
+  environment    = github_repository_environment.this[each.value.environment].environment
+  branch_pattern = each.value.pattern
 }
 
 resource "github_repository_pages" "this" {
