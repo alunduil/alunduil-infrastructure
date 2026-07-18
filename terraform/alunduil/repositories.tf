@@ -39,7 +39,7 @@ module "collection_json_hs" {
 module "git_worktree_poi" {
   source      = "../modules/github_repository"
   name        = "git-worktree-poi"
-  description = "CLI that classifies and prunes git worktrees in the Claude Code pairing workflow, with a gh-poi-style report; runs headless under a systemd timer."
+  description = "Prune git worktrees whose branch has merged or whose upstream is gone, and report what's left in a gh-poi-style summary. Reach for it when a worktree-per-branch workflow leaves stale checkouts behind; run it by hand or on a systemd timer."
   topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
 }
 

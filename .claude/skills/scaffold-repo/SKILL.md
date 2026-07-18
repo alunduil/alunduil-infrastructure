@@ -36,7 +36,11 @@ Two hard rules:
    - **Archetype-shared** — set across the cluster the repo joins; copy its
      value.
    - **Specific** — varies per repo; ask (`description`, `topics`,
-     `homepage_url`).
+     `homepage_url`). Write `description` active-voice and second-person,
+     saying when the reader would reach for the repo — ddbeck's Evaluate
+     criterion: why / what it achieves, not what it's made of. No
+     "CLI that…" / "library for…" openers; lead with the verb. See the
+     `readme` skill.
 4. Archetype clusters (re-derive values from the members — hint, not
    inventory):
    - Haskell library (`*.hs` / `haskell-library` topic): haskell +
