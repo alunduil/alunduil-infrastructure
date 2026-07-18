@@ -115,7 +115,7 @@ resource "github_repository_environment" "this" {
   environment = each.key
 
   dynamic "deployment_branch_policy" {
-    for_each = length(each.value.branch_patterns) > 0 ? [1] : []
+    for_each = length(each.value.deployment_branches) > 0 ? [1] : []
     content {
       protected_branches     = false
       custom_branch_policies = true
@@ -126,7 +126,7 @@ resource "github_repository_environment" "this" {
 resource "github_repository_environment_deployment_policy" "this" {
   for_each = merge([
     for env_name, env in var.environments : {
-      for pattern in env.branch_patterns :
+      for pattern in env.deployment_branches :
       "${env_name}:${pattern}" => { environment = env_name, pattern = pattern }
     }
   ]...)

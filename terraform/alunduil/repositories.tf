@@ -13,7 +13,7 @@ module "alunduil_infrastructure" {
   # branch policy pins the token to main so a workflow_dispatch from an
   # arbitrary branch can't reach it. Token injected out of band.
   environments = {
-    "project-sync" = { branch_patterns = ["main"] }
+    "project-sync" = { deployment_branches = ["main"] }
   }
 }
 
