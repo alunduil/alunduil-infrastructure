@@ -36,6 +36,25 @@ module "collection_json_hs" {
   environments = ["hackage"]
 }
 
+module "git_worktree_poi" {
+  source      = "../modules/github_repository"
+  name        = "git-worktree-poi"
+  description = "Prune git worktrees whose branch has merged or whose upstream is gone, and report what's left in a gh-poi-style summary. Reach for it when a worktree-per-branch workflow leaves stale checkouts behind; run it by hand or on a systemd timer."
+  topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
+}
+
+# git-worktree-poi was created out-of-band with a user token: the CI GitHub App
+# cannot POST /user/repos (403 Resource not accessible by integration), so
+# Terraform adopts the existing repository here rather than creating it. The
+# default branch, ruleset, and vulnerability alerts are created on apply, which
+# the App can do against an existing repo. Remove once applied. The import lives
+# in the root module beside its target because import blocks are not allowed in
+# child modules.
+import {
+  to = module.git_worktree_poi.github_repository.this
+  id = "git-worktree-poi"
+}
+
 module "network_arbitrary" {
   source         = "../modules/github_repository"
   name           = "network-arbitrary"
