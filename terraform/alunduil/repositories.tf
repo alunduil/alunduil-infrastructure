@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 module "alunduil_chezmoi" {
-  source = "../modules/github_repository"
-  name   = "alunduil-chezmoi"
+  source      = "../modules/github_repository"
+  name        = "alunduil-chezmoi"
+  description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
+  topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
 }
 
 module "alunduil_infrastructure" {
