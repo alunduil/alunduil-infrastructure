@@ -69,13 +69,19 @@ variable "template" {
 }
 
 variable "environments" {
-  type        = set(string)
-  default     = []
+  type = map(object({
+    branch_patterns = optional(list(string), [])
+  }))
+  default     = {}
   description = <<-EOT
-    Deployment environment names to create on the repository. An
-    environment scopes its own secrets (e.g. a Hackage upload token) and
-    gives a release workflow a target to declare via `environment: <name>`.
+    Deployment environments to create, keyed by name. An environment
+    scopes its own secrets (e.g. a Hackage upload token) and gives a
+    release workflow a target to declare via `environment: <name>`.
     Secret values are injected out of band, not by Terraform.
+
+    branch_patterns restricts which branches may deploy to the
+    environment — and thus reach its secrets; empty (the default) leaves
+    the environment open to any branch.
   EOT
 }
 

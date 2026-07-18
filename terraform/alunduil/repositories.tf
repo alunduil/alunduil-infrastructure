@@ -9,39 +9,24 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
-}
-
-# The sync-project workflow reads GH_PROJECT_SYNC_TOKEN from this environment.
-# Modeled here rather than via the module's `environments` (which creates plain
-# environments) because it carries a branch policy restricting deployments — and
-# thus the token — to `main`, so a workflow_dispatch from an arbitrary branch
-# can't reach the secret. The token itself is injected out of band.
-resource "github_repository_environment" "project_sync" {
-  repository  = module.alunduil_infrastructure.name
-  environment = "project-sync"
-
-  deployment_branch_policy {
-    protected_branches     = false
-    custom_branch_policies = true
+  # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
+  # branch policy pins the token to main so a workflow_dispatch from an
+  # arbitrary branch can't reach it. Token injected out of band.
+  environments = {
+    "project-sync" = { branch_patterns = ["main"] }
   }
 }
 
-resource "github_repository_environment_deployment_policy" "project_sync_main" {
-  repository     = module.alunduil_infrastructure.name
-  environment    = github_repository_environment.project_sync.environment
-  branch_pattern = "main"
-}
-
-# Both objects predate this config; adopt the existing environment and its
-# branch policy into state so the first apply reconciles rather than 422s on
-# "already exists". Remove once applied.
+# The project-sync environment and its branch policy predate this config; adopt
+# both into state so the first apply reconciles rather than 422s on "already
+# exists". Remove once applied.
 import {
-  to = github_repository_environment.project_sync
+  to = module.alunduil_infrastructure.github_repository_environment.this["project-sync"]
   id = "alunduil-infrastructure:project-sync"
 }
 
 import {
-  to = github_repository_environment_deployment_policy.project_sync_main
+  to = module.alunduil_infrastructure.github_repository_environment_deployment_policy.this["project-sync:main"]
   id = "alunduil-infrastructure:project-sync:50792082"
 }
 
@@ -67,7 +52,7 @@ module "collection_json_hs" {
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
-  environments = ["hackage"]
+  environments = { hackage = {} }
 }
 
 module "git_worktree_poi" {
