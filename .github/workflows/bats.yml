@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: bats
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel superseded PR runs; never cancel main so each commit completes.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  run:
+    name: Run bats suites
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Set up bats
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
+        with:
+          # Both suites use plain [[ ]] assertions, so the support/assert
+          # libraries (and their BATS_LIB_PATH wiring) aren't needed.
+          support-install: false
+          assert-install: false
+          detik-install: false
+          file-install: false
+          # bats-action curls api.github.com; auth raises the anonymous rate limit.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run suites
+        run: bats --recursive github/projects scripts

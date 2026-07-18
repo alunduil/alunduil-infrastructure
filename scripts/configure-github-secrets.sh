@@ -7,43 +7,15 @@
 
 set -euo pipefail
 
-command -v gh >/dev/null || {
-  echo "error: gh CLI not found in PATH" >&2
-  exit 1
-}
-command -v git >/dev/null || {
-  echo "error: git CLI not found in PATH" >&2
-  exit 1
-}
-command -v terraform >/dev/null || {
-  echo "error: terraform CLI not found in PATH" >&2
-  exit 1
-}
-
-REPO_ROOT="$(git rev-parse --show-toplevel)" || {
-  echo "error: not inside a git work tree" >&2
-  exit 1
-}
-BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
-
 # The Projects sync token is scoped to this deployment environment
 # (restricted to main) so only the sync workflow, which declares the
 # environment, can read it. Every other secret stays repo-level.
 ENVIRONMENT="project-sync"
 
-gh auth status >/dev/null 2>&1 || {
-  echo "error: gh is not authenticated; run 'gh auth login'" >&2
-  exit 1
-}
-
-WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
-RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
-RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
-
-existing_secrets="$(gh secret list --json name --jq '.[].name')"
+# existing_secrets / existing_env_secrets are populated by the executable
+# body (from `gh secret list`) before these run; the bats suite sets them
+# directly.
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
-
-existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
 has_env_secret() { grep -Fxq "$1" <<<"${existing_env_secrets}"; }
 
 print_gh_app_pointer() {
@@ -55,6 +27,9 @@ you haven't created one yet, see docs/how-to/create-deployer-github-app.md.
 EOF
 }
 
+# A value is prompted for only when it is neither supplied via the
+# environment nor already present as a secret — so a re-run never clobbers
+# an existing secret with a fresh prompt.
 needs_id_prompt() {
   [[ -z "${GH_APP_ID:-}" ]] && ! has_secret "GH_APP_ID"
 }
@@ -77,14 +52,9 @@ docs/how-to/create-github-project-sync-token.md.
 EOF
 }
 
-if needs_id_prompt || needs_key_prompt; then
-  print_gh_app_pointer
-fi
-
-if needs_token_prompt; then
-  print_project_sync_token_pointer
-fi
-
+# The resolve_* helpers follow one precedence: an explicit environment
+# value wins; otherwise an already-set secret is left untouched (signalled
+# by the __KEEP__ sentinel, which the setters below skip); otherwise prompt.
 resolve_gh_app_id() {
   if [[ -n "${GH_APP_ID:-}" ]]; then
     printf '%s' "${GH_APP_ID}"
@@ -149,6 +119,51 @@ JSON
       -f "name=main" >/dev/null
   fi
 }
+
+# Skip the executable body when sourced (e.g. by configure-github-secrets.bats).
+if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
+  return 0 2>/dev/null || true
+fi
+
+command -v gh >/dev/null || {
+  echo "error: gh CLI not found in PATH" >&2
+  exit 1
+}
+command -v git >/dev/null || {
+  echo "error: git CLI not found in PATH" >&2
+  exit 1
+}
+command -v terraform >/dev/null || {
+  echo "error: terraform CLI not found in PATH" >&2
+  exit 1
+}
+
+REPO_ROOT="$(git rev-parse --show-toplevel)" || {
+  echo "error: not inside a git work tree" >&2
+  exit 1
+}
+BOOTSTRAP_DIR="${REPO_ROOT}/terraform/bootstrap"
+
+gh auth status >/dev/null 2>&1 || {
+  echo "error: gh is not authenticated; run 'gh auth login'" >&2
+  exit 1
+}
+
+WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
+RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
+RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
+
+existing_secrets="$(gh secret list --json name --jq '.[].name')"
+existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
+
+if needs_id_prompt || needs_key_prompt; then
+  print_gh_app_pointer
+fi
+
+if needs_token_prompt; then
+  print_project_sync_token_pointer
+fi
 
 GH_APP_ID_VALUE="$(resolve_gh_app_id)"
 GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
