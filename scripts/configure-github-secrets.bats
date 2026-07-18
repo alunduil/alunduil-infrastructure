@@ -10,9 +10,8 @@
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
-  # has_secret / has_env_secret read these; the executable body normally
-  # populates them from `gh secret list`. Default to empty (no secrets set),
-  # and clear the env inputs so each test starts from a known state.
+  # has_secret / has_env_secret read the *_secrets globals and resolve_*
+  # read the env inputs; reset both so each test starts from a clean state.
   existing_secrets=""
   existing_env_secrets=""
   unset GH_APP_ID GH_APP_PRIVATE_KEY_FILE GH_PROJECT_SYNC_TOKEN
@@ -34,7 +33,7 @@ setup() {
   [[ ${status} -eq 1 ]]
 }
 
-# --- needs_*_prompt: env value present, secret present, or neither --------
+# --- needs_*_prompt -------------------------------------------------------
 
 @test "needs_id_prompt is true when GH_APP_ID is unset and the secret is absent" {
   run needs_id_prompt

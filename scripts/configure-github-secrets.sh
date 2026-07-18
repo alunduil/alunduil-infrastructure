@@ -12,10 +12,9 @@ set -euo pipefail
 # environment, can read it. Every other secret stays repo-level.
 ENVIRONMENT="project-sync"
 
-# Exact-match (grep -Fxq) membership tests against the repo- and
-# environment-level secret name lists. The executable body populates
-# existing_secrets / existing_env_secrets from `gh secret list` before any
-# caller runs; the bats suite sets them directly.
+# existing_secrets / existing_env_secrets are populated by the executable
+# body (from `gh secret list`) before these run; the bats suite sets them
+# directly.
 has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
 has_env_secret() { grep -Fxq "$1" <<<"${existing_env_secrets}"; }
 
