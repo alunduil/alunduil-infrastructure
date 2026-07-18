@@ -26,3 +26,19 @@ variable "grafana_git_sync_app_private_key" {
   description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to mint installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key. App id/installation come from the bootstrap remote state."
   sensitive   = true
 }
+
+# The OAuth client is created by hand in the Tailscale admin console; the
+# bootstrap layer stores both parts in Secret Manager and the plan/apply
+# workflows export them as TF_VAR_tailscale_*, exactly like the Grafana
+# secrets. Both are marked sensitive: the pair is a single credential.
+variable "tailscale_oauth_client_id" {
+  type        = string
+  description = "Tailscale OAuth client ID authenticating the provider. Export as TF_VAR_tailscale_oauth_client_id."
+  sensitive   = true
+}
+
+variable "tailscale_oauth_client_secret" {
+  type        = string
+  description = "Tailscale OAuth client secret authenticating the provider. Export as TF_VAR_tailscale_oauth_client_secret."
+  sensitive   = true
+}
