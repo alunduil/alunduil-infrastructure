@@ -43,6 +43,21 @@ module "network_arbitrary" {
   default_branch = "master"
 }
 
+module "projects_v2_sync" {
+  source      = "../modules/github_repository"
+  name        = "projects-v2-sync"
+  description = "Mirror issues and PRs onto a GitHub Projects v2 board from a declarative in/out spec"
+  topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
+}
+
+# projects-v2-sync was created out-of-band with a user token: the CI GitHub App
+# cannot POST /user/repos, so Terraform adopts the existing repository here
+# rather than creating it. Remove once applied.
+import {
+  to = module.projects_v2_sync.github_repository.this
+  id = "projects-v2-sync"
+}
+
 module "siren_json_hs" {
   source      = "../modules/github_repository"
   name        = "siren-json.hs"
