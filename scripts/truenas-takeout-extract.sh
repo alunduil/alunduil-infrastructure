@@ -2,9 +2,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# -e: exit on error
-# -u: exit on unset variables
-# -x: print commands (keep for your debugging)
 set -eux
 
 DIRECTORY="${1:-/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout}"
@@ -39,7 +36,6 @@ extract_file() {
 }
 
 prune() {
-  # Added quotes and changed to -delete or explicit path handling for safety
   # ShellCheck SC2115: protective check to ensure DIRECTORY isn't empty/root
   if [[ -n "${DIRECTORY}" && "${DIRECTORY}" != "/" ]]; then
     find "${DIRECTORY}" -maxdepth 1 -type d ! -name tarballs -mtime +180 -exec rm -rf {} +
