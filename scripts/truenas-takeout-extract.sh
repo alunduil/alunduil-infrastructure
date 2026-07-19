@@ -28,7 +28,6 @@ extract_file() {
     # Use -- to prevent filenames starting with '-' from being interpreted as flags
     cp -- "${file}" "${DIRECTORY}/${directory}/"
   else
-    # Removed -z so tar auto-detects gzip/bzip/xz
     tar --exclude "Takeout/Drive/home.alunduil.com" \
       --exclude "Takeout/Drive/Takeout" \
       -xf "${file}" -C "${DIRECTORY}/${directory}"
