@@ -4,14 +4,14 @@
 # Configure the Google Takeout backup on TrueNAS
 
 Google Takeout exports a full account archive to Google Drive on a
-schedule; TrueNAS pulls those tarballs down and unpacks them. The pull
-is a TrueNAS SCALE Cloud Sync task whose post-script,
+schedule; a TrueNAS SCALE Cloud Sync task pulls those tarballs down, and
+its post-script,
 [scripts/truenas-takeout-extract.sh](../../scripts/truenas-takeout-extract.sh),
-extracts each tarball in `takeout/tarballs` into a per-export dated
-directory and prunes extracted directories older than 180 days.
+extracts each one in `takeout/tarballs` into a per-export dated directory
+and prunes extracted directories older than 180 days.
 
-Follow this to stand the backup up on a rebuilt box, or run just the
-deploy steps after editing the post-script.
+Follow this to stand up the backup on a rebuilt box, or run just the
+deploy step after editing the post-script.
 
 ## Prerequisite
 
@@ -20,27 +20,22 @@ Google account, outside TrueNAS).
 
 ## Deploy the post-script
 
-1. Copy the repo copy to the box:
+Copy the script onto the box and mark it executable:
 
-   ```sh
-   scp scripts/truenas-takeout-extract.sh \
-     truenas:/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/extract.sh
-   ```
-
-2. Mark it executable:
-
-   ```sh
-   ssh truenas chmod +x \
-     /mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/extract.sh
-   ```
+```sh
+target=/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/extract.sh
+scp scripts/truenas-takeout-extract.sh "truenas:${target}"
+ssh truenas chmod +x "${target}"
+```
 
 ## Create the Cloud Sync task
 
 In the TrueNAS SCALE UI under **Data Protection → Cloud Sync Tasks**,
-add (or confirm) a task with:
+add (or confirm) a task with these settings:
 
 - **Credential**: the Google Drive backup credential.
-- **Direction**: `PULL`, **Remote folder** `/Takeout`.
+- **Direction**: `PULL`.
+- **Remote folder**: `/Takeout`.
 - **Directory/Files**:
   `/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/tarballs`.
 - **Schedule**: daily at 02:00.
