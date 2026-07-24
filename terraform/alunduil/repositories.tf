@@ -107,12 +107,15 @@ module "siren_json_hs" {
 }
 
 module "woodland_generators" {
-  source          = "../modules/github_repository"
-  name            = "woodland-generators"
-  description     = "A CLI tool for generating resources for Root: The Tabletop RPG."
-  topics          = ["cli", "generator", "root", "rpg", "tabletop"]
+  source      = "../modules/github_repository"
+  name        = "woodland-generators"
+  description = "A CLI tool for generating resources for Root: The Tabletop RPG."
+  topics      = ["cli", "generator", "root", "rpg", "tabletop"]
+  # Deviates from the baseline (discussions off). The repo sets
+  # blank_issues_enabled: false and routes every non-bug, non-feature path to a
+  # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
+  # this leaves help-seekers with nowhere to land.
   has_discussions = true
-  default_branch  = "master"
   template = {
     owner      = "League-of-Foundry-Developers"
     repository = "FoundryVTT-Module-Template"
