@@ -109,8 +109,21 @@ module "siren_json_hs" {
 module "woodland_generators" {
   source      = "../modules/github_repository"
   name        = "woodland-generators"
-  description = "A CLI tool for generating resources for Root: The Tabletop RPG."
-  topics      = ["cli", "generator", "root", "rpg", "tabletop"]
+  description = "Foundry VTT module for generating Root: The Tabletop RPG content inside a live world."
+  # Both Foundry spellings are carried deliberately: the upstream
+  # League-of-Foundry-Developers template tags itself foundry-vtt *and*
+  # foundryvtt, and neither dominates enough to drop.
+  topics = [
+    "foundry-vtt",
+    "foundryvtt",
+    "foundryvtt-module",
+    "root-rpg",
+    "rpg",
+    "ttrpg",
+    "tabletop",
+    "generator",
+    "typescript",
+  ]
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
