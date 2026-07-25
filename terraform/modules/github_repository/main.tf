@@ -104,18 +104,19 @@ resource "github_repository_ruleset" "default_branch" {
   }
 }
 
+# Load-bearing for Renovate, not just for the GitHub UI: Renovate's
+# vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
+# and goes quiet if the feed is off.
 resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
-# Automated fix PRs for the advisories the alerts above surface. GitHub rejects
-# enabling this while alerts are off, and neither attribute of the alerts
-# resource is referenced here, so the ordering has to be explicit.
+# Off because Renovate owns dependency PRs here and already fixes the
+# advisories the feed above surfaces — GitHub's own fix PRs would duplicate it.
+# Declared rather than omitted so enabling it in the UI drifts back off.
 resource "github_repository_dependabot_security_updates" "this" {
   repository = github_repository.this.name
-  enabled    = true
-
-  depends_on = [github_repository_vulnerability_alerts.this]
+  enabled    = false
 }
 
 resource "github_repository_environment" "this" {
