@@ -38,7 +38,7 @@ Supporting how-tos:
 ## Support and contributions
 
 This is personal infrastructure maintained for the author's own use.
-Issues and pull requests from outside collaborators are not actively
+Issues and pull requests from outside collaborators aren't actively
 solicited and may not be triaged.
 
 ## License

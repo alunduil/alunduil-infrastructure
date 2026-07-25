@@ -1,6 +1,6 @@
 ---
 name: scaffold-repo
-description: Scaffold a new GitHub repository for the alunduil org end to end. Classifies each github_repository module input as shared/archetype-shared/specific against the module and the existing repositories.tf, creates the repo (confirmed, via gh) so Terraform can adopt it, emits the module block plus the adoption import in one draft PR, and files a follow-up to remove the import after apply. Use when adding a repo to terraform/*/repositories.tf.
+description: Scaffold a new GitHub repository for the alunduil org end to end. Classifies each github_repository module input as shared/archetype-shared/specific against the module and the existing repositories.tf, creates the repo (confirmed, via gh) so Terraform can adopt it, emits the module block plus the adoption import in one draft PR, and files a follow-up to remove the import after apply. Use when adding a repo to a Terraform repositories.tf.
 ---
 
 # Scaffold a new repository
@@ -43,7 +43,7 @@ Two hard rules:
      `readme` skill.
 4. Archetype clusters (re-derive values from the members — hint, not
    inventory):
-   - Haskell library (`*.hs` / `haskell-library` topic): haskell +
+   - Haskell library (`*.hs` / `haskell-library` topic): `haskell` +
      hypermedia topics; published → `environments = ["hackage"]`; older →
      `default_branch = "master"`.
    - Static site / Pages: `pages` + `homepage_url` + a build check;
@@ -65,7 +65,7 @@ Two hard rules:
    `github_branch_default` has a branch to point at. Empty repo → apply
    fails setting the default branch.
 2. Add the module block and, beside it, the repository import (import
-   blocks are illegal in child modules):
+   blocks are not permitted in child modules):
 
    ```hcl
    import {

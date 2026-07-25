@@ -26,7 +26,8 @@ token that lands in Secret Manager. Create it by hand and revoke it once
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
    Access Policies → Create access policy**. Give it a display name
-   (e.g. `alunduil-infrastructure-bootstrap`); there is no realm field.
+   (for example, `alunduil-infrastructure-bootstrap`); there is no realm
+   field.
 2. The **Scopes** grid lists only data-plane resources (metrics, logs,
    …) by default. Click **Add scope** to add the two control-plane
    resources and tick:
@@ -35,8 +36,8 @@ token that lands in Secret Manager. Create it by hand and revoke it once
 
    Leave every other resource unchecked, then **Create**.
 3. Select the policy → **Add token** → name it, set a short expiration
-   (it is revoked right after bootstrap), **Create**, and copy the value
-   — it is shown once.
+   (you revoke it right after bootstrap), **Create**, and copy the value
+   — Grafana shows it once.
 
 Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
