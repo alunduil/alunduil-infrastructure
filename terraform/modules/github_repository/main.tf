@@ -108,6 +108,16 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+# Automated fix PRs for the advisories the alerts above surface. GitHub rejects
+# enabling this while alerts are off, and neither attribute of the alerts
+# resource is referenced here, so the ordering has to be explicit.
+resource "github_repository_dependabot_security_updates" "this" {
+  repository = github_repository.this.name
+  enabled    = true
+
+  depends_on = [github_repository_vulnerability_alerts.this]
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 
