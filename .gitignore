@@ -8,6 +8,11 @@
 !github/projects/*.json
 !grafana/*.json
 
+# Vale style packages, installed by `vale sync`. The vocabulary under
+# config/ is ours and stays committed.
+.vale/styles/*
+!.vale/styles/config/
+
 # OS
 .DS_Store
 Thumbs.db

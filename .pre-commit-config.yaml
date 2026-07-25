@@ -32,6 +32,21 @@ repos:
       - id: markdownlint-cli2
         args: [--fix]
 
+  # Prose linting. sync installs the styles declared in .vale.ini; without it
+  # the lint has no rules to apply and passes silently.
+  - repo: https://github.com/errata-ai/vale
+    rev: v3.15.2
+    hooks:
+      - id: vale
+        name: vale sync
+        args: [sync]
+        types: [markdown]
+        pass_filenames: false
+      - id: vale
+        name: vale
+        args: [--output=line, --minAlertLevel=error]
+        types: [markdown]
+
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
