@@ -108,6 +108,25 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+# This default only governs workflows that declare no `permissions:` of their
+# own, so read-only narrows nothing that exists today — it closes the gap where
+# a future workflow silently inherits a write token.
+resource "github_workflow_repository_permissions" "this" {
+  repository                       = github_repository.this.name
+  default_workflow_permissions     = "read"
+  can_approve_pull_request_reviews = false
+}
+
+# allowed_actions is declared even though "all" is already the live value on
+# every managed repo: the provider writes the field on each apply and sends an
+# unset string as "" rather than omitting it, so leaving it out would push an
+# empty policy.
+resource "github_actions_repository_permissions" "this" {
+  repository           = github_repository.this.name
+  allowed_actions      = "all"
+  sha_pinning_required = true
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 
