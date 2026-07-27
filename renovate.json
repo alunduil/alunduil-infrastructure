@@ -1,13 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
-  "baseBranchPatterns": ["main"],
+  "extends": [
+    "config:best-practices",
+    "security:openssf-scorecard",
+    "customManagers:githubActionsVersions"
+  ],
+  "timezone": "Europe/London",
   "reviewers": ["alunduil"],
   "minimumReleaseAge": "3 days",
-  "internalChecksFilter": "strict",
-  "vulnerabilityAlerts": {
-    "minimumReleaseAge": "0 days"
-  },
   "osvVulnerabilityAlerts": true,
   "pre-commit": {
     "enabled": true
@@ -28,8 +28,18 @@
       "groupName": "reuse"
     },
     {
-      "matchUpdateTypes": ["digest", "pinDigest", "lockFileMaintenance"],
-      "minimumReleaseAge": "0 days"
+      "description": "Update types with no release timestamp can never satisfy the bake, and internalChecksFilter defaults to strict, so without this they stall on a pending renovate/stability-days check forever",
+      "matchUpdateTypes": [
+        "pin",
+        "pinDigest",
+        "digest",
+        "lockFileMaintenance",
+        "lockfileUpdate",
+        "rollback",
+        "bump",
+        "replacement"
+      ],
+      "minimumReleaseAge": null
     }
   ]
 }
