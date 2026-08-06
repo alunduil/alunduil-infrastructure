@@ -80,6 +80,22 @@ jobs:
             echo "__PEM__"
           } >> "${GITHUB_ENV}"
 
+      # The Tailscale OAuth client authenticates both plan and apply, so both
+      # secrets are populated by the bootstrap layer and both deployer SAs read
+      # them. Values go straight into GITHUB_ENV and never reach the log.
+      - name: Export Tailscale credentials
+        run: |
+          id="$(gcloud secrets versions access latest \
+            --secret="tailscale-oauth-client-id" --project=alunduil)" # pragma: allowlist secret
+          secret="$(gcloud secrets versions access latest \
+            --secret="tailscale-oauth-client-secret" --project=alunduil)" # pragma: allowlist secret
+          echo "::add-mask::${id}"
+          echo "::add-mask::${secret}"
+          {
+            echo "TF_VAR_tailscale_oauth_client_id=${id}" # pragma: allowlist secret
+            echo "TF_VAR_tailscale_oauth_client_secret=${secret}" # pragma: allowlist secret
+          } >> "${GITHUB_ENV}"
+
       - name: Terraform Init
         working-directory: terraform/alunduil
         run: terraform init

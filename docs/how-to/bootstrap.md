@@ -18,6 +18,8 @@ credentials.
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed — see
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
+- A Tailscale OAuth client — see
+  [create-tailscale-oauth-client.md](create-tailscale-oauth-client.md).
 
 ## Run
 
@@ -29,6 +31,8 @@ export TF_VAR_grafana_cloud_access_policy_token=...
 export TF_VAR_grafana_git_sync_app_id=...
 export TF_VAR_grafana_git_sync_app_installation_id=...
 export TF_VAR_grafana_git_sync_app_private_key_file=path/to/key.pem
+export TF_VAR_tailscale_oauth_client_id=...
+export TF_VAR_tailscale_oauth_client_secret=...
 
 just bootstrap
 ```

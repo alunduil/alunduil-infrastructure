@@ -81,3 +81,29 @@ variable "grafana_git_sync_app_private_key_file" {
     Full steps: docs/how-to/create-git-sync-github-app.md
   EOT
 }
+
+variable "tailscale_oauth_client_id" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    OAuth client ID for the Tailscale provider, created by hand in the
+    admin console. Read straight into Secret Manager here; the plan and
+    apply workflows fetch it at run time. Marked sensitive: the id/secret
+    pair is a single credential.
+
+    Full steps: docs/how-to/create-tailscale-oauth-client.md
+  EOT
+}
+
+variable "tailscale_oauth_client_secret" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    OAuth client secret for the Tailscale provider, created by hand in the
+    admin console alongside the client ID and shown only once at creation.
+    Read straight into Secret Manager here; the plan and apply workflows
+    fetch it at run time.
+
+    Full steps: docs/how-to/create-tailscale-oauth-client.md
+  EOT
+}
