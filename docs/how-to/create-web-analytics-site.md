@@ -5,9 +5,9 @@
 
 Cloudflare Web Analytics lives outside Terraform. The only token
 permission that authorizes `POST /rum/site_info` is account-wide
-`Account Settings Write`, far broader than the deployer token's
-zone-scoped grants — so the site is created by hand instead of widening
-that token.
+`Account Settings Write` — far broader than the deployer token's
+zone-scoped grants. Create the site by hand rather than widen that
+token.
 
 1. At <https://dash.cloudflare.com> open **Analytics & Logs** → **Web
    Analytics** → **Add a site**. Enter hostname `blog.alunduil.com`.
@@ -21,5 +21,5 @@ that token.
    `cloudflareWebAnalyticsToken` and commit. The commit triggers the
    `pages.yml` deploy, so the beacon goes live without a manual rebuild.
 
-The token is write-once and changes only if the site is recreated, so
-no ongoing sync is needed.
+The token is write-once and changes only when you recreate the site, so
+nothing has to stay in sync.

@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the GitHub Projects sync PAT
+# Create the GitHub Projects sync token
 
 Generate and install the personal access token that the Projects
 sync workflow reads from `GH_PROJECT_SYNC_TOKEN`. Follow this
@@ -12,7 +12,7 @@ both for first-time setup and for rotation.
 1. Open <https://github.com/settings/tokens> and click
    **Generate new token (classic)**. A fine-grained token can't write
    a user-owned Projects v2 board.
-2. **Note**: any (e.g. `alunduil-infrastructure-project-sync`).
+2. **Note**: any (for example, `alunduil-infrastructure-project-sync`).
 3. **Expiration**: 1 year.
 4. Select scopes:
     - **`project`** — add and update board items.

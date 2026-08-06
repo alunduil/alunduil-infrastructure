@@ -60,7 +60,7 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - Confirm scope doesn't overlap sibling or linked issues before
   opening the PR; ask if uncertain.
 - An issue blocked by unshipped prerequisites: propose deferral
-  with a `blocked-by` edge rather than write premature code.
+  with a `blocked-by` edge rather than write code ahead of them.
 - Revert incidental edits (formatting, drive-by tweaks) before
   requesting review.
 
@@ -80,7 +80,12 @@ in a scoped PR ships infra the reviewer didn't ask for.
   `dig NS alunduil.com` before treating a TF DNS resource as
   authoritative.
 - Pre-commit hooks (REUSE, terraform_fmt/validate, markdownlint,
-  yamllint, detect-secrets) must pass. New files need SPDX
+  yamllint, vale, detect-secrets) must pass. New files need SPDX
   headers — REUSE flags missing ones.
+- `vale` lints prose in two modes: README and `docs/` get the full
+  style set; `CLAUDE.md` and `.claude/**` get spelling, casing, and
+  inclusive language only. Errors block a commit, warnings don't. New
+  terms go in `accept.txt` under `.vale/styles/config/vocabularies/`,
+  `(?i)` for common nouns and exact casing for product names.
 - The `terraform-plan` job posts the plan as a PR comment. Don't
   approve a merge until it looks right — merging applies it.
