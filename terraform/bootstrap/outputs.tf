@@ -76,3 +76,15 @@ output "grafana_git_sync_app_private_key_secret" {
   description = "Secret Manager short name holding the Git Sync GitHub App private key; fetched at plan and apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
+
+output "grafana_gcp_reader_email" {
+  value       = google_service_account.grafana_gcp_reader.email
+  description = "Email of the read-only SA Grafana Cloud uses to query GCP; consumed by terraform/alunduil/ as the data-source clientEmail"
+  sensitive   = false
+}
+
+output "grafana_gcp_reader_key_secret" {
+  value       = google_secret_manager_secret.grafana_gcp_reader_key.secret_id
+  description = "Secret Manager short name holding the Grafana GCP reader SA key; read out of band by scripts/set-grafana-gcp-credentials.sh to set the Grafana data-source credential"
+  sensitive   = false
+}
