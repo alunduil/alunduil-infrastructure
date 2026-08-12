@@ -5,9 +5,12 @@
 # Pre-commit hooks for code quality and consistency
 # See https://pre-commit.com for more information
 
-# Vendored Vale styles are upstream's to format and license. The negative
-# lookahead keeps config/, which holds this project's own vocabulary.
-exclude: ^\.vale/styles/(?!config/)
+# Neither tree is ours to reformat. Vendored Vale styles belong to
+# upstream; the negative lookahead keeps config/, which holds this
+# project's own vocabulary. License texts have to stay byte-exact —
+# trailing-whitespace silently rewrote BSD-3-Clause's first line
+# otherwise, and a stripped license is no longer the license.
+exclude: ^(\.vale/styles/(?!config/)|LICENSES/)
 
 repos:
   # Basic file checks
