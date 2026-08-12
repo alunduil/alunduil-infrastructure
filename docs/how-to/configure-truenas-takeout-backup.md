@@ -30,7 +30,7 @@ ssh truenas chmod +x "${target}"
 
 ## Create a Cloud Sync task
 
-In the TrueNAS SCALE UI under **Data Protection → Cloud Sync Tasks**,
+In the TrueNAS UI under **Data Protection → Cloud Sync Tasks**,
 add (or confirm) a task with these settings:
 
 - **Credential**: the Google Drive backup credential.

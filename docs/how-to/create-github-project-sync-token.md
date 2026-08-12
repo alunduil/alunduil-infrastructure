@@ -9,7 +9,7 @@ both for first-time setup and for rotation.
 
 ## Generate the token
 
-1. Open <https://github.com/settings/tokens> and click
+1. Open <https://github.com/settings/tokens> and select
    **Generate new token (classic)**. A fine-grained token can't write
    a user-owned Projects v2 board.
 2. **Note**: any (for example, `alunduil-infrastructure-project-sync`).
@@ -20,7 +20,7 @@ both for first-time setup and for rotation.
       sources, private repos included.
     - **`read:org`** — resolve the org-owned sources; `gh project`
       also needs it to look up the board's owner, even a user one.
-5. Click **Generate token** and copy the value.
+5. Select **Generate token** and copy the value.
 
 Keep the scope set to `project` + `repo` + `read:org` on rotation. If
 `dungeon-studio` or `qua-world` restricts classic-token access in its

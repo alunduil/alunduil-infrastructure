@@ -17,7 +17,7 @@ Grafana Cloud can reach nothing else.
    - **Webhook**: uncheck "Active" (otherwise it demands a URL).
    - Leave the user-authorization checkboxes under Callback URL
      (Expire user authorization tokens, Request user authorization on
-     install, Enable Device Flow) at their defaults — this App
+     install, Enable Device Flow) at their defaults. This App
      authenticates as an installation, not a user, so none apply.
    - Repository permissions (everything else "No access"):
      - `Contents: Read and write` — read dashboards, push the branch

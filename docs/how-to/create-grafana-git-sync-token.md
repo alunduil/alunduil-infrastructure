@@ -29,7 +29,7 @@ token that lands in Secret Manager. Create it by hand and revoke it once
    (for example, `alunduil-infrastructure-bootstrap`); there is no realm
    field.
 2. The **Scopes** grid lists only data-plane resources (metrics, logs,
-   …) by default. Click **Add scope** to add the two control-plane
+   …) by default. Select **Add scope** to add the two control-plane
    resources and tick:
     - `stacks` → **read**
     - `stack-service-accounts` → **write**
