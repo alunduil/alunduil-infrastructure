@@ -39,7 +39,7 @@ repos:
 
   # No sync hook: the styles are vendored, so the gate needs no network.
   - repo: https://github.com/errata-ai/vale
-    rev: v3.15.2
+    rev: v3.17.1
     hooks:
       - id: vale
         args: [--output=line, --minAlertLevel=error]
