@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Vale.Avoid flags every term listed here. One regex per line,
+# case-sensitive.

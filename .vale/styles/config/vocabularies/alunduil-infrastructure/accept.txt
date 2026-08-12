@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# One regex per line, case-sensitive. Each entry enforces casing and doubles
+# as a spelling exception, so dropping one can silently stop catching a
+# miscased product name rather than just relax a rule.
+#
+# Backticked tokens are skipped, so prefer backticks for paths and code
+# symbols over listing them here.
+#
+# Enforce casing only where the casing is the point — product and tool
+# names. Common nouns take (?i), or the same word is an error whenever a
+# sentence happens to start with it.
+
+# Identity
+alunduil
+
+# Infrastructure and services
+Terraform
+Terraform's
+Cloudflare
+TrueNAS
+Grafana
+Plex
+UptimeRobot
+Renovate
+
+# Product and interface names, spelled as their vendors spell them
+GitHub
+GitHub App
+Google Drive
+Google Takeout
+Cloud Sync
+Git Sync
+Web Analytics
+Secret Manager
+
+# Tooling
+gh
+github_repository
+markdownlint
+yamllint
+Hackage
+Haskell
+Diátaxis
+ddbeck's
+
+# Terms the en_US dictionary lacks
+(?i)APIs
+(?i)config
+(?i)deployer
+(?i)devcontainer
+(?i)env
+(?i)hardcoded
+(?i)hostname
+(?i)repo
+(?i)repos
+(?i)ruleset
+(?i)triaged
+(?i)uncheck
+(?i)unshipped
+(?i)untracked
+(?i)upserts
+(?i)vuln
+(?i)worktree
+(?i)worktrees
