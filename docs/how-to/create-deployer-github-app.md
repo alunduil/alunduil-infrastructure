@@ -15,13 +15,12 @@ tokens via OIDC.
    - Webhook: uncheck "Active"
    - Leave the user-authorization checkboxes under Callback URL
      (Expire user authorization tokens, Request user authorization on
-     install, Enable Device Flow) at their defaults — the deployer
+     install, Enable Device Flow) at their defaults. The deployer
      authenticates as an installation, not a user.
-   - Where can this GitHub App be installed: **Only on this account**
-     (the App's private key mints installation tokens for every
-     account the App is installed on, so limiting installation to
-     your own account keeps the blast radius matched to what this
-     repo actually manages)
+   - Where can this GitHub App be installed: **Only on this account**.
+     The private key generates installation tokens for every account
+     that installs the App. Limiting installation to your own account
+     keeps the impact matched to what this repo manages.
    - Repository permissions:
      - `Administration: Read and write`
      - `Contents: Read and write`
@@ -30,7 +29,7 @@ tokens via OIDC.
 2. After creation, on the App's settings page: note the App ID, then
    generate and download a private key (`.pem`).
 3. Install the App on your personal account with "All repositories"
-   so new repos are picked up without re-issuing credentials.
+   so new repos work without re-issuing credentials.
 
 The App ID and the `.pem` file are inputs to
 `scripts/configure-github-secrets.sh` — pass them via `GH_APP_ID` and

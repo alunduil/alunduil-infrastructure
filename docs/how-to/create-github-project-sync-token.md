@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the GitHub Projects sync PAT
+# Create the GitHub Projects sync token
 
 Generate and install the personal access token that the Projects
 sync workflow reads from `GH_PROJECT_SYNC_TOKEN`. Follow this
@@ -9,10 +9,10 @@ both for first-time setup and for rotation.
 
 ## Generate the token
 
-1. Open <https://github.com/settings/tokens> and click
+1. Open <https://github.com/settings/tokens> and select
    **Generate new token (classic)**. A fine-grained token can't write
    a user-owned Projects v2 board.
-2. **Note**: any (e.g. `alunduil-infrastructure-project-sync`).
+2. **Note**: any (for example, `alunduil-infrastructure-project-sync`).
 3. **Expiration**: 1 year.
 4. Select scopes:
     - **`project`** — add and update board items.
@@ -20,7 +20,7 @@ both for first-time setup and for rotation.
       sources, private repos included.
     - **`read:org`** — resolve the org-owned sources; `gh project`
       also needs it to look up the board's owner, even a user one.
-5. Click **Generate token** and copy the value.
+5. Select **Generate token** and copy the value.
 
 Keep the scope set to `project` + `repo` + `read:org` on rotation. If
 `dungeon-studio` or `qua-world` restricts classic-token access in its

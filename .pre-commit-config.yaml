@@ -5,6 +5,11 @@
 # Pre-commit hooks for code quality and consistency
 # See https://pre-commit.com for more information
 
+# Neither tree is ours to reformat: vendored styles belong to upstream, and
+# license texts have to stay byte-exact. The lookahead keeps config/, which
+# holds this project's own vocabulary.
+exclude: ^(\.vale/styles/(?!config/)|LICENSES/)
+
 repos:
   # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -31,6 +36,14 @@ repos:
     hooks:
       - id: markdownlint-cli2
         args: [--fix]
+
+  # No sync hook: the styles are vendored, so the gate needs no network.
+  - repo: https://github.com/errata-ai/vale
+    rev: v3.15.2
+    hooks:
+      - id: vale
+        args: [--output=line, --minAlertLevel=error]
+        types: [markdown]
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
@@ -86,7 +99,7 @@ repos:
 
   # Renovate config validation
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 44.14.12
+    rev: 44.17.0
     hooks:
       - id: renovate-config-validator
         args: [--strict, --no-global]
