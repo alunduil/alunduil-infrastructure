@@ -19,19 +19,6 @@ module "alunduil_infrastructure" {
   }
 }
 
-# The project-sync environment and its branch policy predate this config; adopt
-# both into state so the first apply reconciles rather than 422s on "already
-# exists". Remove once applied.
-import {
-  to = module.alunduil_infrastructure.github_repository_environment.this["project-sync"]
-  id = "alunduil-infrastructure:project-sync"
-}
-
-import {
-  to = module.alunduil_infrastructure.github_repository_environment_deployment_policy.this["project-sync:main"]
-  id = "alunduil-infrastructure:project-sync:50792082"
-}
-
 module "blog_alunduil_com" {
   source       = "../modules/github_repository"
   name         = "blog.alunduil.com"
@@ -64,18 +51,6 @@ module "git_worktree_poi" {
   topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
 }
 
-# git-worktree-poi was created out-of-band with a user token: the CI GitHub App
-# cannot POST /user/repos (403 Resource not accessible by integration), so
-# Terraform adopts the existing repository here rather than creating it. The
-# default branch, ruleset, and vulnerability alerts are created on apply, which
-# the App can do against an existing repo. Remove once applied. The import lives
-# in the root module beside its target because import blocks are not allowed in
-# child modules.
-import {
-  to = module.git_worktree_poi.github_repository.this
-  id = "git-worktree-poi"
-}
-
 module "network_arbitrary" {
   source       = "../modules/github_repository"
   name         = "network-arbitrary"
@@ -89,14 +64,6 @@ module "projects_v2_sync" {
   name        = "projects-v2-sync"
   description = "Mirror issues and PRs onto a GitHub Projects v2 board from a declarative in/out spec"
   topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
-}
-
-# projects-v2-sync was created out-of-band with a user token: the CI GitHub App
-# cannot POST /user/repos, so Terraform adopts the existing repository here
-# rather than creating it. Remove once applied.
-import {
-  to = module.projects_v2_sync.github_repository.this
-  id = "projects-v2-sync"
 }
 
 module "siren_json_hs" {
@@ -142,18 +109,6 @@ module "zellij_claude_pair" {
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
 }
 
-# zellij-claude-pair was created out-of-band with a user token: the CI GitHub
-# App cannot POST /user/repos (403 Resource not accessible by integration), so
-# Terraform adopts the existing repository here rather than creating it. The
-# default branch, ruleset, and vulnerability alerts are created on apply, which
-# the App can do against an existing repo. Remove once applied. The import lives
-# in the root module beside its target because import blocks are not allowed in
-# child modules.
-import {
-  to = module.zellij_claude_pair.github_repository.this
-  id = "zellij-claude-pair"
-}
-
 module "zfs_replicate" {
   source         = "../modules/github_repository"
   name           = "zfs-replicate"
@@ -161,23 +116,4 @@ module "zfs_replicate" {
   homepage_url   = "https://pypi.org/project/zfs-replicate/"
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
-}
-
-# These three repos already had a hand-created ruleset named "default" before
-# the baseline module introduced one, so the first apply hit GitHub's
-# "Name must be unique" (422) instead of creating. Adopt the existing rulesets
-# into state so apply reconciles them. Remove once applied.
-import {
-  to = module.alunduil_chezmoi.github_repository_ruleset.default_branch
-  id = "alunduil-chezmoi:15615310"
-}
-
-import {
-  to = module.alunduil_infrastructure.github_repository_ruleset.default_branch
-  id = "alunduil-infrastructure:15541031"
-}
-
-import {
-  to = module.woodland_generators.github_repository_ruleset.default_branch
-  id = "woodland-generators:6845434"
 }

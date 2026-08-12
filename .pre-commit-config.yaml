@@ -27,7 +27,7 @@ repos:
 
   # Markdown linting
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.23.1
+    rev: v0.23.2
     hooks:
       - id: markdownlint-cli2
         args: [--fix]
@@ -56,7 +56,7 @@ repos:
 
   # Project spec validation
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.4
+    rev: 0.38.0
     hooks:
       - id: check-jsonschema
         name: check project spec schema
@@ -78,7 +78,7 @@ repos:
 
   # Terraform formatting and validation
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.108.0
+    rev: v1.108.1
     hooks:
       - id: terraform_fmt
         args: [--args=-recursive]
@@ -101,7 +101,7 @@ repos:
 
   # Renovate config validation
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 43.276.0
+    rev: 44.14.12
     hooks:
       - id: renovate-config-validator
         args: [--strict, --no-global]
