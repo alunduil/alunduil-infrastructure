@@ -119,6 +119,22 @@ resource "github_repository_dependabot_security_updates" "this" {
   enabled    = false
 }
 
+# A workflow's own permissions: block overrides this outright, so this governs
+# only the jobs that declare none.
+resource "github_workflow_repository_permissions" "this" {
+  repository                       = github_repository.this.name
+  default_workflow_permissions     = "read"
+  can_approve_pull_request_reviews = false
+}
+
+# allowed_actions is set to GitHub's default rather than omitted: the provider
+# sends it on every write, so leaving it unset puts an empty value on the wire.
+resource "github_actions_repository_permissions" "this" {
+  repository           = github_repository.this.name
+  allowed_actions      = "all"
+  sha_pinning_required = true
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 
