@@ -25,19 +25,19 @@ SPDX-License-Identifier = "MIT"
 # Vendored Vale style packages. Upstream ships no license files inside the
 # release archives, so the terms are recorded here.
 [[annotations]]
-path = ".vale/styles/Microsoft/**"
+path = [".vale/styles/Microsoft/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2018-2019 Joseph Kato"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
-path = ".vale/styles/proselint/**"
+path = [".vale/styles/proselint/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2019 errata.ai"
 SPDX-License-Identifier = "BSD-3-Clause"
 
 [[annotations]]
-path = ".vale/styles/alex/**"
+path = [".vale/styles/alex/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2020 errata.ai"
 SPDX-License-Identifier = "MIT"
