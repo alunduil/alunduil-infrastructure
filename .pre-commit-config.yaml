@@ -5,11 +5,9 @@
 # Pre-commit hooks for code quality and consistency
 # See https://pre-commit.com for more information
 
-# Neither tree is ours to reformat. Vendored Vale styles belong to
-# upstream; the negative lookahead keeps config/, which holds this
-# project's own vocabulary. License texts have to stay byte-exact —
-# trailing-whitespace silently rewrote BSD-3-Clause's first line
-# otherwise, and a stripped license is no longer the license.
+# Neither tree is ours to reformat: vendored styles belong to upstream, and
+# license texts have to stay byte-exact. The lookahead keeps config/, which
+# holds this project's own vocabulary.
 exclude: ^(\.vale/styles/(?!config/)|LICENSES/)
 
 repos:
@@ -39,8 +37,7 @@ repos:
       - id: markdownlint-cli2
         args: [--fix]
 
-  # Prose linting. Styles are vendored under .vale/styles, so there is no
-  # sync step and the gate needs no network.
+  # No sync hook: the styles are vendored, so the gate needs no network.
   - repo: https://github.com/errata-ai/vale
     rev: v3.15.2
     hooks:

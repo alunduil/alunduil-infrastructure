@@ -22,8 +22,8 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
 
-# Vendored Vale style packages. Upstream ships no license files inside the
-# release archives, so the terms are recorded here.
+# Vendored Vale styles — upstream's files, so no inline SPDX headers, and the
+# release archives carry no license texts either.
 [[annotations]]
 path = [".vale/styles/Microsoft/**"]
 precedence = "aggregate"

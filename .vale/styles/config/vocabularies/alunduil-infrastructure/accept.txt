@@ -1,13 +1,12 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Vale.Terms enforces the casing of every term listed here, and the terms
-# double as exceptions for the heading-capitalization and spelling checks.
-# One regex per line, case-sensitive.
+# One regex per line, case-sensitive. Each entry enforces casing and doubles
+# as a spelling exception, so dropping one can silently stop catching a
+# miscased product name rather than just relax a rule.
 #
 # Backticked tokens are skipped, so prefer backticks for paths and code
-# symbols over listing them here. Reserve this file for terms that appear
-# unbackticked in prose.
+# symbols over listing them here.
 #
 # Enforce casing only where the casing is the point — product and tool
 # names. Common nouns take (?i), or the same word is an error whenever a
