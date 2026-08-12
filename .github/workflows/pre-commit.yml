@@ -19,9 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    # Runs every pre-commit hook on all files. Terraform and just are
-    # installed below for hooks that shell out to those binaries; the
-    # rest are handled by pre-commit itself.
+    # Terraform and just are installed below because some hooks shell
+    # out to those binaries rather than bringing their own.
 
     steps:
       - name: Checkout repository
@@ -36,8 +35,7 @@ jobs:
         uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
 
       # sha_pinning_required rejects tag refs transitively, so whichever
-      # action runs pre-commit has to SHA-pin its own nested actions.
-      # pre-commit/action does not, and is maintenance-only upstream.
+      # action runs pre-commit must SHA-pin its own nested actions.
       - name: Run pre-commit hooks
         uses: tox-dev/action-pre-commit-uv@e09b8958484dfe71f4ac3bc7afb230ba506402ec # v1.0.5
         env:
