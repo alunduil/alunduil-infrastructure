@@ -21,12 +21,25 @@
       "depNameTemplate": "hashicorp/terraform",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.vale\\.ini$/"],
+      "matchStrings": [
+        "https://github\\.com/(?<depName>errata-ai/[A-Za-z-]+)/releases/download/(?<currentValue>v[\\d.]+)/"
+      ],
+      "datasourceTemplate": "github-releases"
     }
   ],
   "packageRules": [
     {
       "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
       "groupName": "reuse"
+    },
+    {
+      "description": "The three style packages are one rule set; a split bump lands a partial gate change",
+      "matchPackageNames": ["errata-ai/**"],
+      "groupName": "vale styles"
     },
     {
       "description": "Update types with no release timestamp can never satisfy the bake, and internalChecksFilter defaults to strict, so without this they stall on a pending renovate/stability-days check forever",
