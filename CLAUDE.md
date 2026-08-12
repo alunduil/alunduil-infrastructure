@@ -82,10 +82,11 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - Pre-commit hooks (REUSE, terraform_fmt/validate, markdownlint,
   yamllint, vale, detect-secrets) must pass. New files need SPDX
   headers — REUSE flags missing ones.
-- `vale` lints prose in two modes: README and `docs/` get the full
-  style set; `CLAUDE.md` and `.claude/**` get spelling, casing, and
-  inclusive language only. Errors block a commit, warnings don't. New
-  terms go in `accept.txt` under `.vale/styles/config/vocabularies/`,
-  `(?i)` for common nouns and exact casing for product names.
+- `vale` lints prose. Full style set on README and `docs/`; spelling,
+  casing, and inclusive language everywhere else, plus wordiness and
+  banned terms on `CLAUDE.md` and `.claude/**`. Errors block a commit,
+  warnings don't. New terms go in `accept.txt` under
+  `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
+  casing for product names.
 - The `terraform-plan` job posts the plan as a PR comment. Don't
   approve a merge until it looks right — merging applies it.
