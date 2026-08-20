@@ -18,10 +18,9 @@ permissions:
 
 # Serializes every run touching the shared GCS state: applies here, plus
 # the PR plans that join this group from terraform-plan.yml. queue: max
-# forbids cancel-in-progress: true, so nothing interrupts an apply
-# mid-write and orphans the state lock. It also keeps every pending run,
-# where the default single slot lets an arriving plan cancel a queued
-# apply.
+# carries two guarantees: it forbids cancel-in-progress: true, so no
+# arrival interrupts a write and orphans the state lock, and it queues
+# runs the default single slot would cancel — a pending apply among them.
 concurrency:
   group: terraform-state
   queue: max
