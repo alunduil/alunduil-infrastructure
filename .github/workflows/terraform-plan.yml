@@ -22,6 +22,16 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # The plan refreshes state with -lock=false (the read-only deployer SA
+    # can't write a .tflock object), so nothing stops it reading state that
+    # an apply has already superseded in the real world. Joining the apply's
+    # group at job level makes it wait instead. It stays out of the
+    # workflow-level group above so a new push still supersedes this PR's
+    # own in-flight plan.
+    concurrency:
+      group: terraform-state
+      cancel-in-progress: false
+      queue: max
     permissions:
       contents: read
       id-token: write
