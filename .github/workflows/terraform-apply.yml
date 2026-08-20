@@ -16,12 +16,11 @@ on:
 permissions:
   contents: read
 
-# Serialize every run that touches the shared GCS state — applies here and
-# PR plans, which join the same group at job level. cancel-in-progress is
-# false: an in-flight apply holds the lock and must finish, not be
-# interrupted mid-write and leave it orphaned. queue: max keeps every
-# waiting run; the default single-slot queue would let an arriving plan
-# cancel an apply that hasn't started yet.
+# Serializes every run touching the shared GCS state: applies here, plus
+# the PR plans that join this group from terraform-plan.yml. An in-flight
+# apply holds the state lock, and interrupting it mid-write orphans that
+# lock. Without queue: max the group keeps one pending slot, where an
+# arriving plan cancels a queued apply.
 concurrency:
   group: terraform-state
   cancel-in-progress: false
