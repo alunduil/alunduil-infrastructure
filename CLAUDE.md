@@ -54,7 +54,7 @@ check what's already in place:
 
 ## Scope discipline
 
-`terraform apply` runs out-of-band post-merge, so an unrelated edit
+`terraform apply` runs in CI on merge to `main`, so an unrelated edit
 in a scoped PR ships infra the reviewer didn't ask for.
 
 - Confirm scope doesn't overlap sibling or linked issues before
