@@ -22,6 +22,14 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Joins terraform-apply.yml's group so a plan waits out an in-flight
+    # apply. The read-only deployer SA can't write a .tflock object, so the
+    # plan below runs -lock=false and would otherwise refresh against state
+    # an apply has already superseded. Job level, not workflow level, so the
+    # per-ref group above still supersedes this PR's own in-flight plan.
+    concurrency:
+      group: terraform-state
+      queue: max
     permissions:
       contents: read
       id-token: write
