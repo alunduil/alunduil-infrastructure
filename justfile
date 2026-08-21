@@ -13,7 +13,7 @@ bootstrap:
 
 # Requires TF_VAR_cloudflare_api_token in env (or terraform will prompt); CI
 # fetches it, and the Grafana provisioning tokens, from Secret Manager.
-[doc("Local post-merge apply for the alunduil environment.")]
+[doc("Break-glass local apply for the alunduil environment; CI applies on merge.")]
 alunduil:
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
