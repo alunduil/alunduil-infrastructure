@@ -116,8 +116,8 @@ module "zfs_replicate" {
   homepage_url   = "https://pypi.org/project/zfs-replicate/"
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
-  # .github/CODEOWNERS assigns every path to @alunduil, so this gates any
-  # pull request from a non-owner — Renovate's included.
+  # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
+  # non-owner pull request, Renovate's included.
   require_code_owner_review = true
   required_status_checks = {
     contexts = ["Validate PR title"]
