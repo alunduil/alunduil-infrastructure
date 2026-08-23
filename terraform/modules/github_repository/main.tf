@@ -81,8 +81,11 @@ resource "github_repository_ruleset" "default_branch" {
     non_fast_forward        = true
     required_linear_history = true
 
+    # Code owner review is a separate condition from the review count, so a
+    # repo can gate on CODEOWNERS while the count stays at 0.
     pull_request {
       required_approving_review_count   = 0
+      require_code_owner_review         = var.require_code_owner_review
       required_review_thread_resolution = true
     }
 
