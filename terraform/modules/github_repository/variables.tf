@@ -57,10 +57,9 @@ variable "require_code_owner_review" {
   default     = false
   description = <<-EOT
     Require an approving review from a code owner before merging into the
-    default branch. Enforced independently of the approving-review count,
-    so it gates a pull request whenever CODEOWNERS assigns an owner to a
-    changed path. Meaningless without a .github/CODEOWNERS on the default
-    branch, so opt in per repo once that file lands.
+    default branch. Gates a pull request whenever CODEOWNERS assigns an
+    owner to a changed path, so it does nothing until a .github/CODEOWNERS
+    lands on the default branch — opt in per repo once it has.
   EOT
 }
 
