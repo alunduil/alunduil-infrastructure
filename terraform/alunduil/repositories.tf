@@ -117,10 +117,10 @@ module "zfs_replicate" {
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
   required_status_checks = {
-    # Squash-merge lands the PR title as the commit message, and
-    # release-please derives version bumps from it. The check reads only the
-    # title, so it can't go stale against the base branch.
     contexts = ["Validate PR title"]
-    strict   = false
+    # The check reads only the PR title, so it can't go stale against the base
+    # branch; requiring an up-to-date one would just rebase every PR through
+    # the six-version test matrix.
+    strict = false
   }
 }
