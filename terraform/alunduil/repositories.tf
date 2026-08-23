@@ -116,4 +116,10 @@ module "zfs_replicate" {
   homepage_url   = "https://pypi.org/project/zfs-replicate/"
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
+  required_status_checks = {
+    contexts = ["Validate PR title"]
+    # The check reads only the PR title, so it can't go stale against the
+    # base branch.
+    strict = false
+  }
 }
