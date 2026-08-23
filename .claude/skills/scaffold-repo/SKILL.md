@@ -109,9 +109,9 @@ Two hard rules:
   `.claude/**`, JSON, lock files).
 - Environment secrets (e.g. the Hackage token for
   `environments = ["hackage"]`) are injected out of band.
-- Private vulnerability reporting has no provider resource, so the module
-  can't carry it (#211). Turn it on by hand once the repo exists, or the
-  repo ships without a disclosure channel:
+- Private vulnerability reporting has no provider resource, so it can't live
+  in `repositories.tf`. Skipping it leaves the repo with no disclosure
+  channel:
 
   ```bash
   gh api --method PUT repos/alunduil/<name>/private-vulnerability-reporting
