@@ -118,9 +118,8 @@ module "zfs_replicate" {
   default_branch = "master"
   required_status_checks = {
     contexts = ["Validate PR title"]
-    # The check reads only the PR title, so it can't go stale against the base
-    # branch; requiring an up-to-date one would just rebase every PR through
-    # the six-version test matrix.
+    # The check reads only the PR title, so it can't go stale against the
+    # base branch.
     strict = false
   }
 }
