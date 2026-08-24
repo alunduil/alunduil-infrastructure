@@ -138,8 +138,7 @@ resource "github_actions_repository_permissions" "this" {
   sha_pinning_required = true
 }
 
-# The environment API takes reviewer user IDs, so every login named across the
-# environments resolves to one here.
+# The environment API takes reviewer user IDs rather than logins.
 data "github_user" "environment_reviewers" {
   for_each = toset(flatten([for env in var.environments : env.reviewers]))
 
@@ -160,10 +159,9 @@ resource "github_repository_environment" "this" {
     }
   }
 
-  # Declared rather than left to its default so ticking "Prevent self-review" in
-  # the UI drifts back off: on solo-maintained repos the only reviewer is also
-  # the person cutting the release, and blocking self-approval would leave every
-  # deployment permanently pending.
+  # Self-approval has to stay possible: where the only reviewer is also the
+  # person cutting the release, blocking it leaves every deployment pending
+  # forever. Declared rather than omitted so the UI can't drift it on.
   prevent_self_review = false
 
   dynamic "reviewers" {

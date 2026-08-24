@@ -96,11 +96,10 @@ variable "environments" {
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
 
-    reviewers lists GitHub logins that gate a job targeting the
-    environment: it waits for one of them to approve before it starts,
-    and before it can read the environment's secrets. Self-review stays
-    allowed so a solo maintainer listing only themselves isn't
-    deadlocked.
+    reviewers lists GitHub logins that gate the environment. A job
+    targeting it waits for one of them to approve before it runs or
+    reads the environment's secrets, and a reviewer may approve their
+    own deployment.
   EOT
 
   validation {
