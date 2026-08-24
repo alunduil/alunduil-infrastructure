@@ -125,4 +125,12 @@ module "zfs_replicate" {
     # base branch.
     strict = false
   }
+  # PyPI pins the Trusted Publisher it accepts to repo + workflow +
+  # environment, so publishing can only happen from here, and the reviewer
+  # approves before the short-lived credential exists. No deployment branch
+  # policy: the release workflow runs from a tag ref, which such a policy
+  # would refuse.
+  environments = {
+    pypi = { reviewers = ["alunduil"] }
+  }
 }

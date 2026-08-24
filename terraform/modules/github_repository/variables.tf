@@ -82,6 +82,7 @@ variable "template" {
 variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
+    reviewers           = optional(list(string), [])
   }))
   default     = {}
   description = <<-EOT
@@ -94,6 +95,12 @@ variable "environments" {
     Empty (the default) admits any ref. Maps to the environment's
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
+
+    reviewers lists GitHub logins (max 6) that gate a job targeting the
+    environment: it waits for one of them to approve before it starts,
+    and before it can read the environment's secrets. Self-review stays
+    allowed so a solo maintainer listing only themselves isn't
+    deadlocked.
   EOT
 }
 
