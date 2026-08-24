@@ -96,12 +96,17 @@ variable "environments" {
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
 
-    reviewers lists GitHub logins (max 6) that gate a job targeting the
+    reviewers lists GitHub logins that gate a job targeting the
     environment: it waits for one of them to approve before it starts,
     and before it can read the environment's secrets. Self-review stays
     allowed so a solo maintainer listing only themselves isn't
     deadlocked.
   EOT
+
+  validation {
+    condition     = alltrue([for env in var.environments : length(env.reviewers) <= 6])
+    error_message = "Each environment accepts at most 6 reviewers — GitHub rejects more."
+  }
 }
 
 variable "pages" {

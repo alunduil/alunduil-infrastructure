@@ -160,14 +160,17 @@ resource "github_repository_environment" "this" {
     }
   }
 
-  # prevent_self_review stays at its default of false: on solo-maintained repos
-  # the only reviewer is also the person cutting the release, so blocking
-  # self-approval would leave every deployment permanently pending.
+  # Declared rather than left to its default so ticking "Prevent self-review" in
+  # the UI drifts back off: on solo-maintained repos the only reviewer is also
+  # the person cutting the release, and blocking self-approval would leave every
+  # deployment permanently pending.
+  prevent_self_review = false
+
   dynamic "reviewers" {
-    for_each = length(each.value.reviewers) > 0 ? [1] : []
+    for_each = length(each.value.reviewers) > 0 ? [each.value.reviewers] : []
     content {
       users = [
-        for login in each.value.reviewers :
+        for login in reviewers.value :
         data.github_user.environment_reviewers[login].id
       ]
     }
