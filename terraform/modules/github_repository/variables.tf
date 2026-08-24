@@ -82,7 +82,6 @@ variable "template" {
 variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
-    reviewers           = optional(list(string), [])
   }))
   default     = {}
   description = <<-EOT
@@ -95,17 +94,7 @@ variable "environments" {
     Empty (the default) admits any ref. Maps to the environment's
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
-
-    reviewers lists GitHub logins that gate the environment. A job
-    targeting it waits for one of them to approve before it runs or
-    reads the environment's secrets, and a reviewer may approve their
-    own deployment.
   EOT
-
-  validation {
-    condition     = alltrue([for env in var.environments : length(env.reviewers) <= 6])
-    error_message = "Each environment accepts at most 6 reviewers — GitHub rejects more."
-  }
 }
 
 variable "pages" {

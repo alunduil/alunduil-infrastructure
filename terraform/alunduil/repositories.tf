@@ -126,10 +126,8 @@ module "zfs_replicate" {
     strict = false
   }
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
-  # environment, so the publish job has to run in this one. Approval lands
-  # before the credential is issued. No deployment branch policy: the release
-  # workflow runs from a tag ref, which such a policy would refuse.
-  environments = {
-    pypi = { reviewers = ["alunduil"] }
-  }
+  # environment, so the publish job has to run in this one. No deployment
+  # branch policy: the release workflow runs from a tag ref, which the
+  # module's branch patterns would refuse.
+  environments = { pypi = {} }
 }
