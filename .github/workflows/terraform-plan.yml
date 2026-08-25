@@ -4,12 +4,11 @@
 
 name: Terraform Plan
 
+# A required status check whose workflow is filtered out stays Pending
+# forever, blocking every non-terraform pull request. The changes job below
+# carries the paths: a job skipped by an if: reports Success.
 on:
   pull_request:
-    paths:
-      - 'terraform/alunduil/**'
-      - 'terraform/modules/**'
-      - '.github/workflows/terraform-plan.yml'
 
 permissions:
   contents: read
@@ -19,7 +18,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
+  changes:
+    # Separate from plan: that job claims the terraform-state slot before its
+    # first step, so filtering there would queue every pull request behind an
+    # in-flight apply.
+    name: Detect terraform changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+
+    steps:
+      # Reads the changed paths over the API, so no checkout.
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            terraform:
+              - 'terraform/alunduil/**'
+              - 'terraform/modules/**'
+              - '.github/workflows/terraform-plan.yml'
+
+  plan:
+    # main's ruleset requires this exact name — a rename deadlocks merges.
+    name: terraform-plan
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight
