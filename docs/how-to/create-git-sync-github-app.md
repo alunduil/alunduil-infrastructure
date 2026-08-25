@@ -10,7 +10,7 @@ this App on only `alunduil-infrastructure`, so the private key handed to
 Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: any name unique across GitHub, e.g.
+   - **GitHub App name**: any name unique across GitHub, for example
      `alunduil-infra-git-sync`. Display only; Terraform never uses it.
    - **Homepage URL** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
