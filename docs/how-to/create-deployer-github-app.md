@@ -8,7 +8,7 @@ workflow exchanges App ID + private key for short-lived installation
 tokens via OIDC.
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: any name unique across GitHub, e.g.
+   - **GitHub App name**: any name unique across GitHub, for example
      `alunduil-infra-deployer`. Display only.
    - **Homepage URL** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
