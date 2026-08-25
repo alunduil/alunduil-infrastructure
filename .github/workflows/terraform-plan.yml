@@ -19,6 +19,9 @@ concurrency:
 
 jobs:
   changes:
+    # Separate from plan: that job claims the terraform-state slot before its
+    # first step, so filtering there would queue every pull request behind an
+    # in-flight apply.
     name: Detect terraform changes
     runs-on: ubuntu-latest
     timeout-minutes: 5
