@@ -4,10 +4,9 @@
 
 name: Terraform Plan
 
-# No paths filter: the plan is a required status check on main, and a check
-# whose workflow is filtered out stays Pending forever, blocking every
-# non-terraform pull request. The paths live in the changes job below
-# instead, because a job skipped by an if: reports Success.
+# A required status check whose workflow is filtered out stays Pending
+# forever, blocking every non-terraform pull request. The changes job below
+# carries the paths: a job skipped by an if: reports Success.
 on:
   pull_request:
 
@@ -50,7 +49,7 @@ jobs:
           echo "terraform=${terraform}" >> "${GITHUB_OUTPUT}"
 
   plan:
-    # Named so the required context is stable rather than tracking the job id.
+    # main's ruleset requires this exact name — a rename deadlocks merges.
     name: terraform-plan
     needs: changes
     if: needs.changes.outputs.terraform == 'true'

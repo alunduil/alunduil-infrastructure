@@ -11,11 +11,10 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
-  # terraform-plan carries no paths filter, so it reports on every pull
-  # request — Success by way of a skipped job when nothing under terraform/
-  # changed. strict is left at its default: merging main applies the plan,
-  # so a plan computed before another terraform merge would understate what
-  # the apply does.
+  # terraform-plan reports on every pull request, Success from a skipped job
+  # when nothing under terraform/ changed. Strict is wanted here: merging
+  # applies, so a plan computed before another terraform merge understates
+  # what the apply does.
   required_status_checks = {
     contexts = ["All hooks", "terraform-plan"]
   }
