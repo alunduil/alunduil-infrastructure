@@ -11,6 +11,14 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
+  # terraform-plan carries no paths filter, so it reports on every pull
+  # request — Success by way of a skipped job when nothing under terraform/
+  # changed. strict is left at its default: merging main applies the plan,
+  # so a plan computed before another terraform merge would understate what
+  # the apply does.
+  required_status_checks = {
+    contexts = ["All hooks", "terraform-plan"]
+  }
   # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
   # branch policy pins the token to main so a workflow_dispatch from an
   # arbitrary branch can't reach it. Token injected out of band.

@@ -4,12 +4,12 @@
 
 name: Terraform Plan
 
+# No paths filter: the plan is a required status check on main, and a check
+# whose workflow is filtered out stays Pending forever, blocking every
+# non-terraform pull request. The paths live in the changes job below
+# instead, because a job skipped by an if: reports Success.
 on:
   pull_request:
-    paths:
-      - 'terraform/alunduil/**'
-      - 'terraform/modules/**'
-      - '.github/workflows/terraform-plan.yml'
 
 permissions:
   contents: read
@@ -19,7 +19,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
+  changes:
+    name: Detect terraform changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          files="$(gh api --paginate "repos/${REPO}/pulls/${PR}/files" \
+            --jq '.[].filename')"
+          if printf '%s\n' "${files}" | grep -qE \
+            '^(terraform/(alunduil|modules)/|\.github/workflows/terraform-plan\.yml$)'; then
+            echo 'terraform=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'terraform=false' >> "${GITHUB_OUTPUT}"
+          fi
+
+  plan:
+    # Named so the required context is stable rather than tracking the job id.
+    name: terraform-plan
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight

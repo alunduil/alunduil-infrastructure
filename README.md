@@ -18,7 +18,8 @@ Personal infrastructure as code, managed with Terraform.
 Changes reach the `alunduil` environment through CI. Opening a PR runs
 `terraform plan` and posts the output as a PR comment; merging to
 `main` applies it automatically. Review the plan comment before
-approving a merge.
+approving a merge. `main` blocks the merge until the pre-commit hooks
+and the plan pass.
 
 The two operator entrypoints:
 
