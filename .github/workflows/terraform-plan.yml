@@ -36,14 +36,18 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          files="$(gh api --paginate "repos/${REPO}/pulls/${PR}/files" \
+          planned_paths='^(terraform/(alunduil|modules)/|\.github/workflows/terraform-plan\.yml$)'
+
+          changed_files="$(gh api --paginate "repos/${REPO}/pulls/${PR}/files" \
             --jq '.[].filename')"
-          if printf '%s\n' "${files}" | grep -qE \
-            '^(terraform/(alunduil|modules)/|\.github/workflows/terraform-plan\.yml$)'; then
-            echo 'terraform=true' >> "${GITHUB_OUTPUT}"
+
+          if printf '%s\n' "${changed_files}" | grep -qE "${planned_paths}"; then
+            terraform=true
           else
-            echo 'terraform=false' >> "${GITHUB_OUTPUT}"
+            terraform=false
           fi
+
+          echo "terraform=${terraform}" >> "${GITHUB_OUTPUT}"
 
   plan:
     # Named so the required context is stable rather than tracking the job id.
