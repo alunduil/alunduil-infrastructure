@@ -12,7 +12,7 @@ credentials.
 
 - A master Cloudflare API token — see
   [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
-- A GitHub App created and installed — see
+- The deployer GitHub App created and installed — see
   [create-deployer-github-app.md](create-deployer-github-app.md).
 - Grafana Cloud credentials — see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).

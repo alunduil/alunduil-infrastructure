@@ -23,6 +23,6 @@ variable "grafana_service_account_token" {
 
 variable "grafana_git_sync_app_private_key" {
   type        = string
-  description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to mint installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key. App id/installation come from the bootstrap remote state."
+  description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to generate installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key. App id/installation come from the bootstrap remote state."
   sensitive   = true
 }
