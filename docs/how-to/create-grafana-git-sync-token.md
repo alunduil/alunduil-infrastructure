@@ -19,8 +19,8 @@ and numeric ID for the alunduil layer.
 ## Master access-policy token
 
 Used only to read the stack and create the provisioning service-account
-token that lands in Secret Manager. Create it by hand and revoke it once
-`just bootstrap` finishes; recreate when you next need to run bootstrap.
+token that lands in Secret Manager. Create it by hand; recreate when you
+next need to run bootstrap.
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
    Access Policies → Create access policy**. Give it a display name
@@ -33,9 +33,8 @@ token that lands in Secret Manager. Create it by hand and revoke it once
     - `stack-service-accounts` → **write**
 
    Leave every other resource unchecked, then **Create**.
-3. Select the policy → **Add token** → name it, set a short expiration
-   (you revoke it right after bootstrap), **Create**, and copy the value
-   — Grafana shows it once.
+3. Select the policy → **Add token** → name it, set a short expiration,
+   **Create**, and copy the value — Grafana shows it once.
 
 Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
