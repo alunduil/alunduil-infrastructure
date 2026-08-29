@@ -33,8 +33,10 @@ write_var() {
 # Every secret is masked before it reaches GITHUB_ENV: the runner echoes the env
 # group of each following step, so an unmasked value lands in the log there.
 export_var() {
-  mask <<<"${2}"
-  write_var "${1}" "${2}"
+  local name="${1}" value="${2}"
+
+  mask <<<"${value}"
+  write_var "${name}" "${value}"
 }
 
 # Keep the assignment separate: a command substitution passed straight as an

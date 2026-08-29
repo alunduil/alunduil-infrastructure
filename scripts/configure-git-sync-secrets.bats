@@ -12,7 +12,7 @@ setup() {
   source "${BATS_TEST_DIRNAME}/configure-git-sync-secrets.sh"
 
   POPULATED=""
-  ADDED="${BATS_TEST_TMPDIR}/added"
+  STORE="${BATS_TEST_TMPDIR}/store"
 
   # Both stubs are reached only from the sourced script, which shellcheck
   # cannot see.
@@ -27,13 +27,15 @@ setup() {
       printf '%s:' "${1}"
       cat
       printf '\n'
-    } >>"${ADDED}"
+    } >>"${STORE}"
   }
 }
 
-added() { cat "${ADDED}" 2>/dev/null || true; }
+stored() { cat "${STORE}" 2>/dev/null || true; }
 
-pem() {
+refute_stored() { [[ -z "$(stored)" ]]; }
+
+pem_fixture() {
   local path="${BATS_TEST_TMPDIR}/key.pem"
   printf -- '-----BEGIN RSA PRIVATE KEY-----\nAAAA\n-----END RSA PRIVATE KEY-----\n' >"${path}" # pragma: allowlist secret
   echo "${path}"
@@ -46,54 +48,54 @@ pem() {
   run ensure_identifier grafana-git-sync-app-id "App ID" 1234
   [[ ${status} -eq 0 ]]
   [[ ${output} == "grafana-git-sync-app-id already set." ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 @test "ensure_identifier stores the supplied value with no trailing newline" {
   ensure_identifier grafana-git-sync-app-id "App ID" 1234
-  [[ "$(added)" == 'grafana-git-sync-app-id:1234' ]]
+  [[ "$(stored)" == 'grafana-git-sync-app-id:1234' ]]
 }
 
 @test "ensure_identifier rejects a non-numeric value" {
   run ensure_identifier grafana-git-sync-app-id "App ID" 'Iv1.abc'
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"App ID must be digits, got 'Iv1.abc'"* ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 @test "ensure_identifier skips rather than prompting when stdin is not a terminal" {
   run ensure_identifier grafana-git-sync-app-id "App ID" ""
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"Leaving grafana-git-sync-app-id empty"* ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 # --- ensure_private_key ---------------------------------------------------
 
 @test "ensure_private_key leaves a populated secret alone" {
   POPULATED="grafana-git-sync-app-private-key"
-  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem)"
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 0 ]]
   [[ ${output} == "grafana-git-sync-app-private-key already set." ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 @test "ensure_private_key stores the PEM verbatim" {
-  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem)"
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
   ensure_private_key grafana-git-sync-app-private-key
-  [[ "$(added)" == "grafana-git-sync-app-private-key:$(cat "${GIT_SYNC_APP_PRIVATE_KEY_FILE}")" ]]
+  [[ "$(stored)" == "grafana-git-sync-app-private-key:$(cat "${GIT_SYNC_APP_PRIVATE_KEY_FILE}")" ]]
 }
 
 @test "ensure_private_key expands a leading tilde" {
-  pem >/dev/null
+  pem_fixture >/dev/null
   HOME="${BATS_TEST_TMPDIR}"
   # A literal tilde is the point: it stands in for what read hands back when an
   # operator types the path at the prompt.
   # shellcheck disable=SC2088
   GIT_SYNC_APP_PRIVATE_KEY_FILE="~/key.pem"
   ensure_private_key grafana-git-sync-app-private-key
-  [[ "$(added)" == *'BEGIN RSA PRIVATE KEY'* ]] # pragma: allowlist secret
+  [[ "$(stored)" == *'BEGIN RSA PRIVATE KEY'* ]] # pragma: allowlist secret
 }
 
 @test "ensure_private_key rejects a file that is not a PEM key" {
@@ -102,7 +104,7 @@ pem() {
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"is not a PEM private key"* ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 @test "ensure_private_key rejects an unreadable path" {
@@ -110,7 +112,7 @@ pem() {
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"cannot read"* ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }
 
 @test "ensure_private_key skips rather than prompting when stdin is not a terminal" {
@@ -118,5 +120,5 @@ pem() {
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"Leaving grafana-git-sync-app-private-key empty"* ]]
-  [[ -z "$(added)" ]]
+  refute_stored
 }

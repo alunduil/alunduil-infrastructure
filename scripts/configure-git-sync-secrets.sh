@@ -11,6 +11,12 @@
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-alunduil}"
+SETUP_DOC="docs/how-to/create-git-sync-github-app.md"
+
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
 
 # Secret Manager itself rather than a local sentinel: a version added by hand
 # out of band counts as populated just as much as one this script wrote.
@@ -26,27 +32,42 @@ add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
+# Succeeds when the secret already holds a value, which is every caller's cue to
+# leave it alone.
+already_stored() {
+  secret_is_populated "${1}" || return 1
+
+  echo "${1} already set."
+}
+
+skip_notice() {
+  echo "Leaving ${1} empty; see ${SETUP_DOC}" >&2
+}
+
+# Echoes the supplied value, else what the operator types, else nothing when
+# there is no terminal to ask at. read prompts on stderr, so the answer is the
+# only thing reaching stdout.
+answer_for() {
+  local prompt="${1}" value="${2}"
+
+  if [[ -z ${value} && -t 0 ]]; then
+    read -r -p "${prompt} (Enter to skip): " value
+  fi
+
+  printf '%s' "${value}"
+}
+
 ensure_identifier() {
   local secret="${1}" label="${2}" value="${3}"
 
-  if secret_is_populated "${secret}"; then
-    echo "${secret} already set."
+  already_stored "${secret}" && return
+  value="$(answer_for "${label}" "${value}")"
+  [[ -n ${value} ]] || {
+    skip_notice "${secret}"
     return
-  fi
-
-  if [[ -z ${value} && -t 0 ]]; then
-    read -r -p "${label} (Enter to skip): " value
-  fi
-
-  if [[ -z ${value} ]]; then
-    echo "Leaving ${secret} empty; see docs/how-to/create-git-sync-github-app.md" >&2
-    return
-  fi
-
-  [[ ${value} =~ ^[0-9]+$ ]] || {
-    echo "error: ${label} must be digits, got '${value}'" >&2
-    exit 1
   }
+
+  [[ ${value} =~ ^[0-9]+$ ]] || die "${label} must be digits, got '${value}'"
 
   # No trailing newline: consumers read the value straight into a TF_VAR, where
   # a stray byte would reach the Grafana connection resource.
@@ -54,37 +75,24 @@ ensure_identifier() {
 }
 
 ensure_private_key() {
-  local secret="${1}"
-  local path="${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
+  local secret="${1}" path="${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
 
-  if secret_is_populated "${secret}"; then
-    echo "${secret} already set."
+  already_stored "${secret}" && return
+  path="$(answer_for "Path to the Git Sync App private key .pem" "${path}")"
+  [[ -n ${path} ]] || {
+    skip_notice "${secret}"
     return
-  fi
-
-  if [[ -z ${path} && -t 0 ]]; then
-    read -r -p "Path to the Git Sync App private key (.pem, Enter to skip): " path
-  fi
-
-  if [[ -z ${path} ]]; then
-    echo "Leaving ${secret} empty; see docs/how-to/create-git-sync-github-app.md" >&2
-    return
-  fi
+  }
 
   # read hands back the tilde the shell would have expanded.
   path="${path/#\~/${HOME}}"
 
-  [[ -r ${path} ]] || {
-    echo "error: cannot read '${path}'" >&2
-    exit 1
-  }
+  [[ -r ${path} ]] || die "cannot read '${path}'"
 
   # Signing with the wrong bytes surfaces inside Grafana as an opaque
   # authentication failure, a long way from the paste that caused it.
-  grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" || {
-    echo "error: '${path}' is not a PEM private key" >&2
-    exit 1
-  }
+  grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" \
+    || die "'${path}' is not a PEM private key"
 
   add_secret_version "${secret}" <"${path}"
   echo "Shred ${path} once terraform/alunduil/ has applied."
@@ -97,10 +105,7 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi
 
-command -v gcloud >/dev/null || {
-  echo "error: gcloud CLI not found in PATH" >&2
-  exit 1
-}
+command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
 # None of the three values exists until the App is registered, which is a
 # browser action, so a run before that legitimately leaves the secrets empty.
