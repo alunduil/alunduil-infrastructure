@@ -10,6 +10,7 @@ on:
       - 'terraform/alunduil/**'
       - 'terraform/modules/**'
       - '.github/workflows/terraform-plan.yml'
+      - 'scripts/export-terraform-credentials.sh'
 
 permissions:
   contents: read
@@ -58,44 +59,11 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      # Cloudflare token lives in Secret Manager, not a GitHub secret; the RO
-      # deployer SA holds secretAccessor on the -ro version only.
-      - name: Export Cloudflare token
-        run: |
-          name=cloudflare-api-token-deployer-ro # pragma: allowlist secret
-          value="$(gcloud secrets versions access latest \
-            --secret="${name}" --project=alunduil)"
-          echo "::add-mask::${value}"
-          echo "TF_VAR_cloudflare_api_token=${value}" >> "${GITHUB_ENV}" # pragma: allowlist secret
-
-      # Grafana provisioning has no read-only role, so the RO deployer reads the
-      # same credentials the RW apply uses. Both secrets are populated by the
-      # bootstrap layer. The App key is a multi-line PEM, so it is written with
-      # GITHUB_ENV's heredoc form. Every value has to be masked before it
-      # reaches GITHUB_ENV: the runner echoes the env group of each following
-      # step, so an unmasked value lands in the log there.
-      - name: Export Grafana credentials
-        run: |
-          sa_name=grafana-provisioner-token # pragma: allowlist secret
-          key_name=grafana-git-sync-app-private-key # pragma: allowlist secret
-          sa="$(gcloud secrets versions access latest \
-            --secret="${sa_name}" --project=alunduil)"
-          echo "::add-mask::${sa}"
-          key="$(gcloud secrets versions access latest \
-            --secret="${key_name}" --project=alunduil)"
-          # A workflow command occupies one line, so a multi-line value is
-          # masked line by line.
-          while IFS= read -r line; do
-            if [ -n "${line}" ]; then
-              echo "::add-mask::${line}"
-            fi
-          done <<< "${key}"
-          {
-            echo "TF_VAR_grafana_service_account_token=${sa}" # pragma: allowlist secret
-            echo "TF_VAR_grafana_git_sync_app_private_key<<__PEM__" # pragma: allowlist secret
-            echo "${key}"
-            echo "__PEM__"
-          } >> "${GITHUB_ENV}"
+      # Provider credentials live in Secret Manager, not GitHub secrets. The
+      # role argument selects the Cloudflare token version this deployer SA
+      # holds secretAccessor on.
+      - name: Export provider credentials
+        run: scripts/export-terraform-credentials.sh ro
 
       - name: Terraform Init
         working-directory: terraform/alunduil
