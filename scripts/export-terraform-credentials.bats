@@ -82,3 +82,16 @@ multiline() {
   grep -Fxq 'TF_VAR_first<<__TFVAR__' "${GITHUB_ENV}"
   grep -Fxq 'TF_VAR_second<<__TFVAR__' "${GITHUB_ENV}"
 }
+
+# --- write_var ------------------------------------------------------------
+
+@test "write_var registers no mask, so a non-secret stays readable in the log" {
+  run write_var TF_VAR_grafana_git_sync_app_id 1234
+  [[ ${status} -eq 0 ]]
+  [[ -z ${output} ]]
+}
+
+@test "write_var writes the same heredoc form export_var does" {
+  write_var TF_VAR_grafana_git_sync_app_id 1234
+  [[ "$(cat "${GITHUB_ENV}")" == $'TF_VAR_grafana_git_sync_app_id<<__TFVAR__\n1234\n__TFVAR__' ]]
+}
