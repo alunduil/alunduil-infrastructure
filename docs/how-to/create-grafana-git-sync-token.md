@@ -13,8 +13,6 @@ first-time and on rotation.
 `TF_VAR_grafana_stack_slug` — the `<slug>` in
 `https://<slug>.grafana.net`. Defaults to `alunduil`, the sole stack
 for this infrastructure; only export it to target a different stack.
-The bootstrap layer reads the stack by this slug and outputs its URL
-and numeric ID for the alunduil layer.
 
 ## Master access-policy token
 
@@ -40,8 +38,8 @@ Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
 ## Run
 
-Export it alongside the Git Sync App inputs and the other bootstrap
-inputs, then run `just bootstrap` (see [bootstrap.md](bootstrap.md)):
+Export it with the other bootstrap inputs (see
+[bootstrap.md](bootstrap.md)), then run:
 
 ```sh
 export TF_VAR_grafana_cloud_access_policy_token=<paste-here>

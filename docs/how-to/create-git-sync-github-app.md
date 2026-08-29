@@ -42,10 +42,6 @@ export TF_VAR_grafana_git_sync_app_installation_id=<installation-id>
 export TF_VAR_grafana_git_sync_app_private_key_file=<path-to-key.pem>
 ```
 
-Git Sync uses the `branch` workflow (the default-branch ruleset blocks
-direct pushes to `main`), so dashboards edited in the Grafana UI arrive
-as pull requests to review.
-
 ## Rotate
 
 Generate a new private key on the App's settings page, delete the old
