@@ -11,7 +11,9 @@ Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, for example
-     `alunduil-infra-git-sync`. Display only; Terraform never uses it.
+     `alunduil-infra-git-sync`. Terraform never reads it, but you will:
+     it's how you tell this App from the others on the account when
+     `just bootstrap` asks for its identifiers.
    - **Homepage URL** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck "Active" (otherwise it demands a URL).

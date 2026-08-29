@@ -12,37 +12,20 @@ set -euo pipefail
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 SETUP_DOC="docs/how-to/create-git-sync-github-app.md"
 
-GIT_SYNC_SECRETS=(
-  grafana-git-sync-app-id
-  grafana-git-sync-app-installation-id
-  grafana-git-sync-app-private-key
-)
-
 die() {
   echo "error: $*" >&2
   exit 1
 }
 
-# populated is filled by the executable body before anything reads it; the bats
-# suite sets it directly.
-populated=""
+# Asked per secret, and never cached against a list of names kept by hand: a
+# name that drifted from the call sites below would report a populated secret as
+# empty, and the next answer would overwrite it.
+secret_is_populated() {
+  local state
+  state="$(gcloud secrets versions describe latest --secret "${1}" \
+    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
 
-secret_is_populated() { [[ " ${populated} " == *" ${1} "* ]]; }
-
-# Asks Secret Manager rather than tracking what this script wrote, so a version
-# added by hand out of band counts as populated too. Read once, because the
-# pointer below has to know whether any prompt is coming before the first one.
-load_populated() {
-  local secret state
-
-  for secret in "${GIT_SYNC_SECRETS[@]}"; do
-    state="$(gcloud secrets versions describe latest --secret "${secret}" \
-      --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
-
-    if [[ ${state} == "ENABLED" ]]; then
-      populated="${populated} ${secret}"
-    fi
-  done
+  [[ ${state} == "ENABLED" ]]
 }
 
 add_secret_version() {
@@ -50,7 +33,8 @@ add_secret_version() {
 }
 
 # A prompt fires only for a value that is neither stored already nor supplied
-# through the environment.
+# through the environment. Missing a secret here costs the pointer below, and
+# nothing else — which is why the write-once check does not share this list.
 needs_prompt() {
   ! secret_is_populated "${1}" && [[ -z ${2} ]]
 }
@@ -151,8 +135,6 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
 fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
-
-load_populated
 
 if [[ -t 0 ]] && any_prompt_pending; then
   print_git_sync_app_pointer

@@ -4,9 +4,8 @@
 #
 # Unit tests for the resolve-once behaviour in configure-git-sync-secrets.sh:
 # what makes it skip, what it rejects, the exact bytes it stores, and when the
-# operator gets told which App is meant. load_populated and add_secret_version
-# are the only gcloud-touching helpers; the first is fed through `populated`
-# and the second stubbed, so Secret Manager is left to the bootstrap run.
+# operator gets told which App is meant. Both gcloud-touching helpers are
+# replaced by stubs below, so Secret Manager is left to the bootstrap run.
 
 # Fixtures below are inputs to the sourced script rather than to this file, so
 # every assignment reads as a dead store from here.
@@ -16,15 +15,19 @@ setup() {
   # shellcheck source=configure-git-sync-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-git-sync-secrets.sh"
 
-  populated=""
+  POPULATED=""
   STORE="${BATS_TEST_TMPDIR}/store"
   GIT_SYNC_APP_ID=""
   GIT_SYNC_APP_INSTALLATION_ID=""
   GIT_SYNC_APP_PRIVATE_KEY_FILE=""
 
+  # Both stubs are reached only from the sourced script, which shellcheck
+  # cannot see.
+  # shellcheck disable=SC2329
+  secret_is_populated() { [[ " ${POPULATED} " == *" ${1} "* ]]; }
+
   # Records the secret name and the bytes on stdin, so a test can assert both
-  # that a write happened and what it carried. Reached only from the sourced
-  # script, which shellcheck cannot see.
+  # that a write happened and what it carried.
   # shellcheck disable=SC2329
   add_secret_version() {
     {
@@ -35,7 +38,10 @@ setup() {
   }
 }
 
-all_populated() { populated="${GIT_SYNC_SECRETS[*]}"; }
+all_populated() {
+  POPULATED="grafana-git-sync-app-id grafana-git-sync-app-installation-id"
+  POPULATED="${POPULATED} grafana-git-sync-app-private-key"
+}
 
 stored() { cat "${STORE}" 2>/dev/null || true; }
 
@@ -67,7 +73,7 @@ pem_fixture() {
 }
 
 @test "any_prompt_pending is true for a value neither stored nor supplied" {
-  populated="grafana-git-sync-app-id grafana-git-sync-app-private-key"
+  POPULATED="grafana-git-sync-app-id grafana-git-sync-app-private-key"
   run any_prompt_pending
   [[ ${status} -eq 0 ]]
 }
@@ -81,7 +87,7 @@ pem_fixture() {
 # --- ensure_identifier ----------------------------------------------------
 
 @test "ensure_identifier leaves a populated secret alone" {
-  populated="grafana-git-sync-app-id"
+  POPULATED="grafana-git-sync-app-id"
   run ensure_identifier grafana-git-sync-app-id "App ID" 1234
   [[ ${status} -eq 0 ]]
   [[ ${output} == "grafana-git-sync-app-id already set." ]]
@@ -110,7 +116,7 @@ pem_fixture() {
 # --- ensure_private_key ---------------------------------------------------
 
 @test "ensure_private_key leaves a populated secret alone" {
-  populated="grafana-git-sync-app-private-key"
+  POPULATED="grafana-git-sync-app-private-key"
   GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 0 ]]
