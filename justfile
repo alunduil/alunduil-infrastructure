@@ -11,10 +11,11 @@ bootstrap:
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-github-secrets.sh
 
-# Requires gcloud credentials with secretAccessor on these secrets, the same
-# ones the plan/apply workflows read. Command substitution strips the PEM's
-# trailing newline, as their GITHUB_ENV heredoc does. Restoring it would leave
-# local and CI applies flipping the base64 grafana.tf stores.
+# Needs both gcloud credential stores: CLI auth with secretAccessor for the
+# secret fetches, application-default for the google provider and GCS backend.
+# Command substitution strips the PEM's trailing newline, as the plan/apply
+# workflows' GITHUB_ENV heredoc does. Restoring it would leave local and CI
+# applies flipping the base64 grafana.tf stores.
 [doc("Break-glass local apply for the alunduil environment.")]
 alunduil:
     #!/usr/bin/env bash
@@ -29,6 +30,10 @@ alunduil:
     export_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer-rw
     export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
     export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
+    # The github provider reads GITHUB_TOKEN; CI injects a deployer App token,
+    # so a break-glass apply runs under the operator's identity instead.
+    GITHUB_TOKEN="$(gh auth token)"
+    export GITHUB_TOKEN
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
 
