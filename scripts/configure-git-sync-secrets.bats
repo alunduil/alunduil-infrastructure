@@ -118,7 +118,7 @@ pem_fixture() {
 @test "ensure_private_key leaves a populated secret alone" {
   POPULATED="grafana-git-sync-app-private-key"
   GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
-  run ensure_private_key grafana-git-sync-app-private-key
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ ${status} -eq 0 ]]
   [[ ${output} == "grafana-git-sync-app-private-key already set." ]]
   refute_stored
@@ -126,7 +126,7 @@ pem_fixture() {
 
 @test "ensure_private_key stores the PEM verbatim" {
   GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
-  ensure_private_key grafana-git-sync-app-private-key
+  ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ "$(stored)" == "grafana-git-sync-app-private-key:$(cat "${GIT_SYNC_APP_PRIVATE_KEY_FILE}")" ]]
 }
 
@@ -137,14 +137,14 @@ pem_fixture() {
   # operator types the path at the prompt.
   # shellcheck disable=SC2088
   GIT_SYNC_APP_PRIVATE_KEY_FILE="~/key.pem"
-  ensure_private_key grafana-git-sync-app-private-key
+  ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ "$(stored)" == *'BEGIN RSA PRIVATE KEY'* ]] # pragma: allowlist secret
 }
 
 @test "ensure_private_key rejects a file that is not a PEM key" {
   GIT_SYNC_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/notes.txt"
   echo "just some text" >"${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
-  run ensure_private_key grafana-git-sync-app-private-key
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"is not a PEM private key"* ]]
   refute_stored
@@ -152,7 +152,7 @@ pem_fixture() {
 
 @test "ensure_private_key rejects an unreadable path" {
   GIT_SYNC_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/missing.pem"
-  run ensure_private_key grafana-git-sync-app-private-key
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"cannot read"* ]]
   refute_stored
@@ -160,7 +160,7 @@ pem_fixture() {
 
 @test "ensure_private_key skips rather than prompting when stdin is not a terminal" {
   GIT_SYNC_APP_PRIVATE_KEY_FILE=""
-  run ensure_private_key grafana-git-sync-app-private-key
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"Leaving grafana-git-sync-app-private-key empty"* ]]
   refute_stored

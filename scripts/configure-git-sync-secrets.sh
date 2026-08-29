@@ -87,16 +87,16 @@ answer_for() {
 }
 
 ensure_identifier() {
-  local secret="${1}" label="${2}" value="${3}"
+  local secret="${1}" prompt="${2}" value="${3}"
 
   already_stored "${secret}" && return
-  value="$(answer_for "${label}" "${value}")"
+  value="$(answer_for "${prompt}" "${value}")"
   [[ -n ${value} ]] || {
     skip_notice "${secret}"
     return
   }
 
-  [[ ${value} =~ ^[0-9]+$ ]] || die "${label} must be digits, got '${value}'"
+  [[ ${value} =~ ^[0-9]+$ ]] || die "${prompt} must be digits, got '${value}'"
 
   # No trailing newline: consumers read the value straight into a TF_VAR, where
   # a stray byte would reach the Grafana connection resource.
@@ -104,10 +104,10 @@ ensure_identifier() {
 }
 
 ensure_private_key() {
-  local secret="${1}" path="${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
+  local secret="${1}" prompt="${2}" path="${3}"
 
   already_stored "${secret}" && return
-  path="$(answer_for "Path to the Git Sync App private key .pem" "${path}")"
+  path="$(answer_for "${prompt}" "${path}")"
   [[ -n ${path} ]] || {
     skip_notice "${secret}"
     return
@@ -140,10 +140,12 @@ if [[ -t 0 ]] && any_prompt_pending; then
   print_git_sync_app_pointer
 fi
 
-# None of the three values exists until the App is registered, which is a
-# browser action, so a run before that legitimately leaves the secrets empty.
+# Registering the App yields its ID and private key; installing it on the repo
+# yields the installation ID. Both are browser actions, so a run before either
+# legitimately leaves secrets empty.
 ensure_identifier grafana-git-sync-app-id \
   "Git Sync App ID" "${GIT_SYNC_APP_ID:-}"
 ensure_identifier grafana-git-sync-app-installation-id \
   "Git Sync App installation ID" "${GIT_SYNC_APP_INSTALLATION_ID:-}"
-ensure_private_key grafana-git-sync-app-private-key
+ensure_private_key grafana-git-sync-app-private-key \
+  "Path to the Git Sync App private key .pem" "${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
