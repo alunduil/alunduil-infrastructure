@@ -58,8 +58,3 @@ variable "grafana_cloud_access_policy_token" {
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT
 }
-
-# The Git Sync GitHub App's ID, installation ID, and private key are not
-# variables: scripts/configure-git-sync-secrets.sh writes them straight into the
-# Secret Manager shells grafana.tf declares, so re-running the layer never asks
-# for them again. See docs/how-to/create-git-sync-github-app.md.

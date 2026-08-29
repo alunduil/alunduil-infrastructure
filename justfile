@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# All four steps are idempotent; safe to re-run after partial failure. The
-# bootstrap layer still needs the master Grafana and Cloudflare tokens on every
-# run — see docs/how-to/bootstrap.md. The Git Sync App credentials are asked for
-# once and then left alone, so they need nothing on a re-run.
+# Every step is idempotent; safe to re-run after partial failure. The bootstrap
+# layer still needs the master Grafana and Cloudflare tokens on every run — see
+# docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets.")]
 bootstrap:
     scripts/bootstrap-terraform-state.sh

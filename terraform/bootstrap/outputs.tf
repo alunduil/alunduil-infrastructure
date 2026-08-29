@@ -39,8 +39,8 @@ output "cloudflare_api_token_deployer_rw_secret" {
 
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates reach
 # the alunduil layer through the published bootstrap-outputs.json object (see
-# published_outputs.tf); everything the App owns is fetched from Secret Manager
-# by the plan and apply workflows, identifiers included.
+# published_outputs.tf); the App's three values are fetched from Secret Manager
+# by the plan and apply workflows.
 output "grafana_stack_url" {
   value       = data.grafana_cloud_stack.this.url
   description = "Grafana Cloud stack URL, consumed by terraform/alunduil/"

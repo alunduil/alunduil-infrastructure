@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Populates the Git Sync GitHub App credentials in the Secret Manager shells
-# terraform/bootstrap/ declares. Each value is written once and never
-# overwritten, so re-running is a no-op and the bootstrap layer stays editable
-# without the .pem GitHub shows only once. Replacing a value goes through
-# docs/how-to/rotate-git-sync-app-key.md.
+# terraform/bootstrap/ declares. Each value is written once, so re-running is a
+# no-op and the bootstrap layer stays editable without the .pem GitHub shows
+# once. Replacing a value goes through docs/how-to/rotate-git-sync-app-key.md.
 
 set -euo pipefail
 
@@ -18,8 +17,8 @@ die() {
   exit 1
 }
 
-# Secret Manager itself rather than a local sentinel: a version added by hand
-# out of band counts as populated just as much as one this script wrote.
+# Asks Secret Manager rather than tracking what this script wrote, so a version
+# added by hand out of band counts as populated too.
 secret_is_populated() {
   local state
   state="$(gcloud secrets versions describe latest --secret "${1}" \
@@ -32,8 +31,7 @@ add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
-# Succeeds when the secret already holds a value, which is every caller's cue to
-# leave it alone.
+# Succeeds, and says so, when the secret already holds a value.
 already_stored() {
   secret_is_populated "${1}" || return 1
 
@@ -44,9 +42,8 @@ skip_notice() {
   echo "Leaving ${1} empty; see ${SETUP_DOC}" >&2
 }
 
-# Echoes the supplied value, else what the operator types, else nothing when
-# there is no terminal to ask at. read prompts on stderr, so the answer is the
-# only thing reaching stdout.
+# Precedence: the supplied value, else what the operator types, else nothing.
+# read prompts on stderr, so only the answer reaches stdout.
 answer_for() {
   local prompt="${1}" value="${2}"
 

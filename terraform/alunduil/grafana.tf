@@ -33,9 +33,9 @@ resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
     }
   }
 
-  # secure values are write-only, so they reach Grafana only when this counter
-  # changes — a new key in Secret Manager alone leaves the connection on the old
-  # one. Rotation increments it: docs/how-to/rotate-git-sync-app-key.md.
+  # secure values are write-only: they reach Grafana only when this counter
+  # changes, so a new key in Secret Manager alone leaves the connection on the
+  # old one. docs/how-to/rotate-git-sync-app-key.md increments it.
   secure_version = 1
 }
 

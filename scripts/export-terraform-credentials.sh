@@ -47,9 +47,8 @@ export_secret() {
   export_var "${1}" "${value}"
 }
 
-# The Git Sync App identifiers sit in Secret Manager only because neither exists
-# until the App is registered by hand. Masking a value that isn't secret would
-# redact a useful identifier from the log and blunt what a mask means there.
+# The Git Sync App identifiers are not secret. Masking them would redact a
+# useful value from the log for nothing.
 export_identifier() {
   local value
   value="$(access "${2}")"

@@ -63,10 +63,9 @@ resource "google_secret_manager_secret_iam_member" "grafana_provisioner_token_rw
   member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }
 
-# The App ID and installation ID are not secret. They share the private key's
-# store because none of the three exists until the App is registered by hand,
-# which leaves terraform/alunduil/ nothing to read until then — one store for
-# the whole credential beats splitting it across two mechanisms.
+# The App ID and installation ID are not secret. They live here because none of
+# the three exists until the App is registered by hand, which leaves
+# terraform/alunduil/ nothing to read until then.
 locals {
   grafana_git_sync_app_secrets = toset([
     "grafana-git-sync-app-id",
@@ -75,11 +74,10 @@ locals {
   ])
 }
 
-# Empty shells. scripts/configure-git-sync-secrets.sh adds the versions once
-# this layer has applied. A version Terraform created would hold the private key
-# in this layer's state, and would make every later bootstrap run demand a PEM
-# that GitHub shows only once — so an unrelated edit here would cost a rotation
-# of a working credential.
+# Empty shells. scripts/configure-git-sync-secrets.sh adds the versions after
+# this layer applies: a version Terraform created would hold the private key in
+# this layer's state, and would demand the PEM, which GitHub shows once, on
+# every later run of the layer.
 resource "google_secret_manager_secret" "grafana_git_sync_app" {
   for_each = local.grafana_git_sync_app_secrets
 
@@ -98,8 +96,7 @@ moved {
   to   = google_secret_manager_secret.grafana_git_sync_app["grafana-git-sync-app-private-key"]
 }
 
-# Forget the version without deleting it: the live PEM stays readable, and
-# configure-git-sync-secrets.sh then finds a populated secret and leaves it be.
+# configure-git-sync-secrets.sh owns the live version from here.
 removed {
   from = google_secret_manager_secret_version.grafana_git_sync_app_private_key
 

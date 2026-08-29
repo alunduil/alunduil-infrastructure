@@ -8,9 +8,6 @@
 # non-secret values as a JSON object in the shared alunduil-tfstate bucket,
 # which the deployer SAs already read, so terraform/alunduil/ can consume them
 # without gaining read on the bootstrap state.
-#
-# The Git Sync App identifiers are not here: nothing knows them until the App is
-# registered, so they resolve from Secret Manager alongside its private key.
 resource "google_storage_bucket_object" "published_outputs" {
   bucket       = data.google_storage_bucket.state.name
   name         = "bootstrap-outputs.json"

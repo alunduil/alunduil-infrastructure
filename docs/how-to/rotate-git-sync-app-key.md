@@ -5,7 +5,7 @@
 
 Replaces the private key Grafana Cloud signs with to generate installation
 tokens for `alunduil-infrastructure`. The App ID and installation ID stay the
-same, so only the key and one counter change.
+same.
 
 You need admin on the App, and permission to add and destroy secret versions in
 the `alunduil` project.
@@ -26,14 +26,14 @@ authenticating throughout.
      --data-file ~/Downloads/<new-key>.private-key.pem
    ```
 
-3. Increment `secure_version` in `terraform/alunduil/grafana.tf` and merge that
-   change. The `secure` block is write-only, so the provider re-sends the key
-   only when the counter moves — step 2 on its own leaves the connection signing
-   with the old key. Merging to `main` runs the apply in CI.
+3. Increment `secure_version` in `terraform/alunduil/grafana.tf` and merge the
+   change, which runs the apply in CI. The `secure` block is write-only, so the
+   provider re-sends the key only when that counter moves; step 2 on its own
+   leaves the connection signing with the old key.
 
 4. Confirm the dashboards repository still syncs, under **Administration >
-   Provisioning** in Grafana. A green apply proves the key reached Grafana, not
-   that GitHub accepts it.
+   Provisioning** in Grafana. A successful apply proves only that Grafana
+   accepted the key; the sync is what proves GitHub accepts it.
 
 5. Delete the old key on the App's General tab.
 
