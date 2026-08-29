@@ -11,17 +11,16 @@ bootstrap:
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-github-secrets.sh
 
-# Requires gcloud credentials holding secretAccessor on the three secrets the
-# plan/apply workflows read. Command substitution drops the PEM's trailing
-# newline, which is also what the workflows' GITHUB_ENV heredoc yields, so the
-# base64 the Grafana repository resource stores is the same either way.
+# Requires gcloud credentials with secretAccessor on these secrets, the same
+# ones the plan/apply workflows read. Command substitution strips the PEM's
+# trailing newline, as their GITHUB_ENV heredoc does. Restoring it would leave
+# local and CI applies flipping the base64 grafana.tf stores.
 [doc("Break-glass local apply for the alunduil environment.")]
 alunduil:
     #!/usr/bin/env bash
     set -euo pipefail
-    # The bare assignment carries the fetch's exit status, so a denied secret
-    # aborts here; assigning through export would report export's own success
-    # and leave terraform to apply with an empty credential.
+    # Assign before exporting: folded together, a denied fetch returns export's
+    # own success and terraform applies with an empty credential.
     export_secret() {
         local value
         value="$(gcloud secrets versions access latest --secret="$2" --project=alunduil)"
