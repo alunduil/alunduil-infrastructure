@@ -19,14 +19,17 @@ bootstrap:
 alunduil:
     #!/usr/bin/env bash
     set -euo pipefail
-    secret() { gcloud secrets versions access latest --secret="$1" --project=alunduil; }
-    # Assign before exporting: export succeeds regardless, so folding the two
-    # together hides a failed fetch from set -e and applies with no credentials.
-    TF_VAR_cloudflare_api_token="$(secret cloudflare-api-token-deployer-rw)"
-    TF_VAR_grafana_service_account_token="$(secret grafana-provisioner-token)"
-    TF_VAR_grafana_git_sync_app_private_key="$(secret grafana-git-sync-app-private-key)"
-    export TF_VAR_cloudflare_api_token TF_VAR_grafana_service_account_token
-    export TF_VAR_grafana_git_sync_app_private_key
+    # The bare assignment carries the fetch's exit status, so a denied secret
+    # aborts here; assigning through export would report export's own success
+    # and leave terraform to apply with an empty credential.
+    export_secret() {
+        local value
+        value="$(gcloud secrets versions access latest --secret="$2" --project=alunduil)"
+        export "$1=${value}"
+    }
+    export_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer-rw
+    export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
+    export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
 
