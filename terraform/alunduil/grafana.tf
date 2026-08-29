@@ -32,6 +32,10 @@ resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
       create = base64encode(var.grafana_git_sync_app_private_key)
     }
   }
+
+  # secure values are write-only, so they reach Grafana only when this counter
+  # changes — a new key in Secret Manager alone leaves the connection on the old
+  # one. Rotation increments it: docs/how-to/rotate-git-sync-app-key.md.
   secure_version = 1
 }
 

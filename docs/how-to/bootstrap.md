@@ -17,18 +17,26 @@ credentials.
 - Grafana Cloud credentials — see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed — see
-  [create-git-sync-github-app.md](create-git-sync-github-app.md).
+  [create-git-sync-github-app.md](create-git-sync-github-app.md). Press
+  Enter past its prompts to defer it; a later run picks the values up.
 
 ## Run
+
+Every run needs all three values below. The two master tokens are created
+by hand and revoked once the apply finishes, so they're new each time.
 
 ```sh
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
 export CLOUDFLARE_API_TOKEN=...
 export TF_VAR_grafana_cloud_access_policy_token=...
-export TF_VAR_grafana_git_sync_app_id=...
-export TF_VAR_grafana_git_sync_app_installation_id=...
-export TF_VAR_grafana_git_sync_app_private_key_file=path/to/key.pem
 
 just bootstrap
 ```
+
+The Git Sync App's ID, installation ID, and private key are asked for at
+a prompt, stored in Secret Manager, and skipped on every later run. Set
+`GIT_SYNC_APP_ID`, `GIT_SYNC_APP_INSTALLATION_ID`, and
+`GIT_SYNC_APP_PRIVATE_KEY_FILE` to answer without the prompt. Replacing a
+stored key is [rotate-git-sync-app-key.md](rotate-git-sync-app-key.md),
+not a re-run.

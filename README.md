@@ -22,7 +22,8 @@ approving a merge.
 
 The two operator entrypoints:
 
-- `just bootstrap` — first-time setup or credential rotation. See
+- `just bootstrap` — first-time setup, and rotation of the credentials
+  Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just alunduil` — break-glass local `terraform apply` against the
   alunduil environment, for when CI is unavailable.
@@ -34,6 +35,7 @@ Supporting how-tos:
 - [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
+- [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
 
 ## Support and contributions
 
