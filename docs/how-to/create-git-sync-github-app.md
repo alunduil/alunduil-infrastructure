@@ -3,10 +3,10 @@
 
 # Create the Git Sync GitHub App
 
-A dedicated GitHub App that Grafana Git Sync authenticates through to
-open dashboard pull requests. Separate from the deployer App in
-[create-deployer-github-app.md](create-deployer-github-app.md): install
-this App on only `alunduil-infrastructure`, so the private key handed to
+A dedicated GitHub App Grafana Git Sync uses to open dashboard pull
+requests. Unlike the deployer App in
+[create-deployer-github-app.md](create-deployer-github-app.md), install
+this one on only `alunduil-infrastructure`, so the private key handed to
 Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
@@ -33,9 +33,8 @@ Grafana Cloud can reach nothing else.
    is the **installation ID** (reachable later via Settings →
    Applications → Installed GitHub Apps → Configure).
 
-The App ID, installation ID, and `.pem` are inputs to `just bootstrap`,
-which stores the key in Secret Manager and outputs the ids for the
-alunduil layer:
+The App ID, installation ID, and `.pem` path are `just bootstrap`
+inputs:
 
 ```sh
 export TF_VAR_grafana_git_sync_app_id=<app-id>
