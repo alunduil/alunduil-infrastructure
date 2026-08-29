@@ -12,23 +12,71 @@ set -euo pipefail
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 SETUP_DOC="docs/how-to/create-git-sync-github-app.md"
 
+GIT_SYNC_SECRETS=(
+  grafana-git-sync-app-id
+  grafana-git-sync-app-installation-id
+  grafana-git-sync-app-private-key
+)
+
 die() {
   echo "error: $*" >&2
   exit 1
 }
 
-# Asks Secret Manager rather than tracking what this script wrote, so a version
-# added by hand out of band counts as populated too.
-secret_is_populated() {
-  local state
-  state="$(gcloud secrets versions describe latest --secret "${1}" \
-    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
+# populated is filled by the executable body before anything reads it; the bats
+# suite sets it directly.
+populated=""
 
-  [[ ${state} == "ENABLED" ]]
+secret_is_populated() { [[ " ${populated} " == *" ${1} "* ]]; }
+
+# Asks Secret Manager rather than tracking what this script wrote, so a version
+# added by hand out of band counts as populated too. Read once, because the
+# pointer below has to know whether any prompt is coming before the first one.
+load_populated() {
+  local secret state
+
+  for secret in "${GIT_SYNC_SECRETS[@]}"; do
+    state="$(gcloud secrets versions describe latest --secret "${secret}" \
+      --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
+
+    if [[ ${state} == "ENABLED" ]]; then
+      populated="${populated} ${secret}"
+    fi
+  done
 }
 
 add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
+}
+
+# A prompt fires only for a value that is neither stored already nor supplied
+# through the environment.
+needs_prompt() {
+  ! secret_is_populated "${1}" && [[ -z ${2} ]]
+}
+
+any_prompt_pending() {
+  needs_prompt grafana-git-sync-app-id "${GIT_SYNC_APP_ID:-}" \
+    || needs_prompt grafana-git-sync-app-installation-id "${GIT_SYNC_APP_INSTALLATION_ID:-}" \
+    || needs_prompt grafana-git-sync-app-private-key "${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
+}
+
+# Several Apps on the account have names that read like this one, and an App ID
+# from the wrong one passes every check here — it is digits, and Secret Manager
+# takes it. The mismatch only surfaces as an opaque Grafana authentication
+# failure much later, so name the discriminator before asking.
+print_git_sync_app_pointer() {
+  cat >&2 <<EOF
+
+The next values belong to the App Grafana Cloud uses for Git Sync, which is the
+one installed on alunduil-infrastructure alone. Settings > Applications >
+Installed GitHub Apps lists every installation, and Configure puts that
+installation's ID in the address bar.
+
+If the App does not exist yet, press Enter past each prompt and see
+${SETUP_DOC}.
+
+EOF
 }
 
 # Succeeds, and says so, when the secret already holds a value.
@@ -103,6 +151,12 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
 fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
+
+load_populated
+
+if [[ -t 0 ]] && any_prompt_pending; then
+  print_git_sync_app_pointer
+fi
 
 # None of the three values exists until the App is registered, which is a
 # browser action, so a run before that legitimately leaves the secrets empty.

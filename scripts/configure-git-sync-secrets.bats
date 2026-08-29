@@ -3,24 +3,28 @@
 # SPDX-License-Identifier: MIT
 #
 # Unit tests for the resolve-once behaviour in configure-git-sync-secrets.sh:
-# what makes it skip, what it rejects, and the exact bytes it stores. The two
-# gcloud-touching helpers are replaced by stubs below — Secret Manager is
-# covered by the bootstrap run itself.
+# what makes it skip, what it rejects, the exact bytes it stores, and when the
+# operator gets told which App is meant. load_populated and add_secret_version
+# are the only gcloud-touching helpers; the first is fed through `populated`
+# and the second stubbed, so Secret Manager is left to the bootstrap run.
+
+# Fixtures below are inputs to the sourced script rather than to this file, so
+# every assignment reads as a dead store from here.
+# shellcheck disable=SC2034
 
 setup() {
   # shellcheck source=configure-git-sync-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-git-sync-secrets.sh"
 
-  POPULATED=""
+  populated=""
   STORE="${BATS_TEST_TMPDIR}/store"
-
-  # Both stubs are reached only from the sourced script, which shellcheck
-  # cannot see.
-  # shellcheck disable=SC2329
-  secret_is_populated() { [[ " ${POPULATED} " == *" ${1} "* ]]; }
+  GIT_SYNC_APP_ID=""
+  GIT_SYNC_APP_INSTALLATION_ID=""
+  GIT_SYNC_APP_PRIVATE_KEY_FILE=""
 
   # Records the secret name and the bytes on stdin, so a test can assert both
-  # that a write happened and what it carried.
+  # that a write happened and what it carried. Reached only from the sourced
+  # script, which shellcheck cannot see.
   # shellcheck disable=SC2329
   add_secret_version() {
     {
@@ -30,6 +34,8 @@ setup() {
     } >>"${STORE}"
   }
 }
+
+all_populated() { populated="${GIT_SYNC_SECRETS[*]}"; }
 
 stored() { cat "${STORE}" 2>/dev/null || true; }
 
@@ -41,10 +47,41 @@ pem_fixture() {
   echo "${path}"
 }
 
+# --- any_prompt_pending ---------------------------------------------------
+#
+# Gates the pointer naming which of several similarly-named Apps is meant, so
+# it has to stay quiet on the paths where nobody is about to be asked.
+
+@test "any_prompt_pending is false once every secret holds a value" {
+  all_populated
+  run any_prompt_pending
+  [[ ${status} -eq 1 ]]
+}
+
+@test "any_prompt_pending is false when the environment supplies what is missing" {
+  GIT_SYNC_APP_ID=4257071
+  GIT_SYNC_APP_INSTALLATION_ID=145465865
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
+  run any_prompt_pending
+  [[ ${status} -eq 1 ]]
+}
+
+@test "any_prompt_pending is true for a value neither stored nor supplied" {
+  populated="grafana-git-sync-app-id grafana-git-sync-app-private-key"
+  run any_prompt_pending
+  [[ ${status} -eq 0 ]]
+}
+
+@test "the pointer names the property that separates this App from the others" {
+  run print_git_sync_app_pointer
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == *"installed on alunduil-infrastructure alone"* ]]
+}
+
 # --- ensure_identifier ----------------------------------------------------
 
 @test "ensure_identifier leaves a populated secret alone" {
-  POPULATED="grafana-git-sync-app-id"
+  populated="grafana-git-sync-app-id"
   run ensure_identifier grafana-git-sync-app-id "App ID" 1234
   [[ ${status} -eq 0 ]]
   [[ ${output} == "grafana-git-sync-app-id already set." ]]
@@ -73,7 +110,7 @@ pem_fixture() {
 # --- ensure_private_key ---------------------------------------------------
 
 @test "ensure_private_key leaves a populated secret alone" {
-  POPULATED="grafana-git-sync-app-private-key"
+  populated="grafana-git-sync-app-private-key"
   GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
   run ensure_private_key grafana-git-sync-app-private-key
   [[ ${status} -eq 0 ]]
