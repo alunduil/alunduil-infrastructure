@@ -59,9 +59,7 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      # Provider credentials live in Secret Manager, not GitHub secrets. The
-      # role argument selects the Cloudflare token version this deployer SA
-      # holds secretAccessor on.
+      # Provider credentials live in Secret Manager, not GitHub secrets.
       - name: Export provider credentials
         run: scripts/export-terraform-credentials.sh ro
 

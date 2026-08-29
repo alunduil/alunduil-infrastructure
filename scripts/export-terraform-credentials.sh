@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Exports the provider credentials the Terraform workflows consume as TF_VAR_*
-# entries in GITHUB_ENV. Takes the deployer role — ro for the plan workflow, rw
-# for the apply — which selects the Cloudflare token version that deployer's SA
-# holds secretAccessor on.
+# entries in GITHUB_ENV. The role argument, ro for the plan workflow and rw for
+# the apply, selects the Cloudflare token version that deployer's SA holds
+# secretAccessor on. Every secret read here is populated by the bootstrap layer.
 
 set -euo pipefail
 
@@ -23,7 +23,6 @@ mask() {
 
 # Every value is masked before it reaches GITHUB_ENV: the runner echoes the env
 # group of each following step, so an unmasked value lands in the log there.
-# The heredoc form carries single- and multi-line values alike.
 export_var() {
   local name="${1}" value="${2}"
   mask <<<"${value}"
@@ -34,10 +33,8 @@ export_var() {
   } >>"${GITHUB_ENV}"
 }
 
-# Split from export_var so the masking and GITHUB_ENV contract stays testable
-# without a gcloud on PATH. The separate assignment is load-bearing: a failing
-# command substitution passed straight as an argument would export an empty
-# value instead of tripping set -e.
+# Keep the assignment separate: a command substitution passed straight as an
+# argument would swallow a failed read under set -e and export an empty value.
 export_secret() {
   local value
   value="$(access "${2}")"
@@ -68,6 +65,6 @@ command -v gcloud >/dev/null || {
 export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}"
 
 # Grafana provisioning has no read-only role, so plan and apply share one set of
-# credentials. Every secret read here is populated by the bootstrap layer.
+# credentials.
 export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key

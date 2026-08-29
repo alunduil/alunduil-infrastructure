@@ -14,8 +14,8 @@ setup() {
   source "${BATS_TEST_DIRNAME}/export-terraform-credentials.sh"
 }
 
-# Stands in for the Git Sync PEM: several lines, no trailing newline, since
-# command substitution strips it before the value ever reaches export_var.
+# Stands in for the Git Sync PEM. Command substitution strips the trailing
+# newline before a value ever reaches export_var, so the fixture carries none.
 multiline() {
   printf -- 'HEADER\nAAAA\nBBBB\nFOOTER'
 }
@@ -66,7 +66,6 @@ multiline() {
 
 @test "export_var round-trips a multi-line value between the delimiters" {
   export_var TF_VAR_key "$(multiline)"
-  # Everything between the delimiters is the value, interior lines intact.
   local body
   body="$(sed -n '/^TF_VAR_key<<__TFVAR__$/,/^__TFVAR__$/{//!p}' "${GITHUB_ENV}")"
   [[ ${body} == "$(multiline)" ]]
