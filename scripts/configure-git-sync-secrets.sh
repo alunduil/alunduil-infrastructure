@@ -48,12 +48,14 @@ any_prompt_pending() {
 # Several Apps on the account have names that read like this one, and an App ID
 # from the wrong one passes every check here — it is digits, and Secret Manager
 # takes it. The mismatch only surfaces as an opaque Grafana authentication
-# failure much later, so name the discriminator before asking.
+# failure much later, so name the App outright before asking. The name is the
+# quick handle and can be changed in the UI; the installation scope below is
+# what stays true.
 print_git_sync_app_pointer() {
   cat >&2 <<EOF
 
-The next values belong to the App Grafana Cloud uses for Git Sync, which is the
-one installed on alunduil-infrastructure alone. Settings > Applications >
+The next values belong to the GitHub App named Grafana Cloud GitHub Sync, which
+is the one installed on alunduil-infrastructure alone. Settings > Applications >
 Installed GitHub Apps lists every installation, and Configure puts that
 installation's ID in the address bar.
 
@@ -144,8 +146,8 @@ fi
 # yields the installation ID. Both are browser actions, so a run before either
 # legitimately leaves secrets empty.
 ensure_identifier grafana-git-sync-app-id \
-  "Git Sync App ID" "${GIT_SYNC_APP_ID:-}"
+  "Grafana Cloud GitHub Sync App ID" "${GIT_SYNC_APP_ID:-}"
 ensure_identifier grafana-git-sync-app-installation-id \
-  "Git Sync App installation ID" "${GIT_SYNC_APP_INSTALLATION_ID:-}"
+  "Grafana Cloud GitHub Sync installation ID" "${GIT_SYNC_APP_INSTALLATION_ID:-}"
 ensure_private_key grafana-git-sync-app-private-key \
-  "Path to the Git Sync App private key .pem" "${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
+  "Path to the Grafana Cloud GitHub Sync private key .pem" "${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
