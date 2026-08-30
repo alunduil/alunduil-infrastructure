@@ -32,17 +32,21 @@ add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
-# A prompt fires only for a value that is neither stored already nor supplied
-# through the environment. Missing a secret here costs the pointer below, and
-# nothing else — which is why the write-once check does not share this list.
-needs_prompt() {
-  ! secret_is_populated "${1}" && [[ -z ${2} ]]
-}
+# The condition answer_for asks under, hoisted so a caller can speak before the
+# question rather than after it.
+will_prompt() { [[ -z ${1} && -t 0 ]]; }
 
-any_prompt_pending() {
-  needs_prompt grafana-git-sync-app-id "${GIT_SYNC_APP_ID:-}" \
-    || needs_prompt grafana-git-sync-app-installation-id "${GIT_SYNC_APP_INSTALLATION_ID:-}" \
-    || needs_prompt grafana-git-sync-app-private-key "${GIT_SYNC_APP_PRIVATE_KEY_FILE:-}"
+pointer_shown=""
+
+# The ensure_* functions run in this shell, so the flag survives between them.
+# It would not survive inside answer_for, whose result comes back through a
+# command substitution — the subshell would discard it and every question would
+# repeat the pointer.
+announce_app_once() {
+  [[ -z ${pointer_shown} ]] || return 0
+
+  pointer_shown=yes
+  print_git_sync_app_pointer
 }
 
 # Several Apps on the account have names that read like this one, and an App ID
@@ -81,7 +85,7 @@ skip_notice() {
 answer_for() {
   local prompt="${1}" value="${2}"
 
-  if [[ -z ${value} && -t 0 ]]; then
+  if will_prompt "${value}"; then
     read -r -p "${prompt} (Enter to skip): " value
   fi
 
@@ -92,6 +96,7 @@ ensure_identifier() {
   local secret="${1}" prompt="${2}" value="${3}"
 
   already_stored "${secret}" && return
+  will_prompt "${value}" && announce_app_once
   value="$(answer_for "${prompt}" "${value}")"
   [[ -n ${value} ]] || {
     skip_notice "${secret}"
@@ -109,6 +114,7 @@ ensure_private_key() {
   local secret="${1}" prompt="${2}" path="${3}"
 
   already_stored "${secret}" && return
+  will_prompt "${path}" && announce_app_once
   path="$(answer_for "${prompt}" "${path}")"
   [[ -n ${path} ]] || {
     skip_notice "${secret}"
@@ -137,10 +143,6 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
 fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
-
-if [[ -t 0 ]] && any_prompt_pending; then
-  print_git_sync_app_pointer
-fi
 
 # Registering the App yields its ID and private key; installing it on the repo
 # yields the installation ID. Both are browser actions, so a run before either

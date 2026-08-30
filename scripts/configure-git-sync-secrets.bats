@@ -38,11 +38,6 @@ setup() {
   }
 }
 
-all_populated() {
-  POPULATED="grafana-git-sync-app-id grafana-git-sync-app-installation-id"
-  POPULATED="${POPULATED} grafana-git-sync-app-private-key"
-}
-
 stored() { cat "${STORE}" 2>/dev/null || true; }
 
 refute_stored() { [[ -z "$(stored)" ]]; }
@@ -53,35 +48,36 @@ pem_fixture() {
   echo "${path}"
 }
 
-# --- any_prompt_pending ---------------------------------------------------
+# --- the App pointer ------------------------------------------------------
 #
-# Gates the pointer naming which of several similarly-named Apps is meant, so
-# it has to stay quiet on the paths where nobody is about to be asked.
+# Names which of several similarly-named Apps is meant, so it has to reach the
+# operator exactly once, and only where somebody is about to be asked.
 
-@test "any_prompt_pending is false once every secret holds a value" {
-  all_populated
-  run any_prompt_pending
-  [[ ${status} -eq 1 ]]
-}
-
-@test "any_prompt_pending is false when the environment supplies what is missing" {
-  GIT_SYNC_APP_ID=4257071
-  GIT_SYNC_APP_INSTALLATION_ID=145465865
-  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
-  run any_prompt_pending
-  [[ ${status} -eq 1 ]]
-}
-
-@test "any_prompt_pending is true for a value neither stored nor supplied" {
-  POPULATED="grafana-git-sync-app-id grafana-git-sync-app-private-key"
-  run any_prompt_pending
-  [[ ${status} -eq 0 ]]
-}
-
-@test "the pointer names the property that separates this App from the others" {
+@test "the pointer names the App and the property that outlives its name" {
   run print_git_sync_app_pointer
   [[ ${status} -eq 0 ]]
+  [[ ${output} == *"Grafana Cloud GitHub Sync"* ]]
   [[ ${output} == *"installed on alunduil-infrastructure alone"* ]]
+}
+
+# Redirection rather than $(...) or run: both of those would evaluate the calls
+# in a subshell, which is the very thing that would hide a lost flag.
+@test "announce_app_once speaks the first time and stays quiet after" {
+  announce_app_once 2>"${BATS_TEST_TMPDIR}/first"
+  announce_app_once 2>"${BATS_TEST_TMPDIR}/second"
+  grep -q "Grafana Cloud GitHub Sync" "${BATS_TEST_TMPDIR}/first"
+  [[ ! -s "${BATS_TEST_TMPDIR}/second" ]]
+}
+
+@test "will_prompt is false for a value the environment already supplied" {
+  run will_prompt 4257071
+  [[ ${status} -eq 1 ]]
+}
+
+@test "a value supplied through the environment draws no pointer" {
+  ensure_identifier grafana-git-sync-app-id "App ID" 4257071 \
+    2>"${BATS_TEST_TMPDIR}/err"
+  [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
 }
 
 # --- ensure_identifier ----------------------------------------------------
