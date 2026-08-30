@@ -10,8 +10,10 @@ this one on only `alunduil-infrastructure`, so the private key handed to
 Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: any name unique across GitHub, for example
-     `alunduil-infra-git-sync`. Display only; Terraform never uses it.
+   - **GitHub App name**: `Grafana Cloud GitHub Sync`. The bootstrap
+     prompts ask for it by this name; change one and change the other.
+     App names are unique across GitHub, so a rebuild needs the old App
+     deleted first.
    - **Homepage URL** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck "Active" (otherwise it demands a URL).
@@ -33,18 +35,17 @@ Grafana Cloud can reach nothing else.
    is the **installation ID** (reachable later via Settings →
    Applications → Installed GitHub Apps → Configure).
 
-The App ID, installation ID, and `.pem` path are `just bootstrap`
-inputs:
+`just bootstrap` prompts for the App ID, installation ID, and `.pem` path
+the first time it runs. Set these beforehand to answer without the
+prompt:
 
 ```sh
-export TF_VAR_grafana_git_sync_app_id=<app-id>
-export TF_VAR_grafana_git_sync_app_installation_id=<installation-id>
-export TF_VAR_grafana_git_sync_app_private_key_file=<path-to-key.pem>
+export GIT_SYNC_APP_ID=<app-id>
+export GIT_SYNC_APP_INSTALLATION_ID=<installation-id>
+export GIT_SYNC_APP_PRIVATE_KEY_FILE=<path-to-key.pem>
 ```
 
-## Rotate
-
-Generate a new private key on the App's settings page, delete the old
-one, point `TF_VAR_grafana_git_sync_app_private_key_file` at the new
-`.pem`, and re-run `just bootstrap`. The App ID and installation ID stay
-the same.
+Each value goes into Secret Manager, and later runs skip it. Shred the
+`.pem` once `terraform/alunduil/` has applied; nothing reads it again. To
+replace the key, see
+[rotate-git-sync-app-key.md](rotate-git-sync-app-key.md).

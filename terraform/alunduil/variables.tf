@@ -11,10 +11,10 @@ variable "cloudflare_api_token" {
   sensitive   = true
 }
 
-# Both Grafana tokens are stored in Secret Manager by the bootstrap layer and
-# exported as TF_VAR_grafana_* by the plan/apply workflows, exactly like
-# cloudflare_api_token. The stack URL and ID are non-secret and come from the
-# bootstrap remote state, so they are not variables here.
+# Every Grafana value below is stored in Secret Manager by the bootstrap layer
+# and exported as TF_VAR_grafana_* by the plan/apply workflows, exactly like
+# cloudflare_api_token. The stack URL and ID come from bootstrap-outputs.json,
+# so they are not variables here.
 variable "grafana_service_account_token" {
   type        = string
   description = "Grafana stack service-account token authenticating the provider to the App Platform API. Export as TF_VAR_grafana_service_account_token."
@@ -23,6 +23,18 @@ variable "grafana_service_account_token" {
 
 variable "grafana_git_sync_app_private_key" {
   type        = string
-  description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to generate installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key. App id/installation come from the bootstrap remote state."
+  description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to generate installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key."
   sensitive   = true
+}
+
+# The two identifiers below are not secret. They arrive by the same route as the
+# key because none of the three exists until the App is registered by hand.
+variable "grafana_git_sync_app_id" {
+  type        = string
+  description = "App ID of the dedicated Git Sync GitHub App. Export as TF_VAR_grafana_git_sync_app_id."
+}
+
+variable "grafana_git_sync_app_installation_id" {
+  type        = string
+  description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_installation_id."
 }

@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# All three steps are idempotent; safe to re-run after partial failure.
-# The bootstrap layer also needs the Grafana inputs — see
-# docs/how-to/create-grafana-git-sync-token.md.
-[doc("Manual surface: state bucket → bootstrap layer → CI secrets.")]
+# Every step is idempotent; safe to re-run after partial failure. The bootstrap
+# layer still needs the master Grafana and Cloudflare tokens on every run — see
+# docs/how-to/bootstrap.md.
+[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets.")]
 bootstrap:
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
+    scripts/configure-git-sync-secrets.sh
     scripts/configure-github-secrets.sh
 
 # Credentials: gcloud CLI auth with secretAccessor for the secret fetches,
@@ -32,6 +33,8 @@ alunduil:
     export_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer-rw
     export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
     export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
+    export_secret TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
+    export_secret TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
     # The github provider reads GITHUB_TOKEN. CI injects a deployer App token;
     # break-glass runs under the operator's identity.
     GITHUB_TOKEN="$(gh auth token)"

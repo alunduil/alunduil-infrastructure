@@ -21,16 +21,22 @@ mask() {
   sed '/^$/d; s|^|::add-mask::|'
 }
 
-# Every value is masked before it reaches GITHUB_ENV: the runner echoes the env
-# group of each following step, so an unmasked value lands in the log there.
-export_var() {
+write_var() {
   local name="${1}" value="${2}"
-  mask <<<"${value}"
   {
     echo "${name}<<__TFVAR__"
     echo "${value}"
     echo "__TFVAR__"
   } >>"${GITHUB_ENV}"
+}
+
+# Every secret is masked before it reaches GITHUB_ENV: the runner echoes the env
+# group of each following step, so an unmasked value lands in the log there.
+export_var() {
+  local name="${1}" value="${2}"
+
+  mask <<<"${value}"
+  write_var "${name}" "${value}"
 }
 
 # Keep the assignment separate: a command substitution passed straight as an
@@ -39,6 +45,14 @@ export_secret() {
   local value
   value="$(access "${2}")"
   export_var "${1}" "${value}"
+}
+
+# The Git Sync App identifiers are not secret. Masking them would redact a
+# useful value from the log for nothing.
+export_identifier() {
+  local value
+  value="$(access "${2}")"
+  write_var "${1}" "${value}"
 }
 
 # Skip the executable body when sourced (e.g. by
@@ -68,3 +82,5 @@ export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}
 # credentials.
 export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
+export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
+export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id

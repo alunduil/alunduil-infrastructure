@@ -1,0 +1,163 @@
+#!/usr/bin/env bats
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# Unit tests for the resolve-once behaviour in configure-git-sync-secrets.sh:
+# what makes it skip, what it rejects, the exact bytes it stores, and when the
+# operator gets told which App is meant. Both gcloud-touching helpers are
+# replaced by stubs below, so Secret Manager is left to the bootstrap run.
+
+# Fixtures below are inputs to the sourced script rather than to this file, so
+# every assignment reads as a dead store from here.
+# shellcheck disable=SC2034
+
+setup() {
+  # shellcheck source=configure-git-sync-secrets.sh disable=SC1091
+  source "${BATS_TEST_DIRNAME}/configure-git-sync-secrets.sh"
+
+  POPULATED=""
+  STORE="${BATS_TEST_TMPDIR}/store"
+  GIT_SYNC_APP_ID=""
+  GIT_SYNC_APP_INSTALLATION_ID=""
+  GIT_SYNC_APP_PRIVATE_KEY_FILE=""
+
+  # Both stubs are reached only from the sourced script, which shellcheck
+  # cannot see.
+  # shellcheck disable=SC2329
+  secret_is_populated() { [[ " ${POPULATED} " == *" ${1} "* ]]; }
+
+  # Records the secret name and the bytes on stdin, so a test can assert both
+  # that a write happened and what it carried.
+  # shellcheck disable=SC2329
+  add_secret_version() {
+    {
+      printf '%s:' "${1}"
+      cat
+      printf '\n'
+    } >>"${STORE}"
+  }
+}
+
+stored() { cat "${STORE}" 2>/dev/null || true; }
+
+refute_stored() { [[ -z "$(stored)" ]]; }
+
+pem_fixture() {
+  local path="${BATS_TEST_TMPDIR}/key.pem"
+  printf -- '-----BEGIN RSA PRIVATE KEY-----\nAAAA\n-----END RSA PRIVATE KEY-----\n' >"${path}" # pragma: allowlist secret
+  echo "${path}"
+}
+
+# --- the App pointer ------------------------------------------------------
+#
+# Names which of several similarly-named Apps is meant, so it has to reach the
+# operator exactly once, and only where somebody is about to be asked.
+
+@test "the pointer names the App and the property that outlives its name" {
+  run print_git_sync_app_pointer
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == *"Grafana Cloud GitHub Sync"* ]]
+  [[ ${output} == *"installed on alunduil-infrastructure alone"* ]]
+}
+
+# Redirection, not $(...) or run: either runs the call in a subshell, where the
+# flag cannot survive and the test would fail whatever the code does.
+@test "announce_app_once speaks the first time and stays quiet after" {
+  announce_app_once 2>"${BATS_TEST_TMPDIR}/first"
+  announce_app_once 2>"${BATS_TEST_TMPDIR}/second"
+  grep -q "Grafana Cloud GitHub Sync" "${BATS_TEST_TMPDIR}/first"
+  [[ ! -s "${BATS_TEST_TMPDIR}/second" ]]
+}
+
+@test "will_prompt is false for a value the environment already supplied" {
+  run will_prompt 4257071
+  [[ ${status} -eq 1 ]]
+}
+
+@test "a value supplied through the environment draws no pointer" {
+  ensure_identifier grafana-git-sync-app-id "App ID" 4257071 \
+    2>"${BATS_TEST_TMPDIR}/err"
+  [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
+}
+
+# --- ensure_identifier ----------------------------------------------------
+
+@test "ensure_identifier leaves a populated secret alone" {
+  POPULATED="grafana-git-sync-app-id"
+  run ensure_identifier grafana-git-sync-app-id "App ID" 1234
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == "grafana-git-sync-app-id already set." ]]
+  refute_stored
+}
+
+@test "ensure_identifier stores the supplied value with no trailing newline" {
+  ensure_identifier grafana-git-sync-app-id "App ID" 1234
+  [[ "$(stored)" == 'grafana-git-sync-app-id:1234' ]]
+}
+
+@test "ensure_identifier rejects a non-numeric value" {
+  run ensure_identifier grafana-git-sync-app-id "App ID" 'Iv1.abc'
+  [[ ${status} -eq 1 ]]
+  [[ ${output} == *"App ID must be digits, got 'Iv1.abc'"* ]]
+  refute_stored
+}
+
+@test "ensure_identifier skips rather than prompting when stdin is not a terminal" {
+  run ensure_identifier grafana-git-sync-app-id "App ID" ""
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == *"Leaving grafana-git-sync-app-id empty"* ]]
+  refute_stored
+}
+
+# --- ensure_private_key ---------------------------------------------------
+
+@test "ensure_private_key leaves a populated secret alone" {
+  POPULATED="grafana-git-sync-app-private-key"
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == "grafana-git-sync-app-private-key already set." ]]
+  refute_stored
+}
+
+@test "ensure_private_key stores the PEM verbatim" {
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="$(pem_fixture)"
+  ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ "$(stored)" == "grafana-git-sync-app-private-key:$(cat "${GIT_SYNC_APP_PRIVATE_KEY_FILE}")" ]]
+}
+
+@test "ensure_private_key expands a leading tilde" {
+  pem_fixture >/dev/null
+  HOME="${BATS_TEST_TMPDIR}"
+  # A literal tilde is the point: it stands in for what read hands back when an
+  # operator types the path at the prompt.
+  # shellcheck disable=SC2088
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="~/key.pem"
+  ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ "$(stored)" == *'BEGIN RSA PRIVATE KEY'* ]] # pragma: allowlist secret
+}
+
+@test "ensure_private_key rejects a file that is not a PEM key" {
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/notes.txt"
+  echo "just some text" >"${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ ${status} -eq 1 ]]
+  [[ ${output} == *"is not a PEM private key"* ]]
+  refute_stored
+}
+
+@test "ensure_private_key rejects an unreadable path" {
+  GIT_SYNC_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/missing.pem"
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ ${status} -eq 1 ]]
+  [[ ${output} == *"cannot read"* ]]
+  refute_stored
+}
+
+@test "ensure_private_key skips rather than prompting when stdin is not a terminal" {
+  GIT_SYNC_APP_PRIVATE_KEY_FILE=""
+  run ensure_private_key grafana-git-sync-app-private-key "PEM path" "${GIT_SYNC_APP_PRIVATE_KEY_FILE}"
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == *"Leaving grafana-git-sync-app-private-key empty"* ]]
+  refute_stored
+}

@@ -8,9 +8,8 @@
 # GitHub App connection Git Sync authenticates through. A dedicated App installed
 # only on alunduil-infrastructure keeps the grant tighter than the broad deployer
 # App and lets Grafana refresh its own short-lived installation tokens, so no
-# long-lived PAT is stored. The App id/installation come from the bootstrap
-# remote state; the private key is a Secret-Manager-backed var (base64-encoded
-# to match the provider's expected encoding).
+# long-lived PAT is stored. All three values are Secret-Manager-backed vars; the
+# private key is base64-encoded to match the provider's expected encoding.
 resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
   metadata {
     uid = "alunduil-infrastructure-git-sync"
@@ -23,8 +22,8 @@ resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
     url         = "https://github.com"
 
     github {
-      app_id          = local.bootstrap.grafana_git_sync_app_id
-      installation_id = local.bootstrap.grafana_git_sync_app_installation_id
+      app_id          = var.grafana_git_sync_app_id
+      installation_id = var.grafana_git_sync_app_installation_id
     }
   }
 
@@ -33,6 +32,10 @@ resource "grafana_apps_provisioning_connection_v0alpha1" "git_sync" {
       create = base64encode(var.grafana_git_sync_app_private_key)
     }
   }
+
+  # secure values are write-only: they reach Grafana only when this counter
+  # changes, so a new key in Secret Manager alone leaves the connection on the
+  # old one. docs/how-to/rotate-git-sync-app-key.md increments it.
   secure_version = 1
 }
 

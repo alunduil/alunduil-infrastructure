@@ -58,27 +58,3 @@ variable "grafana_cloud_access_policy_token" {
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT
 }
-
-variable "grafana_git_sync_app_id" {
-  type        = string
-  description = "App ID of the dedicated Git Sync GitHub App. Not a secret; output for the alunduil layer's Grafana connection resource."
-}
-
-variable "grafana_git_sync_app_installation_id" {
-  type        = string
-  description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Not a secret; output for the alunduil layer."
-}
-
-variable "grafana_git_sync_app_private_key_file" {
-  type        = string
-  description = <<-EOT
-    Path to the PEM private key of the dedicated Git Sync GitHub App,
-    installed only on alunduil-infrastructure with Contents and Pull
-    requests: write. Read straight into Secret Manager here; Grafana uses
-    it to generate installation tokens. A path (like
-    GH_APP_PRIVATE_KEY_FILE) rather than the contents, so the multi-line
-    PEM never rides an env var.
-
-    Full steps: docs/how-to/create-git-sync-github-app.md
-  EOT
-}
