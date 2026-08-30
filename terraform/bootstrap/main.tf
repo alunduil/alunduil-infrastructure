@@ -10,7 +10,7 @@ terraform {
     }
     google = {
       source  = "hashicorp/google"
-      version = "~> 7.19"
+      version = "~> 8.0"
     }
     grafana = {
       source  = "grafana/grafana"
