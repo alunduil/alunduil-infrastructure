@@ -17,9 +17,8 @@ die() {
   exit 1
 }
 
-# Asked per secret, and never cached against a list of names kept by hand: a
-# name that drifted from the call sites below would report a populated secret as
-# empty, and the next answer would overwrite it.
+# Every check reaches Secret Manager. A stale answer here would report a
+# populated secret as empty, and the next answer would overwrite it.
 secret_is_populated() {
   local state
   state="$(gcloud secrets versions describe latest --secret "${1}" \
@@ -32,16 +31,15 @@ add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
-# The condition answer_for asks under, hoisted so a caller can speak before the
-# question rather than after it.
+# True when answer_for would put a question to the operator.
 will_prompt() { [[ -z ${1} && -t 0 ]]; }
 
 pointer_shown=""
 
 # The ensure_* functions run in this shell, so the flag survives between them.
-# It would not survive inside answer_for, whose result comes back through a
-# command substitution — the subshell would discard it and every question would
-# repeat the pointer.
+# Moving this inside answer_for would lose it: that result comes back through a
+# command substitution, and the subshell would discard the flag, repeating the
+# pointer at every question.
 announce_app_once() {
   [[ -z ${pointer_shown} ]] || return 0
 
@@ -52,16 +50,15 @@ announce_app_once() {
 # Several Apps on the account have names that read like this one, and an App ID
 # from the wrong one passes every check here — it is digits, and Secret Manager
 # takes it. The mismatch only surfaces as an opaque Grafana authentication
-# failure much later, so name the App outright before asking. The name is the
-# quick handle and can be changed in the UI; the installation scope below is
-# what stays true.
+# failure a long way from the prompt. The name below can be edited in the UI;
+# the installation scope is what stays true.
 print_git_sync_app_pointer() {
   cat >&2 <<EOF
 
-The next values belong to the GitHub App named Grafana Cloud GitHub Sync, which
-is the one installed on alunduil-infrastructure alone. Settings > Applications >
-Installed GitHub Apps lists every installation, and Configure puts that
-installation's ID in the address bar.
+The next values belong to the GitHub App named Grafana Cloud GitHub Sync,
+installed on alunduil-infrastructure alone. Settings > Applications > Installed
+GitHub Apps lists every installation, and Configure puts that installation's ID
+in the address bar.
 
 If the App does not exist yet, press Enter past each prompt and see
 ${SETUP_DOC}.
@@ -126,8 +123,8 @@ ensure_private_key() {
 
   [[ -r ${path} ]] || die "cannot read '${path}'"
 
-  # Signing with the wrong bytes surfaces inside Grafana as an opaque
-  # authentication failure, a long way from the paste that caused it.
+  # Wrong bytes fail inside Grafana, far from here, so check the header while
+  # the file is still in hand.
   grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" \
     || die "'${path}' is not a PEM private key"
 

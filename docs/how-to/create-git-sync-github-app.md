@@ -11,9 +11,9 @@ Grafana Cloud can reach nothing else.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: `Grafana Cloud GitHub Sync`. The bootstrap
-     prompts ask for it under this name, so keep them in step if you
-     change it. Names are unique across GitHub, so rebuilding means
-     deleting the old App first.
+     prompts ask for it by this name; change one and change the other.
+     App names are unique across GitHub, so a rebuild needs the old App
+     deleted first.
    - **Homepage URL** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck "Active" (otherwise it demands a URL).

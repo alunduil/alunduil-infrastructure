@@ -60,8 +60,8 @@ pem_fixture() {
   [[ ${output} == *"installed on alunduil-infrastructure alone"* ]]
 }
 
-# Redirection rather than $(...) or run: both of those would evaluate the calls
-# in a subshell, which is the very thing that would hide a lost flag.
+# Redirection, not $(...) or run: either runs the call in a subshell, where the
+# flag cannot survive and the test would fail whatever the code does.
 @test "announce_app_once speaks the first time and stays quiet after" {
   announce_app_once 2>"${BATS_TEST_TMPDIR}/first"
   announce_app_once 2>"${BATS_TEST_TMPDIR}/second"
