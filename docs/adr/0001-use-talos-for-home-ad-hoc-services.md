@@ -44,12 +44,11 @@ each cheap.** That's what the platform must make frictionless.
 
 ### Requirements
 
-Four constraints decide the outcome. An option failing any one of them
+Three constraints decide the outcome. An option failing any one of them
 is out regardless of how it scores elsewhere:
 
 - **Multi-node with automatic placement and rescheduling.** A failed
   node moves its services without hands on a keyboard.
-- **Containers only.** No VM images to build or maintain.
 - **Storage as shares from TrueNAS.** NFS and iSCSI from the existing
   appliance, not a storage layer living inside the platform.
 - **Start on one node and scale out.** The first node has to grow into
@@ -60,6 +59,9 @@ is out regardless of how it scores elsewhere:
 Where two options both clear the requirements, these decide between
 them:
 
+- Containers as the unit of deployment. Every service running at home
+  today is one, and nothing in the footprint is appliance-shaped. VM
+  hosting stays on TrueNAS, where phase 1's own node runs.
 - Operational burden and day-2 upgrade path.
 - Declarative / GitOps fit — the repo already treats git as the source
   of truth (Terraform, Grafana Git Sync).
@@ -81,30 +83,37 @@ them:
   a plain Linux host. The lowest operational floor of anything here,
   and genuinely declarative for a handful of services. Fails automatic
   rescheduling: a dead host is a hands-on recovery.
-- **Incus / LXD** — the previous plan for this platform. System
-  containers and VM images with a clustering story. Fails
-  containers-only, the requirement that retired it.
+- **Incus / LXD** — the previous plan for this platform, and the only
+  option here that runs system containers and VMs equally well.
+  Clears the requirements. Loses on the declarative loop: its GitOps
+  and CSI ecosystems are thin next to Kubernetes, so the services
+  inside the instances stay hand-managed even when the instances
+  themselves are declared.
 - **Proxmox VE** — VMs and LXC, with a mature single-node story,
-  snapshots, and backups. Fails containers-only, and has no native
-  declarative service loop, so every service stays a hand-rolled unit.
+  snapshots, and backups. Clears the requirements, but optimizes for
+  fewer, heavier, longer-lived instances and has no native declarative
+  service loop, so every service stays a hand-rolled unit — the
+  per-service drift this platform exists to end.
 - **Nomad** — a single-binary orchestrator with real multi-node
-  scheduling, and HCL jobs in a repo already fluent in HCL. Clears all
-  four requirements. Loses on storage: its CSI ecosystem is thinner,
-  with nothing equivalent to democratic-csi driving the TrueNAS API,
-  and the 2023 move to a BUSL license adds a durability question.
-- **Small Kubernetes** — k3s, k0s, or Talos Linux. Clears all four
+  scheduling, and HCL jobs in a repo already fluent in HCL. Clears the
+  requirements. Loses on storage: its CSI ecosystem is thinner, with
+  nothing equivalent to democratic-csi driving the TrueNAS API, and
+  the 2023 move to a BUSL license adds a durability question.
+- **Small Kubernetes** — k3s, k0s, or Talos Linux. Clears the
   requirements, with the deepest storage and ingress ecosystem of the
   options here. Costs the highest conceptual floor.
 
 ## Decision Outcome
 
 Chosen option: **small Kubernetes on Talos Linux**. The requirements
-leave only Nomad and small Kubernetes standing, and Kubernetes takes
-the pair on ecosystem: democratic-csi drives the TrueNAS API directly
-for both NFS and iSCSI, and ingress through Gateway API and
-cert-manager is first-class. Its per-service unit — a pod and a few
-lines of YAML in git — is what makes a churning long tail cheap to add
-to and cheap to retire from.
+eliminate the two lightest options, TrueNAS apps and Compose, on
+automatic rescheduling. Among the four that remain, the declarative
+service loop decides it: Incus and Proxmox manage instances well but
+leave the services inside them hand-managed, and Nomad schedules well
+but has nothing equivalent to democratic-csi driving the TrueNAS API.
+Kubernetes' per-service unit — a pod and a few lines of YAML in git —
+is what makes a churning long tail cheap to add to and cheap to retire
+from, and its storage and ingress ecosystems are the deepest here.
 
 Within that family, k3s and k0s are reasonable distributions, but they
 leave a general-purpose Linux host to own and patch per node. Talos
