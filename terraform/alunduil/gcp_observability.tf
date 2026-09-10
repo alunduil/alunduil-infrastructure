@@ -49,5 +49,5 @@ resource "google_logging_metric" "audit_data_access" {
     unit        = "1"
   }
 
-  depends_on = [google_project_service.logging]
+  depends_on = [google_project_service.kept["logging.googleapis.com"]]
 }
