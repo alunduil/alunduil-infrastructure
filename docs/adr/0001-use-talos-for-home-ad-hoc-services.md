@@ -131,6 +131,28 @@ under the cluster without a rebuild:
 3. **End state.** Three dedicated nodes beside TrueNAS; the VMs retired.
    Quorum and blast radius fully decoupled from the storage appliance.
 
+### Phase 1 risks
+
+These bind only while the cluster runs as a VM on TrueNAS, and retire
+when phase 2 lands:
+
+- **Capacity.** The 2-core Atom C3338 is the throughput ceiling — it
+  already sits near a load average of 1 — and free memory runs
+  1–1.5 GB once the ZFS cache has warmed, so a node large enough to be
+  useful means capping that cache and trading NAS read performance for
+  the cluster. Quorum and blast radius stay coupled to the NAS until
+  nodes move to metal.
+- **etcd on the NAS pool**, the sharpest of the three. etcd commits
+  every write with `fsync`, and the pool is raidz2 with no separate
+  log device, so those commits queue behind Plex and share traffic on
+  the same vdevs. Slow commits surface as leader elections and an
+  unresponsive API server rather than as a disk alert. Watch
+  `etcd_disk_wal_fsync_duration_seconds` from the start; sustained
+  trouble there argues for moving to metal sooner.
+- **QuickSync can't be tested here.** The Atom C3338 has no integrated
+  GPU, so the i915 extension, the Intel device plugin, and the Plex
+  transcode path stay untested until dedicated hardware arrives.
+
 ### Consequences
 
 Good:
@@ -156,23 +178,6 @@ Bad / accepted:
   for a cheap start.
 - Backup is more assembly (etcd snapshots + volume snapshots + git for
   config) than Proxmox's one-stop vzdump / Proxmox Backup Server.
-- **During the VM phase specifically:** the 2-core Atom C3338 is the
-  throughput ceiling — it already sits near a load average of 1 — and
-  free memory runs 1–1.5 GB once the ZFS cache has warmed, so a node
-  large enough to be useful means capping that cache and trading NAS
-  read performance for the cluster. Quorum and blast radius stay
-  coupled to the NAS until nodes move to metal.
-- **etcd on the NAS pool is the sharpest VM-phase risk.** etcd commits
-  every write with `fsync`, and the pool is raidz2 with no separate
-  log device, so those commits queue behind Plex and share traffic on
-  the same vdevs. Slow commits surface as leader elections and an
-  unresponsive API server rather than as a disk alert. Watch
-  `etcd_disk_wal_fsync_duration_seconds` from the start; sustained
-  trouble there argues for moving to metal sooner.
-- **QuickSync can't be validated on the NAS.** The Atom C3338 has no
-  integrated GPU, so the i915 extension, the Intel device plugin, and
-  the Plex transcode path stay untested until dedicated hardware
-  arrives.
 
 Neutral:
 
