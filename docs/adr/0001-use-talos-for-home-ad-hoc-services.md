@@ -177,7 +177,7 @@ Bad / accepted:
   three-node, separate-hardware phase; earlier phases trade redundancy
   for a cheap start.
 - Backup is more assembly (etcd snapshots + volume snapshots + git for
-  config) than Proxmox's one-stop vzdump / Proxmox Backup Server.
+  config) than Proxmox's one-stop `vzdump` / Proxmox Backup Server.
 
 Neutral:
 

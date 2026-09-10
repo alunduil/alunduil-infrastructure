@@ -50,7 +50,6 @@ Diátaxis
 ddbeck's
 Nygard
 Nygard's
-vzdump
 
 # Terms the en_US dictionary lacks
 (?i)ADR
