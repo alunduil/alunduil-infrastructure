@@ -24,8 +24,6 @@ Grafana
 Plex
 UptimeRobot
 Renovate
-Proxmox
-Proxmox's
 etcd
 
 # Product and interface names, spelled as their vendors spell them
@@ -37,6 +35,8 @@ Cloud Sync
 Git Sync
 Web Analytics
 Secret Manager
+Proxmox
+Proxmox's
 
 # Tooling
 gh

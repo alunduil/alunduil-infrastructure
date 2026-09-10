@@ -81,30 +81,23 @@ VMs and has no native declarative service loop, so every service stays
 a hand-rolled unit — exactly the per-service drift this platform is
 meant to end.
 
-### Migration sketch (reversible; "start here, revisit at N")
+### Migration sketch (reversible)
 
 The platform is stood up in phases so the substrate can be swapped
 under the cluster without a rebuild:
 
-1. **RAM upgrade — done.** The TrueNAS Mini 3.0-E now carries 16 GB of
-   ECC memory, up from 8 GB. This was worth doing on its own — the box
-   was running at ~0.6 GB free and hitting system-wide OOM — and it
-   makes room for a VM.
-2. **Single node.** Run one Talos node as a VM on the upgraded TrueNAS
-   box. Learn the platform, wire GitOps. A single-node cluster has
-   stable quorum (1-of-1); it's not redundant, which is acceptable for
-   bootstrap.
-3. **Three nodes on dedicated hardware.** When hardware is acquired, go
+1. **Single node.** Run one Talos node as a VM on the TrueNAS box,
+   whose 16 GB leaves room for it. Learn the platform, wire GitOps. A
+   single-node cluster has stable quorum (1-of-1); it's not redundant,
+   which is acceptable for bootstrap.
+2. **Three nodes on dedicated hardware.** When hardware is acquired, go
    straight from one node to three — deliberately skipping the fragile
    two-node etcd state, which loses quorum if either node dies. This may
    be two VMs plus one metal node, or three matched metal nodes bought
-   together to complete the move in one step.
-4. **End state.** Three dedicated nodes beside TrueNAS; the VMs retired.
+   together to complete the move in one step. Nodes drain and are
+   replaced with metal while services keep running.
+3. **End state.** Three dedicated nodes beside TrueNAS; the VMs retired.
    Quorum and blast radius fully decoupled from the storage appliance.
-
-The seam: the platform lives on TrueNAS transitionally and converges on
-dedicated hardware beside it. The multi-node cluster is the vehicle that
-lets nodes be drained and replaced with metal without downtime.
 
 ### Consequences
 
@@ -135,22 +128,19 @@ Bad / accepted:
   throughput ceiling — it already sits near a load average of 1 — and
   free memory runs 1–1.5 GB once the ZFS cache has warmed, so a node
   large enough to be useful means capping that cache and trading NAS
-  read performance for the cluster. A modest learning cluster, not a
-  workhorse; quorum and blast radius stay coupled to the NAS until
-  nodes move to metal.
+  read performance for the cluster. Quorum and blast radius stay
+  coupled to the NAS until nodes move to metal.
 - **etcd on the NAS pool is the sharpest VM-phase risk.** etcd commits
   every write with `fsync`, and the pool is raidz2 with no separate
   log device, so those commits queue behind Plex and share traffic on
   the same vdevs. Slow commits surface as leader elections and an
   unresponsive API server rather than as a disk alert. Watch
   `etcd_disk_wal_fsync_duration_seconds` from the start; sustained
-  trouble there argues for moving to metal sooner, not for abandoning
-  the platform.
+  trouble there argues for moving to metal sooner.
 - **QuickSync can't be validated on the NAS.** The Atom C3338 has no
   integrated GPU, so the i915 extension, the Intel device plugin, and
   the Plex transcode path stay untested until dedicated hardware
-  arrives. The VM phase de-risks every part of the build except that
-  one.
+  arrives.
 
 Neutral:
 
@@ -160,15 +150,6 @@ Neutral:
 
 ## More Information
 
-Build work is tracked separately (this ADR is the decision, not the
-apply):
-
-- #241 tracks the phased build, one node to N.
-- #242 gates everything that needs real hardware: acquiring the mini PC
-  and confirming it boots Talos. QuickSync validation (#246) and the
-  scale-out to metal (#250) sit behind it.
-- The machineconfigs (#243), the OpenTofu bootstrap (#244), and
-  democratic-csi (#245) target a cluster, not a particular chassis, so
-  the phase-2 VM is a sufficient substrate for them.
+Build work is tracked in #241 and its sub-issues.
 
 Relates to the home surface characterized in the C4 model (#84).
