@@ -19,6 +19,11 @@ resource "google_project_iam_custom_role" "github_deployer_rw_applier" {
   description = "Least-privilege role for terraform apply in CI"
 
   permissions = [
+    "logging.logMetrics.create",
+    "logging.logMetrics.delete",
+    "logging.logMetrics.get",
+    "logging.logMetrics.list",
+    "logging.logMetrics.update",
     "resourcemanager.projects.get",
     "serviceusage.services.disable",
     "serviceusage.services.enable",

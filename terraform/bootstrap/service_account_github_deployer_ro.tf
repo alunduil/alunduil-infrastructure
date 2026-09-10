@@ -18,6 +18,8 @@ resource "google_project_iam_custom_role" "github_deployer_ro_planner" {
   description = "Least-privilege read role for terraform plan in CI"
 
   permissions = [
+    "logging.logMetrics.get",
+    "logging.logMetrics.list",
     "resourcemanager.projects.get",
     "serviceusage.services.get",
     "serviceusage.services.list",
