@@ -19,9 +19,6 @@ resource "google_project_service" "legacy" {
     "generativelanguage.googleapis.com",    # Gemini / AI Studio
     "smartdevicemanagement.googleapis.com", # Nest / Google Home
 
-    # Observability — GCP often re-enables automatically
-    "monitoring.googleapis.com",
-
     # Compute Engine and related
     "autoscaling.googleapis.com",
     "compute.googleapis.com",

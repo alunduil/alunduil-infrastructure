@@ -15,8 +15,9 @@ resource "google_project_service" "storage_component" {
   disable_on_destroy = false
 }
 
-# Kept enabled because the audit log-based metric in gcp_observability.tf depends
-# on it; moved out of services_to_disable.tf now that a managed resource uses it.
+# The audit log-based metric in gcp_observability.tf is defined against this API,
+# and Grafana's Cloud Monitoring data source reads the metric back through the
+# monitoring one. Both stay enabled for as long as that path exists.
 resource "google_project_service" "logging" {
   project = local.bootstrap.project_id
   service = "logging.googleapis.com"
@@ -24,7 +25,19 @@ resource "google_project_service" "logging" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "monitoring" {
+  project = local.bootstrap.project_id
+  service = "monitoring.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 moved {
   from = google_project_service.legacy["logging.googleapis.com"]
   to   = google_project_service.logging
+}
+
+moved {
+  from = google_project_service.legacy["monitoring.googleapis.com"]
+  to   = google_project_service.monitoring
 }
