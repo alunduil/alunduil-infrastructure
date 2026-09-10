@@ -42,7 +42,23 @@ The decision hangs on an honest read of the workload:
 The shape that matters most: **many small services, churning often,
 each cheap.** That's what the platform must make frictionless.
 
+### Requirements
+
+Four constraints decide the outcome. An option failing any one of them
+is out regardless of how it scores elsewhere:
+
+- **Multi-node with automatic placement and rescheduling.** A failed
+  node moves its services without hands on a keyboard.
+- **Containers only.** No VM images to build or maintain.
+- **Storage as shares from TrueNAS.** NFS and iSCSI from the existing
+  appliance, not a storage layer living inside the platform.
+- **Start on one node and scale out.** The first node has to grow into
+  the cluster rather than be thrown away.
+
 ## Decision Drivers
+
+Where two options both clear the requirements, these decide between
+them:
 
 - Operational burden and day-2 upgrade path.
 - Declarative / GitOps fit — the repo already treats git as the source
@@ -58,28 +74,44 @@ each cheap.** That's what the platform must make frictionless.
 
 ## Considered Options
 
-- Proxmox VE (VMs + LXC)
-- Small Kubernetes — Talos Linux (also k3s / k0s)
+- **TrueNAS apps** (the status quo) — Docker apps on the existing
+  appliance. Free and already running, but there's no declarative loop,
+  the catalog is thin, and it fails multi-node outright.
+- **Docker Compose, or Podman with quadlets** — compose files in git on
+  a plain Linux host. The lowest operational floor of anything here,
+  and genuinely declarative for a handful of services. Fails automatic
+  rescheduling: a dead host is a hands-on recovery.
+- **Incus / LXD** — the previous plan for this platform. System
+  containers and VM images with a clustering story. Fails
+  containers-only, the requirement that retired it.
+- **Proxmox VE** — VMs and LXC, with a mature single-node story,
+  snapshots, and backups. Fails containers-only, and has no native
+  declarative service loop, so every service stays a hand-rolled unit.
+- **Nomad** — a single-binary orchestrator with real multi-node
+  scheduling, and HCL jobs in a repo already fluent in HCL. Clears all
+  four requirements. Loses on storage: its CSI ecosystem is thinner,
+  with nothing equivalent to democratic-csi driving the TrueNAS API,
+  and the 2023 move to a BUSL license adds a durability question.
+- **Small Kubernetes** — k3s, k0s, or Talos Linux. Clears all four
+  requirements, with the deepest storage and ingress ecosystem of the
+  options here. Costs the highest conceptual floor.
 
 ## Decision Outcome
 
-Chosen option: **small Kubernetes on Talos Linux**, because the workload
-is a many-small-churning-services long tail, and Kubernetes' per-service
-unit (a pod plus a few lines of declarative YAML in git) is far cheaper
-to add and remove than a hand-built VM or LXC per service. Talos
-specifically neutralizes the usual reason to reject small Kubernetes —
-its day-2 tax — by being an immutable, API-managed OS with atomic,
-image-based upgrades and no host to hand-patch.
+Chosen option: **small Kubernetes on Talos Linux**. The requirements
+leave only Nomad and small Kubernetes standing, and Kubernetes takes
+the pair on ecosystem: democratic-csi drives the TrueNAS API directly
+for both NFS and iSCSI, and ingress through Gateway API and
+cert-manager is first-class. Its per-service unit — a pod and a few
+lines of YAML in git — is what makes a churning long tail cheap to add
+to and cheap to retire from.
 
-k3s and k0s are reasonable small-Kubernetes distributions, but they
+Within that family, k3s and k0s are reasonable distributions, but they
 leave a general-purpose Linux host to own and patch per node. Talos
-removes that surface, which is the decisive advantage at a homelab's
-staffing level (one person, part-time).
-
-Proxmox VE is rejected: it optimizes for fewer, heavier, longer-lived
-VMs and has no native declarative service loop, so every service stays
-a hand-rolled unit — exactly the per-service drift this platform is
-meant to end.
+removes that surface — immutable, API-managed, atomic image-based
+upgrades, no host to hand-patch — which neutralizes the day-2 tax that
+is the usual reason to reject small Kubernetes at a homelab's staffing
+level of one person, part-time.
 
 ### Migration sketch (reversible)
 
