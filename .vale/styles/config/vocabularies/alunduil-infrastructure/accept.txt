@@ -24,6 +24,7 @@ Grafana
 Plex
 UptimeRobot
 Renovate
+etcd
 
 # Product and interface names, spelled as their vendors spell them
 GitHub
@@ -34,6 +35,9 @@ Cloud Sync
 Git Sync
 Web Analytics
 Secret Manager
+Proxmox
+Proxmox's
+Podman
 
 # Tooling
 gh
@@ -44,23 +48,36 @@ Hackage
 Haskell
 Diátaxis
 ddbeck's
+Nygard
+Nygard's
 
 # Terms the en_US dictionary lacks
+(?i)ADR
+(?i)ADRs
 (?i)APIs
 (?i)config
 (?i)deployer
 (?i)devcontainer
 (?i)env
 (?i)hardcoded
+(?i)homelab
+(?i)homelab's
 (?i)hostname
+(?i)machineconfig
+(?i)machineconfigs
+(?i)quadlets
 (?i)repo
 (?i)repos
 (?i)ruleset
+(?i)transcode
 (?i)triaged
 (?i)uncheck
 (?i)unshipped
 (?i)untracked
 (?i)upserts
+(?i)vdev
+(?i)vdevs
+(?i)VMs
 (?i)vuln
 (?i)worktree
 (?i)worktrees
