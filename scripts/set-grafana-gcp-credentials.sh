@@ -17,27 +17,42 @@ GRAFANA_URL="${GRAFANA_URL:-https://alunduil.grafana.net}"
 KEY_SECRET="${KEY_SECRET:-grafana-gcp-reader-key}"
 TOKEN_SECRET="${TOKEN_SECRET:-grafana-provisioner-token}"
 
+read_secret() {
+  gcloud secrets versions access latest --secret="$1" --project="${PROJECT_ID}"
+}
+
+# Method and data source UID, then any further curl arguments.
+grafana_api() {
+  local method="$1" uid="$2"
+  shift 2
+
+  curl -fsS -X "${method}" \
+    -H "Authorization: Bearer ${grafana_token}" \
+    -H "Content-Type: application/json" \
+    "$@" \
+    "${GRAFANA_URL}/api/datasources/uid/${uid}"
+}
+
+set_datasource_credential() {
+  local uid="$1" updated
+
+  # Only touch secureJsonData; Terraform owns the non-secret jsonData.
+  updated="$(grafana_api GET "${uid}" \
+    | jq --arg pk "${private_key}" '.secureJsonData = {privateKey: $pk}')"
+
+  grafana_api PUT "${uid}" -d "${updated}" >/dev/null
+
+  echo "Set GCP credential on Grafana data source '${uid}'."
+}
+
 datasource_uids=("$@")
 if [[ ${#datasource_uids[@]} -eq 0 ]]; then
   datasource_uids=(gcp-cloud-monitoring)
 fi
 
-key_json="$(gcloud secrets versions access latest --secret="${KEY_SECRET}" --project="${PROJECT_ID}")"
-grafana_token="$(gcloud secrets versions access latest --secret="${TOKEN_SECRET}" --project="${PROJECT_ID}")"
-private_key="$(jq -r '.private_key' <<<"${key_json}")"
+grafana_token="$(read_secret "${TOKEN_SECRET}")"
+private_key="$(read_secret "${KEY_SECRET}" | jq -r '.private_key')"
 
 for uid in "${datasource_uids[@]}"; do
-  current="$(curl -fsS -H "Authorization: Bearer ${grafana_token}" \
-    "${GRAFANA_URL}/api/datasources/uid/${uid}")"
-
-  # Only touch secureJsonData; Terraform owns the non-secret jsonData.
-  updated="$(jq --arg pk "${private_key}" '.secureJsonData = {privateKey: $pk}' <<<"${current}")"
-
-  curl -fsS -X PUT \
-    -H "Authorization: Bearer ${grafana_token}" \
-    -H "Content-Type: application/json" \
-    -d "${updated}" \
-    "${GRAFANA_URL}/api/datasources/uid/${uid}" >/dev/null
-
-  echo "Set GCP credential on Grafana data source '${uid}'."
+  set_datasource_credential "${uid}"
 done

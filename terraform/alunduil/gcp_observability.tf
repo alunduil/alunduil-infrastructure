@@ -28,6 +28,12 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   }
 }
 
+locals {
+  # A logName is URL-escaped, so the / in cloudaudit.googleapis.com/data_access
+  # arrives as %2F.
+  data_access_log = "projects/${local.bootstrap.project_id}/logs/cloudaudit.googleapis.com%2Fdata_access"
+}
+
 # Log-based metric counting the Data Access audit events enabled in #83 (storage
 # reads/writes and Secret Manager access). With no Cloud Logging data source yet
 # (#228), this counter is how the audit trail surfaces in Grafana — queried as
@@ -35,7 +41,7 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
 # data source. Alerting on these events is designed separately in #252.
 resource "google_logging_metric" "audit_data_access" {
   name   = "audit-data-access"
-  filter = "logName=\"projects/${local.bootstrap.project_id}/logs/cloudaudit.googleapis.com%2Fdata_access\""
+  filter = "logName=\"${local.data_access_log}\""
 
   metric_descriptor {
     metric_kind = "DELTA"
