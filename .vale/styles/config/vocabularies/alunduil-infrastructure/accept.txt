@@ -24,6 +24,9 @@ Grafana
 Plex
 UptimeRobot
 Renovate
+Proxmox
+Proxmox's
+etcd
 
 # Product and interface names, spelled as their vendors spell them
 GitHub
@@ -44,23 +47,36 @@ Hackage
 Haskell
 Diátaxis
 ddbeck's
+Nygard
+Nygard's
+vzdump
 
 # Terms the en_US dictionary lacks
+(?i)ADR
+(?i)ADRs
 (?i)APIs
 (?i)config
 (?i)deployer
 (?i)devcontainer
 (?i)env
 (?i)hardcoded
+(?i)homelab
+(?i)homelab's
 (?i)hostname
+(?i)machineconfig
+(?i)machineconfigs
 (?i)repo
 (?i)repos
 (?i)ruleset
+(?i)transcode
 (?i)triaged
 (?i)uncheck
 (?i)unshipped
 (?i)untracked
 (?i)upserts
+(?i)vdev
+(?i)vdevs
+(?i)VMs
 (?i)vuln
 (?i)worktree
 (?i)worktrees

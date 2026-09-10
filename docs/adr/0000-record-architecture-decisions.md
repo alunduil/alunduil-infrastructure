@@ -34,7 +34,7 @@ pros/cons carry a multi-alternative comparison better than Nygard's
 lighter shape. This meta-record, which only establishes the practice,
 stays in the lighter Nygard form.
 
-A new ADR starts at `Status: Proposed`. It is promoted to `Accepted`
+A new ADR starts at `Status: Proposed`. It's promoted to `Accepted`
 (or `Rejected` / `Superseded by NNNN` / `Deprecated`) once the decision
 is actually settled, not at draft time.
 
@@ -47,7 +47,7 @@ is actually settled, not at draft time.
   replaced.
 - Every significant decision now carries the cost of writing it down.
   This is deliberate friction, warranted only when the choice is
-  significant *and* hard to reverse; tactical, easily-reversed choices
+  significant *and* hard to reverse; tactical, cheap-to-reverse choices
   stay in commit messages and PR descriptions.
 - ADRs are immutable once `Accepted`. A changed decision is a new ADR
   that supersedes the old one, never an edit to the original.
