@@ -5,7 +5,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -34,9 +34,12 @@ pros/cons carry a multi-alternative comparison better than Nygard's
 lighter shape. This meta-record, which only establishes the practice,
 stays in the lighter Nygard form.
 
-A new ADR starts at `Status: Proposed`. It's promoted to `Accepted`
-(or `Rejected` / `Superseded by NNNN` / `Deprecated`) once the decision
-is actually settled, not at draft time.
+Merging a record to `main` is what settles its decision, so a record
+carries `Accepted` when it lands there. `Proposed` marks one still
+circulating for comment, where merging isn't yet the intent.
+
+Later states — `Superseded by NNNN`, `Deprecated` — arrive through a
+new record rather than a revision to the old one.
 
 `docs/adr/README.md` indexes the collection.
 
@@ -49,5 +52,7 @@ is actually settled, not at draft time.
   This is deliberate friction, warranted only when the choice is
   significant *and* hard to reverse; tactical, cheap-to-reverse choices
   stay in commit messages and PR descriptions.
-- ADRs are immutable once `Accepted`. A changed decision is a new ADR
-  that supersedes the old one, never an edit to the original.
+- The decision in an `Accepted` record is immutable. A changed
+  decision is a new ADR superseding the old one, never an edit to the
+  original. Corrections that leave the decision intact — spelling,
+  formatting, a broken link — are ordinary commits.

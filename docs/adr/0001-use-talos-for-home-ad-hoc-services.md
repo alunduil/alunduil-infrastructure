@@ -3,8 +3,8 @@
 
 # Use Talos Linux for the home ad-hoc-services platform
 
-- Status: Proposed
-- Date: 2026-07-18
+- Status: Accepted
+- Date: 2026-09-10
 
 ## Context and Problem Statement
 
