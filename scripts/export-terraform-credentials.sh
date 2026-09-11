@@ -84,3 +84,9 @@ export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
+
+# One OAuth client authenticates plan and apply alike, so neither half varies
+# with role. The ID is masked with the secret: the two only work as a pair, so
+# the ID is half a credential rather than an identifier.
+export_secret TF_VAR_tailscale_oauth_client_id tailscale-oauth-client-id
+export_secret TF_VAR_tailscale_oauth_client_secret tailscale-oauth-client-secret

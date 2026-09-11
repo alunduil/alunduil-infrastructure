@@ -38,3 +38,19 @@ variable "grafana_git_sync_app_installation_id" {
   type        = string
   description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_installation_id."
 }
+
+# The OAuth client is created by hand in the Tailscale admin console and its two
+# parts reach Secret Manager through scripts/configure-tailscale-secrets.sh, the
+# same route the Git Sync App values take. Both are marked sensitive: the
+# id/secret pair is a single credential.
+variable "tailscale_oauth_client_id" {
+  type        = string
+  description = "Tailscale OAuth client ID authenticating the provider. Export as TF_VAR_tailscale_oauth_client_id."
+  sensitive   = true
+}
+
+variable "tailscale_oauth_client_secret" {
+  type        = string
+  description = "Tailscale OAuth client secret authenticating the provider. Export as TF_VAR_tailscale_oauth_client_secret."
+  sensitive   = true
+}

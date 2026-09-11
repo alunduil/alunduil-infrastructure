@@ -21,6 +21,10 @@ terraform {
       # Git Sync (App Platform) provisioning resources landed in 4.28.1.
       version = ">= 4.28.1, < 5.0"
     }
+    tailscale = {
+      source  = "tailscale/tailscale"
+      version = "~> 0.29"
+    }
   }
 }
 
@@ -46,4 +50,13 @@ provider "grafana" {
   url      = local.bootstrap.grafana_stack_url
   auth     = var.grafana_service_account_token
   stack_id = local.bootstrap.grafana_stack_id
+}
+
+# OAuth client credentials, not a personal API key. Both parts live in the
+# Secret Manager shells the bootstrap layer declares and reach the plan and
+# apply workflows as TF_VAR_tailscale_*, mirroring cloudflare_api_token.
+# tailnet is omitted: it defaults to the tailnet that owns the credentials.
+provider "tailscale" {
+  oauth_client_id     = var.tailscale_oauth_client_id
+  oauth_client_secret = var.tailscale_oauth_client_secret
 }
