@@ -31,13 +31,14 @@ grafana_api() {
 }
 
 set_datasource_credential() {
-  local uid="$1" updated
+  local uid="$1"
 
-  # Only touch secureJsonData; Terraform owns the non-secret jsonData.
-  updated="$(grafana_api GET "${uid}" \
-    | jq --arg pk "${private_key}" '.secureJsonData = {privateKey: $pk}')"
-
-  grafana_api PUT "${uid}" -d "${updated}" >/dev/null
+  # The key travels by stdin and environment, never argv: /proc/<pid>/cmdline is
+  # world-readable, /proc/<pid>/environ is not. Only secureJsonData is touched;
+  # Terraform owns the non-secret jsonData.
+  grafana_api GET "${uid}" \
+    | pk="${private_key}" jq '.secureJsonData = {privateKey: env.pk}' \
+    | grafana_api PUT "${uid}" -d @- >/dev/null
 
   echo "Set GCP credential on Grafana data source '${uid}'."
 }
