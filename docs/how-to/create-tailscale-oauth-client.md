@@ -21,10 +21,10 @@ parts in Secret Manager, where the plan and apply workflows read them.
    | Devices → Routes | Write  | subnet routes, exit nodes       |
    | Keys → Auth Keys | Write  | auth keys                       |
 
-   Write access is granted up front rather than per issue: the console
-   sets a client's scopes when it generates the client, so narrowing
-   them now would mean generating a second client and rotating the
-   stored credential partway through the work.
+   Write access is granted up front so the whole tailnet lands on one
+   client, rather than generating a fresh one and rotating the stored
+   credential each time a hardening change needs a scope the last
+   client lacked.
 3. Generate the client and copy both the **client ID** and the **client
    secret**. The secret is shown only at this point — a client whose
    secret wasn't captured has to be replaced rather than read.
