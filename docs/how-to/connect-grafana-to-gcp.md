@@ -12,8 +12,10 @@ rotation; routine applies leave the key untouched.
 ## Prerequisites
 
 - `just bootstrap` and `terraform/alunduil` both applied.
-- `gcloud`, `jq`, and `curl` available, authenticated as an identity that can
-  read the `grafana-gcp-reader-key` and `grafana-provisioner-token` secrets.
+- `gcloud` and `jq` available, authenticated as an identity that can read the
+  `grafana-gcp-reader-key` secret.
+- `gcx` logged in to the `alunduil` stack. It carries the Grafana credential, so
+  the script needs no API token of its own.
 
 ## Set the data source credential
 
@@ -30,7 +32,7 @@ Generate a synthetic Data Access event and confirm it reaches Grafana:
 
 ```sh
 gcloud secrets versions access latest \
-  --secret=grafana-provisioner-token --project=alunduil >/dev/null
+  --secret=grafana-gcp-reader-key --project=alunduil >/dev/null
 ```
 
 Within a minute the `audit-data-access` metric increments — query

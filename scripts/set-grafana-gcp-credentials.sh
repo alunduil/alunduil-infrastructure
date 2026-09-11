@@ -5,29 +5,26 @@ set -euo pipefail
 
 # Sets the read-only GCP service-account key on the Grafana Cloud data sources
 # that query GCP live. Terraform can't set it: a data source keeps its credential
-# in state, and the alunduil state is bucket-readable. Neither the key nor the
-# API token touches disk.
+# in state, and the alunduil state is bucket-readable. The key never touches
+# disk.
 #
 # Usage: scripts/set-grafana-gcp-credentials.sh [datasource-uid ...]
 
 PROJECT_ID="${PROJECT_ID:-alunduil}"
-GRAFANA_URL="${GRAFANA_URL:-https://alunduil.grafana.net}"
 KEY_SECRET="${KEY_SECRET:-grafana-gcp-reader-key}"
-TOKEN_SECRET="${TOKEN_SECRET:-grafana-provisioner-token}"
 
 read_secret() {
   gcloud secrets versions access latest --secret="$1" --project="${PROJECT_ID}"
 }
 
+# gcx authenticates as the logged-in operator, so no Grafana token is read here.
+# Its agent-mode hint goes to stderr, leaving stdout a single JSON document
+# whichever way it is invoked.
 grafana_api() {
   local method="$1" uid="$2"
   shift 2
 
-  curl -fsS -X "${method}" \
-    -H "Authorization: Bearer ${grafana_token}" \
-    -H "Content-Type: application/json" \
-    "$@" \
-    "${GRAFANA_URL}/api/datasources/uid/${uid}"
+  gcx api "/api/datasources/uid/${uid}" -X "${method}" "$@"
 }
 
 set_datasource_credential() {
@@ -48,7 +45,6 @@ if [[ ${#datasource_uids[@]} -eq 0 ]]; then
   datasource_uids=(gcp-cloud-monitoring)
 fi
 
-grafana_token="$(read_secret "${TOKEN_SECRET}")"
 private_key="$(read_secret "${KEY_SECRET}" | jq -r '.private_key')"
 
 for uid in "${datasource_uids[@]}"; do
