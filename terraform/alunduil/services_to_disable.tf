@@ -9,8 +9,7 @@
 # than just dropping them from Terraform state).
 #
 # Before deleting this file, review the list below and move any entries you
-# want to keep into project.tf (with `disable_on_destroy = false`, matching
-# the other kept APIs).
+# want to keep into the `kept` set in project.tf.
 
 resource "google_project_service" "legacy" {
   for_each = toset([
@@ -18,10 +17,6 @@ resource "google_project_service" "legacy" {
     "calendar-json.googleapis.com",         # Google Calendar
     "generativelanguage.googleapis.com",    # Gemini / AI Studio
     "smartdevicemanagement.googleapis.com", # Nest / Google Home
-
-    # Observability — GCP often re-enables automatically
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
 
     # Compute Engine and related
     "autoscaling.googleapis.com",

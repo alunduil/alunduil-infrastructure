@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Grafana Cloud queries GCP live at dashboard time instead of ingesting into
+# Loki or Prometheus. The audit-log volume here is a trickle, too small to earn
+# a Pub/Sub topic and an always-on collector.
+resource "grafana_data_source" "gcp_cloud_monitoring" {
+  type = "stackdriver"
+  name = "GCP Cloud Monitoring"
+  uid  = "gcp-cloud-monitoring"
+
+  json_data_encoded = jsonencode({
+    authenticationType = "jwt"
+    defaultProject     = local.bootstrap.project_id
+    clientEmail        = local.bootstrap.grafana_gcp_reader_email
+    tokenUri           = "https://oauth2.googleapis.com/token"
+  })
+
+  lifecycle {
+    # The private key is set from Secret Manager outside Terraform, so this
+    # layer never holds it. Grafana preserves secure fields omitted from an
+    # update, so applies leave the key in place.
+    ignore_changes = [secure_json_data_encoded]
+  }
+}
+
+locals {
+  # A logName is URL-escaped, so the / in cloudaudit.googleapis.com/data_access
+  # arrives as %2F.
+  data_access_log = "projects/${local.bootstrap.project_id}/logs/cloudaudit.googleapis.com%2Fdata_access"
+}
+
+# Grafana reads GCP through Cloud Monitoring, so the audit trail has to become a
+# metric before it can appear there. It arrives as metric type
+# logging.googleapis.com/user/audit-data-access.
+resource "google_logging_metric" "audit_data_access" {
+  name   = "audit-data-access"
+  filter = "logName=\"${local.data_access_log}\""
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+    unit        = "1"
+  }
+
+  depends_on = [google_project_service.kept["logging.googleapis.com"]]
+}

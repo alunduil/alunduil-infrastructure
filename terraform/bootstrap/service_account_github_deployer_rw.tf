@@ -10,22 +10,28 @@ resource "google_service_account" "github_deployer_rw" {
   depends_on = [google_project_service.iam]
 }
 
-# Add permissions only when a real resource in terraform/alunduil/ needs them.
-# Omits billing.* — CI never needs it.
+# Apply refreshes state before it changes anything, so the applier needs every
+# permission the planner has. Add write verbs here, read permissions in
+# deployer_ro_permissions. Omits billing.* — CI never needs it. Sorted, so the
+# order can't churn against the API.
+locals {
+  deployer_rw_permissions = sort(concat(local.deployer_ro_permissions, [
+    "logging.logMetrics.create",
+    "logging.logMetrics.delete",
+    "logging.logMetrics.update",
+    "serviceusage.services.disable",
+    "serviceusage.services.enable",
+    "serviceusage.services.use",
+  ]))
+}
+
 resource "google_project_iam_custom_role" "github_deployer_rw_applier" {
   project     = google_project.env.project_id
   role_id     = "githubDeployerApplier"
   title       = "GitHub Deployer Applier"
   description = "Least-privilege role for terraform apply in CI"
 
-  permissions = [
-    "resourcemanager.projects.get",
-    "serviceusage.services.disable",
-    "serviceusage.services.enable",
-    "serviceusage.services.get",
-    "serviceusage.services.list",
-    "serviceusage.services.use",
-  ]
+  permissions = local.deployer_rw_permissions
 
   depends_on = [google_project_service.serviceusage]
 }

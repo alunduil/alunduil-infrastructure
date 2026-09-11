@@ -11,17 +11,24 @@ resource "google_service_account" "github_deployer_ro" {
 }
 
 # Add permissions only when a real resource in terraform/alunduil/ needs them.
+# The applier role inherits this list.
+locals {
+  deployer_ro_permissions = [
+    "logging.logMetrics.get",
+    "logging.logMetrics.list",
+    "resourcemanager.projects.get",
+    "serviceusage.services.get",
+    "serviceusage.services.list",
+  ]
+}
+
 resource "google_project_iam_custom_role" "github_deployer_ro_planner" {
   project     = google_project.env.project_id
   role_id     = "githubDeployerPlanner"
   title       = "GitHub Deployer Planner"
   description = "Least-privilege read role for terraform plan in CI"
 
-  permissions = [
-    "resourcemanager.projects.get",
-    "serviceusage.services.get",
-    "serviceusage.services.list",
-  ]
+  permissions = local.deployer_ro_permissions
 
   depends_on = [google_project_service.serviceusage]
 }

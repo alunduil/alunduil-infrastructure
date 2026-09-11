@@ -13,8 +13,9 @@ resource "google_storage_bucket_object" "published_outputs" {
   name         = "bootstrap-outputs.json"
   content_type = "application/json"
   content = jsonencode({
-    project_id        = google_project.env.project_id
-    grafana_stack_url = data.grafana_cloud_stack.this.url
-    grafana_stack_id  = data.grafana_cloud_stack.this.id
+    project_id               = google_project.env.project_id
+    grafana_stack_url        = data.grafana_cloud_stack.this.url
+    grafana_stack_id         = data.grafana_cloud_stack.this.id
+    grafana_gcp_reader_email = google_service_account.grafana_gcp_reader.email
   })
 }
