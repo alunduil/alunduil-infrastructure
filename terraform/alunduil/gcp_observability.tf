@@ -24,6 +24,33 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   }
 }
 
+# Cloud Monitoring counts audit entries but discards their content, so reading a
+# log line means querying Cloud Logging directly. Google's plugin does that, and
+# takes the same google-sdk credential shape as the data source above, so
+# grafana-gcp-reader serves both — logging.viewer and logging.viewAccessor,
+# which it already holds, are exactly the two grants the plugin documents.
+#
+# The plugin itself is installed on the stack by the bootstrap layer; this
+# resource only configures it.
+resource "grafana_data_source" "gcp_cloud_logging" {
+  type = "googlecloud-logging-datasource"
+  name = "GCP Cloud Logging"
+  uid  = "gcp-cloud-logging"
+
+  json_data_encoded = jsonencode({
+    authenticationType = "jwt"
+    defaultProject     = local.bootstrap.project_id
+    clientEmail        = local.bootstrap.grafana_gcp_reader_email
+    tokenUri           = "https://oauth2.googleapis.com/token"
+  })
+
+  lifecycle {
+    # Set outside Terraform for the same reason as the Cloud Monitoring data
+    # source: this layer's state is bucket-readable.
+    ignore_changes = [secure_json_data_encoded]
+  }
+}
+
 locals {
   # A logName is URL-escaped, so the / in cloudaudit.googleapis.com/data_access
   # arrives as %2F.

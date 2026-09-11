@@ -25,6 +25,23 @@ resource "grafana_cloud_stack_service_account_token" "provisioner" {
   service_account_id = grafana_cloud_stack_service_account.provisioner.id
 }
 
+# A Grafana Cloud stack carries only the core plugins, so the Google Cloud
+# Logging data source the alunduil layer declares has to be installed on the
+# stack before that data source can serve a query. Installation is a Cloud API
+# operation, and cloud_access_policy_token is the only credential that reaches
+# it — the alunduil layer's provider is scoped to the stack itself. That is what
+# puts this in the bootstrap layer rather than beside the data source.
+#
+# The version is pinned instead of tracking the provider's "latest" default: on
+# "latest" a newly published plugin release reads as drift, so an unrelated PR's
+# plan comment would carry a plugin upgrade that merging then applies. No
+# Renovate datasource covers Grafana plugins, so bumps are deliberate.
+resource "grafana_cloud_plugin_installation" "gcp_logging" {
+  stack_slug = data.grafana_cloud_stack.this.slug
+  slug       = "googlecloud-logging-datasource"
+  version    = "1.7.2"
+}
+
 # Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split:
 # Grafana provisioning has no read-only-yet-plannable role, and the Git Sync App
 # credentials are a single identity shared by plan and apply. Both deployer SAs

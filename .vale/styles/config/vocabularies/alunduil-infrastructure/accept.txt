@@ -71,6 +71,7 @@ Nygard's
 (?i)ruleset
 (?i)transcode
 (?i)triaged
+(?i)UIDs
 (?i)uncheck
 (?i)unshipped
 (?i)untracked
