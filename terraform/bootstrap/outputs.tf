@@ -67,12 +67,12 @@ output "grafana_git_sync_app_secrets" {
 
 output "grafana_gcp_reader_email" {
   value       = google_service_account.grafana_gcp_reader.email
-  description = "Email of the read-only SA Grafana Cloud uses to query GCP; consumed by terraform/alunduil/ as the data-source clientEmail"
+  description = "Email of the read-only SA Grafana Cloud authenticates as; the alunduil layer uses it as the data-source clientEmail"
   sensitive   = false
 }
 
 output "grafana_gcp_reader_key_secret" {
   value       = google_secret_manager_secret.grafana_gcp_reader_key.secret_id
-  description = "Secret Manager short name holding the Grafana GCP reader SA key; read out of band by scripts/set-grafana-gcp-credentials.sh to set the Grafana data-source credential"
+  description = "Secret Manager short name holding the Grafana GCP reader SA key"
   sensitive   = false
 }

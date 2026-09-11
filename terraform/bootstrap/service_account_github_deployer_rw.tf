@@ -10,10 +10,10 @@ resource "google_service_account" "github_deployer_rw" {
   depends_on = [google_project_service.iam]
 }
 
-# Everything the planner may do, plus the verbs that change things. Add write
-# permissions only when a real resource in terraform/alunduil/ needs them; a read
-# permission belongs in deployer_ro_permissions, which this inherits. Omits
-# billing.* — CI never needs it. Sorted so the role reads the same on every plan.
+# Apply refreshes state before it changes anything, so the applier needs every
+# permission the planner has. Add write verbs here, read permissions in
+# deployer_ro_permissions. Omits billing.* — CI never needs it. Sorted, so the
+# order can't churn against the API.
 locals {
   deployer_rw_permissions = sort(concat(local.deployer_ro_permissions, [
     "logging.logMetrics.create",

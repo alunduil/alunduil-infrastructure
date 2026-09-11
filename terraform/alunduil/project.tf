@@ -1,14 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# APIs a managed resource in this layer depends on, so they stay enabled for as
-# long as that resource exists. The counterpart set in services_to_disable.tf
-# carries `disable_on_destroy = true` and nothing depends on it.
+# APIs something in this layer depends on. services_to_disable.tf holds the rest.
 resource "google_project_service" "kept" {
   for_each = toset([
-    # The audit log-based metric in gcp_observability.tf is defined against
-    # logging; Grafana's Cloud Monitoring data source reads it back through
-    # monitoring.
+    # The audit log-based metric is defined against logging; the Grafana data
+    # source reads it back through monitoring.
     "logging.googleapis.com",
     "monitoring.googleapis.com",
 

@@ -11,8 +11,7 @@ resource "google_service_account" "github_deployer_ro" {
 }
 
 # Add permissions only when a real resource in terraform/alunduil/ needs them.
-# The applier role is defined as these plus its write verbs, since apply refreshes
-# state before it changes anything and so needs everything plan needs.
+# The applier role inherits this list.
 locals {
   deployer_ro_permissions = [
     "logging.logMetrics.get",

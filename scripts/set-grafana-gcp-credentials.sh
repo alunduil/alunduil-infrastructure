@@ -4,11 +4,9 @@
 set -euo pipefail
 
 # Sets the read-only GCP service-account key on the Grafana Cloud data sources
-# that query GCP live (Cloud Monitoring, and later Cloud Logging). The key is set
-# through the Grafana API rather than Terraform so it never lands in the
-# bucket-readable alunduil state; the key and the Grafana API token are both read
-# from Secret Manager and never written to disk. Run once after the data source
-# exists (bootstrap + terraform/alunduil apply) and again on key rotation.
+# that query GCP live. Terraform can't set it: a data source keeps its credential
+# in state, and the alunduil state is bucket-readable. Neither the key nor the
+# API token touches disk.
 #
 # Usage: scripts/set-grafana-gcp-credentials.sh [datasource-uid ...]
 
@@ -21,7 +19,6 @@ read_secret() {
   gcloud secrets versions access latest --secret="$1" --project="${PROJECT_ID}"
 }
 
-# Method and data source UID, then any further curl arguments.
 grafana_api() {
   local method="$1" uid="$2"
   shift 2

@@ -1,13 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Grafana Cloud queries GCP directly at dashboard/alert time rather than
-# ingesting into Loki/Prometheus: for this personal infrastructure the audit-log
-# volume is tiny and a live-query data source avoids standing up a Pub/Sub +
-# collector pipeline. The read-only identity and its key live in the bootstrap
-# layer (grafana_gcp_reader.tf); the key is injected here out of band by
-# scripts/set-grafana-gcp-credentials.sh so it never enters this layer's
-# bucket-readable state.
+# Grafana Cloud queries GCP live at dashboard time instead of ingesting into
+# Loki or Prometheus. The audit-log volume here is a trickle, too small to earn
+# a Pub/Sub topic and an always-on collector.
 resource "grafana_data_source" "gcp_cloud_monitoring" {
   type = "stackdriver"
   name = "GCP Cloud Monitoring"
@@ -21,9 +17,9 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   })
 
   lifecycle {
-    # privateKey is injected out of band from Secret Manager, so Terraform does
-    # not manage the secure payload. Grafana merges secureJsonData on update
-    # (omitted keys are preserved), so this is intent, not wipe-protection.
+    # The private key is set from Secret Manager outside Terraform, so this
+    # layer never holds it. Grafana preserves secure fields omitted from an
+    # update, so applies leave the key in place.
     ignore_changes = [secure_json_data_encoded]
   }
 }
@@ -34,11 +30,9 @@ locals {
   data_access_log = "projects/${local.bootstrap.project_id}/logs/cloudaudit.googleapis.com%2Fdata_access"
 }
 
-# Log-based metric counting the Data Access audit events enabled in #83 (storage
-# reads/writes and Secret Manager access). With no Cloud Logging data source yet
-# (#228), this counter is how the audit trail surfaces in Grafana — queried as
-# metric type logging.googleapis.com/user/<name> through the Cloud Monitoring
-# data source. Alerting on these events is designed separately in #252.
+# Grafana reads GCP through Cloud Monitoring, so the audit trail has to become a
+# metric before it can appear there. It arrives as metric type
+# logging.googleapis.com/user/audit-data-access.
 resource "google_logging_metric" "audit_data_access" {
   name   = "audit-data-access"
   filter = "logName=\"${local.data_access_log}\""
