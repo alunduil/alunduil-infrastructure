@@ -19,8 +19,6 @@ routine applies leave the key untouched.
 
 ## Set the data source credentials
 
-Both data sources authenticate as `grafana-gcp-reader`, so one run keys both:
-
 ```sh
 scripts/set-grafana-gcp-credentials.sh
 ```
@@ -46,7 +44,7 @@ Monitoring data source in Explore to confirm.
 
 ## Read the audit line behind the count
 
-That metric counts entries; the entry itself comes from Cloud Logging. In
+The metric counts entries; the entries themselves stay in Cloud Logging. In
 Explore, pick **GCP Cloud Logging** and query:
 
 ```text
@@ -54,9 +52,3 @@ logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"
 ```
 
 The read you just generated appears with its caller, method, and resource.
-
-## See the metrics on a dashboard
-
-The **GCP** dashboard (`grafana/gcp.json`, provisioned by Git Sync) covers the
-state buckets, Google API traffic and errors, and audit volume. Its two error
-panels read empty while nothing is failing.

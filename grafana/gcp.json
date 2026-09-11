@@ -186,7 +186,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "Reads of secrets and state objects recorded by the audit-data-access log-based metric. Alerting on this signal is designed separately.",
+        "description": "Reads of secrets and state objects, counted by the audit-data-access log-based metric.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -359,7 +359,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "Bytes per bucket, split into the live objects and the noncurrent versions versioning retains.",
+        "description": "Bytes per bucket, split into live objects and the prior versions versioning retains.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -810,7 +810,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "Every Google API this project calls, grouped by service rather than named one by one, so the panel survives services being enabled or disabled. sts and iamcredentials traffic is CI exchanging its OIDC token for the deployer service account.",
+        "description": "Every Google API this project calls. sts and iamcredentials traffic is CI exchanging its OIDC token for the deployer service account.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -917,7 +917,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "Non-2xx responses, grouped by service and response class. Empty means healthy.",
+        "description": "Non-2xx responses from any Google API. Empty means healthy.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -1042,7 +1042,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "The audit-data-access log-based metric over time. It counts only entries written after the metric was created, so history before that is absent by construction.",
+        "description": "Counts only entries written after the audit-data-access metric was created, so it has no history before then.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -1254,7 +1254,7 @@
           "type": "stackdriver",
           "uid": "gcp-cloud-monitoring"
         },
-        "description": "What Cloud Logging is billing for, by resource type.",
+        "description": "What Cloud Logging is billing for.",
         "fieldConfig": {
           "defaults": {
             "color": {
