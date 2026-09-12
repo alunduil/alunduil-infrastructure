@@ -67,9 +67,11 @@ handle; this section names what answers it.
 | `alunduil.com` | Cloudflare | the public internet |
 | anything else | Deco, relaying to Quad9 | LAN clients |
 
-The Deco serves no zone for LAN hostnames, answering `NXDOMAIN` for
-`truenas` and `truenas.local`. A LAN name resolves over mDNS or not at
-all.
+The Deco resolves no LAN name itself. It answers `NXDOMAIN` on port 53
+and refuses connections on 5353, while `truenas` answers for
+`truenas.local` on its own port 5353. A missing `.local` name is that
+host's responder, or the mesh declining to carry multicast to it, and
+never a Deco zone to edit.
 
 `penguin` sits behind ChromeOS's NAT on a segment of its own, so
 multicast never reaches it and no `.local` name resolves there. It
