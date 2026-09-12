@@ -39,18 +39,15 @@ variable "grafana_git_sync_app_installation_id" {
   description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_installation_id."
 }
 
-# Not sensitive, and not marked so: on its own the id grants nothing. A caller
-# also has to present an OIDC token whose issuer, subject, and audience match
-# the trust credential's rules, which is what the federation buys over a stored
-# secret.
+# Left unmarked: a caller holding the id still needs an OIDC token matching the
+# credential's issuer, subject, and audience rules.
 variable "tailscale_client_id" {
   type        = string
   description = "Client ID of the Tailscale trust credential the provider federates against. Export as TF_VAR_tailscale_client_id."
 }
 
-# Empty on a runner, where the provider mints its own token. A local run has no
-# runtime to mint from, so `just alunduil` fills this in. Short-lived, but still
-# a bearer token for as long as it lasts.
+# Empty on a runner, which mints its own. Sensitive despite expiring within the
+# hour: it is a bearer token until it does.
 variable "tailscale_identity_token" {
   type        = string
   default     = ""

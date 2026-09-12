@@ -65,7 +65,8 @@ locals {
 
 # Workload identity federation: nothing long-lived is stored. On a runner the
 # provider mints an OIDC token itself and trades it for one good for an hour, so
-# the client id is an identifier rather than a secret.
+# the client id is an identifier rather than a secret. oauth_client_id is the
+# argument a federated identity uses too, not a leftover from an OAuth client.
 #
 # tailnet is left unset: it defaults to the tailnet owning the credentials, so
 # the name never has to be tracked here.

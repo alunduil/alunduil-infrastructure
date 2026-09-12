@@ -2,10 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for the resolve-once behaviour in configure-tailscale-secrets.sh:
-# what makes it skip, what it rejects, the exact bytes it stores, and when the
-# operator gets told which credential is meant. Both gcloud-touching helpers are
-# replaced by stubs below, so Secret Manager is left to the bootstrap run.
+# Unit tests for the resolve-once behaviour in configure-tailscale-secrets.sh.
+# Both gcloud-touching helpers are replaced by stubs below, so Secret Manager is
+# left to the bootstrap run.
 
 # Fixtures below are inputs to the sourced script rather than to this file, so
 # every assignment reads as a dead store from here.

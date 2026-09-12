@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 # Nothing reads this. Terraform configures a provider only when something
-# references it, so without a data source the OAuth client is never exercised
-# and a broken credential reaches apply unnoticed.
+# references it, so without a data source the credential is never exercised and
+# a broken one reaches apply unnoticed.
 data "tailscale_devices" "all" {}

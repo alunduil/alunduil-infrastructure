@@ -1,14 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Federation leaves nothing secret to store: the provider mints its own OIDC
-# token and trades it for one good for an hour. What remains is the trust
-# credential's client id, an identifier that grants nothing by itself.
-#
-# It lives here anyway because it does not exist until the credential is created
-# by hand, which leaves terraform/alunduil/ nothing to read until then — the
-# same reason the Git Sync App identifiers sit in Secret Manager rather than in
-# a committed default.
+# The client id is an identifier, not a secret. It lives in Secret Manager
+# because it does not exist until the trust credential is created by hand, which
+# leaves terraform/alunduil/ nothing to read until then.
 resource "google_secret_manager_secret" "tailscale_client_id" {
   project   = google_project.env.project_id
   secret_id = "tailscale-client-id"
@@ -21,7 +16,7 @@ resource "google_secret_manager_secret" "tailscale_client_id" {
 }
 
 # One trust credential authenticates plan and apply alike, so both deployer SAs
-# read it rather than splitting RO from RW the way the Cloudflare tokens do.
+# read it.
 resource "google_secret_manager_secret_iam_member" "tailscale_client_id_ro" {
   project   = google_secret_manager_secret.tailscale_client_id.project
   secret_id = google_secret_manager_secret.tailscale_client_id.secret_id

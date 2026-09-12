@@ -10,7 +10,7 @@ tailnet has to be told which workflow to trust, which is a console step.
 
 This covers the CI path. Break-glass `just alunduil` runs under your own
 identity rather than a workflow's, so it needs its own token — see
-[Break-glass](#break-glass) at the end.
+[Break-glass](#break-glass).
 
 ## Create the credential
 
@@ -37,9 +37,9 @@ identity rather than a workflow's, so it needs its own token — see
    change has to create a second one.
 5. Let Tailscale generate the audience. The provider derives it from the
    client ID, so a hand-picked one would have to be carried separately.
-6. Copy the **client ID**. Unlike an OAuth client there is no secret to
-   capture — the ID is an identifier, and presenting it without a matching
-   OIDC token grants nothing.
+6. Copy the **client ID**. There is no secret to capture: the ID is an
+   identifier, and presenting it without a matching OIDC token grants
+   nothing.
 
 ## Store the client ID
 

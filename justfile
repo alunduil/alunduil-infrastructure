@@ -36,9 +36,7 @@ alunduil:
     export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
     export_secret TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
     export_secret TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
-    # The tailscale provider federates rather than holding a credential. On a
-    # runner it mints its own OIDC token; here there is none, so the operator
-    # supplies one in TAILSCALE_IDENTITY_TOKEN and the provider reads it.
+    # No runner here to mint an OIDC token, so the operator supplies one.
     export_secret TF_VAR_tailscale_client_id tailscale-client-id
     TF_VAR_tailscale_identity_token="${TAILSCALE_IDENTITY_TOKEN:?set to an OIDC token the tailnet trusts; see docs/how-to/create-tailscale-trust-credential.md}"
     export TF_VAR_tailscale_identity_token

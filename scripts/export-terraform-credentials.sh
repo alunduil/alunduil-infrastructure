@@ -85,7 +85,6 @@ export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-priva
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
 
-# The provider federates: it mints its own OIDC token from the runner and needs
-# no stored credential, only the client id naming the trust credential to
-# present it to. Not masked — the id grants nothing without a matching token.
+# Not masked: the id grants nothing without an OIDC token the tailnet already
+# trusts, so redacting it would cost a readable log for nothing.
 export_identifier TF_VAR_tailscale_client_id tailscale-client-id
