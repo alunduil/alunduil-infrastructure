@@ -14,8 +14,8 @@ a Terraform-managed copy would fight the app on every plan.
 
 ## Prerequisites
 
-- A Cloudflare token with `Zone:Read` and `DNS:Edit` on `alunduil.com`.
-  See [create-ddns-updater-token.md](create-ddns-updater-token.md).
+- The `ddns-updater` Cloudflare token. See
+  [create-ddns-updater-token.md](create-ddns-updater-token.md).
 - The `alunduil.com` zone ID, from the zone's **Overview** page in the
   Cloudflare dashboard.
 
@@ -36,24 +36,28 @@ configuration block, which needs one entry:
 Leave the update period at `5m`. The app publishes the record itself
 when it's absent, so there's nothing to seed by hand.
 
-The web UI is published on port `30007` and reports each configured
-domain's current IP and last update.
-
 ## Verify
 
 ```sh
 dig +short home.alunduil.com @1.1.1.1
 ```
 
-The answer should be the house's public IP. Resolving through a local
-network can return a stale answer: a transparent resolver on the path
-negative-caches a freshly created record for the zone's SOA minimum, so
-check from off-network or against `1.1.1.1` rather than the LAN
-resolver.
+The answer should be the house's public IP.
 
-## What it publishes
+## When the answer looks wrong
 
-Whatever public IP the box egresses from. During a WAN failover to the
-mobile backup link that's a carrier-grade NAT address, which resolves
-but accepts no inbound connections — Plex is unreachable from outside
-the house until fibre returns, regardless of DNS.
+The app's web UI, on port `30007`, reports each configured domain's
+current IP, its last update, and any error Cloudflare returned. Check
+it before suspecting the record.
+
+Two answers look like failures and aren't:
+
+- **A stale IP from a check that uses the LAN resolver** — `ping`, a
+  browser, `dig` without `@1.1.1.1`. A transparent resolver on the path
+  negative-caches a freshly created record for the zone's SOA minimum.
+  Query an authoritative resolver, or check from off-network.
+- **An address that resolves but refuses connections.** The app
+  publishes whatever public IP the box egresses from. During a WAN
+  failover to the mobile backup link that's a carrier-grade NAT
+  address, and Plex stays unreachable from outside the house until
+  fibre returns, regardless of DNS.

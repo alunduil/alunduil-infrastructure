@@ -5,9 +5,7 @@
 
 The credential the `ddns-updater` app on TrueNAS uses to write
 `home.alunduil.com`'s A record. Operator-created and pasted straight
-into the app — it never reaches Terraform or CI, which is why
-`home.alunduil.com` is absent from `terraform/alunduil/dns.tf`. For the
-app itself see
+into the app — it never reaches Terraform or CI. For the app itself see
 [configure-truenas-ddns-updater.md](configure-truenas-ddns-updater.md).
 
 ## Create
@@ -21,8 +19,8 @@ app itself see
    | Zone  | Zone       | Read   |
    | Zone  | DNS        | Edit   |
 
-   `DNS:Edit` covers creating the record as well as updating it; the
-   app creates `home.alunduil.com` when it's missing.
+   `Edit` rather than a narrower level: the app creates the record, not
+   only updates it.
 
    Under **Zone Resources** set `Include` → `Specific zone` →
    `alunduil.com`.
@@ -30,9 +28,8 @@ app itself see
    Leave **TTL** without an expiration date. The app runs unattended,
    and an expired token stops DNS updates without an alert — the stale
    A record keeps resolving until the home IP changes.
-2. Copy the value. Cloudflare shows it once.
-3. Paste it into the app's **Token** field, following
-   [configure-truenas-ddns-updater.md](configure-truenas-ddns-updater.md).
+2. Copy the value — Cloudflare shows it once — and paste it into the
+   app's **Token** field.
 
 ## Rotate
 
