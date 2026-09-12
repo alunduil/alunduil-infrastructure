@@ -10,8 +10,7 @@
 
 A NanoPi-NEO3 in the American Midwest runs one service: a Tailscale
 exit node that puts traffic on a US address. It's administered from
-London. An UptimeRobot heartbeat watches it from off the box, because
-a dead box can't report its own failure.
+London.
 
 Recovery today means flashing a stock image, restoring package
 selections and `/home` from the hourly `rclone` backup in Google
@@ -19,15 +18,13 @@ Drive, then merging `/etc` by hand over SSH. The merge is the fragile
 part. The backed-up `fstab` names the old card's root UUID, and
 restoring it leaves a box that can't find its root — no console, no
 way in, and a second trip to arrange for hands on another continent.
-DHCP was chosen deliberately so that no network configuration has to
-survive the same merge.
+DHCP keeps network configuration out of that merge entirely.
 
 The plan has never been run. Rehearsing it means breaking the exit
-node nobody can reach, so the distance that makes the plan worth
-writing is the distance that keeps it untested.
+node nobody can reach.
 
-What has to be decided is where the box's configuration comes from
-when a card is flashed, and what applies it after the box boots.
+This record decides where the box's configuration comes from when a
+card is flashed, and what applies it after the box boots.
 
 ### Recovery framing
 
@@ -125,13 +122,11 @@ Where options both clear the requirements, these decide between them:
   stock image with no build at all, and there's a current NEO3 image.
   The automation file sits on that single ext4 partition, so editing
   it before flashing needs a Linux machine on site.
-- **Clone the running card with `dd`.** The cheapest-looking baseline
-  and the worst artifact. Imaging a live, mounted ext4 root captures a
-  dirty journal; the copy carries the SSH host keys and
-  `/var/lib/tailscale` into offsite storage in the clear; and the
-  cloned identity collides with the original if it ever returns.
-  Nothing reviews it, nothing tests it, and it fails the third
-  requirement outright.
+- **Clone the running card with `dd`.** Imaging a live, mounted ext4
+  root captures a dirty journal; the copy carries the SSH host keys
+  and `/var/lib/tailscale` into offsite storage in the clear, failing
+  the third requirement; and the cloned identity collides with the
+  original if it ever returns.
 
 ## Decision Outcome
 
@@ -229,8 +224,8 @@ Good:
   motivated the whole plan — restoring an `fstab` that names a UUID
   the new card doesn't have — can't occur, because nothing is restored
   over the image.
-- The configuration becomes reviewable. What the box is gets read in a
-  diff rather than reconstructed from a backup of what it was.
+- The configuration becomes reviewable in a diff, rather than
+  reconstructed from a backup at recovery time.
 - The recovery path becomes testable without risking the exit node,
   through the spare-card refresh above.
 - A lost or stolen card grants nothing, and no credential in the
