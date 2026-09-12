@@ -40,8 +40,14 @@ Secret Manager
 Proxmox
 Proxmox's
 Podman
+Rockchip
 
 # Tooling
+Ansible
+Armbian
+Armbian's
+Buildroot
+Yocto
 gh
 github_repository
 markdownlint
@@ -83,6 +89,7 @@ Nygard's
 (?i)unshipped
 (?i)untracked
 (?i)upserts
+(?i)userspace
 (?i)vdev
 (?i)vdevs
 (?i)VMs
