@@ -25,38 +25,28 @@ locals {
     "nanopi-neo3"   = ["0.0.0.0/0", "::/0"]
   }
 
-  # Keying on the MagicDNS label keeps the node IDs, which are opaque and
-  # change when a device re-registers, out of the configuration.
+  # Keying on the MagicDNS label keeps the opaque node IDs out of the
+  # configuration.
   tailscale_devices_by_name = {
     for device in data.tailscale_devices.all.devices :
     split(".", device.name)[0] => device
   }
 }
 
-# The factory-default policy file: accept every connection, and allow Tailscale
-# SSH to a member's own devices in check mode.
+# The factory-default policy file: a grant accepting every connection, and
+# Tailscale SSH to a member's own devices in check mode.
+#
+# The policy lives in its own file, byte for byte as the tailnet holds it.
+# The provider compares the attribute as a string, so a semantically equal
+# rewrite still counts as a change — and applying one would strip the
+# commented-out examples Tailscale ships in the default file, which are the
+# reference for writing the grants that replace it.
 #
 # overwrite_existing_content stays unset. If the import ever fails to take,
 # Terraform refuses to create over a policy file it doesn't own rather than
 # clobbering it.
 resource "tailscale_acl" "tailnet" {
-  acl = jsonencode({
-    acls = [
-      {
-        action = "accept"
-        src    = ["*"]
-        dst    = ["*:*"]
-      },
-    ]
-    ssh = [
-      {
-        action = "check"
-        src    = ["autogroup:member"]
-        dst    = ["autogroup:self"]
-        users  = ["autogroup:nonroot", "root"]
-      },
-    ]
-  })
+  acl = file("${path.module}/tailscale-acl.hujson")
 }
 
 import {
@@ -64,14 +54,10 @@ import {
   id = "acl"
 }
 
-# Google Public DNS, v4 and v6.
+# Google Public DNS. A client reports more resolvers than this; the tailnet
+# publishes the one.
 resource "tailscale_dns_nameservers" "global" {
-  nameservers = [
-    "8.8.8.8",
-    "8.8.4.4",
-    "2001:4860:4860::8888",
-    "2001:4860:4860::8844",
-  ]
+  nameservers = ["8.8.8.8"]
 }
 
 import {
@@ -88,24 +74,23 @@ import {
   id = "dns_preferences"
 }
 
-# No tailscale_dns_search_paths: the only search domain the tailnet hands out
-# is its own MagicDNS suffix, which MagicDNS supplies rather than this list.
+# No tailscale_dns_search_paths: the tailnet hands out no search domain beyond
+# its own MagicDNS suffix.
 
 # One resource carries every tailnet-wide toggle the admin console's Settings
-# pages expose, device approval and key expiry among them. Each attribute is
-# optional, but all of them are declared: an omitted one reads as null and the
-# provider would clear the setting behind it.
+# pages expose, device approval and key expiry among them. acls_external_link
+# and users_role_allowed_to_join_external_tailnet are absent because the
+# tailnet holds no value for either.
 resource "tailscale_tailnet_settings" "this" {
-  acls_externally_managed_on                  = false
-  devices_approval_on                         = false
-  devices_auto_updates_on                     = false
-  devices_key_duration_days                   = 180
-  https_enabled                               = false
-  network_flow_logging_on                     = false
-  posture_identity_collection_on              = false
-  regional_routing_on                         = false
-  users_approval_on                           = false
-  users_role_allowed_to_join_external_tailnet = "member"
+  acls_externally_managed_on     = false
+  devices_approval_on            = false
+  devices_auto_updates_on        = false
+  devices_key_duration_days      = 0
+  https_enabled                  = false
+  network_flow_logging_on        = false
+  posture_identity_collection_on = false
+  regional_routing_on            = false
+  users_approval_on              = false
 }
 
 import {

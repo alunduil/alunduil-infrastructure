@@ -42,6 +42,14 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2020 errata.ai"
 SPDX-License-Identifier = "MIT"
 
+# The tailnet policy file has to match the tailnet's copy byte for byte, and
+# an inline header is a byte the tailnet's copy doesn't have.
+[[annotations]]
+path = ["terraform/alunduil/tailscale-acl.hujson"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
+SPDX-License-Identifier = "MIT"
+
 # JSON config files — JSON does not permit comments for inline headers. The
 # grafana/ glob also covers dashboards Git Sync writes back on UI edits, which
 # bypass pre-commit and would otherwise trip the REUSE hook.
