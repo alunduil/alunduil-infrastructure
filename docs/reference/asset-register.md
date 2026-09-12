@@ -57,7 +57,7 @@ entry says otherwise.
 
 ### `truenas`
 
-- Address: `truenas-scale.tail3af06.ts.net`; LAN address `Unverified`
+- Address: `192.168.68.63`; `truenas-scale.tail3af06.ts.net`
 - Role: NAS and application host; Tailscale subnet router advertising
   `192.168.68.0/22`, and an exit node
 - Runs: Plex, Netdata, alloy, Tailscale, `ddns-updater`, Scrutiny
