@@ -71,12 +71,13 @@ LAN names follow the DHCP reservations held in the Deco app. Nothing
 in this repository declares them, so the app is the place to add, read,
 or change one.
 
-`penguin` resolves no LAN name. Tailscale handles DNS there and
-forwards every query to Quad9, which knows none of them, so `penguin`
-reaches LAN hosts by tailnet name or by address. That's how the
-TrueNAS MCP server connects. A query aimed at a LAN resolver is
-forwarded too, so this host can't observe the home network's own name
-handling.
+`penguin` resolves neither LAN nor tailnet names. Its queries reach
+the ChromeOS resolver, which answers for neither, and Tailscale can't
+install a resolver inside Crostini, so `tail3af06.ts.net` names fail
+there while `tailscale ip` still returns the address. Reach hosts from
+`penguin` by address, which is how the TrueNAS MCP server connects.
+A query naming a LAN resolver is intercepted too, so this host can't
+observe the home network's own name handling.
 
 `truenas.alunduil.com` appears on the TrueNAS web certificate and has
 no DNS record. That certificate comes from an ACME DNS-01 challenge,
