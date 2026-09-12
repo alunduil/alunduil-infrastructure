@@ -39,11 +39,15 @@ import {
   id = "dns_preferences"
 }
 
+# The exit nodes are exempt from devices_key_duration_days by a per-device
+# key_expiry_disabled flag, still set by hand. Declaring it needs Devices Core
+# at write, which #514 raises; tagging alone won't do it, since a tag only
+# disables expiry at a device's first authentication under it.
 resource "tailscale_tailnet_settings" "this" {
   acls_externally_managed_on     = false
-  devices_approval_on            = false
+  devices_approval_on            = true
   devices_auto_updates_on        = false
-  devices_key_duration_days      = 0
+  devices_key_duration_days      = 180
   https_enabled                  = false
   network_flow_logging_on        = false
   posture_identity_collection_on = false
