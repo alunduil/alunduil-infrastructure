@@ -104,7 +104,7 @@ entry says otherwise.
 - Role: home automation hub
 - Runs: Zigbee2MQTT, Mosquitto, Matter server, alloy, Tailscale, SSH,
   File editor
-- OS: Home Assistant OS, version `Unverified`
+- OS: Home Assistant OS 18.2, Core 2026.9.1, amd64
 - Criticality: Medium
 - Classification: Personal
 - Monitoring: Grafana Cloud metrics (`home-assistant`) and journal
