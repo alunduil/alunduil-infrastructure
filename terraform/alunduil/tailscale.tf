@@ -52,9 +52,9 @@ import {
   id = "dns_preferences"
 }
 
-# devices_key_duration_days stops at the exit nodes: each carries a per-device
-# key_expiry_disabled flag, set outside Terraform. A tag won't replace it —
-# tagging disables expiry only at a device's first authentication under one.
+# devices_key_duration_days doesn't apply to the exit nodes: each carries a
+# per-device key_expiry_disabled flag, set outside Terraform. A tag won't
+# replace it — tagging disables expiry only at first authentication under one.
 resource "tailscale_tailnet_settings" "this" {
   acls_externally_managed_on     = false
   devices_approval_on            = true

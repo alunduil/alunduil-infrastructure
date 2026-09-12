@@ -53,10 +53,11 @@ the rest untouched:
 | Settings | Feature Settings    | Read | Write |
 | Settings | Networking Settings | Read | Write |
 
-The tailnet settings endpoint splits by scope rather than answering to one:
-Feature Settings carries device approval and key expiry, Networking Settings
-carries HTTPS certificates, and Policy File carries the externally-managed
-flag. A missing scope reads back as a zero value instead of an error, so a
+The endpoint behind the tailnet settings answers to several scopes: Feature
+Settings covers device approval and key expiry, Networking Settings covers
+HTTPS certificates, and Policy File covers the externally-managed flag.
+
+A missing scope reads back as a zero value rather than an error, so a
 setting can look imported and still reject the write.
 
 Core and Auth Keys stay at read on both. Write on either demands tags chosen
@@ -90,20 +91,17 @@ third credential, created as above, whose issuer vouches for you locally.
 
 ## Stays manual
 
-No provider resource reaches the following, so no plan shows them drifting.
+Terraform manages none of these, so no plan shows them drifting.
 
 Raise a scope in the console before merging the code that needs it. A
 rejected write fails the whole apply, not just the resource that asked for
 it.
 
 Confirm `sentinger53@gmail.com` holds **Member** rather than Admin on the
-[Users][users] page. The provider offers no user resource, so an Admin
-there is invisible to a plan.
+[Users][users] page.
 
 Audit the [Keys][keys] page and revoke auth keys that no longer register a
-device, reusable ones first. Terraform leaves auth keys alone deliberately:
-importing one drops its key material, leaving state that owns a credential
-it can't reproduce.
+device, reusable ones first.
 
 [keys]: https://console.tailscale.com/admin/settings/keys
 [trust-credentials]: https://console.tailscale.com/admin/settings/trust-credentials
