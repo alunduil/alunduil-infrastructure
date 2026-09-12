@@ -29,8 +29,6 @@ match — a pattern without one matches literally, and so matches nothing.
 - **Subject** — `repo:alunduil/alunduil-infrastructure:pull_request`
 - **Custom claim** — key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`
-- **Scopes** — `policy_file:read`, `dns:read`, `devices:core:read`,
-  `devices:routes:read`, `auth_keys:read`
 
 ### Read-write, for apply
 
@@ -39,12 +37,27 @@ match — a pattern without one matches literally, and so matches nothing.
 - **Subject** — `repo:alunduil/alunduil-infrastructure:ref:refs/heads/main`
 - **Custom claim** — key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-apply.yml@*`
-- **Scopes** — `policy_file`, `dns`, `devices:core`, `devices:routes`,
-  `auth_keys`
 
-`devices:core` and `auth_keys` require one or more tags chosen alongside
-them, so this second credential can't be made before the tags it manages
-exist in the policy file.
+### Scopes
+
+The Scopes page groups every area and offers read or write on each. Leave
+the rest untouched:
+
+| Group    | Scope               | Plan | Apply |
+| -------- | ------------------- | ---- | ----- |
+| General  | DNS                 | Read | Write |
+| General  | Policy File         | Read | Write |
+| Devices  | Core                | Read | Write |
+| Devices  | Routes              | Read | Write |
+| Keys     | Auth Keys           | Read | Write |
+| Settings | Networking Settings | Read | Write |
+
+Networking Settings rather than DNS carries HTTPS certificates, which is
+what makes it a separate row.
+
+Write on Core and Auth Keys requires one or more tags chosen alongside them,
+so the apply credential can't be made before the tags it manages exist in
+the policy file.
 
 ### Finish each one
 
