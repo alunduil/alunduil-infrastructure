@@ -25,20 +25,6 @@ resource "grafana_cloud_stack_service_account_token" "provisioner" {
   service_account_id = grafana_cloud_stack_service_account.provisioner.id
 }
 
-# A Grafana Cloud stack carries only the core plugins, so the Cloud Logging data
-# source in terraform/alunduil/ needs its plugin installed here first.
-# Installation is a Cloud API operation, and only this layer's
-# cloud_access_policy_token reaches that API.
-#
-# The version is pinned rather than tracking the provider's "latest" default: on
-# "latest" a newly published release reads as drift, putting a plugin upgrade
-# into an unrelated PR's plan that merging would apply.
-resource "grafana_cloud_plugin_installation" "gcp_logging" {
-  stack_slug = data.grafana_cloud_stack.this.slug
-  slug       = "googlecloud-logging-datasource"
-  version    = "1.7.2"
-}
-
 # Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split:
 # Grafana provisioning has no read-only-yet-plannable role, and the Git Sync App
 # credentials are a single identity shared by plan and apply. Both deployer SAs
