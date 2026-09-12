@@ -12,27 +12,6 @@
 # material on import — Terraform would own credentials it cannot reproduce, so
 # the keys worth keeping are better created here than adopted.
 
-data "tailscale_devices" "all" {}
-
-locals {
-  # Enabling a route and advertising it are separate acts: the device
-  # advertises, the tailnet enables. This resource owns the enabled half, and
-  # it owns all of it — a route enabled in the admin console but missing here
-  # gets disabled on the next apply. 0.0.0.0/0 and ::/0 are what an exit node
-  # advertises.
-  tailscale_enabled_routes = {
-    "truenas-scale" = ["192.168.68.0/22", "0.0.0.0/0", "::/0"]
-    "nanopi-neo3"   = ["0.0.0.0/0", "::/0"]
-  }
-
-  # Keying on the MagicDNS label keeps the opaque node IDs out of the
-  # configuration.
-  tailscale_devices_by_name = {
-    for device in data.tailscale_devices.all.devices :
-    split(".", device.name)[0] => device
-  }
-}
-
 # The factory-default policy file: a grant accepting every connection, and
 # Tailscale SSH to a member's own devices in check mode.
 #
@@ -98,10 +77,33 @@ import {
   id = "tailnet_settings"
 }
 
+data "tailscale_devices" "all" {}
+
+locals {
+  # The pair of default routes an exit node advertises.
+  tailscale_exit_node_routes = ["0.0.0.0/0", "::/0"]
+
+  # Enabling a route and advertising it are separate acts: the device
+  # advertises, the tailnet enables. The resource below owns the enabled half,
+  # and it owns all of it — a route enabled in the admin console but missing
+  # here gets disabled on the next apply.
+  tailscale_enabled_routes = {
+    "truenas-scale" = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
+    "nanopi-neo3"   = local.tailscale_exit_node_routes
+  }
+
+  # Looked up rather than written down: the MagicDNS label is what a reader
+  # recognises, and the node ID it resolves to is opaque.
+  tailscale_node_ids = {
+    for device in data.tailscale_devices.all.devices :
+    split(".", device.name)[0] => device.node_id
+  }
+}
+
 resource "tailscale_device_subnet_routes" "routers" {
   for_each = local.tailscale_enabled_routes
 
-  device_id = local.tailscale_devices_by_name[each.key].node_id
+  device_id = local.tailscale_node_ids[each.key]
   routes    = each.value
 }
 
@@ -109,5 +111,5 @@ import {
   for_each = local.tailscale_enabled_routes
 
   to = tailscale_device_subnet_routes.routers[each.key]
-  id = local.tailscale_devices_by_name[each.key].node_id
+  id = local.tailscale_node_ids[each.key]
 }
