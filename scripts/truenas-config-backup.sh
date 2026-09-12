@@ -4,13 +4,15 @@
 
 set -eux
 
-DIRECTORY="${1:-/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/config-backups}"
+ARCHIVE_DIRECTORY="${1:-/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/config-backups}"
 RETENTION_DAYS="${2:-90}"
 DATA_DIRECTORY="${3:-/data}"
 
 ARCHIVE_PREFIX="truenas-config-"
 DATABASE="freenas-v1.db"
 SEED="pwenc_secret"
+
+LIVE_DATABASE="${DATA_DIRECTORY}/${DATABASE}"
 
 STAGING=$(mktemp -d)
 
@@ -26,16 +28,16 @@ trap cleanup EXIT
 snapshot_database() {
   # sqlite3 opens a missing database as a new empty one, which would archive a
   # valid-looking backup of nothing.
-  [[ -f "${DATA_DIRECTORY}/${DATABASE}" ]]
+  [[ -f "${LIVE_DATABASE}" ]]
 
-  sqlite3 "${DATA_DIRECTORY}/${DATABASE}" "VACUUM INTO '${STAGING}/${DATABASE}'"
+  sqlite3 "${LIVE_DATABASE}" "VACUUM INTO '${STAGING}/${DATABASE}'"
 }
 
 # Tarred from the source directory rather than copied, so the seed that
 # decrypts every stored credential never lands in a temporary file.
 create_archive() {
   local archive
-  archive="${DIRECTORY}/${ARCHIVE_PREFIX}$(date +%F-%H%M%S).tar"
+  archive="${ARCHIVE_DIRECTORY}/${ARCHIVE_PREFIX}$(date +%F-%H%M%S).tar"
 
   tar -cf "${archive}" \
     -C "${STAGING}" "${DATABASE}" \
@@ -43,7 +45,7 @@ create_archive() {
 }
 
 prune_archives() {
-  find "${DIRECTORY}" -name "${ARCHIVE_PREFIX}*.tar" -mtime "+${RETENTION_DAYS}" -delete
+  find "${ARCHIVE_DIRECTORY}" -name "${ARCHIVE_PREFIX}*.tar" -mtime "+${RETENTION_DAYS}" -delete
 }
 
 snapshot_database

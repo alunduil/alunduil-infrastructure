@@ -7,6 +7,11 @@
 # than being sourced for unit tests. The Cloud Sync task that invokes it and the
 # transfer that follows are not exercised here.
 
+# Restated rather than read from the script: an expectation derived from the
+# code under test asserts nothing about it.
+ARCHIVE_PREFIX='truenas-config-'
+EXPIRED_ARCHIVE="${ARCHIVE_PREFIX}2000-01-01-000000.tar"
+
 setup() {
   SOURCE="${BATS_TEST_TMPDIR}/data"
   DEST="${BATS_TEST_TMPDIR}/config-backups"
@@ -26,9 +31,25 @@ backup() {
   "${BATS_TEST_DIRNAME}/truenas-config-backup.sh" "${DEST}" "${1:-90}" "${SOURCE}"
 }
 
+# Emits nothing when the glob is ambiguous, so a test that plants an archive and
+# then asks for "the" archive fails on the reason rather than on a tar error.
+archive_path() {
+  local -a archives=("${DEST}/${ARCHIVE_PREFIX}"*.tar)
+
+  if [[ ${#archives[@]} -ne 1 ]]; then
+    printf 'expected one archive, found %d\n' "${#archives[@]}" >&2
+    return 1
+  fi
+
+  printf '%s' "${archives[0]}"
+}
+
 extract() {
-  local -a archives=("${DEST}"/truenas-config-*.tar)
-  tar -xf "${archives[0]}" -C "${BATS_TEST_TMPDIR}"
+  tar -xf "$(archive_path)" -C "${BATS_TEST_TMPDIR}"
+}
+
+aged_file() {
+  touch -d "${2}" "${DEST}/${1}"
 }
 
 # --- archive contents -----------------------------------------------------
@@ -36,8 +57,7 @@ extract() {
 @test "archive carries the database and the seed" {
   backup
 
-  local -a archives=("${DEST}"/truenas-config-*.tar)
-  run tar -tf "${archives[0]}"
+  run tar -tf "$(archive_path)"
   [[ ${status} -eq 0 ]]
   [[ ${#lines[@]} -eq 2 ]]
   [[ ${lines[0]} == 'freenas-v1.db' ]]
@@ -62,32 +82,32 @@ extract() {
 # --- retention ------------------------------------------------------------
 
 @test "prunes archives past the retention window" {
-  touch -d '100 days ago' "${DEST}/truenas-config-2000-01-01-000000.tar"
+  aged_file "${EXPIRED_ARCHIVE}" '100 days ago'
 
   backup
 
-  [[ ! -e "${DEST}/truenas-config-2000-01-01-000000.tar" ]]
+  [[ ! -e "${DEST}/${EXPIRED_ARCHIVE}" ]]
 }
 
 @test "keeps archives inside the retention window" {
-  touch -d '10 days ago' "${DEST}/truenas-config-2000-01-01-000000.tar"
+  aged_file "${EXPIRED_ARCHIVE}" '10 days ago'
 
   backup
 
-  [[ -e "${DEST}/truenas-config-2000-01-01-000000.tar" ]]
+  [[ -e "${DEST}/${EXPIRED_ARCHIVE}" ]]
 }
 
 @test "retention window is configurable" {
-  touch -d '10 days ago' "${DEST}/truenas-config-2000-01-01-000000.tar"
+  aged_file "${EXPIRED_ARCHIVE}" '10 days ago'
 
   backup 5
 
-  [[ ! -e "${DEST}/truenas-config-2000-01-01-000000.tar" ]]
+  [[ ! -e "${DEST}/${EXPIRED_ARCHIVE}" ]]
 }
 
 @test "prune is scoped to the archive prefix" {
-  touch -d '100 days ago' "${DEST}/other-config-2000-01-01-000000.tar"
-  touch -d '100 days ago' "${DEST}/backup.sh"
+  aged_file 'other-config-2000-01-01-000000.tar' '100 days ago'
+  aged_file 'backup.sh' '100 days ago'
 
   backup
 
