@@ -37,7 +37,7 @@ alunduil:
     export_secret TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
     export_secret TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
     # No runner here to mint an OIDC token, so the operator supplies one.
-    export_secret TF_VAR_tailscale_client_id tailscale-client-id
+    export_secret TF_VAR_tailscale_client_id tailscale-client-id-rw
     TF_VAR_tailscale_identity_token="${TAILSCALE_IDENTITY_TOKEN:?set to an OIDC token the tailnet trusts; see docs/how-to/create-tailscale-trust-credential.md}"
     export TF_VAR_tailscale_identity_token
     # The github provider reads GITHUB_TOKEN. CI injects a deployer App token;

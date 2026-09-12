@@ -34,18 +34,31 @@ add_secret_version() {
 # to ask at.
 will_prompt() { [[ -z ${1} && -t 0 ]]; }
 
-# Several trust credentials can exist on one tailnet, and the ID of the wrong
-# one passes every check here — Secret Manager takes any string. The mismatch
-# surfaces as a provider authentication failure a long way from the prompt.
+pointer_shown=""
+
+# Call only from this shell. A subshell gets its own copy of the flag, discarded
+# on return, and the pointer then repeats at the second question.
+announce_credentials_once() {
+  [[ -z ${pointer_shown} ]] || return 0
+
+  pointer_shown=yes
+  print_credential_pointer
+}
+
+# The two credentials differ only by the scopes they carry, which the console
+# does not show in the list, so their IDs are easy to transpose. Swapping them
+# passes every check here — Secret Manager takes any string — and surfaces as
+# apply failing on a scope it should hold, a long way from the prompt.
 print_credential_pointer() {
   cat >&2 <<EOF
 
-The next value is the client ID of the OpenID Connect credential trusting this
-repository's GitHub Actions, listed at
-https://console.tailscale.com/admin/settings/trust-credentials.
+The next values are client IDs of the two OpenID Connect credentials trusting
+this repository's GitHub Actions, listed at
+https://console.tailscale.com/admin/settings/trust-credentials. Take care not
+to transpose them: the read-only one is the credential whose subject ends
+:pull_request.
 
-If the credential does not exist yet, press Enter past the prompt and see
-${SETUP_DOC}.
+If they do not exist yet, press Enter past each prompt and see ${SETUP_DOC}.
 
 EOF
 }
@@ -74,7 +87,7 @@ ensure_client_id() {
   already_stored "${secret}" && return
 
   if will_prompt "${value}"; then
-    print_credential_pointer
+    announce_credentials_once
     read -r -p "${prompt} (Enter to skip): " value
   fi
 
@@ -101,7 +114,9 @@ fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
-# Creating the credential is a browser action, so a run before that legitimately
-# leaves the secret empty.
-ensure_client_id tailscale-client-id \
-  "Tailscale trust credential client ID" "${TAILSCALE_CLIENT_ID:-}"
+# Creating the credentials is a browser action, so a run before that
+# legitimately leaves both secrets empty.
+ensure_client_id tailscale-client-id-ro \
+  "Tailscale read-only client ID (plan)" "${TAILSCALE_CLIENT_ID_RO:-}"
+ensure_client_id tailscale-client-id-rw \
+  "Tailscale read-write client ID (apply)" "${TAILSCALE_CLIENT_ID_RW:-}"

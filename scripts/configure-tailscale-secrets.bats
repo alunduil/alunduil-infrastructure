@@ -16,7 +16,8 @@ setup() {
 
   POPULATED=""
   STORE="${BATS_TEST_TMPDIR}/store"
-  TAILSCALE_CLIENT_ID=""
+  TAILSCALE_CLIENT_ID_RO=""
+  TAILSCALE_CLIENT_ID_RW=""
 
   # Both stubs are reached only from the sourced script, which shellcheck
   # cannot see.
@@ -41,18 +42,28 @@ refute_stored() { [[ -z "$(stored)" ]]; }
 
 # --- the credential pointer -------------------------------------------------
 #
-# Names which credential the ID has to come from, and only reaches the operator
-# where somebody is about to be asked.
+# Two credentials differing only in scope are easy to transpose, so the pointer
+# has to say which is which — once, and only where somebody is about to be
+# asked.
 
-@test "the pointer names the credential type and where it is listed" {
+@test "the pointer says which credential is the read-only one" {
   run print_credential_pointer
   [[ ${status} -eq 0 ]]
-  [[ ${output} == *"OpenID Connect credential"* ]]
   [[ ${output} == *"trust-credentials"* ]]
+  [[ ${output} == *":pull_request"* ]]
+}
+
+# Redirection, not $(...) or run: either runs the call in a subshell, where the
+# flag cannot survive and the test would fail whatever the code does.
+@test "the pointer is printed once across both prompts" {
+  announce_credentials_once 2>"${BATS_TEST_TMPDIR}/first"
+  announce_credentials_once 2>"${BATS_TEST_TMPDIR}/second"
+  grep -q "trust-credentials" "${BATS_TEST_TMPDIR}/first"
+  [[ ! -s "${BATS_TEST_TMPDIR}/second" ]]
 }
 
 @test "a value supplied through the environment draws no pointer" {
-  ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL \
+  ensure_client_id tailscale-client-id-ro "client ID" kPz9xQ2CNTRL \
     2>"${BATS_TEST_TMPDIR}/err"
   [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
 }
@@ -60,28 +71,36 @@ refute_stored() { [[ -z "$(stored)" ]]; }
 # --- storing ---------------------------------------------------------------
 
 @test "a populated secret is left alone" {
-  POPULATED="tailscale-client-id"
-  run ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL
+  POPULATED="tailscale-client-id-ro"
+  run ensure_client_id tailscale-client-id-ro "client ID" kPz9xQ2CNTRL
   [[ ${status} -eq 0 ]]
-  [[ ${output} == "tailscale-client-id already set." ]]
+  [[ ${output} == "tailscale-client-id-ro already set." ]]
   refute_stored
 }
 
+# The two secrets resolve independently, so populating one must not skip the
+# other — that would leave apply reaching for an empty client id.
+@test "a populated read-only secret does not skip the read-write one" {
+  POPULATED="tailscale-client-id-ro"
+  ensure_client_id tailscale-client-id-rw "client ID" kRw7xQ2CNTRL
+  [[ "$(stored)" == 'tailscale-client-id-rw:kRw7xQ2CNTRL' ]]
+}
+
 @test "the supplied value is stored with no trailing newline" {
-  ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL
-  [[ "$(stored)" == 'tailscale-client-id:kPz9xQ2CNTRL' ]]
+  ensure_client_id tailscale-client-id-ro "client ID" kPz9xQ2CNTRL
+  [[ "$(stored)" == 'tailscale-client-id-ro:kPz9xQ2CNTRL' ]]
 }
 
 @test "a value carrying whitespace is rejected" {
-  run ensure_client_id tailscale-client-id "client ID" 'kPz9xQ2CNTRL extra'
+  run ensure_client_id tailscale-client-id-ro "client ID" 'kPz9xQ2CNTRL extra'
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"must not contain whitespace"* ]]
   refute_stored
 }
 
 @test "an empty value skips rather than prompting when stdin is not a terminal" {
-  run ensure_client_id tailscale-client-id "client ID" ""
+  run ensure_client_id tailscale-client-id-ro "client ID" ""
   [[ ${status} -eq 0 ]]
-  [[ ${output} == *"Leaving tailscale-client-id empty"* ]]
+  [[ ${output} == *"Leaving tailscale-client-id-ro empty"* ]]
   refute_stored
 }
