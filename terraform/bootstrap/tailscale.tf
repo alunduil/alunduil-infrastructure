@@ -5,15 +5,13 @@
 # because neither exists until its trust credential is created by hand, which
 # leaves terraform/alunduil/ nothing to read until then.
 #
-# Split by role the way the Cloudflare tokens are, and for the same reason
-# Grafana cannot be: Tailscale grants read scopes, so plan needs no write. Plan
-# runs on pull requests, and a pull request can edit the workflow that holds the
-# credential — Renovate edits those files routinely — so the credential reachable
-# from a pull request is the read-only one.
-# Each client id is read by one deployer and no other, unlike the Grafana
-# secrets both read. Driving the secret and its binding from the same map is
-# what keeps that pairing true: binding the read-only id to the apply SA would
-# hand plan a write credential, and nothing else here would notice.
+# Split by role because plan runs on pull requests, and a pull request supplies
+# the workflow that runs — Renovate edits those files whenever it bumps an
+# action — so the id reachable from one grants no write.
+# Each id is read by one deployer and no other. Driving the secret and its
+# binding from one map keeps that pairing true: binding the read-only id to the
+# apply service account would hand plan a write credential, and nothing else
+# here would notice.
 locals {
   tailscale_deployers = {
     ro = google_service_account.github_deployer_ro.email

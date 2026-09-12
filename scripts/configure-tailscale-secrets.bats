@@ -42,9 +42,8 @@ refute_stored() { [[ -z "$(stored)" ]]; }
 
 # --- the credential pointer -------------------------------------------------
 #
-# Two credentials differing only in scope are easy to transpose, so the pointer
-# has to say which is which — once, and only where somebody is about to be
-# asked.
+# The pointer has to say which credential is which — once, and only where
+# somebody is about to be asked.
 
 @test "the pointer says how to tell the two credentials apart" {
   run print_credential_pointer

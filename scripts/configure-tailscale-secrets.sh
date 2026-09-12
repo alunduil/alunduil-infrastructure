@@ -76,9 +76,9 @@ skip_notice() {
 # Precedence: the supplied value, else what the operator types, else nothing.
 # read prompts on stderr, so only the answer reaches stdout.
 #
-# The ID is not a secret, so it is echoed as it is typed: a wrong answer is
-# sticky — stored once, skipped by every later run — and this is the only place
-# it can be proofread against the console.
+# Echoed as it is typed. A wrong answer is sticky — stored once, skipped by
+# every later run — and an operator's own terminal is the last place the value
+# can be checked against the console it came from.
 ensure_client_id() {
   local secret="${1}" prompt="${2}" value="${3}"
 
