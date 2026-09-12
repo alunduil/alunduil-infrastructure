@@ -16,12 +16,12 @@ identity rather than a workflow's, so it needs its own token — see
 
 1. Open the [Trust credentials][trust-credentials] page of the admin console,
    select **Credential**, then select **OpenID Connect**.
-2. Set the issuer to `https://token.actions.githubusercontent.com`, GitHub's
-   OIDC issuer.
-3. Match the subject to this repository's workflows. GitHub's subject format
-   is documented under [OIDC token claims][gh-claims]; scope it to
-   `alunduil/alunduil-infrastructure` rather than leaving a pattern that any
-   repository on the account would satisfy.
+2. Select **GitHub** from the **Issuer** dropdown.
+3. Narrow the prefilled **Subject** to this repository. It arrives
+   GitHub-shaped; what matters is that the repository segment reads
+   `alunduil/alunduil-infrastructure` and not a wildcard any repository on
+   the account would satisfy. To pin a branch or environment as well, see
+   [OIDC token claims][gh-claims].
 4. Grant the scopes Terraform needs. The console lists read and write per
    API area:
 

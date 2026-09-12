@@ -69,6 +69,7 @@ Nygard's
 (?i)machineconfigs
 (?i)nameserver
 (?i)nameservers
+(?i)prefilled
 (?i)quadlets
 (?i)repo
 (?i)repos
