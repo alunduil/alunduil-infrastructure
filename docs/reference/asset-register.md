@@ -4,8 +4,7 @@
 # Asset register
 
 Every host, device, service, and operator credential in the personal
-estate. The network map, the data-flow diagram, and the threat model
-cite this register rather than re-encoding the same facts.
+estate.
 
 Verified 2026-09-12.
 
@@ -19,9 +18,8 @@ Out of scope:
 
 - The MCP server fleet and the workstation's own configuration, which
   belong to `alunduil/alunduil-chezmoi`.
-- Hardware not yet acquired, including the Talos node of issue #242.
-- Secret values and their storage paths. The credential entries name
-  each credential, its scope, and its consumer, never its location.
+- Hardware not yet acquired.
+- Secret values and their storage paths.
 
 ## Field conventions
 
@@ -35,8 +33,6 @@ Three values carry a fixed meaning:
 | `None` | Nothing of this kind exists for the asset |
 | `Not applicable` | The field doesn't apply to this kind of asset |
 | `Unverified` | Out of reach of the repository and of a live query |
-
-`Unverified` marks a gap to close, not a fact that resists discovery.
 
 Criticality states what breaks on loss of the asset:
 
@@ -140,8 +136,7 @@ entry says otherwise.
 
 ## Cloud and identity services
 
-alunduil owns every account below. `Identifier` names the tenant or
-instance, the way `Address` names a host.
+alunduil owns every account below.
 
 ### Google Cloud
 
@@ -231,8 +226,8 @@ instance, the way `Address` names a host.
 
 ## Tailnet clients
 
-Devices holding tailnet membership that run no service. Membership is
-an access path, so they're listed; the fields above don't apply.
+Devices holding tailnet membership that run no service. The fields
+above don't apply.
 
 | Node | Platform | Account | Key |
 | --- | --- | --- | --- |
@@ -246,13 +241,11 @@ an access path, so they're listed; the fields above don't apply.
 ## Credentials
 
 Every Active operator and API credential, with the consumer that reads
-it. `Source` names where the credential comes from: the Terraform file
-that declares it, or the how-to that walks its creation.
+it. `Source` names the Terraform file that declares a credential, or
+the how-to that creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. Issue #128 found the last one, a hand-created Cloudflare
-`Edit zone DNS` token that matched no documented consumer. None is
-recorded at the verification date.
+orphan. None is recorded at the verification date.
 
 ### Provisioned by Terraform
 
@@ -383,8 +376,7 @@ Each needs an operator in a console; no apply rotates them.
 
 - Kind: pre-authentication keys
 - Scope: device enrolment
-- Consumer: enrolling a host by hand. Deliberately left unmanaged, as
-  importing one drops its key material
+- Consumer: enrolling a host by hand; deliberately unmanaged
 - Source: `None`
 
 ## Maintenance
