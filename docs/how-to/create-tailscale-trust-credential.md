@@ -47,17 +47,19 @@ the rest untouched:
 | -------- | ------------------- | ---- | ----- |
 | General  | DNS                 | Read | Write |
 | General  | Policy File         | Read | Write |
-| Devices  | Core                | Read | Write |
+| Devices  | Core                | Read | Read  |
 | Devices  | Routes              | Read | Write |
-| Keys     | Auth Keys           | Read | Write |
+| Keys     | Auth Keys           | Read | Read  |
 | Settings | Networking Settings | Read | Write |
 
 Networking Settings rather than DNS carries HTTPS certificates, which is
 what makes it a separate row.
 
-Write on Core and Auth Keys requires one or more tags chosen alongside them,
-so the apply credential can't be made before the tags it manages exist in
-the policy file.
+Core and Auth Keys stay at read on both. Write on either demands tags chosen
+alongside it, and tags have to exist in the policy file first — which is
+itself something Terraform does, through the Policy File scope above. Raise
+these two once the tags exist; a trust credential's scopes can be edited
+afterwards.
 
 ### Finish each one
 
