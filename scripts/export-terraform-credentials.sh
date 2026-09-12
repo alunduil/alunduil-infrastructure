@@ -94,6 +94,7 @@ export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-a
 
 # Role-split like the Cloudflare token above: plan runs on pull requests, which
 # can edit the workflow that holds the credential, so it gets the read-only one.
-# Not masked — the id grants nothing without an OIDC token the tailnet trusts,
-# so redacting it would cost a readable log for nothing.
-export_identifier TF_VAR_tailscale_client_id "tailscale-client-id-${role}"
+# Masked though it is not a secret: it authenticates nothing without an OIDC
+# token the tailnet trusts, but these logs are public and naming a credential
+# buys a reader something for nothing.
+export_secret TF_VAR_tailscale_client_id "tailscale-client-id-${role}"
