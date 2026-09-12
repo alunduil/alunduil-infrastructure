@@ -11,8 +11,15 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 
+# gcloud names the permission and the project but not the secret, and this runs
+# against six of them, so a denial otherwise says only that one of the six is
+# unreachable. The message lands on stderr and the empty substitution that
+# follows trips set -e in the caller.
 access() {
-  gcloud secrets versions access latest --secret="${1}" --project="${PROJECT_ID}"
+  gcloud secrets versions access latest --secret="${1}" --project="${PROJECT_ID}" || {
+    echo "error: cannot read secret '${1}' as the ${role:-} deployer" >&2
+    exit 1
+  }
 }
 
 # A workflow command occupies one line, so a multi-line value registers only
