@@ -37,7 +37,7 @@ Supporting how-tos:
 - [docs/how-to/connect-grafana-to-gcp.md](docs/how-to/connect-grafana-to-gcp.md)
 - [docs/how-to/create-tailscale-trust-credential.md](docs/how-to/create-tailscale-trust-credential.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
-- [docs/how-to/configure-webmention-relay.md](docs/how-to/configure-webmention-relay.md)
+- [docs/how-to/create-webmention-relay-token.md](docs/how-to/create-webmention-relay-token.md)
 - [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
 
 ## Support and contributions
