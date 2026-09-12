@@ -2,10 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Installs kcov, the coverage tracer the bats CI job wraps around the suites.
-# kcov publishes no release binaries and Ubuntu dropped the package after
-# 22.04, so this builds from source. The build toolchain (a C++ compiler,
-# cmake, ninja, and kcov's -dev dependencies) is the caller's to provide.
+# kcov is the coverage tracer the bats CI job wraps around the suites. It
+# publishes no release binaries and Ubuntu dropped the package after 22.04,
+# so this builds from source. The build toolchain is the caller's to provide.
 #
 # Usage: scripts/install-kcov.sh --bin-dir DIR
 set -euo pipefail
@@ -18,13 +17,12 @@ KCOV_SHA256="4cbba86af11f72de0c7514e09d59c7927ed25df7cebdad087f6d3623213b95bf" #
 KCOV_TARBALL_URL="https://github.com/SimonKagstrom/kcov/archive/refs/tags/${KCOV_VERSION}.tar.gz"
 
 # $0 is the bats binary once this file is sourced, so diagnostics name the
-# file itself rather than whoever is running it.
+# file itself rather than whatever is running it.
 PROGRAM="${BASH_SOURCE[0]##*/}"
 
-# Echo the --bin-dir value from the arguments. Returns 2 with a diagnostic
-# when it is absent, valueless, or joined by an unknown argument. The value
-# is the only thing on stdout: the caller reads it by command substitution,
-# so a diagnostic written there would be taken for a directory.
+# Echo the --bin-dir value; return 2 when the arguments do not supply one.
+# Diagnostics go to stderr because the caller takes this function's stdout
+# as the directory.
 parse_bin_dir() {
   local bin_dir=""
   while [[ $# -gt 0 ]]; do
@@ -59,8 +57,7 @@ installed_version_matches() {
   [[ -x ${bin} ]] && "${bin}" --version 2>/dev/null | grep -qF "${version#v}"
 }
 
-# Download the pinned tarball to ASSET and unpack it into SRC, failing closed
-# when the bytes do not match KCOV_SHA256.
+# Download the pinned tarball to ASSET and unpack it into SRC.
 fetch_kcov_source() {
   local asset="$1" src="$2"
   curl -fsSL -o "${asset}" "${KCOV_TARBALL_URL}"
@@ -69,17 +66,15 @@ fetch_kcov_source() {
   tar -xzf "${asset}" -C "${src}" --strip-components=1
 }
 
-# Configure and compile the tree at SRC into BUILD.
 build_kcov() {
   local src="$1" build="$2"
   cmake -S "${src}" -B "${build}" -G Ninja -DCMAKE_BUILD_TYPE=Release
   cmake --build "${build}" --parallel
 }
 
-# Install the binary built under BUILD into BIN_DIR. kcov embeds its HTML
-# report assets, so the one binary is the whole install and cmake --install's
-# share/ tree is unnecessary. kcov-system-daemon serves --system-record,
-# which the coverage run does not use.
+# Install the built binary into BIN_DIR. kcov embeds its HTML report assets,
+# so the binary is the whole install and cmake --install's share/ tree is
+# unnecessary.
 install_kcov() {
   local build="$1" bin_dir="$2"
   mkdir -p "${bin_dir}"

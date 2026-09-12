@@ -43,8 +43,6 @@ stub_kcov() {
 }
 
 @test "parse_bin_dir keeps diagnostics off stdout" {
-  # The caller reads stdout by command substitution, so a diagnostic written
-  # there would be taken for a directory.
   local stdout
   stdout="$(parse_bin_dir --bogus 2>/dev/null)" || true
   [[ -z ${stdout} ]]

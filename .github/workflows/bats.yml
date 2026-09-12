@@ -37,7 +37,7 @@ jobs:
       - name: Set up bats
         uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
-          # Both suites use plain [[ ]] assertions, so the support/assert
+          # The suites use plain [[ ]] assertions, so the support/assert
           # libraries (and their BATS_LIB_PATH wiring) aren't needed.
           support-install: false
           assert-install: false
@@ -46,8 +46,6 @@ jobs:
           # bats-action curls api.github.com; auth raises the anonymous rate limit.
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # kcov's build dependencies serve install-kcov.sh alone and never reach a
-      # host, so they are installed here rather than declared anywhere durable.
       - name: Install kcov
         run: |
           sudo apt-get update -qq
