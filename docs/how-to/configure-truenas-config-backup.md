@@ -3,9 +3,8 @@
 
 # Configure the TrueNAS config backup
 
-TrueNAS keeps its configuration in a live SQLite database at
-`/data/freenas-v1.db`. A Cloud Sync task pushes dated tars of that database to
-Google Drive, and its pre-script,
+A Cloud Sync task pushes dated tars of the TrueNAS configuration database to
+Google Drive. Its pre-script,
 [`scripts/truenas-config-backup.sh`](../../scripts/truenas-config-backup.sh),
 builds a fresh tar before each transfer and prunes tars older than 90 days.
 
@@ -16,11 +15,10 @@ Each tar holds `pwenc_secret`, the seed that decrypts every stored credential
 in the database. Treat read access to the Drive folder as equivalent to root on
 the NAS.
 
-## Remove the standalone cron job
+## Check for a competing cron job
 
-The pre-script replaces the cron job that writes these tars. Delete it under
-**System → Advanced Settings → Cron Jobs**, otherwise both run and the backup
-happens twice a day.
+Nothing else should write these tars. A cron job under **System → Advanced
+Settings → Cron Jobs** that also writes them doubles the backup; delete it.
 
 ## Deploy the pre-script
 
