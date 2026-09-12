@@ -56,7 +56,6 @@ Nygard's
 (?i)ADRs
 (?i)APIs
 (?i)config
-(?i)cron
 (?i)deployer
 (?i)devcontainer
 (?i)env
