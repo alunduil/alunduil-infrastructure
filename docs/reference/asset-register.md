@@ -26,6 +26,11 @@ Out of scope:
 Entries carry the same fields in the same order. An entry names
 `Location` or `Owner` only to override the default its section states.
 
+`Address` carries the handle that reaches the asset. A LAN address
+appears only where something depends on that exact value. Every lease
+here is the Deco's to reassign, so elsewhere the name is the stable
+handle and the address follows from it.
+
 Three values carry a fixed meaning:
 
 | Value | Meaning |
@@ -50,6 +55,31 @@ Classification states what the asset holds:
 | Operational | Credentials, configuration, infrastructure state |
 | Public | Content published to the internet |
 
+## Name resolution
+
+Four resolvers answer for this estate. An `Address` field names the
+handle; this section names what answers it.
+
+| Suffix or zone | Resolver | Answers for |
+| --- | --- | --- |
+| `tail3af06.ts.net` | Tailscale MagicDNS | any tailnet device |
+| `.local` | each host's own mDNS responder | the LAN segment |
+| `alunduil.com` | Cloudflare | the public internet |
+| anything else | Deco, relaying to Quad9 | LAN clients |
+
+The Deco serves no zone for LAN hostnames, answering `NXDOMAIN` for
+`truenas` and `truenas.local`. A LAN name resolves over mDNS or not at
+all.
+
+`penguin` sits behind ChromeOS's NAT on a segment of its own, so
+multicast never reaches it and no `.local` name resolves there. It
+reaches LAN hosts by tailnet name or by address, which is how the
+TrueNAS MCP server connects.
+
+`truenas.alunduil.com` appears on the TrueNAS web certificate and has
+no DNS record. That certificate comes from an ACME DNS-01 challenge,
+which proves zone control without publishing an address.
+
 ## Hosts and devices
 
 alunduil owns every host below, and each sits in London unless its
@@ -57,7 +87,7 @@ entry says otherwise.
 
 ### `truenas`
 
-- Address: `192.168.68.63`; `truenas-scale.tail3af06.ts.net`
+- Address: `truenas.local`; `truenas-scale.tail3af06.ts.net`
 - Role: NAS and application host; Tailscale subnet router advertising
   `192.168.68.0/22`, and an exit node
 - Runs: Plex, Netdata, alloy, Tailscale, `ddns-updater`, Scrutiny
@@ -74,7 +104,8 @@ entry says otherwise.
 
 ### `homeassistant`
 
-- Address: `192.168.68.56`; `homeassistant.tail3af06.ts.net`
+- Address: `192.168.68.56`, which `grafana/air-quality.json` pins in
+  four panel queries; `homeassistant.tail3af06.ts.net`
 - Role: home automation hub
 - Runs: Zigbee2MQTT, Mosquitto, Matter server, alloy, Tailscale, SSH,
   File editor
@@ -97,7 +128,8 @@ entry says otherwise.
 
 ### Deco mesh
 
-- Address: `192.168.68.1`, serving `192.168.68.0/22`
+- Address: `192.168.68.1`, fixed by its gateway role, serving
+  `192.168.68.0/22`
 - Role: router, Wi-Fi mesh, DHCP, and DNS relay to Quad9 over DNS over
   HTTPS
 - OS: TP-Link Deco; model and firmware `Unverified`
