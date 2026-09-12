@@ -22,6 +22,13 @@ jobs:
     name: Run bats suites
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      # A job-level block replaces the workflow-level one rather than merging,
+      # so the checkout needs `contents` named again here.
+      contents: read
+      # codecov-action authenticates by OIDC, so there is no upload token to
+      # store or rotate.
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -39,5 +46,28 @@ jobs:
           # bats-action curls api.github.com; auth raises the anonymous rate limit.
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # kcov's build dependencies serve install-kcov.sh alone and never reach a
+      # host, so they are installed here rather than declared anywhere durable.
+      - name: Install kcov
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake ninja-build binutils-dev \
+            libcurl4-openssl-dev zlib1g-dev libdw-dev libiberty-dev libssl-dev
+          scripts/install-kcov.sh --bin-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - name: Run suites
-        run: bats --recursive github/projects scripts
+        run: |
+          kcov --include-path=github/projects,scripts \
+            --exclude-pattern=.bats \
+            coverage bats --recursive github/projects scripts
+
+      # kcov writes to coverage/bats.<hash>/ and symlinks coverage/bats beside
+      # it; the symlink is the only stable path.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          use_oidc: true
+          files: coverage/bats/cobertura.xml
+          disable_search: true
+          flags: bats
