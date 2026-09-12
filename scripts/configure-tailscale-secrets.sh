@@ -52,11 +52,9 @@ announce_credentials_once() {
 print_credential_pointer() {
   cat >&2 <<EOF
 
-The next values are client IDs of the two OpenID Connect credentials trusting
-this repository's GitHub Actions, listed at
-https://console.tailscale.com/admin/settings/trust-credentials. Take care not
-to transpose them: the read-only one is the credential whose subject ends
-:pull_request.
+The next values are client IDs of the two OpenID Connect credentials listed at
+https://console.tailscale.com/admin/settings/trust-credentials, under the
+descriptions ending "terraform plan" and "terraform apply".
 
 If they do not exist yet, press Enter past each prompt and see ${SETUP_DOC}.
 

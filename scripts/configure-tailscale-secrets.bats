@@ -46,11 +46,12 @@ refute_stored() { [[ -z "$(stored)" ]]; }
 # has to say which is which — once, and only where somebody is about to be
 # asked.
 
-@test "the pointer says which credential is the read-only one" {
+@test "the pointer says how to tell the two credentials apart" {
   run print_credential_pointer
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"trust-credentials"* ]]
-  [[ ${output} == *":pull_request"* ]]
+  [[ ${output} == *"terraform plan"* ]]
+  [[ ${output} == *"terraform apply"* ]]
 }
 
 # Redirection, not $(...) or run: either runs the call in a subshell, where the
