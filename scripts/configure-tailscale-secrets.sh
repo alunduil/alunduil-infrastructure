@@ -76,30 +76,46 @@ skip_notice() {
   echo "Leaving ${1} empty; see ${SETUP_DOC}" >&2
 }
 
-# Precedence: the supplied value, else what the operator types, else nothing.
-# read prompts on stderr, so only the answer reaches stdout. hidden suppresses
-# the echo for the client secret, whose prompt is the last place it appears in
-# the clear.
-answer_for() {
-  local prompt="${1}" value="${2}" hidden="${3}"
-
-  if will_prompt "${value}"; then
-    read -r ${hidden:+-s} -p "${prompt} (Enter to skip): " value
-    [[ -z ${hidden} ]] || echo >&2
-  fi
-
+# Asks for a value the operator can check against the console on screen. A
+# wrong answer is sticky — it is stored once and every later run skips it — so
+# the half that can be proofread is shown.
+read_answer() {
+  local value
+  read -r -p "${1} (Enter to skip): " value
   printf '%s' "${value}"
+}
+
+# Asks for one that must stay out of scrollback. -s swallows the newline the
+# operator typed, so the prompt line is closed by hand.
+read_hidden_answer() {
+  local value
+  read -r -s -p "${1} (Enter to skip): " value
+  echo >&2
+  printf '%s' "${value}"
+}
+
+# Precedence: the supplied value, else what the operator types, else nothing.
+# read prompts on stderr, so only the answer reaches stdout.
+answer_for() {
+  local reader="${1}" prompt="${2}" value="${3}"
+
+  will_prompt "${value}" || {
+    printf '%s' "${value}"
+    return
+  }
+
+  "${reader}" "${prompt}"
 }
 
 # Tailscale documents no format for either half, so the only check that can be
 # made here is against a mangled paste: every credential the console issues is
 # a single opaque token.
-store_credential() {
-  local secret="${1}" prompt="${2}" value="${3}" hidden="${4}"
+ensure_credential() {
+  local reader="${1}" secret="${2}" prompt="${3}" value="${4}"
 
   already_stored "${secret}" && return
   will_prompt "${value}" && announce_client_once
-  value="$(answer_for "${prompt}" "${value}" "${hidden}")"
+  value="$(answer_for "${reader}" "${prompt}" "${value}")"
   [[ -n ${value} ]] || {
     skip_notice "${secret}"
     return
@@ -113,11 +129,11 @@ store_credential() {
 }
 
 ensure_client_id() {
-  store_credential "${1}" "${2}" "${3}" ""
+  ensure_credential read_answer "${1}" "${2}" "${3}"
 }
 
 ensure_client_secret() {
-  store_credential "${1}" "${2}" "${3}" hidden
+  ensure_credential read_hidden_answer "${1}" "${2}" "${3}"
 }
 
 # Skip the executable body when sourced (e.g. by

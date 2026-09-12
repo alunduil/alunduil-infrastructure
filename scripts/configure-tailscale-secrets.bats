@@ -68,6 +68,29 @@ refute_stored() { [[ -z "$(stored)" ]]; }
   [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
 }
 
+# --- answer_for ------------------------------------------------------------
+#
+# Which reader runs decides whether a value reaches scrollback, so the choice
+# is dispatched rather than branched on inside the read.
+
+@test "answer_for returns the supplied value without consulting the reader" {
+  # shellcheck disable=SC2329
+  never() { echo "reader ran" >&2; }
+  run answer_for never "client ID" kPz9xQ2CNTRL
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == "kPz9xQ2CNTRL" ]]
+}
+
+@test "answer_for delegates to the named reader when nothing was supplied" {
+  # shellcheck disable=SC2329
+  will_prompt() { true; }
+  # shellcheck disable=SC2329
+  from_operator() { printf 'typed-%s' "${1}"; }
+  run answer_for from_operator "client ID" ""
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == "typed-client ID" ]]
+}
+
 # --- storing ---------------------------------------------------------------
 
 @test "a populated secret is left alone" {
