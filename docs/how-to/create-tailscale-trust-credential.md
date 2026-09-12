@@ -26,10 +26,11 @@ Work through the steps below once for each:
    the credential matches nothing. [OIDC token claims][gh-claims] lists the
    forms.
 4. Add a custom claim pinning `job_workflow_ref` to
-   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan` for
-   the read-only credential, `.../terraform-apply` for the read-write one.
-   Patterns match literally except where a `*` stands — see
-   [claim value format][claim-format].
+   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`
+   for the read-only credential, `.../terraform-apply.yml@*` for the
+   read-write one. The claim carries the ref it ran from, so the trailing
+   `*` is what makes it match; a pattern without one matches literally and
+   so matches nothing. See [claim value format][claim-format].
 5. Grant that credential's column. Every area Terraform touches pairs a
    read-only scope with a read-write one:
 
