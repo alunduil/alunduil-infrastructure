@@ -86,7 +86,7 @@ export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
 
 # One OAuth client authenticates plan and apply alike, so neither half varies
-# with role. The ID is masked with the secret: the two only work as a pair, so
-# the ID is half a credential rather than an identifier.
+# with role. The ID is masked rather than exported as an identifier: it
+# authenticates only paired with the secret, which makes it half a credential.
 export_secret TF_VAR_tailscale_oauth_client_id tailscale-oauth-client-id
 export_secret TF_VAR_tailscale_oauth_client_secret tailscale-oauth-client-secret

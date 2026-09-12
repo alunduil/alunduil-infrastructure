@@ -70,8 +70,8 @@ refute_stored() { [[ -z "$(stored)" ]]; }
 
 # --- the reader ------------------------------------------------------------
 #
-# Which reader runs decides whether a value reaches scrollback, so the choice
-# is dispatched to a named function rather than branched on inside the read.
+# Which reader runs decides whether a value reaches scrollback, so a stub
+# standing in for one is how both paths get exercised without a terminal.
 
 @test "a supplied value is stored without consulting the reader" {
   # shellcheck disable=SC2329
@@ -107,8 +107,6 @@ refute_stored() { [[ -z "$(stored)" ]]; }
   [[ "$(stored)" == 'tailscale-oauth-client-id:kPz9xQ2CNTRL' ]]
 }
 
-# The console hands over one opaque token per half; whitespace in either means
-# the paste picked up a line break or a neighbouring field.
 @test "a value carrying whitespace is rejected" {
   run ensure_client_secret tailscale-oauth-client-secret "client secret" \
     'tskey-client-abc def' # pragma: allowlist secret

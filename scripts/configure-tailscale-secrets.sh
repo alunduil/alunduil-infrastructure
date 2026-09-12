@@ -31,15 +31,14 @@ add_secret_version() {
   gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
-# True when answer_for would put a question to the operator.
+# True when the operator is about to be asked: nothing supplied, and a terminal
+# to ask at.
 will_prompt() { [[ -z ${1} && -t 0 ]]; }
 
 pointer_shown=""
 
-# The ensure_* functions run in this shell, so the flag survives between them.
-# Moving this inside answer_for would lose it: that result comes back through a
-# command substitution, and the subshell would discard the flag, repeating the
-# pointer at every question.
+# Call only from this shell. A subshell gets its own copy of the flag, discarded
+# on return, and the pointer then repeats at every question.
 announce_client_once() {
   [[ -z ${pointer_shown} ]] || return 0
 
@@ -65,7 +64,8 @@ ${SETUP_DOC}.
 EOF
 }
 
-# Succeeds, and says so, when the secret already holds a value.
+# A predicate that also reports, so a skipped secret says why in the bootstrap
+# log rather than passing in silence.
 already_stored() {
   secret_is_populated "${1}" || return 1
 
@@ -76,16 +76,15 @@ skip_notice() {
   echo "Leaving ${1} empty; see ${SETUP_DOC}" >&2
 }
 
-# Asks for a value the operator can check against the console on screen. A
-# wrong answer is sticky — it is stored once and every later run skips it — so
-# the half that can be proofread is shown.
+# Echoes what is typed. A wrong answer is sticky — stored once, skipped by every
+# later run — so the half that can be proofread against the console is shown.
 read_answer() {
   local value
   read -r -p "${1} (Enter to skip): " value
   printf '%s' "${value}"
 }
 
-# Asks for one that must stay out of scrollback. -s swallows the newline the
+# Keeps the client secret out of scrollback. -s swallows the newline the
 # operator typed, so the prompt line is closed by hand.
 read_hidden_answer() {
   local value
@@ -95,9 +94,7 @@ read_hidden_answer() {
 }
 
 # Precedence: the supplied value, else what the operator types, else nothing.
-# Whether anyone is about to be asked decides both the pointer and the read, so
-# it is settled once here rather than re-derived by each. read prompts on
-# stderr, so only the answer reaches stdout.
+# read prompts on stderr, so only the answer reaches stdout.
 #
 # Tailscale documents no format for either half, so the only check that can be
 # made is against a mangled paste: every credential the console issues is a

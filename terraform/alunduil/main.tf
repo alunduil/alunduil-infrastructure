@@ -52,10 +52,8 @@ provider "grafana" {
   stack_id = local.bootstrap.grafana_stack_id
 }
 
-# OAuth client credentials, not a personal API key. Both parts live in the
-# Secret Manager shells the bootstrap layer declares and reach the plan and
-# apply workflows as TF_VAR_tailscale_*, mirroring cloudflare_api_token.
-# tailnet is omitted: it defaults to the tailnet that owns the credentials.
+# tailnet is left unset: it defaults to the tailnet owning the credentials,
+# so the name never has to be tracked here.
 provider "tailscale" {
   oauth_client_id     = var.tailscale_oauth_client_id
   oauth_client_secret = var.tailscale_oauth_client_secret

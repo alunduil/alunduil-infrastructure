@@ -1,12 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The Tailscale provider can't create its own OAuth client, so the credential
-# comes from a hand-created console client. Like the Grafana secrets there is no
-# RO/RW split: one OAuth client authenticates both plan and apply, so both
-# deployer SAs read both secrets. The per-secret accessor isolation from
-# cloudflare_tokens.tf still holds — values never live in bucket-readable state,
-# only behind secretAccessor IAM.
+# One OAuth client authenticates plan and apply alike, so both deployer SAs read
+# both secrets rather than splitting RO from RW the way the Cloudflare tokens do.
 locals {
   tailscale_oauth_secrets = toset([
     "tailscale-oauth-client-id",
@@ -14,10 +10,10 @@ locals {
   ])
 }
 
-# Empty shells. scripts/configure-tailscale-secrets.sh adds the versions after
-# this layer applies: a version Terraform created would hold the credential in
-# this layer's state, and would demand the client secret, which the console
-# shows once, on every later run of the layer.
+# Empty shells; scripts/configure-tailscale-secrets.sh adds the versions. A
+# version Terraform created would hold the credential in this layer's state and
+# would demand the client secret, which the console shows once, on every later
+# run of the layer.
 resource "google_secret_manager_secret" "tailscale_oauth" {
   for_each = local.tailscale_oauth_secrets
 
