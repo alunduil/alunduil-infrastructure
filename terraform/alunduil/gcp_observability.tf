@@ -2,13 +2,12 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # Both plugins read the @grafana/google-sdk credential shape, so one
-  # definition serves both data sources.
+  # Two different plugins, one credential shape: both read @grafana/google-sdk.
   #
   # The private key is absent by design: this layer's state is bucket-readable,
   # so scripts/set-grafana-gcp-credentials.sh sets it as the operator. Grafana
-  # preserves secure fields omitted from an update, which is what lets the
-  # resources below ignore_changes it and still apply cleanly.
+  # preserves secure fields omitted from an update, so ignoring that field
+  # leaves the key in place.
   grafana_gcp_reader_auth = jsonencode({
     authenticationType = "jwt"
     defaultProject     = local.bootstrap.project_id
