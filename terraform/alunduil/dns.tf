@@ -7,6 +7,9 @@
 # except home.alunduil.com are Terraform-managed. Settings not declared
 # below track Cloudflare's defaults — add a `cloudflare_zone_setting`
 # resource only when drift detection on a specific one is wanted.
+#
+# webmention.alunduil.com has no record here: Cloudflare creates it when
+# webmention-relay.tf attaches the Worker custom domain.
 
 # Recreating the zone mints a new Cloudflare NS pair, forcing a registrar
 # update and propagation outage. `prevent_destroy` blocks `terraform

@@ -87,5 +87,7 @@ Nygard's
 (?i)vdevs
 (?i)VMs
 (?i)vuln
+(?i)webmention
+(?i)webmentions
 (?i)worktree
 (?i)worktrees
