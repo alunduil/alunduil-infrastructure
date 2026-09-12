@@ -102,8 +102,8 @@ entry says otherwise.
 - Address: `192.168.68.56`, which `grafana/air-quality.json` pins in
   four panel queries; `homeassistant.tail3af06.ts.net`
 - Role: home automation hub
-- Runs: Zigbee2MQTT, Mosquitto, Matter server, alloy, Tailscale, SSH,
-  File editor
+- Runs: Zigbee2MQTT, Mosquitto, Matter server, an OpenThread Border
+  Router, alloy, Tailscale, SSH, File editor
 - OS: Home Assistant OS 18.2, Core 2026.9.1, amd64
 - Criticality: Medium
 - Classification: Personal
@@ -113,8 +113,10 @@ entry says otherwise.
 
 ### `slzb-mr4u`
 
-- Address: `Unverified`
-- Role: Zigbee and Thread radio coordinator
+- Address: `SLZB-MR4U.local`, serving a web interface on port 80 and a
+  radio service on 7638
+- Role: Zigbee and Thread radio coordinator. The model name is the
+  only evidence; the web interface exposes no identifying text
 - OS: `Unverified`
 - Criticality: Medium
 - Classification: Personal
