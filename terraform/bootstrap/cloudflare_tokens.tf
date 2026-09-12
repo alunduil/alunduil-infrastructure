@@ -26,9 +26,27 @@ data "cloudflare_api_token_permission_groups_list" "zone_settings_write" {
   scope = "com.cloudflare.api.account.zone"
 }
 
+# Workers permissions have no zone-scoped form, so the relay in
+# terraform/alunduil/webmention-relay.tf costs both tokens an account-scoped
+# policy. Scripts Write also authorizes the Worker custom domain, so the
+# route has no permission of its own.
+data "cloudflare_api_token_permission_groups_list" "workers_scripts_read" {
+  name  = "Workers Scripts Read"
+  scope = "com.cloudflare.api.account"
+}
+
+data "cloudflare_api_token_permission_groups_list" "workers_scripts_write" {
+  name  = "Workers Scripts Write"
+  scope = "com.cloudflare.api.account"
+}
+
 locals {
   alunduil_com_zone_resource = jsonencode({
     "com.cloudflare.api.account.zone.0ee2520bb84646200856ade7817daf2f" = "*" # pragma: allowlist secret
+  })
+
+  alunduil_account_resource = jsonencode({
+    "com.cloudflare.api.account.76626ec3f004e86f1a4d85faca9ac3a2" = "*" # pragma: allowlist secret
   })
 }
 
@@ -43,6 +61,12 @@ resource "cloudflare_api_token" "deployer_ro" {
       { id = data.cloudflare_api_token_permission_groups_list.zone_settings_read.result[0].id },
     ]
     resources = local.alunduil_com_zone_resource
+    }, {
+    effect = "allow"
+    permission_groups = [
+      { id = data.cloudflare_api_token_permission_groups_list.workers_scripts_read.result[0].id },
+    ]
+    resources = local.alunduil_account_resource
   }]
 }
 
@@ -57,6 +81,12 @@ resource "cloudflare_api_token" "deployer_rw" {
       { id = data.cloudflare_api_token_permission_groups_list.zone_settings_write.result[0].id },
     ]
     resources = local.alunduil_com_zone_resource
+    }, {
+    effect = "allow"
+    permission_groups = [
+      { id = data.cloudflare_api_token_permission_groups_list.workers_scripts_write.result[0].id },
+    ]
+    resources = local.alunduil_account_resource
   }]
 }
 
