@@ -1,29 +1,15 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Every value in this file is the tailnet's live setting rather than a chosen
-# one. Importing the tailnet as it stands makes each later hardening step a
-# diff a reviewer can read, instead of a rewrite with no baseline to compare
-# against.
-#
-# Two parts of the tailnet stay out. No device carries a tag, so
-# tailscale_device_tags has nothing to hold until tagOwners exists in the
-# policy file. And auth keys, though importable by key id, lose their key
-# material on import — Terraform would own credentials it cannot reproduce, so
-# the keys worth keeping are better created here than adopted.
+# Auth keys are deliberately unmanaged. Importing one drops its key material,
+# leaving Terraform owning a credential it cannot reproduce.
 
-# The factory-default policy file: a grant accepting every connection, and
-# Tailscale SSH to a member's own devices in check mode.
+# Keep the policy file byte-identical to the tailnet's copy. The provider
+# compares acl as a string, so a semantically equal rewrite plans as a change
+# and applies as a rewrite of the live policy, comments included.
 #
-# The policy lives in its own file, byte for byte as the tailnet holds it.
-# The provider compares the attribute as a string, so a semantically equal
-# rewrite still counts as a change — and applying one would strip the
-# commented-out examples Tailscale ships in the default file, which are the
-# reference for writing the grants that replace it.
-#
-# overwrite_existing_content stays unset. If the import ever fails to take,
-# Terraform refuses to create over a policy file it doesn't own rather than
-# clobbering it.
+# Leave overwrite_existing_content unset. It allows a create over a policy file
+# Terraform doesn't own, which is what a failed import would attempt.
 resource "tailscale_acl" "tailnet" {
   acl = file("${path.module}/tailscale-acl.hujson")
 }
@@ -33,8 +19,8 @@ import {
   id = "acl"
 }
 
-# Google Public DNS. A client reports more resolvers than this; the tailnet
-# publishes the one.
+# A client's resolver list shows more than this — the rest are not the
+# tailnet's.
 resource "tailscale_dns_nameservers" "global" {
   nameservers = ["8.8.8.8"]
 }
@@ -53,13 +39,6 @@ import {
   id = "dns_preferences"
 }
 
-# No tailscale_dns_search_paths: the tailnet hands out no search domain beyond
-# its own MagicDNS suffix.
-
-# One resource carries every tailnet-wide toggle the admin console's Settings
-# pages expose, device approval and key expiry among them. acls_external_link
-# and users_role_allowed_to_join_external_tailnet are absent because the
-# tailnet holds no value for either.
 resource "tailscale_tailnet_settings" "this" {
   acls_externally_managed_on     = false
   devices_approval_on            = false
@@ -80,20 +59,17 @@ import {
 data "tailscale_devices" "all" {}
 
 locals {
-  # The pair of default routes an exit node advertises.
   tailscale_exit_node_routes = ["0.0.0.0/0", "::/0"]
 
-  # Enabling a route and advertising it are separate acts: the device
-  # advertises, the tailnet enables. The resource below owns the enabled half,
-  # and it owns all of it — a route enabled in the admin console but missing
-  # here gets disabled on the next apply.
+  # Advertising a route and enabling it are separate acts: the device
+  # advertises, the tailnet enables. This map is the whole enabled set — a
+  # route enabled in the admin console but absent here gets disabled on the
+  # next apply.
   tailscale_enabled_routes = {
     "truenas-scale" = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
     "nanopi-neo3"   = local.tailscale_exit_node_routes
   }
 
-  # Looked up rather than written down: the MagicDNS label is what a reader
-  # recognises, and the node ID it resolves to is opaque.
   tailscale_node_ids = {
     for device in data.tailscale_devices.all.devices :
     split(".", device.name)[0] => device.node_id
