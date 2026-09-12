@@ -2,10 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Tests for truenas-config-backup.sh. Every function touches the filesystem, so
-# the script runs as a subprocess against a substituted source directory rather
-# than being sourced for unit tests. The Cloud Sync task that invokes it and the
-# transfer that follows are not exercised here.
+# The script runs its phases on source and every function touches the filesystem,
+# so these run it as a subprocess against a substituted source directory rather
+# than sourcing it. The Cloud Sync task that invokes it and the transfer that
+# follows are not exercised here.
 
 # Restated rather than read from the script: an expectation derived from the
 # code under test asserts nothing about it.
@@ -31,8 +31,7 @@ backup() {
   "${BATS_TEST_DIRNAME}/truenas-config-backup.sh" "${DEST}" "${1:-90}" "${SOURCE}"
 }
 
-# Emits nothing when the glob is ambiguous, so a test that plants an archive and
-# then asks for "the" archive fails on the reason rather than on a tar error.
+# Tests that plant fixtures share the prefix, so more than one file can match.
 archive_path() {
   local -a archives=("${DEST}/${ARCHIVE_PREFIX}"*.tar)
 
