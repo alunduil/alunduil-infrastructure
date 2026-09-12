@@ -21,8 +21,21 @@ import {
 
 # A client's resolver list shows more than this — the rest are not the
 # tailnet's.
+#
+# Quad9 refuses to resolve domains on its malicious-domain feeds. All four
+# addresses reach that same blocking-and-DNSSEC service, primary and secondary
+# over both families.
+#
+# Tailscale may take the quickest response rather than querying in order. A
+# second provider here would answer a share of queries under its own policy
+# instead of standing by as a fallback.
 resource "tailscale_dns_nameservers" "global" {
-  nameservers = ["8.8.8.8"]
+  nameservers = [
+    "9.9.9.9",
+    "149.112.112.112",
+    "2620:fe::fe",
+    "2620:fe::9",
+  ]
 }
 
 import {
@@ -47,7 +60,7 @@ resource "tailscale_tailnet_settings" "this" {
   devices_approval_on            = true
   devices_auto_updates_on        = false
   devices_key_duration_days      = 180
-  https_enabled                  = false
+  https_enabled                  = true
   network_flow_logging_on        = false
   posture_identity_collection_on = false
   regional_routing_on            = false
