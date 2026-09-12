@@ -76,3 +76,9 @@ output "grafana_gcp_reader_key_secret" {
   description = "Secret Manager short name holding the Grafana GCP reader SA key"
   sensitive   = false
 }
+
+output "tailscale_client_id_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.tailscale_client_id : secret.secret_id])
+  description = "Secret Manager short names holding the Tailscale trust credential client IDs, read-only for plan and read-write for apply; populated by scripts/configure-tailscale-secrets.sh and fetched via `gcloud secrets versions access`"
+  sensitive   = false
+}

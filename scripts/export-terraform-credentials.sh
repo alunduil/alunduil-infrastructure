@@ -11,8 +11,15 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 
+# gcloud names the permission and the project but not the secret, and this runs
+# against six of them, so a denial otherwise says only that one of the six is
+# unreachable. The message lands on stderr and the empty substitution that
+# follows trips set -e in the caller.
 access() {
-  gcloud secrets versions access latest --secret="${1}" --project="${PROJECT_ID}"
+  gcloud secrets versions access latest --secret="${1}" --project="${PROJECT_ID}" || {
+    echo "error: cannot read secret '${1}' as the ${role:-} deployer" >&2
+    exit 1
+  }
 }
 
 # A workflow command occupies one line, so a multi-line value registers only
@@ -84,3 +91,10 @@ export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
+
+# Role-split like the Cloudflare token above: plan runs on pull requests, which
+# can edit the workflow that holds the credential, so it gets the read-only one.
+# Masked though it is not a secret: it authenticates nothing without an OIDC
+# token the tailnet trusts, but these logs are public and naming a credential
+# buys a reader something for nothing.
+export_secret TF_VAR_tailscale_client_id "tailscale-client-id-${role}"

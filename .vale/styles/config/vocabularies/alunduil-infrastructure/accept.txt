@@ -22,6 +22,7 @@ Cloudflare
 TrueNAS
 Grafana
 Plex
+Tailscale
 UptimeRobot
 Renovate
 etcd
@@ -29,6 +30,7 @@ etcd
 # Product and interface names, spelled as their vendors spell them
 GitHub
 GitHub App
+OAuth
 Google Drive
 Google Takeout
 Cloud Sync
@@ -65,10 +67,16 @@ Nygard's
 (?i)hostname
 (?i)machineconfig
 (?i)machineconfigs
+(?i)nameserver
+(?i)nameservers
+(?i)prefilled
 (?i)quadlets
 (?i)repo
 (?i)repos
+(?i)tailnet
 (?i)ruleset
+(?i)subnet
+(?i)subnets
 (?i)transcode
 (?i)triaged
 (?i)uncheck
