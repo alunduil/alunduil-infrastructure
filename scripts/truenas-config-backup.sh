@@ -24,10 +24,11 @@ trap cleanup EXIT
 # captures a torn copy. VACUUM INTO takes the copy in a single read pass
 # without modifying the source.
 snapshot_database() {
-  python3 -c 'import sqlite3, sys
-connection = sqlite3.connect(sys.argv[1])
-connection.execute("VACUUM INTO ?", (sys.argv[2],))
-connection.close()' "${DATA_DIRECTORY}/${DATABASE}" "${STAGING}/${DATABASE}"
+  # sqlite3 opens a missing database as a new empty one, which would archive a
+  # valid-looking backup of nothing.
+  [[ -f "${DATA_DIRECTORY}/${DATABASE}" ]]
+
+  sqlite3 "${DATA_DIRECTORY}/${DATABASE}" "VACUUM INTO '${STAGING}/${DATABASE}'"
 }
 
 # Tarred from the source directory rather than copied, so the seed that
