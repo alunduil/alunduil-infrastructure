@@ -1,6 +1,21 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # Two different plugins, one credential shape: both read @grafana/google-sdk.
+  #
+  # The private key is absent by design: this layer's state is bucket-readable,
+  # so scripts/set-grafana-gcp-credentials.sh sets it as the operator. Grafana
+  # preserves secure fields omitted from an update, so ignoring that field
+  # leaves the key in place.
+  grafana_gcp_reader_auth = jsonencode({
+    authenticationType = "jwt"
+    defaultProject     = local.bootstrap.project_id
+    clientEmail        = local.bootstrap.grafana_gcp_reader_email
+    tokenUri           = "https://oauth2.googleapis.com/token"
+  })
+}
+
 # Grafana Cloud queries GCP live at dashboard time instead of ingesting into
 # Loki or Prometheus. The audit-log volume here is a trickle, too small to earn
 # a Pub/Sub topic and an always-on collector.
@@ -9,17 +24,27 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   name = "GCP Cloud Monitoring"
   uid  = "gcp-cloud-monitoring"
 
-  json_data_encoded = jsonencode({
-    authenticationType = "jwt"
-    defaultProject     = local.bootstrap.project_id
-    clientEmail        = local.bootstrap.grafana_gcp_reader_email
-    tokenUri           = "https://oauth2.googleapis.com/token"
-  })
+  json_data_encoded = local.grafana_gcp_reader_auth
 
   lifecycle {
-    # The private key is set from Secret Manager outside Terraform, so this
-    # layer never holds it. Grafana preserves secure fields omitted from an
-    # update, so applies leave the key in place.
+    ignore_changes = [secure_json_data_encoded]
+  }
+}
+
+# Cloud Monitoring counts audit entries but discards their content, so reading a
+# log line means querying Cloud Logging directly. The plugin asks for
+# logging.viewer and logging.viewAccessor, which grafana-gcp-reader already
+# holds.
+#
+# terraform/bootstrap/ installs the plugin this configures.
+resource "grafana_data_source" "gcp_cloud_logging" {
+  type = "googlecloud-logging-datasource"
+  name = "GCP Cloud Logging"
+  uid  = "gcp-cloud-logging"
+
+  json_data_encoded = local.grafana_gcp_reader_auth
+
+  lifecycle {
     ignore_changes = [secure_json_data_encoded]
   }
 }

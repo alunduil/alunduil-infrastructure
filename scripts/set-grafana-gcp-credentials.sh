@@ -42,7 +42,7 @@ set_datasource_credential() {
 
 datasource_uids=("$@")
 if [[ ${#datasource_uids[@]} -eq 0 ]]; then
-  datasource_uids=(gcp-cloud-monitoring)
+  datasource_uids=(gcp-cloud-monitoring gcp-cloud-logging)
 fi
 
 private_key="$(read_secret "${KEY_SECRET}" | jq -r '.private_key')"
