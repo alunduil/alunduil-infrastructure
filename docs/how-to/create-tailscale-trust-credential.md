@@ -30,15 +30,21 @@ Work through the steps below once for each:
    the read-only credential, `.../terraform-apply` for the read-write one.
    Patterns match literally except where a `*` stands — see
    [claim value format][claim-format].
-5. Grant that credential's access on each area Terraform touches:
+5. Grant that credential's column. Every area Terraform touches pairs a
+   read-only scope with a read-write one:
 
-   | Area             | Manages                         |
-   | ---------------- | ------------------------------- |
-   | Policy File      | tailnet grants                  |
-   | DNS              | nameservers, HTTPS certificates |
-   | Devices → Core   | device tags, key expiry         |
-   | Devices → Routes | subnet routes, exit nodes       |
-   | Keys → Auth Keys | auth keys                       |
+   | Area       | Read-only            | Read-write      |
+   | ---------- | -------------------- | --------------- |
+   | Policy     | `policy_file:read`   | `policy_file`   |
+   | DNS        | `dns:read`           | `dns`           |
+   | Devices    | `devices:core:read`  | `devices:core`  |
+   | Routes     | `devices:routes:read`| `devices:routes`|
+   | Auth keys  | `auth_keys:read`     | `auth_keys`     |
+
+   `devices:core` and `auth_keys` each require one or more tags chosen at
+   creation, so the read-write credential can't be made before the tags it
+   should manage exist in the policy file. Their `:read` variants don't, so
+   the read-only credential can be made first.
 
 6. Let Tailscale generate the audience. The provider derives it from the
    client ID, so a hand-picked one would have to be carried separately.
