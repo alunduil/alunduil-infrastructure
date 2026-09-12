@@ -52,23 +52,26 @@ provider "grafana" {
   stack_id = local.bootstrap.grafana_stack_id
 }
 
-# Workload identity federation: no stored credential. In GitHub Actions the
-# provider mints an OIDC token itself and trades it for a token good for an
-# hour, so the client id and audience below are identifiers, not secrets.
+locals {
+  # A token handed in means there was no runtime to mint one from, which is the
+  # break-glass path. The provider rejects audience and identity_token together,
+  # so this picks which one the block sets and nulls the other.
+  tailscale_mints_own_token = var.tailscale_identity_token == ""
+
+  # Tailscale derives this from the client id when it generates the credential,
+  # documented as api.tailscale.com/<client id>.
+  tailscale_audience = "api.tailscale.com/${var.tailscale_client_id}"
+}
+
+# Workload identity federation: nothing long-lived is stored. On a runner the
+# provider mints an OIDC token itself and trades it for one good for an hour, so
+# the client id is an identifier rather than a secret.
 #
-# Tailscale derives the audience from the client id when it generates the
-# credential, documented as api.tailscale.com/<client id>.
-#
-# tailnet is left unset: it defaults to the tailnet owning the credentials,
-# so the name never has to be tracked here.
-#
-# The provider rejects audience and identity_token together, so exactly one is
-# ever set: a runner discovers its own token from the audience, and a local run,
-# having no runtime to discover from, passes one in. null leaves the other
-# argument unconfigured.
+# tailnet is left unset: it defaults to the tailnet owning the credentials, so
+# the name never has to be tracked here.
 provider "tailscale" {
   oauth_client_id = var.tailscale_client_id
 
-  audience       = var.tailscale_identity_token == "" ? "api.tailscale.com/${var.tailscale_client_id}" : null
-  identity_token = var.tailscale_identity_token == "" ? null : var.tailscale_identity_token
+  audience       = local.tailscale_mints_own_token ? local.tailscale_audience : null
+  identity_token = local.tailscale_mints_own_token ? null : var.tailscale_identity_token
 }
