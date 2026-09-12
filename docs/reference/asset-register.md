@@ -71,10 +71,12 @@ LAN names follow the DHCP reservations held in the Deco app. Nothing
 in this repository declares them, so the app is the place to add, read,
 or change one.
 
-`penguin` resolves no LAN name. It sits behind ChromeOS's NAT on a
-segment of its own rather than on the LAN, so it reaches LAN hosts by
-tailnet name or by address, which is how the TrueNAS MCP server
-connects.
+`penguin` resolves no LAN name. Tailscale handles DNS there and
+forwards every query to Quad9, which knows none of them, so `penguin`
+reaches LAN hosts by tailnet name or by address. That's how the
+TrueNAS MCP server connects. A query aimed at a LAN resolver is
+forwarded too, so this host can't observe the home network's own name
+handling.
 
 `truenas.alunduil.com` appears on the TrueNAS web certificate and has
 no DNS record. That certificate comes from an ACME DNS-01 challenge,
@@ -272,12 +274,16 @@ above don't apply.
 
 ## Credentials
 
-Every Active operator and API credential, with the consumer that reads
-it. `Source` names the Terraform file that declares a credential, or
-the how-to that creates it.
+The credentials this repository declares or documents, with the
+consumer that reads each. `Source` names the Terraform file that
+declares a credential, or the how-to that creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. None is recorded at the verification date.
+orphan. Only enumerating that console finds one, which the repository
+can't do on its own. At the verification date that enumeration had
+covered Grafana Cloud alone, where it found `vscode-mcp-access`,
+recorded below. Nobody has enumerated Cloudflare, Google Cloud,
+GitHub, or Tailscale.
 
 ### Provisioned by Terraform
 
@@ -402,6 +408,13 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: OAuth grant
 - Scope: Drive read and write
 - Consumer: the TrueNAS Cloud Sync tasks
+- Source: `None`
+
+#### `vscode-mcp-access`
+
+- Kind: Grafana stack service account holding one token
+- Scope: stack Viewer
+- Consumer: `Unverified`
 - Source: `None`
 
 #### Tailscale auth keys
