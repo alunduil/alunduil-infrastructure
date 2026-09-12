@@ -152,10 +152,9 @@ that edits a published image has to work around GitHub's loop devices.
 
 NixOS is rejected on budget rather than on merit. Its configuration
 and pinning story is better than the chosen option's, and the
-remaining work is board bring-up on hardware whose only upstream
-support is the community-tier Armbian entry. Paying for that
-bring-up on a box that exists to provide a US address isn't a trade
-this decision makes.
+remaining work is board bring-up that nobody upstream has done.
+Paying for that bring-up on a box that exists to provide a US address
+isn't a trade this decision makes.
 
 ### What the image carries
 
@@ -168,8 +167,7 @@ Deliberately absent: any Tailscale auth key or OAuth client secret,
 any Alloy credential, any private key. The artifact is public, so it
 holds public key material only. A card that can't authenticate itself
 to the tailnet is the point — the two credential-bearing steps belong
-to the operator's SSH session, and a stolen or mislaid card grants
-nothing.
+to the operator's SSH session.
 
 This also settles the direction of #262: the Tailscale identity
 doesn't travel on the card. Auth keys expire
@@ -241,7 +239,7 @@ Good:
 Bad / accepted:
 
 - This repo takes on an image build and a published artifact for one
-  board, and the build tracks a rolling Debian userspace.
+  board.
 - Recovery still needs one interactive SSH session and a port forward.
   Removing it would mean putting a bearer credential on a card kept in
   a home on another continent.
