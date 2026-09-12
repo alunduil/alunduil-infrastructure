@@ -57,26 +57,24 @@ Classification states what the asset holds:
 
 ## Name resolution
 
-Four resolvers answer for this estate. An `Address` field names the
-handle; this section names what answers it.
+An `Address` field names the handle; this section names where each
+kind of name comes from.
 
-| Suffix or zone | Resolver | Answers for |
+| Suffix or zone | Comes from | Reachable from |
 | --- | --- | --- |
 | `tail3af06.ts.net` | Tailscale MagicDNS | any tailnet device |
-| `.local` | each host's own mDNS responder | the LAN segment |
+| `.local` | the home network | LAN clients |
 | `alunduil.com` | Cloudflare | the public internet |
 | anything else | Deco, relaying to Quad9 | LAN clients |
 
-The Deco resolves no LAN name itself. It answers `NXDOMAIN` on port 53
-and refuses connections on 5353, while `truenas` answers for
-`truenas.local` on its own port 5353. A missing `.local` name is that
-host's responder, or the mesh declining to carry multicast to it, and
-never a Deco zone to edit.
+LAN names follow the DHCP reservations held in the Deco app. Nothing
+in this repository declares them, so the app is the place to add, read,
+or change one.
 
-`penguin` sits behind ChromeOS's NAT on a segment of its own, so
-multicast never reaches it and no `.local` name resolves there. It
-reaches LAN hosts by tailnet name or by address, which is how the
-TrueNAS MCP server connects.
+`penguin` resolves no LAN name. It sits behind ChromeOS's NAT on a
+segment of its own rather than on the LAN, so it reaches LAN hosts by
+tailnet name or by address, which is how the TrueNAS MCP server
+connects.
 
 `truenas.alunduil.com` appears on the TrueNAS web certificate and has
 no DNS record. That certificate comes from an ACME DNS-01 challenge,
