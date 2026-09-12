@@ -62,7 +62,7 @@ kind of name comes from.
 
 | Suffix or zone | Comes from | Reachable from |
 | --- | --- | --- |
-| `tail3af06.ts.net` | Tailscale MagicDNS | any tailnet device |
+| `tail3af06.ts.net` | Tailscale MagicDNS | tailnet devices |
 | `.local` | the home network | LAN clients |
 | `alunduil.com` | Cloudflare | the public internet |
 | anything else | Deco, relaying to Quad9 | LAN clients |
@@ -70,14 +70,6 @@ kind of name comes from.
 LAN names follow the DHCP reservations held in the Deco app. Nothing
 in this repository declares them, so the app is the place to add, read,
 or change one.
-
-`penguin` resolves neither LAN nor tailnet names. Its queries reach
-the ChromeOS resolver, which answers for neither, and Tailscale can't
-install a resolver inside Crostini, so `tail3af06.ts.net` names fail
-there while `tailscale ip` still returns the address. Reach hosts from
-`penguin` by address, which is how the TrueNAS MCP server connects.
-A query naming a LAN resolver is intercepted too, so this host can't
-observe the home network's own name handling.
 
 `truenas.alunduil.com` appears on the TrueNAS web certificate and has
 no DNS record. That certificate comes from an ACME DNS-01 challenge,
