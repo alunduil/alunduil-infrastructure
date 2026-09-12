@@ -15,54 +15,95 @@ set -euo pipefail
 # renovate: datasource=github-releases depName=SimonKagstrom/kcov
 KCOV_VERSION="v43"
 KCOV_SHA256="4cbba86af11f72de0c7514e09d59c7927ed25df7cebdad087f6d3623213b95bf" # pragma: allowlist secret
+KCOV_TARBALL_URL="https://github.com/SimonKagstrom/kcov/archive/refs/tags/${KCOV_VERSION}.tar.gz"
 
-BIN_DIR=""
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --bin-dir)
-      if [[ $# -lt 2 ]]; then
-        echo "${0##*/}: --bin-dir requires an argument" >&2
-        exit 2
-      fi
-      BIN_DIR="$2"
-      shift 2
-      ;;
-    *)
-      echo "${0##*/}: unknown argument: $1" >&2
-      exit 2
-      ;;
-  esac
-done
+# $0 is the bats binary once this file is sourced, so diagnostics name the
+# file itself rather than whoever is running it.
+PROGRAM="${BASH_SOURCE[0]##*/}"
 
-if [[ -z ${BIN_DIR} ]]; then
-  echo "${0##*/}: --bin-dir DIR required" >&2
+# Echo the --bin-dir value from the arguments. Returns 2 with a diagnostic
+# when it is absent, valueless, or joined by an unknown argument. The value
+# is the only thing on stdout: the caller reads it by command substitution,
+# so a diagnostic written there would be taken for a directory.
+parse_bin_dir() {
+  local bin_dir=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --bin-dir)
+        if [[ $# -lt 2 ]]; then
+          echo "${PROGRAM}: --bin-dir requires an argument" >&2
+          return 2
+        fi
+        bin_dir="$2"
+        shift 2
+        ;;
+      *)
+        echo "${PROGRAM}: unknown argument: $1" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  if [[ -z ${bin_dir} ]]; then
+    echo "${PROGRAM}: --bin-dir DIR required" >&2
+    return 2
+  fi
+
+  printf '%s\n' "${bin_dir}"
+}
+
+# True when BIN is executable and already reports VERSION. The release tag
+# carries a leading v; the binary reports its version without one.
+installed_version_matches() {
+  local bin="$1" version="$2"
+  [[ -x ${bin} ]] && "${bin}" --version 2>/dev/null | grep -qF "${version#v}"
+}
+
+# Download the pinned tarball to ASSET and unpack it into SRC, failing closed
+# when the bytes do not match KCOV_SHA256.
+fetch_kcov_source() {
+  local asset="$1" src="$2"
+  curl -fsSL -o "${asset}" "${KCOV_TARBALL_URL}"
+  echo "${KCOV_SHA256}  ${asset}" | sha256sum --check --quiet -
+  mkdir -p "${src}"
+  tar -xzf "${asset}" -C "${src}" --strip-components=1
+}
+
+# Configure and compile the tree at SRC into BUILD.
+build_kcov() {
+  local src="$1" build="$2"
+  cmake -S "${src}" -B "${build}" -G Ninja -DCMAKE_BUILD_TYPE=Release
+  cmake --build "${build}" --parallel
+}
+
+# Install the binary built under BUILD into BIN_DIR. kcov embeds its HTML
+# report assets, so the one binary is the whole install and cmake --install's
+# share/ tree is unnecessary. kcov-system-daemon serves --system-record,
+# which the coverage run does not use.
+install_kcov() {
+  local build="$1" bin_dir="$2"
+  mkdir -p "${bin_dir}"
+  install -m 0755 "${build}/src/kcov" "${bin_dir}/kcov"
+}
+
+# Skip the executable body when sourced (e.g. by install-kcov.bats).
+if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
+  return 0 2>/dev/null || true
+fi
+
+if ! BIN_DIR="$(parse_bin_dir "$@")"; then
   exit 2
 fi
 
-bin="${BIN_DIR}/kcov"
-# The release tag carries a leading v; the binary reports its version without.
-if [[ -x ${bin} ]] && "${bin}" --version 2>/dev/null | grep -qF "${KCOV_VERSION#v}"; then
-  echo "${0##*/}: kcov ${KCOV_VERSION} already installed at ${bin}"
+if installed_version_matches "${BIN_DIR}/kcov" "${KCOV_VERSION}"; then
+  echo "${PROGRAM}: kcov ${KCOV_VERSION} already installed at ${BIN_DIR}/kcov"
   exit 0
 fi
 
-tmp="$(mktemp -d)"
-trap 'rm -rf "${tmp}"' EXIT
+TMP="$(mktemp -d)"
+trap 'rm -rf "${TMP}"' EXIT
 
-asset="${tmp}/kcov-${KCOV_VERSION}.tar.gz"
-curl -fsSL -o "${asset}" \
-  "https://github.com/SimonKagstrom/kcov/archive/refs/tags/${KCOV_VERSION}.tar.gz"
-echo "${KCOV_SHA256}  ${asset}" | sha256sum --check --quiet -
-
-src="${tmp}/src"
-mkdir -p "${src}"
-tar -xzf "${asset}" -C "${src}" --strip-components=1
-
-cmake -S "${src}" -B "${tmp}/build" -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build "${tmp}/build" --parallel
-
-# kcov embeds its HTML report assets, so these two binaries are the whole
-# install and cmake --install's share/ tree is unnecessary.
-mkdir -p "${BIN_DIR}"
-install -m 0755 "${tmp}/build/src/kcov" "${bin}"
-install -m 0755 "${tmp}/build/src/kcov-system-daemon" "${BIN_DIR}/kcov-system-daemon"
+fetch_kcov_source "${TMP}/kcov-${KCOV_VERSION}.tar.gz" "${TMP}/src"
+build_kcov "${TMP}/src" "${TMP}/build"
+install_kcov "${TMP}/build" "${BIN_DIR}"
