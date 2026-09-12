@@ -28,9 +28,10 @@ identity rather than a workflow's, so it needs its own token — see
    credential that matches nothing and fails at the first plan. The trailing
    `*` covers both. [OIDC token claims][gh-claims] lists the other forms.
 4. Add a custom claim pinning `job_workflow_ref` to
-   `alunduil/alunduil-infrastructure/.github/workflows/terraform-*.yml@*`.
-   The subject above admits any workflow in the repository; this narrows it
-   to the two that manage the tailnet.
+   `alunduil/alunduil-infrastructure/.github/workflows/terraform-*`. The
+   subject above admits any workflow in the repository; this narrows it to
+   the two that manage the tailnet. Patterns match literally except where a
+   `*` stands — see [claim value format][claim-format].
 5. Grant the scopes Terraform needs. The console lists read and write per
    API area:
 
@@ -70,4 +71,5 @@ means a second trust credential whose issuer is the one that vouches for you
 locally, created the same way as above.
 
 [trust-credentials]: https://console.tailscale.com/admin/settings/trust-credentials
+[claim-format]: https://tailscale.com/kb/1581/workload-identity-federation#claim-value-format
 [gh-claims]: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect
