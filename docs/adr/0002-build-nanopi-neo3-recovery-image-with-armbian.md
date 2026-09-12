@@ -171,8 +171,8 @@ to the tailnet is the point — the two credential-bearing steps belong
 to the operator's SSH session, and a stolen or mislaid card grants
 nothing.
 
-This also settles the direction of the Tailscale identity question in
-issue 262: the identity doesn't travel on the card. Auth keys expire
+This also settles the direction of #262: the Tailscale identity
+doesn't travel on the card. Auth keys expire
 within 90 days and there's no non-expiring variant, so a spare card in
 a drawer would carry a credential that rots long before it's needed.
 
@@ -259,10 +259,10 @@ Neutral:
 
 ## More Information
 
-Build work is tracked in issue 261. The Tailscale identity question is
-issue 262, and the Alloy outage that stopped this box shipping
-telemetry is issue 473 — independent of this decision, since the image
-installs Alloy without inheriting its broken state.
+Build work is tracked in #261. The Tailscale identity question is #262,
+and the Alloy outage that stopped this box shipping telemetry is #473 —
+independent of this decision, since the image installs Alloy without
+inheriting its broken state.
 
 The recovery plan this replaces is described in
 <https://blog.alunduil.com/posts/how-i-recover>.
