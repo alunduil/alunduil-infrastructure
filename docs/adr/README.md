@@ -11,3 +11,4 @@ practice and the template convention (MADR for substantive records).
 | --- | --- |
 | [0000](0000-record-architecture-decisions.md) | Record architecture decisions |
 | [0001](0001-use-talos-for-home-ad-hoc-services.md) | Use Talos Linux for the home ad-hoc-services platform |
+| [0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) | Build the NanoPi-NEO3 recovery image with Armbian's build framework |
