@@ -68,27 +68,28 @@ refute_stored() { [[ -z "$(stored)" ]]; }
   [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
 }
 
-# --- answer_for ------------------------------------------------------------
+# --- the reader ------------------------------------------------------------
 #
 # Which reader runs decides whether a value reaches scrollback, so the choice
-# is dispatched rather than branched on inside the read.
+# is dispatched to a named function rather than branched on inside the read.
 
-@test "answer_for returns the supplied value without consulting the reader" {
+@test "a supplied value is stored without consulting the reader" {
   # shellcheck disable=SC2329
   never() { echo "reader ran" >&2; }
-  run answer_for never "client ID" kPz9xQ2CNTRL
-  [[ ${status} -eq 0 ]]
-  [[ ${output} == "kPz9xQ2CNTRL" ]]
+  ensure_credential never tailscale-oauth-client-id "client ID" kPz9xQ2CNTRL \
+    2>"${BATS_TEST_TMPDIR}/err"
+  [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
+  [[ "$(stored)" == 'tailscale-oauth-client-id:kPz9xQ2CNTRL' ]]
 }
 
-@test "answer_for delegates to the named reader when nothing was supplied" {
+@test "the named reader supplies the value when the environment did not" {
   # shellcheck disable=SC2329
   will_prompt() { true; }
   # shellcheck disable=SC2329
-  from_operator() { printf 'typed-%s' "${1}"; }
-  run answer_for from_operator "client ID" ""
-  [[ ${status} -eq 0 ]]
-  [[ ${output} == "typed-client ID" ]]
+  from_operator() { printf 'typed-at-the-prompt'; }
+  ensure_credential from_operator tailscale-oauth-client-id "client ID" "" \
+    2>/dev/null
+  [[ "$(stored)" == 'tailscale-oauth-client-id:typed-at-the-prompt' ]]
 }
 
 # --- storing ---------------------------------------------------------------

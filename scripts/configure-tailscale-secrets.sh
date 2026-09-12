@@ -95,27 +95,23 @@ read_hidden_answer() {
 }
 
 # Precedence: the supplied value, else what the operator types, else nothing.
-# read prompts on stderr, so only the answer reaches stdout.
-answer_for() {
-  local reader="${1}" prompt="${2}" value="${3}"
-
-  will_prompt "${value}" || {
-    printf '%s' "${value}"
-    return
-  }
-
-  "${reader}" "${prompt}"
-}
-
+# Whether anyone is about to be asked decides both the pointer and the read, so
+# it is settled once here rather than re-derived by each. read prompts on
+# stderr, so only the answer reaches stdout.
+#
 # Tailscale documents no format for either half, so the only check that can be
-# made here is against a mangled paste: every credential the console issues is
-# a single opaque token.
+# made is against a mangled paste: every credential the console issues is a
+# single opaque token.
 ensure_credential() {
   local reader="${1}" secret="${2}" prompt="${3}" value="${4}"
 
   already_stored "${secret}" && return
-  will_prompt "${value}" && announce_client_once
-  value="$(answer_for "${reader}" "${prompt}" "${value}")"
+
+  if will_prompt "${value}"; then
+    announce_client_once
+    value="$("${reader}" "${prompt}")"
+  fi
+
   [[ -n ${value} ]] || {
     skip_notice "${secret}"
     return
