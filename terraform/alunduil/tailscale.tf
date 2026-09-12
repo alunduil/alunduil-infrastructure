@@ -22,13 +22,13 @@ import {
 # A client's resolver list shows more than this — the rest are not the
 # tailnet's.
 #
-# Quad9 refuses to resolve domains on its malicious-domain feeds, so the block
-# lands at the resolver for every tailnet client. All four addresses are the
-# same blocking-and-DNSSEC service — primary and secondary over both families.
+# Quad9 refuses to resolve domains on its malicious-domain feeds. All four
+# addresses reach that same blocking-and-DNSSEC service, primary and secondary
+# over both families.
 #
-# Tailscale does not guarantee query order and may take the quickest response.
-# A resolver from another provider added here answers some fraction of queries
-# under its own policy rather than acting as a fallback.
+# Tailscale may take the quickest response rather than querying in order. A
+# second provider here would answer a share of queries under its own policy
+# instead of standing by as a fallback.
 resource "tailscale_dns_nameservers" "global" {
   nameservers = [
     "9.9.9.9",
