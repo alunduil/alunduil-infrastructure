@@ -93,7 +93,9 @@ resource "cloudflare_dns_record" "blog_cname" {
 # Cloudflare. A Terraform-managed record would fight that client on every
 # plan. plex_cname below still points at it. This replaces a CNAME to
 # alunduil.tplinkdns.com, whose flaky TP-Link nameservers dropped ~25% of
-# queries and tripped UptimeRobot's DNS-resolution checks.
+# queries and tripped UptimeRobot's DNS-resolution checks. The client and its
+# Cloudflare token are documented in
+# docs/how-to/configure-truenas-ddns-updater.md.
 
 resource "cloudflare_dns_record" "plex_cname" {
   zone_id = cloudflare_zone.alunduil_com.id
