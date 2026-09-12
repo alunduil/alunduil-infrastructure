@@ -50,10 +50,15 @@ the rest untouched:
 | Devices  | Core                | Read | Read  |
 | Devices  | Routes              | Read | Write |
 | Keys     | Auth Keys           | Read | Read  |
+| Settings | Feature Settings    | Read | Write |
 | Settings | Networking Settings | Read | Write |
 
-Networking Settings rather than DNS carries HTTPS certificates, which is
-what makes it a separate row.
+The endpoint behind the tailnet settings answers to several scopes: Feature
+Settings covers device approval and key expiry, Networking Settings covers
+HTTPS certificates, and Policy File covers the externally-managed flag.
+
+A missing scope reads back as a zero value rather than an error, so a
+setting can look imported and still reject the write.
 
 Core and Auth Keys stay at read on both. Write on either demands tags chosen
 alongside it, and tags have to exist in the policy file first — which is
@@ -84,4 +89,20 @@ export TAILSCALE_CLIENT_ID_RW=...
 `TAILSCALE_IDENTITY_TOKEN` set to a token the tailnet trusts. That means a
 third credential, created as above, whose issuer vouches for you locally.
 
+## Stays manual
+
+Terraform manages none of these, so no plan shows them drifting.
+
+Raise a scope in the console before merging the code that needs it. A
+rejected write fails the whole apply, not just the resource that asked for
+it.
+
+Confirm the partner account holds **Member** rather than Admin on the
+[Users][users] page.
+
+Audit the [Keys][keys] page and revoke auth keys that no longer register a
+device, reusable ones first.
+
+[keys]: https://console.tailscale.com/admin/settings/keys
 [trust-credentials]: https://console.tailscale.com/admin/settings/trust-credentials
+[users]: https://console.tailscale.com/admin/users
