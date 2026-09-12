@@ -25,15 +25,18 @@ into the app — it never reaches Terraform or CI. For the app itself see
    Under **Zone Resources** set `Include` → `Specific zone` →
    `alunduil.com`.
 
-   Leave **TTL** without an expiration date. The app runs unattended,
-   and an expired token stops DNS updates without an alert — the stale
-   A record keeps resolving until the home IP changes.
+   Leave **TTL** without an expiration date. An expired token stops
+   updates silently: the stale A record keeps resolving until the home
+   IP changes.
 2. Copy the value — Cloudflare shows it once — and paste it into the
    app's **Token** field.
 
 ## Rotate
 
-Create the replacement first, put it in the app config, save, and
-confirm the app reports a successful update. Then delete the old token
-in the dashboard. The app holds the only copy, so deleting first leaves
-the record unmaintained until the new token is in place.
+1. Create the replacement token.
+2. Put it in the app config and save.
+3. Confirm the app reports a successful update, then delete the old
+   token in the dashboard.
+
+The app holds the only copy, so deleting first leaves the record
+unmaintained until the replacement is in place.
