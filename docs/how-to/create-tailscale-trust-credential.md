@@ -17,12 +17,21 @@ identity rather than a workflow's, so it needs its own token — see
 1. Open the [Trust credentials][trust-credentials] page of the admin console,
    select **Credential**, then select **OpenID Connect**.
 2. Select **GitHub** from the **Issuer** dropdown.
-3. Narrow the prefilled **Subject** to this repository. It arrives
-   GitHub-shaped; what matters is that the repository segment reads
-   `alunduil/alunduil-infrastructure` and not a wildcard any repository on
-   the account would satisfy. To pin a branch or environment as well, see
-   [OIDC token claims][gh-claims].
-4. Grant the scopes Terraform needs. The console lists read and write per
+3. Replace the prefilled **Subject** with
+   `repo:alunduil/alunduil-infrastructure:*`.
+
+   The placeholder reads `repo:octo-org/octo-repo:environment:*`, and its
+   `environment:` segment matches only jobs that name an environment.
+   Neither Terraform workflow does: the plan runs on pull requests and the
+   apply on pushes to `main`, so their subjects end `:pull_request` and
+   `:ref:refs/heads/main`. Copying the placeholder's shape would leave a
+   credential that matches nothing and fails at the first plan. The trailing
+   `*` covers both. [OIDC token claims][gh-claims] lists the other forms.
+4. Add a custom claim pinning `job_workflow_ref` to
+   `alunduil/alunduil-infrastructure/.github/workflows/terraform-*.yml@*`.
+   The subject above admits any workflow in the repository; this narrows it
+   to the two that manage the tailnet.
+5. Grant the scopes Terraform needs. The console lists read and write per
    API area:
 
    | Area             | Access | Manages                         |
@@ -35,9 +44,9 @@ identity rather than a workflow's, so it needs its own token — see
 
    Granting all five now keeps the tailnet on one credential, so no later
    change has to create a second one.
-5. Let Tailscale generate the audience. The provider derives it from the
+6. Let Tailscale generate the audience. The provider derives it from the
    client ID, so a hand-picked one would have to be carried separately.
-6. Copy the **client ID**. There is no secret to capture: the ID is an
+7. Copy the **client ID**. There is no secret to capture: the ID is an
    identifier, and presenting it without a matching OIDC token grants
    nothing.
 
