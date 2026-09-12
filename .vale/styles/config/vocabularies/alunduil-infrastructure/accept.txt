@@ -26,6 +26,17 @@ Tailscale
 UptimeRobot
 Renovate
 etcd
+Loki
+Netdata
+Mosquitto
+Zigbee
+Zigbee2MQTT
+MagicDNS
+Quad9
+Crostini
+ChromeOS
+Squarespace
+zellij
 
 # Product and interface names, spelled as their vendors spell them
 GitHub
@@ -83,9 +94,11 @@ Nygard's
 (?i)ruleset
 (?i)subnet
 (?i)subnets
+(?i)syslog
 (?i)transcode
 (?i)triaged
 (?i)uncheck
+(?i)unmanaged
 (?i)unshipped
 (?i)untracked
 (?i)upserts

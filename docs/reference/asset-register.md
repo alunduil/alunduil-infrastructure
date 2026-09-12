@@ -1,0 +1,389 @@
+<!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
+# Asset register
+
+Every host, device, service, and operator credential in the personal
+estate. The network map, the data-flow diagram, and the threat model
+cite this register rather than re-encoding the same facts.
+
+Verified 2026-09-12.
+
+## Scope
+
+Covers the home network, the off-site host, the operator workstation,
+and the cloud and identity services this repository provisions or
+depends on.
+
+Out of scope:
+
+- The MCP server fleet and the workstation's own configuration, which
+  belong to `alunduil/alunduil-chezmoi`.
+- Hardware not yet acquired, including the Talos node of issue #242.
+- Secret values and their storage paths. The credential entries name
+  each credential, its scope, and its consumer, never its location.
+
+A field reading `Unverified` means the fact wasn't reachable from the
+repository or from a live query at the verification date above. It's a
+gap to close, not an assertion that the fact is unknowable.
+
+## Maintenance
+
+Adding or removing a host, device, service, or credential updates this
+register in the same pull request, and the verification date above
+changes with it.
+
+## Classification schemes
+
+Criticality states what breaks on loss of the asset:
+
+| Tier | Meaning |
+| --- | --- |
+| High | A service in daily use stops, with no substitute |
+| Medium | Noticeable loss, worked around within a day |
+| Low | Inconvenience only |
+
+Data classification states what the asset holds:
+
+| Label | Meaning |
+| --- | --- |
+| Personal | Household media, documents, and home telemetry |
+| Operational | Credentials, configuration, infrastructure state |
+| Public | Content published to the internet |
+
+## Hosts and devices
+
+### `truenas`
+
+- Address: `truenas-scale.tail3af06.ts.net`; LAN address unverified
+- Role: NAS and application host; Tailscale subnet router advertising
+  `192.168.68.0/22`, and an exit node
+- Applications: Plex, Netdata, alloy, Tailscale, `ddns-updater`,
+  Scrutiny
+- Hardware: TrueNAS Mini 3.0-E, Atom C3338, 16 GiB ECC memory, four
+  disks in one `raidz2` vdev
+- OS: TrueNAS 25.10.7
+- Location: London
+- Owner: alunduil
+- Criticality: High
+- Data: Personal, Operational
+- Monitoring: Grafana Cloud metrics (`truenas-scale`) and logs
+  (`truenas`); Netdata; Scrutiny SMART; UptimeRobot through the Plex
+  endpoints
+- Backup: configuration bundle to Google Drive on a schedule, per
+  [the config backup how-to](../how-to/configure-truenas-config-backup.md)
+
+### `homeassistant`
+
+- Address: `192.168.68.56`; `homeassistant.tail3af06.ts.net`
+- Role: home automation hub
+- Add-ons: Zigbee2MQTT, Mosquitto, Matter server, alloy, Tailscale,
+  SSH, File editor
+- OS: Home Assistant OS, version unverified
+- Location: London
+- Owner: alunduil
+- Criticality: Medium
+- Data: Personal
+- Monitoring: Grafana Cloud metrics (`home-assistant`) and journal
+  logs; UptimeRobot heartbeat
+- Backup: Unverified
+
+### `slzb-mr4u`
+
+- Address: Unverified
+- Role: Zigbee and Thread radio coordinator
+- OS: Unverified
+- Location: London
+- Owner: alunduil
+- Criticality: Medium
+- Data: Personal
+- Monitoring: syslog to Loki (`slzb-mr4u`)
+- Backup: none; configuration lives on the device
+
+### Deco mesh
+
+- Address: `192.168.68.1`, serving `192.168.68.0/22`
+- Role: router, Wi-Fi mesh, DHCP, and DNS relay to Quad9 over DNS over
+  HTTPS
+- OS: TP-Link Deco; model and firmware unverified
+- Location: London
+- Owner: alunduil
+- Criticality: High
+- Data: Operational
+- Monitoring: none
+- Backup: Unverified
+
+### `nanopi-neo3`
+
+- Address: `nanopi-neo3.tail3af06.ts.net`; DHCP on its local network
+- Role: Tailscale exit node presenting a US address
+- OS: Armbian, version unverified
+- Location: American Midwest, in a household that isn't alunduil's
+- Owner: alunduil, administered remotely from London
+- Criticality: Low
+- Data: Operational
+- Monitoring: UptimeRobot heartbeat. Grafana Cloud shipping is absent;
+  see issue #473
+- Backup: hourly `rclone` of package selections and `/home` to Google
+  Drive
+- Recovery:
+  [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
+
+### `penguin`
+
+- Address: `penguin.tail3af06.ts.net`
+- Role: operator workstation, running break-glass Terraform applies,
+  `chezmoi`, and Claude Code
+- OS: Debian under Crostini, version unverified
+- Location: London
+- Owner: alunduil
+- Criticality: Medium
+- Data: Operational
+- Monitoring: Grafana Cloud `integrations/unix` and
+  `integrations/process`; zellij logs to Loki
+- Backup: Unverified
+
+## Cloud and identity services
+
+### Google Cloud
+
+- Identifier: project `alunduil`, region `europe-west1`
+- Role: Terraform state bucket, Secret Manager, the workload identity
+  federation pool for CI, and audit logging
+- Owner: alunduil
+- Criticality: High
+- Data: Operational
+- Monitoring: Grafana Cloud queries Cloud Monitoring live at dashboard
+  time; data-access audit logs are enabled for storage and Secret
+  Manager
+- Backup: Terraform state is versioned in its bucket
+
+### Cloudflare
+
+- Identifier: zone `alunduil.com`, DNSSEC active
+- Role: authoritative DNS and zone settings
+- Owner: alunduil
+- Criticality: High
+- Data: Public
+- Monitoring: none directly; UptimeRobot covers the records that
+  resolve to home
+- Backup: every record except `home.alunduil.com` is declared in
+  `terraform/alunduil/dns.tf`
+
+### Squarespace
+
+- Identifier: registrar for `alunduil.com`
+- Role: domain registration and the DS records for DNSSEC
+- Owner: alunduil
+- Criticality: High
+- Data: Public
+- Monitoring: none
+- Backup: not applicable
+
+### GitHub
+
+- Identifier: account `alunduil`
+- Role: source of record for every managed repository, and the CI that
+  applies this infrastructure
+- Owner: alunduil
+- Criticality: High
+- Data: Operational, Public
+- Monitoring: none
+- Backup: repositories are cloned across the estate; settings are
+  declared in `terraform/alunduil/repositories.tf`
+
+### Tailscale
+
+- Identifier: tailnet `tail3af06.ts.net`
+- Role: private network joining every host above
+- Settings: device approval on, key duration 180 days, MagicDNS on,
+  HTTPS certificates on, global nameservers pinned to Quad9. Both exit
+  nodes carry per-device key-expiry exemptions set outside Terraform
+- Owner: alunduil
+- Criticality: High
+- Data: Operational
+- Monitoring: none; network flow logging is off
+- Backup: the policy file is declared in
+  `terraform/alunduil/tailscale-acl.hujson`
+
+### Grafana Cloud
+
+- Identifier: stack `alunduil`, region `prod-gb-south-1`
+- Role: metrics, logs, traces, profiles, and dashboards
+- Owner: alunduil
+- Criticality: Medium
+- Data: Operational
+- Monitoring: not applicable; this is the monitoring system
+- Backup: dashboards sync to the `grafana/` directory of this
+  repository through Git Sync
+
+### UptimeRobot
+
+- Identifier: four monitors — Plex over HTTP, Plex over HTTPS, a Home
+  Assistant heartbeat, and a NanoPi-NEO3 heartbeat
+- Role: external availability checks
+- Owner: alunduil
+- Criticality: Medium
+- Data: Operational
+- Monitoring: not applicable
+- Backup: none; monitors are configured by hand
+
+### Google Drive
+
+- Role: backup destination for the TrueNAS configuration bundle,
+  Google Takeout archives, and the NanoPi-NEO3
+- Owner: alunduil
+- Criticality: High
+- Data: Personal, Operational
+- Monitoring: none
+- Backup: this is the backup destination
+
+## Tailnet clients
+
+Devices holding tailnet membership that run no service. Membership is
+an access path, so they're listed; the fields above don't apply.
+
+| Node | Platform | Account | Key |
+| --- | --- | --- | --- |
+| `brya` | Android on ChromeOS | alunduil | Expires 2027-01-07 |
+| `pixel-9-pro-fold` | Android | alunduil | Expires 2026-09-23 |
+| `tabultrac` | Android | alunduil | Expires 2026-10-16 |
+| `rogxboxallyx` | Windows | alunduil | Expires 2026-12-15 |
+| `pixel-9a` | Android | partner | Expired 2026-08-02 |
+| `chromeos-google-octopus` | Android | partner | Expired 2025-11-21 |
+
+## Credentials provisioned by Terraform
+
+Terraform creates and rotates each of these.
+
+### alunduil-infrastructure deployer (RO)
+
+- Kind: Cloudflare API token
+- Scope: Zone Read, DNS Read, and Zone Settings Read on `alunduil.com`
+- Consumer: `terraform plan` in CI
+- Declared in: `terraform/bootstrap/cloudflare_tokens.tf`
+
+### alunduil-infrastructure deployer (RW)
+
+- Kind: Cloudflare API token
+- Scope: Zone Read, DNS Write, and Zone Settings Write on
+  `alunduil.com`
+- Consumer: `terraform apply` in CI, and `just alunduil`
+- Declared in: `terraform/bootstrap/cloudflare_tokens.tf`
+
+### `github-deployer-ro`
+
+- Kind: Google Cloud service account
+- Scope: the `githubDeployerPlanner` custom role, and object read on
+  the state bucket
+- Consumer: `terraform plan` in CI, through workload identity
+  federation
+- Declared in: `terraform/bootstrap/service_account_github_deployer_ro.tf`
+
+### `github-deployer-rw`
+
+- Kind: Google Cloud service account
+- Scope: the `githubDeployerApplier` custom role, and object admin on
+  the state bucket
+- Consumer: `terraform apply` in CI, restricted to `refs/heads/main`
+- Declared in: `terraform/bootstrap/service_account_github_deployer_rw.tf`
+
+### `grafana-gcp-reader`
+
+- Kind: Google Cloud service account key
+- Scope: `monitoring.viewer`, `logging.viewer`, `logging.viewAccessor`
+- Consumer: the Cloud Monitoring data source in Grafana Cloud
+- Declared in: `terraform/bootstrap/grafana_gcp_reader.tf`
+
+### `alunduil-infrastructure-provisioner`
+
+- Kind: Grafana stack service account token
+- Scope: stack Admin
+- Consumer: the Grafana resources in `terraform/alunduil/`
+- Declared in: `terraform/bootstrap/grafana.tf`
+
+## Credentials created by hand
+
+### Master Cloudflare token
+
+- Kind: Cloudflare API token, time-limited
+- Scope: `User:API Tokens` Edit, plus zone reads
+- Consumer: one `terraform/bootstrap/` apply, then expiry
+- How-to: [`create-master-cloudflare-token.md`](../how-to/create-master-cloudflare-token.md)
+
+### Grafana Cloud access-policy token
+
+- Kind: access-policy token
+- Scope: `stacks:read`, `stack-service-accounts:write`
+- Consumer: one `terraform/bootstrap/` apply
+- How-to: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
+
+### Deployer GitHub App
+
+- Kind: GitHub App ID and private key
+- Scope: installed across the managed repositories
+- Consumer: the `integrations/github` provider in CI
+- How-to: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
+
+### Git Sync GitHub App
+
+- Kind: GitHub App ID, installation ID, and private key
+- Scope: installed on `alunduil-infrastructure` alone
+- Consumer: Grafana Git Sync, for dashboard pull requests
+- How-to: [`create-git-sync-github-app.md`](../how-to/create-git-sync-github-app.md)
+
+### Tailscale trust credential (read)
+
+- Kind: workload identity federation client ID
+- Scope: tailnet read
+- Consumer: the `tailscale` provider during plan
+- How-to: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
+
+### Tailscale trust credential (write)
+
+- Kind: workload identity federation client ID
+- Scope: tailnet write
+- Consumer: the `tailscale` provider during apply
+- How-to: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
+
+### `GH_PROJECT_SYNC_TOKEN`
+
+- Kind: GitHub classic personal access token
+- Scope: Projects v2 write
+- Consumer: the Projects v2 sync workflow
+- How-to: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
+
+### Web Analytics beacon
+
+- Kind: Cloudflare site token; public, and no secret
+- Scope: beacon submission for `blog.alunduil.com`
+- Consumer: client-side JavaScript on the blog
+- How-to: [`create-web-analytics-site.md`](../how-to/create-web-analytics-site.md)
+
+### Cloudflare DDNS token
+
+- Kind: Cloudflare API token; scope unverified
+- Scope: writes the `home.alunduil.com` A record
+- Consumer: `ddns-updater` on `truenas`
+- How-to: none. Issue #269 tracks writing one
+
+### Google Drive credential
+
+- Kind: OAuth grant
+- Scope: Drive read and write
+- Consumer: the TrueNAS Cloud Sync tasks
+- How-to: none
+
+### Tailscale auth keys
+
+- Kind: pre-authentication keys
+- Scope: device enrolment
+- Consumer: enrolling a host by hand. Deliberately left unmanaged, as
+  importing one drops its key material
+- How-to: none
+
+## Orphans
+
+A credential above whose consumer is `none` is an orphan. None is
+recorded at the verification date. The `Edit zone DNS` token that
+issue #128 identified is the most recent one found.

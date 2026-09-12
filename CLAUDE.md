@@ -33,6 +33,9 @@ check what's already in place:
 
 - Helper scripts: `scripts/`. New shell helpers go here, not the
   repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+- Estate facts (hosts, addresses, versions, monitoring, backups,
+  credentials and their consumers): `docs/reference/asset-register.md`.
+  Adding or removing an asset updates it in the same PR.
 - GitHub Projects v2: self-contained module at `github/projects/`
   (applier `bootstrap.sh` + `*.bats` tests + `*.json`
   specs + `project.schema.json`), co-located for locality absent a
