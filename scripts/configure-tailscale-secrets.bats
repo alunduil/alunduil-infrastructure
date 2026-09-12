@@ -4,7 +4,7 @@
 #
 # Unit tests for the resolve-once behaviour in configure-tailscale-secrets.sh:
 # what makes it skip, what it rejects, the exact bytes it stores, and when the
-# operator gets told which client is meant. Both gcloud-touching helpers are
+# operator gets told which credential is meant. Both gcloud-touching helpers are
 # replaced by stubs below, so Secret Manager is left to the bootstrap run.
 
 # Fixtures below are inputs to the sourced script rather than to this file, so
@@ -17,8 +17,7 @@ setup() {
 
   POPULATED=""
   STORE="${BATS_TEST_TMPDIR}/store"
-  TAILSCALE_OAUTH_CLIENT_ID=""
-  TAILSCALE_OAUTH_CLIENT_SECRET=""
+  TAILSCALE_CLIENT_ID=""
 
   # Both stubs are reached only from the sourced script, which shellcheck
   # cannot see.
@@ -41,88 +40,49 @@ stored() { cat "${STORE}" 2>/dev/null || true; }
 
 refute_stored() { [[ -z "$(stored)" ]]; }
 
-# --- the client pointer ---------------------------------------------------
+# --- the credential pointer -------------------------------------------------
 #
-# Names which client the two values have to come from, so it has to reach the
-# operator exactly once, and only where somebody is about to be asked.
+# Names which credential the ID has to come from, and only reaches the operator
+# where somebody is about to be asked.
 
-@test "the pointer says both values come from one client and the secret is shown once" {
-  run print_oauth_client_pointer
+@test "the pointer names the credential type and where it is listed" {
+  run print_credential_pointer
   [[ ${status} -eq 0 ]]
-  [[ ${output} == *"belong to one OAuth client"* ]]
-  [[ ${output} == *"shown only when"* ]]
-}
-
-# Redirection, not $(...) or run: either runs the call in a subshell, where the
-# flag cannot survive and the test would fail whatever the code does.
-@test "announce_client_once speaks the first time and stays quiet after" {
-  announce_client_once 2>"${BATS_TEST_TMPDIR}/first"
-  announce_client_once 2>"${BATS_TEST_TMPDIR}/second"
-  grep -q "one OAuth client" "${BATS_TEST_TMPDIR}/first"
-  [[ ! -s "${BATS_TEST_TMPDIR}/second" ]]
+  [[ ${output} == *"OpenID Connect credential"* ]]
+  [[ ${output} == *"trust-credentials"* ]]
 }
 
 @test "a value supplied through the environment draws no pointer" {
-  ensure_client_id tailscale-oauth-client-id "client ID" kPz9xQ2CNTRL \
+  ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL \
     2>"${BATS_TEST_TMPDIR}/err"
   [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
-}
-
-# --- the reader ------------------------------------------------------------
-#
-# Which reader runs decides whether a value reaches scrollback, so a stub
-# standing in for one is how both paths get exercised without a terminal.
-
-@test "a supplied value is stored without consulting the reader" {
-  # shellcheck disable=SC2329
-  never() { echo "reader ran" >&2; }
-  ensure_credential never tailscale-oauth-client-id "client ID" kPz9xQ2CNTRL \
-    2>"${BATS_TEST_TMPDIR}/err"
-  [[ ! -s "${BATS_TEST_TMPDIR}/err" ]]
-  [[ "$(stored)" == 'tailscale-oauth-client-id:kPz9xQ2CNTRL' ]]
-}
-
-@test "the named reader supplies the value when the environment did not" {
-  # shellcheck disable=SC2329
-  will_prompt() { true; }
-  # shellcheck disable=SC2329
-  from_operator() { printf 'typed-at-the-prompt'; }
-  ensure_credential from_operator tailscale-oauth-client-id "client ID" "" \
-    2>/dev/null
-  [[ "$(stored)" == 'tailscale-oauth-client-id:typed-at-the-prompt' ]]
 }
 
 # --- storing ---------------------------------------------------------------
 
 @test "a populated secret is left alone" {
-  POPULATED="tailscale-oauth-client-id"
-  run ensure_client_id tailscale-oauth-client-id "client ID" kPz9xQ2CNTRL
+  POPULATED="tailscale-client-id"
+  run ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL
   [[ ${status} -eq 0 ]]
-  [[ ${output} == "tailscale-oauth-client-id already set." ]]
+  [[ ${output} == "tailscale-client-id already set." ]]
   refute_stored
 }
 
 @test "the supplied value is stored with no trailing newline" {
-  ensure_client_id tailscale-oauth-client-id "client ID" kPz9xQ2CNTRL
-  [[ "$(stored)" == 'tailscale-oauth-client-id:kPz9xQ2CNTRL' ]]
+  ensure_client_id tailscale-client-id "client ID" kPz9xQ2CNTRL
+  [[ "$(stored)" == 'tailscale-client-id:kPz9xQ2CNTRL' ]]
 }
 
 @test "a value carrying whitespace is rejected" {
-  run ensure_client_secret tailscale-oauth-client-secret "client secret" \
-    'tskey-client-abc def' # pragma: allowlist secret
+  run ensure_client_id tailscale-client-id "client ID" 'kPz9xQ2CNTRL extra'
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"must not contain whitespace"* ]]
   refute_stored
 }
 
-@test "both halves skip rather than prompting when stdin is not a terminal" {
-  run ensure_client_id tailscale-oauth-client-id "client ID" ""
+@test "an empty value skips rather than prompting when stdin is not a terminal" {
+  run ensure_client_id tailscale-client-id "client ID" ""
   [[ ${status} -eq 0 ]]
-  [[ ${output} == *"Leaving tailscale-oauth-client-id empty"* ]]
-
-  run ensure_client_secret tailscale-oauth-client-secret "client secret" ""
-  [[ ${status} -eq 0 ]]
-  [[ ${output} == *"Leaving tailscale-oauth-client-secret empty"* ]]
-
+  [[ ${output} == *"Leaving tailscale-client-id empty"* ]]
   refute_stored
 }

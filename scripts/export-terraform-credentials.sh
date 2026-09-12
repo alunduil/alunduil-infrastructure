@@ -85,8 +85,7 @@ export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-priva
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
 
-# One OAuth client authenticates plan and apply alike, so neither half varies
-# with role. The ID is masked rather than exported as an identifier: it
-# authenticates only paired with the secret, which makes it half a credential.
-export_secret TF_VAR_tailscale_oauth_client_id tailscale-oauth-client-id
-export_secret TF_VAR_tailscale_oauth_client_secret tailscale-oauth-client-secret
+# The provider federates: it mints its own OIDC token from the runner and needs
+# no stored credential, only the client id naming the trust credential to
+# present it to. Not masked — the id grants nothing without a matching token.
+export_identifier TF_VAR_tailscale_client_id tailscale-client-id

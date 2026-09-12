@@ -18,8 +18,8 @@ credentials.
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed — see
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
-- A Tailscale OAuth client — see
-  [create-tailscale-oauth-client.md](create-tailscale-oauth-client.md).
+- A Tailscale trust credential — see
+  [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
 
 ## Run
 
@@ -42,7 +42,6 @@ Set `GIT_SYNC_APP_ID`, `GIT_SYNC_APP_INSTALLATION_ID`, and
 Enter at each to defer until the App exists. To replace a stored key, see
 [rotate-git-sync-app-key.md](rotate-git-sync-app-key.md).
 
-It then prompts the same way for the Tailscale OAuth client ID and secret.
-Set `TAILSCALE_OAUTH_CLIENT_ID` and `TAILSCALE_OAUTH_CLIENT_SECRET` to
-answer without the prompt, or press Enter at each to defer until the client
-exists.
+It then prompts the same way for the Tailscale trust credential's client ID.
+Set `TAILSCALE_CLIENT_ID` to answer without the prompt, or press Enter to
+defer until the credential exists.

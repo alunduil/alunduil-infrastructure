@@ -77,8 +77,8 @@ output "grafana_gcp_reader_key_secret" {
   sensitive   = false
 }
 
-output "tailscale_oauth_secrets" {
-  value       = sort([for secret in google_secret_manager_secret.tailscale_oauth : secret.secret_id])
-  description = "Secret Manager short names holding the Tailscale OAuth client ID and secret; populated by scripts/configure-tailscale-secrets.sh and fetched at plan and apply time via `gcloud secrets versions access`"
+output "tailscale_client_id_secret" {
+  value       = google_secret_manager_secret.tailscale_client_id.secret_id
+  description = "Secret Manager short name holding the Tailscale trust credential's client ID; populated by scripts/configure-tailscale-secrets.sh and fetched at plan and apply time via `gcloud secrets versions access`"
   sensitive   = false
 }
