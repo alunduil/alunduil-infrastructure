@@ -85,8 +85,8 @@ command -v gcloud >/dev/null || {
 
 export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}"
 
-# Plan has to read the Git Sync connection, which no basic role below Admin can
-# do, so plan and apply share one set of credentials.
+# Plan and apply share one set of Grafana credentials; terraform/bootstrap/
+# grafana.tf carries why no read-only variant can exist.
 export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id

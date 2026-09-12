@@ -28,15 +28,15 @@ resource "grafana_cloud_stack_service_account_token" "provisioner" {
   service_account_id = grafana_cloud_stack_service_account.provisioner.id
 }
 
-# Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split: plan
-# has to read the Git Sync connection, which no basic role below Admin can do,
-# and the Git Sync App credentials are a single identity shared by plan and
-# apply — a write-only secure value the connection resource sends, which plan
-# needs in hand to avoid a spurious diff. Both deployer SAs therefore read every
-# one of them. The per-secret accessor isolation from cloudflare_tokens.tf still
-# applies — the values never live in bucket-readable state, only behind
-# secretAccessor IAM. For personal infra whose PRs are owner-originated this
-# shared access is acceptable; revisit if plan ever runs from less-trusted refs.
+# Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split: the
+# provisioner role above admits no read-only variant, and the Git Sync App
+# credentials are a single identity shared by plan and apply — a write-only
+# secure value the connection resource sends, which plan needs in hand to avoid
+# a spurious diff. Both deployer SAs therefore read every one of them. The
+# per-secret accessor isolation from cloudflare_tokens.tf still applies — the
+# values never live in bucket-readable state, only behind secretAccessor IAM.
+# For personal infra whose PRs are owner-originated this shared access is
+# acceptable; revisit if plan ever runs from less-trusted refs.
 resource "google_secret_manager_secret" "grafana_provisioner_token" {
   project   = google_project.env.project_id
   secret_id = "grafana-provisioner-token"
