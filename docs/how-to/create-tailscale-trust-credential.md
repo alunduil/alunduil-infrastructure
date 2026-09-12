@@ -97,7 +97,7 @@ Raise a scope in the console before merging the code that needs it. A
 rejected write fails the whole apply, not just the resource that asked for
 it.
 
-Confirm `sentinger53@gmail.com` holds **Member** rather than Admin on the
+Confirm the partner account holds **Member** rather than Admin on the
 [Users][users] page.
 
 Audit the [Keys][keys] page and revoke auth keys that no longer register a
