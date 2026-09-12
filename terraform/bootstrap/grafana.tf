@@ -8,10 +8,12 @@ data "grafana_cloud_stack" "this" {
   slug = var.grafana_stack_slug
 }
 
-# Service account the alunduil layer's Grafana provider authenticates as to
-# manage the Git Sync repository. Admin because Git Sync provisioning exposes no
-# read-only role that can still plan the repository resource — see the
-# single-secret note below.
+# Admin because the alunduil layer needs actions no lesser basic role grants:
+# provisioning.connections:read and :write for the Git Sync connection, and
+# datasources:write for the Cloud Monitoring data source.
+# Fine-grained RBAC roles would grant just those, but a stack service account
+# takes a basic role only and custom roles need a stack plan with RBAC. Revisit
+# if this stack moves to one. See the single-secret note below.
 resource "grafana_cloud_stack_service_account" "provisioner" {
   stack_slug  = data.grafana_cloud_stack.this.slug
   name        = "alunduil-infrastructure-provisioner"
@@ -25,14 +27,14 @@ resource "grafana_cloud_stack_service_account_token" "provisioner" {
   service_account_id = grafana_cloud_stack_service_account.provisioner.id
 }
 
-# Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split:
-# Grafana provisioning has no read-only-yet-plannable role, and the Git Sync App
-# credentials are a single identity shared by plan and apply. Both deployer SAs
-# therefore read every one of them. The per-secret accessor isolation from
-# cloudflare_tokens.tf still applies — the values never live in bucket-readable
-# state, only behind secretAccessor IAM. For personal infra whose PRs are
-# owner-originated this shared access is acceptable; revisit if plan ever runs
-# from less-trusted refs.
+# Unlike the Cloudflare deployer tokens, these secrets have no RO/RW split. The
+# provisioner role above has no read-only variant, and the Git Sync App
+# credentials are one identity: the private key is a write-only secure value the
+# connection resource sends, which plan needs to avoid a spurious diff. Both
+# deployer SAs therefore read every one of them. The per-secret accessor
+# isolation from cloudflare_tokens.tf still applies, so no value reaches
+# bucket-readable state. For personal infra whose PRs are owner-originated this
+# shared access is acceptable; revisit if plan ever runs from less-trusted refs.
 resource "google_secret_manager_secret" "grafana_provisioner_token" {
   project   = google_project.env.project_id
   secret_id = "grafana-provisioner-token"
