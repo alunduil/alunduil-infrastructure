@@ -239,7 +239,10 @@ token minted for a fork matches nothing.
 
 ## External dependencies
 
-Services outside our control, and what leaves to them.
+Third parties the estate relies on, and what leaves to each. A-07
+through A-11 appear here as well as in Assets: the asset entry records
+what the estate holds there, and this one records what reaches the
+vendor.
 
 | ID | Service | What leaves |
 | --- | --- | --- |
@@ -249,9 +252,11 @@ Services outside our control, and what leaves to them.
 | D-04 | UptimeRobot | Probes against E-01; heartbeats from A-02, A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
 | D-06 | TP-Link cloud | Administration of A-04; its telemetry is `Unverified` |
-
-Telemetry from A-01, A-02, A-03, and A-06 leaves to A-11, which is an
-asset because Terraform configures it.
+| D-07 | Google Cloud (A-07) | Terraform state and every secret |
+| D-08 | Cloudflare (A-08) | Zone configuration; the home address via C-15 |
+| D-09 | GitHub (A-09) | This repository and its CI logs |
+| D-10 | Tailscale (A-10) | Node keys and tailnet membership |
+| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
 
 ## Credentials
 
