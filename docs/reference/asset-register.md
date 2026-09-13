@@ -223,7 +223,7 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-06 | Home Assistant on 8123 | A-02 | T-2 |
 | E-07 | Web interface on 80, `_slzb-06._tcp` on 7638 | A-03 | T-2 |
 | E-08 | Administration through the Deco app, via D-06 | A-04 | T-1 |
-| E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
+| E-09 | Services published to the tailnet | A-01, A-02, A-05 | T-3 |
 | E-11 | Netdata on 20489 | A-01 | T-2 |
 | E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
 
