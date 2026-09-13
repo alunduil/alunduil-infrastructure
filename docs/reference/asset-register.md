@@ -105,11 +105,12 @@ entry says otherwise.
 
 - Address: `192.168.68.56`, which `grafana/air-quality.json` pins in
   four panel queries; `homeassistant.tail3af06.ts.net`
-- Role: home automation hub
+- Role: home automation hub. Every automation in the house runs here,
+  so lights and the rest degrade to manual control without it
 - Runs: Zigbee2MQTT, Mosquitto, Matter server, an OpenThread Border
   Router, alloy, Tailscale, SSH, File editor
 - OS: Home Assistant OS 18.2, Core 2026.9.1, amd64
-- Criticality: Medium
+- Criticality: High
 - Classification: Personal
 - Monitoring: Grafana Cloud metrics (`home-assistant`) and journal
   logs; UptimeRobot heartbeat
@@ -119,11 +120,14 @@ entry says otherwise.
 
 - Address: `SLZB-MR4U.local`, serving a web interface on port 80 and
   `_slzb-06._tcp` on 7638
-- Role: Zigbee coordinator. The vendor service type and the model name
-  are the evidence; the web interface exposes no identifying text. The
-  Thread border router advertises from `homeassistant` instead
+- Role: Zigbee coordinator, carrying every Zigbee message the house
+  sends. Zigbee2MQTT on `homeassistant` depends on it, which puts it on
+  the same critical path. The vendor service type and the model name
+  are the evidence for the role; the web interface exposes no
+  identifying text. The Thread border router advertises from
+  `homeassistant` instead
 - OS: `Unverified`
-- Criticality: Medium
+- Criticality: High
 - Classification: Personal
 - Monitoring: syslog to Loki (`slzb-mr4u`)
 - Backup: `None`; configuration lives on the device
