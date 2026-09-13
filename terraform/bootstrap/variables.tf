@@ -11,6 +11,8 @@ variable "billing_account_id" {
   }
 }
 
+# Account Analytics is here for the blog's account-scoped analytics token; the
+# rest of the rows serve the two zone-scoped deployer tokens.
 variable "cloudflare_master_token" {
   type        = string
   sensitive   = true
@@ -21,12 +23,14 @@ variable "cloudflare_master_token" {
     Create Custom Token. Each Permissions row has three dropdowns —
     group (defaults to Account), permission, access. Add these rows:
 
-      User | API Tokens    | Edit
-      Zone | Zone          | Read
-      Zone | DNS           | Read
-      Zone | Zone Settings | Read
+      User    | API Tokens        | Edit
+      Zone    | Zone              | Read
+      Zone    | DNS               | Read
+      Zone    | Zone Settings     | Read
+      Account | Account Analytics | Read
 
-    Set Zone Resources to: Include | Specific zone | alunduil.com.
+    Set Zone Resources to: Include | Specific zone | alunduil.com, and
+    Account Resources to: Include | alunduil-infrastructure.
 
     Full steps: docs/how-to/create-master-cloudflare-token.md
   EOT

@@ -5,8 +5,8 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets. Run when starting from scratch or rotating the core
-credentials.
+Actions secrets, both here and in `blog.alunduil.com`. Run when starting
+from scratch or rotating the core credentials.
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ finishes, so every run needs a fresh pair.
 ```sh
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
-export CLOUDFLARE_API_TOKEN=...
+export TF_VAR_cloudflare_master_token=...
 export TF_VAR_grafana_cloud_access_policy_token=...
 
 just bootstrap
