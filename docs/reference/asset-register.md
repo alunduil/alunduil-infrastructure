@@ -20,6 +20,10 @@ Out of scope:
   belong to `alunduil/alunduil-chezmoi`.
 - Hardware not yet acquired.
 - Secret values and their storage paths.
+- Hardware identifiers. A MAC address identifies a device globally and
+  for its lifetime, and public wireless-survey databases index the
+  addresses routers broadcast, so one recorded here would tie this
+  repository to a street address.
 
 ## Field conventions
 
@@ -113,10 +117,11 @@ entry says otherwise.
 
 ### `slzb-mr4u`
 
-- Address: `SLZB-MR4U.local`, serving a web interface on port 80 and a
-  radio service on 7638
-- Role: Zigbee and Thread radio coordinator. The model name is the
-  only evidence; the web interface exposes no identifying text
+- Address: `SLZB-MR4U.local`, serving a web interface on port 80 and
+  `_slzb-06._tcp` on 7638
+- Role: Zigbee coordinator. The vendor service type and the model name
+  are the evidence; the web interface exposes no identifying text. The
+  Thread border router advertises from `homeassistant` instead
 - OS: `Unverified`
 - Criticality: Medium
 - Classification: Personal
@@ -266,6 +271,24 @@ above don't apply.
 | `rogxboxallyx` | Windows | alunduil | Expires 2026-12-15 |
 | `pixel-9a` | Android | partner | Expired 2026-08-02 |
 | `chromeos-google-octopus` | Android | partner | Expired 2025-11-21 |
+
+## LAN devices
+
+Devices on `192.168.68.0/22` that advertise a service, beyond the hosts
+already entered above. An address appears as its final octet, which is
+the handle the Deco app takes.
+
+| Host | Advertises | Identified as |
+| --- | --- | --- |
+| `.51` | ChromeOS peer-to-peer updates | the host running `penguin` |
+| `.62` | Google Cast, and an LG device service | media endpoint |
+| `.64` | Google Cast, Android TV remote | media endpoint |
+| `.65` | one vendor-specific service | mobile device |
+
+Seven further addresses answered the sweep on the verification date
+without advertising anything, and four more answered an earlier
+neighbour query but not the sweep. This register identifies none of
+them. The Deco app's client list is what closes that gap.
 
 ## Credentials
 
