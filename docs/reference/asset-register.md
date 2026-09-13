@@ -65,8 +65,8 @@ Who acts, as distinct from where they act. Credentials grant these.
 | P-4 | Host service | A service on a host, holding its own credential |
 
 P-2 and P-3 are separate because a pull request supplies the workflow
-that runs. They reach different credentials by design, and the pool's
-attribute condition is what keeps a fork out of both.
+that runs. They reach different credentials by design; E-04 records what keeps a
+fork out of both.
 
 ## Trust boundaries
 
@@ -109,7 +109,8 @@ needed it. All of B-2 is unchecked too.
 ## Assets
 
 Hosts and devices alunduil owns, and accounts this repository
-configures.
+configures. P-1 administers every one; an entry names `Administered by`
+only to add a principal beyond it.
 
 ### A-01 — `truenas`
 
@@ -119,7 +120,6 @@ configures.
   exit node
 - Names: `truenas.local`, `truenas-scale.tail3af06.ts.net`
 - Exposed to: T-2, via E-05. A-12 carries its only path from T-1
-- Administered by: P-1
 
 ### A-02 — `homeassistant`
 
@@ -128,7 +128,6 @@ configures.
   and the File editor. Every automation in the house runs here
 - Names: `192.168.68.56`, `homeassistant.tail3af06.ts.net`
 - Exposed to: T-1, via E-03
-- Administered by: P-1
 
 ### A-03 — `slzb-mr4u`
 
@@ -138,7 +137,6 @@ configures.
   are paired, so that half is unexercised
 - Names: `SLZB-MR4U.local`
 - Exposed to: T-2, via E-07
-- Administered by: P-1
 
 ### A-04 — Deco mesh
 
@@ -147,7 +145,6 @@ configures.
   holds them is the only place they exist
 - Names: `192.168.68.1`, fixed by its gateway role
 - Exposed to: T-1, at its WAN interface
-- Administered by: P-1
 
 ### A-05 — `nanopi-neo3`
 
@@ -157,7 +154,6 @@ configures.
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Names: `nanopi-neo3.tail3af06.ts.net`
 - Exposed to: T-3, via E-09
-- Administered by: P-1
 
 ### A-06 — `penguin`
 
@@ -166,54 +162,55 @@ configures.
   holds the operator's credentials
 - Names: `penguin.tail3af06.ts.net`
 - Exposed to: no inbound path; it initiates its own connections
-- Administered by: P-1
 
 ### A-07 — Google Cloud
 
-- Description: project `alunduil` in `europe-west1`. Holds the
-  Terraform state bucket, Secret Manager, the workload identity
-  federation pool, and the audit log configuration
+- Description: holds the Terraform state bucket, Secret Manager, the
+  workload identity federation pool, and the audit log configuration
+- Names: project `alunduil`, in `europe-west1`
 - Exposed to: T-1. Its API is public, so a leaked credential is
   usable from anywhere
-- Administered by: P-1, P-2, P-3
+- Administered by: P-2, P-3
 
 ### A-08 — Cloudflare
 
-- Description: zone `alunduil.com`, DNSSEC active. Authoritative DNS
-  and zone settings. Every record except `home.alunduil.com` is
+- Description: authoritative DNS and zone settings, DNSSEC active.
+  Every record except `home.alunduil.com` is
   declared in `terraform/alunduil/dns.tf`; that one is written by
   `ddns-updater` on A-01
+- Names: zone `alunduil.com`
 - Exposed to: T-1, both as a resolver and through a public API
-- Administered by: P-1, P-2, P-3
+- Administered by: P-2, P-3
 
 ### A-09 — GitHub
 
-- Description: account `alunduil`. Source of record for every managed
-  repository, and the runtime that applies this infrastructure.
-  Repository settings are declared in
-  `terraform/alunduil/repositories.tf`
+- Description: source of record for every managed repository, and the
+  runtime that applies this infrastructure. Repository settings are
+  declared in `terraform/alunduil/repositories.tf`
+- Names: account `alunduil`
 - Exposed to: T-1, via E-02 and E-04
-- Administered by: P-1, P-2, P-3
+- Administered by: P-2, P-3
 
 ### A-10 — Tailscale
 
-- Description: tailnet `tail3af06.ts.net`. Private network joining
-  every host above. Device approval on, key duration 180 days, MagicDNS
+- Description: private network joining every host above. Device
+  approval on, key duration 180 days, MagicDNS
   on, HTTPS certificates on, global nameservers pinned to Quad9. Both
   exit nodes carry per-device key-expiry exemptions set outside
   Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
+- Names: tailnet `tail3af06.ts.net`
 - Exposed to: T-1. Its API is public; T-3 is what the tailnet grants,
   not what reaches the account
-- Administered by: P-1, P-2, P-3
+- Administered by: P-2, P-3
 
 ### A-11 — Grafana Cloud
 
-- Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
-  traces, profiles, and dashboards. Dashboards sync from this
-  repository's `grafana/` directory through Git Sync
+- Description: metrics, logs, traces, profiles, and dashboards, syncing
+  from this repository's `grafana/` directory through Git Sync
+- Names: stack `alunduil`, in `prod-gb-south-1`
 - Exposed to: T-1. Its API is public
-- Administered by: P-1, P-3
+- Administered by: P-3
 
 ### A-12 — Plex
 
@@ -223,11 +220,12 @@ configures.
   container rather than A-01, across B-1
 - Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
 - Exposed to: T-1, via E-01
-- Administered by: P-1
 
 ## Entry points
 
-Interfaces where data arrives.
+Interfaces where data arrives. Each names the asset a client actually
+reaches: the container where B-1 holds, and the host where it doesn't,
+which is why E-01 names A-12 and E-11 names A-01.
 
 | ID | Interface | Asset | Reachable from |
 | --- | --- | --- | --- |
@@ -247,9 +245,9 @@ Interfaces where data arrives.
 E-01 is the widest. It publishes A-12 to anyone who resolves the name.
 Plex asks a client from T-1 to sign in, but its allowed-networks
 setting covers every RFC 1918 range, so a client already in T-2 reaches
-it without doing so — the eleven devices T-2 can't identify included.
+it without doing so, the devices T-2 can't identify included.
 
-E-04 reaches T-5's credentials because `terraform-plan.yml` triggers on
+E-04 reaches P-2's credentials because `terraform-plan.yml` triggers on
 `pull_request` with no environment gate. What keeps a stranger out is
 `terraform/bootstrap/github_oidc.tf`, whose pool requires
 `assertion.repository == 'alunduil/alunduil-infrastructure'`, so a
