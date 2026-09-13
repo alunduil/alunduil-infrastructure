@@ -42,39 +42,20 @@ least-trusted zone with a path to it, and no asset has more than one.
 | ID | Name | Who is in it |
 | --- | --- | --- |
 | T-1 | Public internet | Anyone |
-| T-2 | LAN | Anything on `192.168.68.0/22` |
+| T-2 | LAN | `192.168.68.0/22`; ~20 devices, 11 unidentified |
 | T-3 | Tailnet | Devices approved onto the tailnet |
-
-T-2 is one flat segment. Around twenty devices answer on it, of which
-eleven advertise no service and this register doesn't identify them.
 
 ## Principals
 
 Identities that hold credentials, as distinct from the zones they act
-from. What sets one running isn't the same as what it holds, so both
-are recorded.
+from.
 
 | ID | Name | Identity | Invoked from |
 | --- | --- | --- | --- |
-| P-1 | Operator | A shell on A-06, or a provider console | alunduil |
+| P-1 | Operator | A console, or a shell on A-06 | Whoever holds either |
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
-| P-4 | Host service | A service holding its own credential | Its host |
-
-Whoever holds A-06 sets P-1 running. The workstation keeps the
-operator's credentials for break-glass applies, so taking it takes P-1;
-that A-06 has no inbound path is what stands in the way.
-
-P-2 and P-3 are separate because a pull request supplies the workflow
-that runs, so they reach different credentials by design.
-
-T-1 can set P-2 running: the repository is public, so anyone can open
-a pull request and start a plan. A fork's run reaches no credential,
-for the reason E-04 gives. A pull request from a branch here needs
-write access, and reaches P-2's.
-
-Whoever holds a host sets its P-4 running, which is why B-1 decides
-how much C-15 and C-16 are worth to an attacker.
+| P-4 | Host service | A service with its own credential | The host's holder |
 
 ## Trust boundaries
 
@@ -86,31 +67,21 @@ are implied by their order; these sit inside a single host.
 | B-1 | Container isolation on A-01 | A-12 and five other apps from A-01 |
 | B-2 | Add-on isolation on A-02 | Eight add-ons from A-02 |
 
-B-1 isn't one boundary. What crossing it means depends on which
-container is on the far side.
+B-1 differs per container.
 
-A-12 declares no host mounts, takes the media library read-only, runs
-on a bridge rather than sharing the host's network, and names a
-non-root user, so a T-1 client arriving at E-01 lands somewhere that
-can't write what it serves.
+| Container | Isolation | Reaches |
+| --- | --- | --- |
+| A-12 | No host mounts, media read-only, non-root | Its datasets |
+| Netdata | `/proc`, `/sys`, Docker socket, root | A-01 |
+| Scrutiny | `/dev`, `/run/udev`, `MKNOD`, root | A-01's disks |
+| alloy, Tailscale, `ddns-updater` | Unchecked | `Unverified` |
 
-Netdata mounts `/proc`, `/sys`, and the host's Docker socket, holds
-`SYS_ADMIN`, `SYS_PTRACE` and `SYS_RAWIO`, and runs as root. A socket
-that can start a privileged container is host authority, so B-1
-separates Netdata from A-01 in name only and E-11 reaches A-01 itself.
+Every catalogue entry here describes running as root; A-12's
+configuration overrides that with a named user.
 
-Scrutiny sits between them. It holds no Docker socket, but runs as root
-with `/dev` and `/run/udev` mounted and `MKNOD` held, which is raw
-access to the disks A-01 exists to hold. Its two ports answer T-2 as
-E-12.
-
-Every one of these catalogue entries describes running as root. A-12's
-configuration overrides that with a named user; Netdata's and
-Scrutiny's carry no override.
-
-alloy, Tailscale, and `ddns-updater` stay unchecked. Each keeps a
-credential in its application configuration, so establishing their
-boundaries means reading those values. All of B-2 is unchecked too.
+The unchecked containers each keep a credential in their application
+configuration, which is what reading them would expose. B-2 is
+unchecked.
 
 ## Assets
 
@@ -174,8 +145,7 @@ only to add a principal beyond it.
 - Description: holds the Terraform state bucket, Secret Manager, the
   workload identity federation pool, and the audit log configuration
 - Names: project `alunduil`, in `europe-west1`
-- Exposed to: T-1. Its API is public, so a leaked credential is
-  usable from anywhere
+- Exposed to: T-1. Its API is public
 - Administered by: P-2, P-3
 
 ### A-08 — Cloudflare
@@ -206,8 +176,8 @@ only to add a principal beyond it.
   Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
 - Names: tailnet `tail3af06.ts.net`
-- Exposed to: T-1. Its API is public; T-3 is what the tailnet grants,
-  not what reaches the account
+- Exposed to: T-1. Its API is public; T-3 is what it grants, not what
+  reaches it
 - Administered by: P-2, P-3
 
 ### A-11 — Grafana Cloud
@@ -221,9 +191,7 @@ only to add a principal beyond it.
 ### A-12 — Plex
 
 - Description: media server, running as a container on A-01 and reading
-  the library from its pool read-only. The only asset here that T-1
-  reaches without holding a credential. Compromising it yields the
-  container rather than A-01, across B-1
+  the library from its pool read-only
 - Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
 - Exposed to: T-1, via E-01
 
@@ -248,14 +216,13 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-11 | Netdata on 20489 | A-01 | T-2 |
 | E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
 
-E-01 is the widest. It publishes A-12 to anyone who resolves the name.
-Plex asks a client from T-1 to sign in, but its allowed-networks
-setting covers every RFC 1918 range, so a client already in T-2 reaches
-it without doing so, the devices T-2 can't identify included.
+Plex asks a T-1 client to sign in. Its allowed-networks setting covers
+every RFC 1918 range, so a client already in T-2 reaches it without
+signing in.
 
-E-04 reaches P-2's credentials because `terraform-plan.yml` triggers on
-`pull_request` with no environment gate. What keeps a stranger out is
-`terraform/bootstrap/github_oidc.tf`, whose pool requires
+E-04 reaches P-2's credentials: `terraform-plan.yml` triggers on
+`pull_request` with no environment gate. The pool in
+`terraform/bootstrap/github_oidc.tf` requires
 `assertion.repository == 'alunduil/alunduil-infrastructure'`, so a
 token minted for a fork matches nothing.
 
@@ -271,9 +238,8 @@ Services outside our control, and what leaves to them.
 | D-04 | UptimeRobot | Probes against E-01; heartbeats from A-02, A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
 
-A-11 is an asset rather than a dependency because Terraform configures
-it, but telemetry from A-01, A-02, A-03, and A-06 leaves to it all the
-same.
+Telemetry from A-01, A-02, A-03, and A-06 leaves to A-11, which is an
+asset because Terraform configures it.
 
 ## Credentials
 
@@ -283,10 +249,9 @@ the Terraform file that declares a credential, or the how-to that
 creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. Only enumerating that console finds one, which the repository
-can't do on its own. At the verification date that enumeration had
-covered Grafana Cloud alone, where it found C-18. Nobody has
-enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
+orphan. Grafana Cloud is the only console enumerated at the
+verification date, and it held C-18. Nobody has enumerated Cloudflare,
+Google Cloud, GitHub, or Tailscale.
 
 ### Provisioned by Terraform
 
