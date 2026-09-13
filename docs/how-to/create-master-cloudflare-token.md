@@ -11,15 +11,26 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
    each row has three dropdowns — the group (defaults to `Account`),
    the permission, and the access level. Add these rows:
 
-   | Group | Permission    | Access |
-   | ----- | ------------- | ------ |
-   | User  | API Tokens    | Edit   |
-   | Zone  | Zone          | Read   |
-   | Zone  | DNS           | Read   |
-   | Zone  | Zone Settings | Read   |
+   | Group   | Permission        | Access |
+   | ------- | ----------------- | ------ |
+   | User    | API Tokens        | Edit   |
+   | Zone    | Zone              | Read   |
+   | Zone    | DNS               | Read   |
+   | Zone    | Zone Settings     | Read   |
+   | Account | Account Analytics | Read   |
 
    Under **Zone Resources** set `Include` → `Specific zone` →
    `alunduil.com` (read is enough; the token only references the zone).
+   The account row adds an **Account Resources** selector: set it to
+   `Include` → `alunduil-infrastructure`.
+
+   The account row covers the blog's account-scoped analytics token.
+   Cloudflare doesn't restrict a new token to the creating token's own
+   permissions — the read-write deployer gets DNS Write from this
+   read-only master — so the row may be unnecessary. It's cheap
+   insurance either way: whether resource scope is enforced the same
+   way is untested, and an apply that fails partway costs a fresh
+   master token, since the value is shown only at creation.
 
    Under **TTL** set an **Expiration Date** a day or two out. The token
    self-revokes when it lapses, so a bootstrap run can't leave a
