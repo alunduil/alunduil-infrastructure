@@ -70,6 +70,8 @@ yamllint
 Hackage
 Haskell
 Diátaxis
+OWASP
+OWASP's
 ddbeck's
 Nygard
 Nygard's

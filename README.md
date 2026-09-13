@@ -39,7 +39,7 @@ Supporting how-tos:
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
 - [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
 
-Every host, device, service, and operator credential in the estate:
+Estate assets, trust levels, entry points, and credentials:
 
 - [docs/reference/asset-register.md](docs/reference/asset-register.md)
 

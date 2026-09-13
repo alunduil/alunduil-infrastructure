@@ -3,469 +3,367 @@
 
 # Asset register
 
-Every host, device, service, and operator credential in the personal
-estate.
+The assets in the personal estate, the trust levels that reach them,
+and the credentials that grant those levels.
 
-Verified 2026-09-12.
+Verified 2026-09-13.
 
 ## Scope
 
-Covers the home network, the off-site host, the operator workstation,
-and the cloud and identity services this repository provisions or
-depends on.
+Follows the enumeration [OWASP's threat modeling
+process](https://community.owasp.org/Threat_Modeling_Process) asks for
+ahead of a data flow diagram. The network map, the data-flow diagram,
+and the threat model cite entries here by ID.
 
 Out of scope:
 
-- The MCP server fleet and the workstation's own configuration, which
-  belong to `alunduil/alunduil-chezmoi`.
-- Hardware not yet acquired.
+- Component inventory fields — model, serial number, firmware version,
+  physical location, purchase details. Those live in a private Notion
+  inventory. Recording them twice would be duplicate accounting.
+- Criticality tiers and data classification, which belong to a
+  reliability map rather than a threat model.
+- The workstation's own configuration, which belongs to
+  `alunduil/alunduil-chezmoi`.
 - Secret values and their storage paths.
 - Hardware identifiers. A MAC address identifies a device globally and
   for its lifetime, and public wireless-survey databases index the
   addresses routers broadcast, so one recorded here would tie this
   repository to a street address.
 
-## Field conventions
+An `Unverified` field was out of reach of both the repository and a
+live query at the verification date.
 
-Entries carry the same fields in the same order. An entry names
-`Location` or `Owner` only to override the default its section states.
+## Trust levels
 
-`Address` carries the handle that reaches the asset. A LAN address
-appears only where something depends on that exact value. Every lease
-here is the Deco's to reassign, so elsewhere the name is the stable
-handle and the address follows from it.
-
-Three values carry a fixed meaning:
-
-| Value | Meaning |
-| --- | --- |
-| `None` | Nothing of this kind exists for the asset |
-| `Not applicable` | The field doesn't apply to this kind of asset |
-| `Unverified` | Out of reach of the repository and of a live query |
-
-Criticality states what breaks on loss of the asset:
-
-| Tier | Meaning |
-| --- | --- |
-| High | A service in daily use stops, with no substitute |
-| Medium | Noticeable loss, worked around within a day |
-| Low | Inconvenience only |
-
-Classification states what the asset holds:
-
-| Label | Meaning |
-| --- | --- |
-| Personal | Household media, documents, and home telemetry |
-| Operational | Credentials, configuration, infrastructure state |
-| Public | Content published to the internet |
-
-## Name resolution
-
-An `Address` field names the handle; this section names where each
-kind of name comes from.
-
-| Suffix or zone | Comes from | Reachable from |
+| ID | Name | Who holds it |
 | --- | --- | --- |
-| `tail3af06.ts.net` | Tailscale MagicDNS | tailnet devices |
-| `.local` | the home network | LAN clients |
-| `alunduil.com` | Cloudflare | the public internet |
-| anything else | Deco, relaying to Quad9 | LAN clients |
+| T-1 | Public internet | Anyone |
+| T-2 | LAN | Anything on `192.168.68.0/22` |
+| T-3 | Tailnet | Devices approved onto the tailnet |
+| T-4 | Operator | alunduil, at a console or the workstation |
+| T-5 | CI plan | A pull request against this repository |
+| T-6 | CI apply | A push to `refs/heads/main` |
 
-LAN names follow the DHCP reservations held in the Deco app. Nothing
-in this repository declares them, so the app is the place to add, read,
-or change one.
+T-2 is one flat segment. Around twenty devices answer on it, of which
+eleven advertise no service and this register doesn't identify them, so
+T-2 should be read as larger and less known than the assets listed
+under it.
 
-`truenas.alunduil.com` appears on the TrueNAS web certificate and has
-no DNS record. That certificate comes from an ACME DNS-01 challenge,
-which proves zone control without publishing an address.
+T-5 and T-6 are separate because a pull request supplies the workflow
+that runs. They reach different credentials by design, and the pool's
+attribute condition is what keeps a fork out of both.
 
-## Hosts and devices
+## Assets
 
-alunduil owns every host below, and each sits in London unless its
-entry says otherwise.
+Hosts and devices alunduil owns, and accounts this repository
+configures.
 
-### `truenas`
+### A-01 — `truenas`
 
-- Address: `truenas.local`; `truenas-scale.tail3af06.ts.net`
-- Role: NAS and application host; Tailscale subnet router advertising
-  `192.168.68.0/22`, and an exit node
-- Runs: Plex, Netdata, alloy, Tailscale, `ddns-updater`, Scrutiny
-- Hardware: TrueNAS Mini 3.0-E, Atom C3338, 16 GiB ECC memory, four
-  disks in one `raidz2` vdev
-- OS: TrueNAS 25.10.7
-- Criticality: High
-- Classification: Personal, Operational
-- Monitoring: Grafana Cloud metrics (`truenas-scale`) and logs
-  (`truenas`); Netdata; Scrutiny SMART; UptimeRobot through the Plex
-  endpoints
-- Backup: everything goes to Google Drive, including the configuration
-  bundle scheduled by
-  [the config backup how-to](../how-to/configure-truenas-config-backup.md)
+- Description: NAS and application host. Runs Plex, Netdata, alloy,
+  Tailscale, `ddns-updater`, and Scrutiny. Advertises
+  `192.168.68.0/22` to the tailnet as a subnet router, and offers an
+  exit node
+- Names: `truenas.local`, `truenas-scale.tail3af06.ts.net`
+- Reached from: T-1 through Plex, T-2, T-3, T-4
 
-### `homeassistant`
+### A-02 — `homeassistant`
 
-- Address: `192.168.68.56`, which `grafana/air-quality.json` pins in
-  four panel queries; `homeassistant.tail3af06.ts.net`
-- Role: home automation hub. Every automation in the house runs here,
-  so lights and the rest degrade to manual control without it
-- Runs: Zigbee2MQTT, Mosquitto, Matter server, an OpenThread Border
-  Router, alloy, Tailscale, SSH, File editor
-- OS: Home Assistant OS 18.2, Core 2026.9.1, amd64
-- Criticality: High
-- Classification: Personal
-- Monitoring: Grafana Cloud metrics (`home-assistant`) and journal
-  logs; UptimeRobot heartbeat
-- Backup: Nabu Casa, and restores from it have succeeded more than
-  once
+- Description: home automation hub. Runs Zigbee2MQTT, Mosquitto, a
+  Matter server, an OpenThread Border Router, alloy, Tailscale, SSH,
+  and the File editor. Every automation in the house runs here
+- Names: `192.168.68.56`, `homeassistant.tail3af06.ts.net`
+- Reached from: T-1 through Nabu Casa, T-2, T-3, T-4
 
-### `slzb-mr4u`
+### A-03 — `slzb-mr4u`
 
-- Address: `SLZB-MR4U.local`, serving a web interface on port 80 and
-  `_slzb-06._tcp` on 7638
-- Role: Zigbee and Thread radio coordinator, carrying every Zigbee
-  message the house sends. Zigbee2MQTT on `homeassistant` depends on
-  it, which puts it on the same critical path. Home Assistant reaches
-  the Thread radio the same way, through the border router that
-  advertises from `homeassistant`, but no Thread devices are paired, so
-  that half is unexercised
-- OS: `Unverified`
-- Criticality: High
-- Classification: Personal
-- Monitoring: syslog to Loki (`slzb-mr4u`), and no availability check;
-  see issue #537
-- Backup: `Unverified`. Its own settings have none, and whether Home
-  Assistant's backup carries the Zigbee network state is unconfirmed
+- Description: Zigbee and Thread radio coordinator, carrying every
+  Zigbee message the house sends. A-02's Zigbee2MQTT depends on it.
+  A-02 reaches the Thread radio the same way, but no Thread devices
+  are paired, so that half is unexercised
+- Names: `SLZB-MR4U.local`
+- Reached from: T-2
 
-### Deco mesh
+### A-04 — Deco mesh
 
-- Address: `192.168.68.1`, fixed by its gateway role, serving
-  `192.168.68.0/22`
-- Role: router, Wi-Fi mesh, DHCP, and DNS relay to Quad9 over DNS over
-  HTTPS
-- Hardware: three units — an X50-5G in the living room, and an X50
-  each in the bedroom and the office
-- OS: firmware version `Unverified`
-- Criticality: High
-- Classification: Operational
-- Monitoring: `None`
-- Backup: the Deco app's own automated backup, never restored
+- Description: router, Wi-Fi mesh, DHCP, and DNS relay. Three units.
+  Owns the DHCP reservations that LAN names follow, and the app that
+  holds them is the only place they exist
+- Names: `192.168.68.1`, fixed by its gateway role
+- Reached from: T-1 at its WAN interface, T-2
 
-### `nanopi-neo3`
+### A-05 — `nanopi-neo3`
 
-- Address: `nanopi-neo3.tail3af06.ts.net`; DHCP on its local network
-- Role: Tailscale exit node presenting a US address
-- OS: Debian 12 (bookworm). The recovery image ADR 0002 specifies is
-  built with Armbian, which isn't what runs today
-- Location: American Midwest, in a household that isn't alunduil's
-- Owner: alunduil, administered remotely from London
-- Criticality: Low
-- Classification: Operational
-- Monitoring: UptimeRobot heartbeat. Grafana Cloud shipping is absent;
-  see issue #473
-- Backup: hourly `rclone` of package selections and `/home` to Google
-  Drive
-- Recovery:
+- Description: Tailscale exit node presenting a US address. Sits in
+  the American Midwest in a household that isn't alunduil's, and is
+  administered remotely from London. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
+- Names: `nanopi-neo3.tail3af06.ts.net`
+- Reached from: T-3, T-4
 
-### `penguin`
+### A-06 — `penguin`
 
-- Address: `penguin.tail3af06.ts.net`
-- Role: operator workstation, running break-glass Terraform applies,
-  `chezmoi`, and Claude Code
-- OS: Debian under Crostini, version `Unverified`
-- Criticality: Medium
-- Classification: Operational
-- Monitoring: Grafana Cloud `integrations/unix` and
-  `integrations/process`; zellij logs to Loki
-- Backup: `chezmoi`, which carries the configuration this container is
-  rebuilt from
+- Description: operator workstation, a Crostini container. Runs
+  break-glass Terraform applies, `chezmoi`, and Claude Code, so it
+  holds the operator's credentials
+- Names: `penguin.tail3af06.ts.net`
+- Reached from: T-4
 
-## Cloud and identity services
+### A-07 — Google Cloud
 
-alunduil owns every account below.
+- Description: project `alunduil` in `europe-west1`. Holds the
+  Terraform state bucket, Secret Manager, the workload identity
+  federation pool, and the audit log configuration
+- Reached from: T-4, T-5, T-6
 
-### Google Cloud
+### A-08 — Cloudflare
 
-- Identifier: project `alunduil`, region `europe-west1`
-- Role: Terraform state bucket, Secret Manager, the workload identity
-  federation pool for CI, and audit logging
-- Criticality: High
-- Classification: Operational
-- Monitoring: Grafana Cloud queries Cloud Monitoring live at dashboard
-  time; data-access audit logs are enabled for storage and Secret
-  Manager
-- Backup: Terraform state is versioned in its bucket
+- Description: zone `alunduil.com`, DNSSEC active. Authoritative DNS
+  and zone settings. Every record except `home.alunduil.com` is
+  declared in `terraform/alunduil/dns.tf`; that one is written by
+  `ddns-updater` on A-01
+- Reached from: T-1 as a resolver, T-4, T-5, T-6
 
-### Cloudflare
+### A-09 — GitHub
 
-- Identifier: zone `alunduil.com`, DNSSEC active
-- Role: authoritative DNS and zone settings
-- Criticality: High
-- Classification: Public
-- Monitoring: `None` on the zone; UptimeRobot covers the records that
-  resolve to home
-- Backup: every record except `home.alunduil.com` is declared in
-  `terraform/alunduil/dns.tf`
+- Description: account `alunduil`. Source of record for every managed
+  repository, and the runtime that applies this infrastructure.
+  Repository settings are declared in
+  `terraform/alunduil/repositories.tf`
+- Reached from: T-1, T-4, T-5, T-6
 
-### Squarespace
+### A-10 — Tailscale
 
-- Identifier: registrar for `alunduil.com`
-- Role: domain registration and the DS records for DNSSEC
-- Criticality: High
-- Classification: Public
-- Monitoring: `None`
-- Backup: `Not applicable`
-
-### GitHub
-
-- Identifier: account `alunduil`
-- Role: source of record for every managed repository, and the CI that
-  applies this infrastructure
-- Criticality: High
-- Classification: Operational, Public
-- Monitoring: `None`
-- Backup: repositories are cloned across the estate; settings are
-  declared in `terraform/alunduil/repositories.tf`
-
-### Tailscale
-
-- Identifier: tailnet `tail3af06.ts.net`
-- Role: private network joining every host above
-- Settings: device approval on, key duration 180 days, MagicDNS on,
-  HTTPS certificates on, global nameservers pinned to Quad9. Both exit
-  nodes carry per-device key-expiry exemptions set outside Terraform
-- Criticality: High
-- Classification: Operational
-- Monitoring: `None`; network flow logging is off
-- Backup: the policy file is declared in
+- Description: tailnet `tail3af06.ts.net`. Private network joining
+  every host above. Device approval on, key duration 180 days, MagicDNS
+  on, HTTPS certificates on, global nameservers pinned to Quad9. Both
+  exit nodes carry per-device key-expiry exemptions set outside
+  Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
+- Reached from: T-3, T-4, T-5, T-6
 
-### Grafana Cloud
+### A-11 — Grafana Cloud
 
-- Identifier: stack `alunduil`, region `prod-gb-south-1`
-- Role: metrics, logs, traces, profiles, and dashboards
-- Criticality: Medium
-- Classification: Operational
-- Monitoring: `Not applicable` — this is the monitoring system
-- Backup: dashboards sync to the `grafana/` directory of this
-  repository through Git Sync
+- Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
+  traces, profiles, and dashboards. Dashboards sync from this
+  repository's `grafana/` directory through Git Sync
+- Reached from: T-4, T-6
 
-### UptimeRobot
+## Entry points
 
-- Identifier: four monitors — Plex over HTTP, Plex over HTTPS, a Home
-  Assistant heartbeat, and a NanoPi-NEO3 heartbeat
-- Role: external availability checks
-- Criticality: Medium
-- Classification: Operational
-- Monitoring: `Not applicable`
-- Backup: `None`; monitors are configured by hand
+Interfaces where data arrives.
 
-### Google Drive
-
-- Identifier: `Unverified`
-- Role: backup destination for TrueNAS, Google Takeout archives, and
-  the NanoPi-NEO3
-- Criticality: High
-- Classification: Personal, Operational
-- Monitoring: `None`
-- Backup: `Not applicable` — this is the backup destination
-
-## Tailnet clients
-
-Devices holding tailnet membership that run no service. The fields
-above don't apply.
-
-| Node | Platform | Account | Key |
+| ID | Interface | Asset | Reachable from |
 | --- | --- | --- | --- |
-| `brya` | Android on ChromeOS | alunduil | Expires 2027-01-07 |
-| `pixel-9-pro-fold` | Android | alunduil | Expires 2026-09-23 |
-| `tabultrac` | Android | alunduil | Expires 2026-10-16 |
-| `rogxboxallyx` | Windows | alunduil | Expires 2026-12-15 |
-| `pixel-9a` | Android | partner | Expired 2026-08-02 |
-| `chromeos-google-octopus` | Android | partner | Expired 2025-11-21 |
+| E-01 | Plex on 32400, over HTTP and HTTPS | A-01 | T-1 |
+| E-02 | `blog.alunduil.com`, served by GitHub Pages | A-09 | T-1 |
+| E-03 | The Nabu Casa remote interface | A-02 | T-1 |
+| E-04 | Pull requests against a public repository | A-09 | T-1 |
+| E-05 | Web interface on 443, SMB on 445, HTTP on 80 | A-01 | T-2 |
+| E-06 | Home Assistant on 8123 | A-02 | T-2 |
+| E-07 | Web interface on 80, `_slzb-06._tcp` on 7638 | A-03 | T-2 |
+| E-08 | Administration through the vendor's app | A-04 | T-2 |
+| E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
+| E-10 | The `home.alunduil.com` A record | A-08 | T-4 |
 
-### Nabu Casa
+E-01 is the widest. It publishes a service on A-01, the host holding
+the most data, to anyone who resolves the name.
 
-- Identifier: the Home Assistant Cloud subscription
-- Role: holds the backups for `homeassistant`, and serves the remote
-  interface that reaches it from outside the house
-- Criticality: High
-- Classification: Personal
-- Monitoring: `None`
-- Backup: `Not applicable` — this is the backup destination
+E-04 reaches T-5's credentials because `terraform-plan.yml` triggers on
+`pull_request` with no environment gate. What keeps a stranger out is
+`terraform/bootstrap/github_oidc.tf`, whose pool requires
+`assertion.repository == 'alunduil/alunduil-infrastructure'`, so a
+token minted for a fork matches nothing. A branch pull request inside
+this repository does reach the read-only deployer.
 
-## LAN devices
+## External dependencies
 
-Devices on `192.168.68.0/22` that advertise a service, beyond the hosts
-already entered above. An address appears as its final octet, which is
-the handle the Deco app takes.
+Services outside our control, and what leaves to them.
 
-| Host | Advertises | Identified as |
+| ID | Service | What leaves |
 | --- | --- | --- |
-| `.51` | ChromeOS peer-to-peer updates | the host running `penguin` |
-| `.62` | Google Cast, and an LG device service | media endpoint |
-| `.64` | Google Cast, Android TV remote | media endpoint |
-| `.65` | one vendor-specific service | mobile device |
+| D-01 | Nabu Casa | A-02's backups, and its remote interface traffic |
+| D-02 | Google Drive | A-01's backups, Takeout archives, A-05's `/home` |
+| D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
+| D-04 | UptimeRobot | Probes against E-01; heartbeats from A-02, A-05 |
+| D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
 
-Seven further addresses answered the sweep on the verification date
-without advertising anything, and four more answered an earlier
-neighbour query but not the sweep. This register identifies none of
-them. The Deco app's client list is what closes that gap.
+A-11 is an asset rather than a dependency because Terraform configures
+it, but telemetry from A-01, A-02, A-03, and A-06 leaves to it all the
+same.
 
 ## Credentials
 
 The credentials this repository declares or documents, with the
-consumer that reads each. `Source` names the Terraform file that
-declares a credential, or the how-to that creates it.
+consumer that reads each and the trust level it grants. `Source` names
+the Terraform file that declares a credential, or the how-to that
+creates it.
 
 A credential live in a provider console with no entry below is an
 orphan. Only enumerating that console finds one, which the repository
 can't do on its own. At the verification date that enumeration had
-covered Grafana Cloud alone, where it found `vscode-mcp-access`,
-recorded below. Nobody has enumerated Cloudflare, Google Cloud,
-GitHub, or Tailscale.
+covered Grafana Cloud alone, where it found C-18. Nobody has
+enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 
 ### Provisioned by Terraform
 
 `terraform apply` creates and rotates each of these.
 
-#### alunduil-infrastructure deployer (RO)
+#### C-01 — `alunduil-infrastructure deployer (RO)`
 
 - Kind: Cloudflare API token
 - Scope: Zone Read, DNS Read, and Zone Settings Read on `alunduil.com`
 - Consumer: `terraform plan` in CI
+- Grants: T-5
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
-#### alunduil-infrastructure deployer (RW)
+#### C-02 — `alunduil-infrastructure deployer (RW)`
 
 - Kind: Cloudflare API token
 - Scope: Zone Read, DNS Write, and Zone Settings Write on
   `alunduil.com`
 - Consumer: `terraform apply` in CI, and `just alunduil`
+- Grants: T-6, and T-4 through the break-glass path
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
-#### `github-deployer-ro`
+#### C-03 — `github-deployer-ro`
 
 - Kind: Google Cloud service account
 - Scope: the `githubDeployerPlanner` custom role, and object read on
   the state bucket
 - Consumer: `terraform plan` in CI, through workload identity
   federation
+- Grants: T-5
 - Source: `terraform/bootstrap/service_account_github_deployer_ro.tf`
 
-#### `github-deployer-rw`
+#### C-04 — `github-deployer-rw`
 
 - Kind: Google Cloud service account
 - Scope: the `githubDeployerApplier` custom role, and object admin on
   the state bucket
 - Consumer: `terraform apply` in CI, restricted to `refs/heads/main`
+- Grants: T-6
 - Source: `terraform/bootstrap/service_account_github_deployer_rw.tf`
 
-#### `grafana-gcp-reader`
+#### C-05 — `grafana-gcp-reader`
 
 - Kind: Google Cloud service account key
 - Scope: `monitoring.viewer`, `logging.viewer`, `logging.viewAccessor`
-- Consumer: the Cloud Monitoring data source in Grafana Cloud
+- Consumer: A-11's Cloud Monitoring data source
+- Grants: T-4
 - Source: `terraform/bootstrap/grafana_gcp_reader.tf`
 
-#### `alunduil-infrastructure-provisioner`
+#### C-06 — `alunduil-infrastructure-provisioner`
 
 - Kind: Grafana stack service account token
 - Scope: stack Admin
 - Consumer: the Grafana resources in `terraform/alunduil/`
+- Grants: T-6
 - Source: `terraform/bootstrap/grafana.tf`
 
 ### Created by hand
 
 Each needs an operator in a console; no apply rotates them.
 
-#### Master Cloudflare token
+#### C-07 — Master Cloudflare token
 
 - Kind: Cloudflare API token, time-limited
 - Scope: `User:API Tokens` Edit, plus zone reads
 - Consumer: one `terraform/bootstrap/` apply, then expiry
+- Grants: T-4
 - Source: [`create-master-cloudflare-token.md`](../how-to/create-master-cloudflare-token.md)
 
-#### Grafana Cloud access-policy token
+#### C-08 — Grafana Cloud access-policy token
 
 - Kind: access-policy token
 - Scope: `stacks:read`, `stack-service-accounts:write`
 - Consumer: one `terraform/bootstrap/` apply
+- Grants: T-4
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
-#### Deployer GitHub App
+#### C-09 — Deployer GitHub App
 
 - Kind: GitHub App ID and private key
 - Scope: installed across the managed repositories
 - Consumer: the `integrations/github` provider in CI
+- Grants: T-5, T-6
 - Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
 
-#### Git Sync GitHub App
+#### C-10 — Git Sync GitHub App
 
 - Kind: GitHub App ID, installation ID, and private key
 - Scope: installed on `alunduil-infrastructure` alone
-- Consumer: Grafana Git Sync, for dashboard pull requests
+- Consumer: A-11's Git Sync, for dashboard pull requests
+- Grants: T-6
 - Source: [`create-git-sync-github-app.md`](../how-to/create-git-sync-github-app.md)
 
-#### Tailscale trust credential (read)
+#### C-11 — Tailscale trust credential (read)
 
 - Kind: workload identity federation client ID
 - Scope: tailnet read
 - Consumer: the `tailscale` provider during plan
+- Grants: T-5
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
-#### Tailscale trust credential (write)
+#### C-12 — Tailscale trust credential (write)
 
 - Kind: workload identity federation client ID
 - Scope: tailnet write
 - Consumer: the `tailscale` provider during apply
+- Grants: T-6
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
-#### `GH_PROJECT_SYNC_TOKEN`
+#### C-13 — `GH_PROJECT_SYNC_TOKEN`
 
 - Kind: GitHub classic personal access token
 - Scope: Projects v2 write
 - Consumer: the Projects v2 sync workflow
+- Grants: T-6
 - Source: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
 
-#### Web Analytics beacon
+#### C-14 — Web Analytics beacon
 
 - Kind: Cloudflare site token; public, and no secret
 - Scope: beacon submission for `blog.alunduil.com`
 - Consumer: client-side JavaScript on the blog
+- Grants: T-1
 - Source: [`create-web-analytics-site.md`](../how-to/create-web-analytics-site.md)
 
-#### Cloudflare DDNS token
+#### C-15 — Cloudflare DDNS token
 
 - Kind: Cloudflare API token
 - Scope: writes the `home.alunduil.com` A record; its granted
   permissions are `Unverified`
-- Consumer: `ddns-updater` on `truenas`
+- Consumer: `ddns-updater` on A-01
+- Grants: T-2
 - Source: `None`. Issue #269 tracks writing a how-to
 
-#### Google Drive credential
+#### C-16 — Google Drive credential
 
 - Kind: OAuth grant
 - Scope: Drive read and write
-- Consumer: the TrueNAS Cloud Sync tasks
+- Consumer: A-01's Cloud Sync tasks
+- Grants: T-2
 - Source: `None`
 
-#### `vscode-mcp-access`
-
-- Kind: Grafana stack service account holding one token
-- Scope: stack Viewer
-- Consumer: `Unverified`
-- Source: `None`
-
-#### Tailscale auth keys
+#### C-17 — Tailscale auth keys
 
 - Kind: pre-authentication keys
 - Scope: device enrolment
 - Consumer: enrolling a host by hand; deliberately unmanaged
+- Grants: T-3
+- Source: `None`
+
+#### C-18 — `vscode-mcp-access`
+
+- Kind: Grafana stack service account holding one token
+- Scope: stack Viewer
+- Consumer: `Unverified`
+- Grants: T-4
 - Source: `None`
 
 ## Maintenance
 
-Adding or removing a host, device, service, or credential updates this
-register in the same pull request, and the verification date above
-changes with it.
+Adding or removing an asset, entry point, dependency, or credential
+updates this register in the same pull request, and the verification
+date above changes with it. IDs aren't reused.
