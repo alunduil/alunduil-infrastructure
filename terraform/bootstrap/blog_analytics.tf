@@ -17,10 +17,6 @@ locals {
   alunduil_account_resource = jsonencode({
     "com.cloudflare.api.account.76626ec3f004e86f1a4d85faca9ac3a2" = "*" # pragma: allowlist secret
   })
-
-  blog_pages_workflow_ref = "alunduil/blog.alunduil.com/.github/workflows/pages.yml@refs/heads/main"
-
-  blog_wif_principal = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/blog/attribute.repository/alunduil/blog.alunduil.com"
 }
 
 resource "cloudflare_api_token" "blog_analytics_ro" {
@@ -49,6 +45,15 @@ resource "google_secret_manager_secret" "cloudflare_api_token_blog_analytics_ro"
 resource "google_secret_manager_secret_version" "cloudflare_api_token_blog_analytics_ro" {
   secret      = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.id
   secret_data = cloudflare_api_token.blog_analytics_ro.value
+}
+
+# The provider's condition and the reader's binding have to keep naming the
+# same repository, and a disagreement between them fails silently. Deriving
+# both from one name is what stops them drifting apart.
+locals {
+  blog_repository         = "alunduil/blog.alunduil.com"
+  blog_pages_workflow_ref = "${local.blog_repository}/.github/workflows/pages.yml@refs/heads/main"
+  blog_wif_principal      = "${local.wif_pool_prefix}/blog/attribute.repository/${local.blog_repository}"
 }
 
 # A pool of its own rather than another provider in `github`. principalSet paths
@@ -82,9 +87,7 @@ resource "google_iam_workload_identity_pool_provider" "blog" {
   # Pinned to one workflow, not to a branch. Five workflows run on the blog's
   # default branch and labels.yml fires on `issues: opened`, which any stranger
   # can trigger; a branch-level condition would leave the boundary resting on
-  # each of those files continuing to decline id-token: write. job_workflow_ref
-  # carries the repository as its prefix, so a separate repository clause would
-  # be redundant.
+  # each of those files continuing to decline id-token: write.
   #
   # Renaming or moving pages.yml revokes access here, and the build degrades to
   # no Popular section rather than failing — so the symptom is a missing widget,
@@ -105,17 +108,17 @@ resource "google_service_account" "blog_analytics_reader" {
   depends_on = [google_project_service.iam]
 }
 
-resource "google_service_account_iam_member" "blog_analytics_reader_workload_identity_user" {
-  service_account_id = google_service_account.blog_analytics_reader.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = local.blog_wif_principal
+# workloadIdentityUser admits the federated identity; serviceAccountTokenCreator
+# lets it mint the access token get-secretmanager-secrets calls with. Both are
+# scoped to this one service account.
+resource "google_service_account_iam_member" "blog_analytics_reader" {
+  for_each = toset([
+    "roles/iam.workloadIdentityUser",
+    "roles/iam.serviceAccountTokenCreator",
+  ])
 
-  depends_on = [google_iam_workload_identity_pool_provider.blog]
-}
-
-resource "google_service_account_iam_member" "blog_analytics_reader_token_creator" {
   service_account_id = google_service_account.blog_analytics_reader.name
-  role               = "roles/iam.serviceAccountTokenCreator"
+  role               = each.key
   member             = local.blog_wif_principal
 
   depends_on = [google_iam_workload_identity_pool_provider.blog]
