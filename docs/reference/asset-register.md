@@ -92,11 +92,19 @@ that can start a privileged container is host authority under another
 name, so B-1 separates Netdata from A-01 in name only, and E-11 should
 be read as reaching A-01 itself.
 
-Both containers' catalogue metadata describes running as root. A-12's
-configuration overrides that with a named user and Netdata's carries no
-override, which is the difference between the two.
+Scrutiny sits between them. It holds no Docker socket, but runs as root
+with `/dev` and `/run/udev` mounted and `MKNOD` held, which is raw
+access to the disks A-01 exists to hold. Its two ports answer T-2 as
+E-12.
 
-The remaining containers under B-1, and all of B-2, are unchecked.
+Every one of these catalogue entries describes running as root. A-12's
+configuration overrides that with a named user, and Netdata's and
+Scrutiny's carry no override, which is the whole of the difference.
+
+alloy, Tailscale, and `ddns-updater` stay unchecked. Each keeps a
+credential in its application configuration, so establishing their
+boundaries means reading those values, and no question so far has
+needed it. All of B-2 is unchecked too.
 
 ## Assets
 
@@ -234,6 +242,7 @@ Interfaces where data arrives.
 | E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
 | E-10 | The `home.alunduil.com` A record | A-08 | P-1 |
 | E-11 | Netdata on 20489 | A-01 | T-2 |
+| E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
 
 E-01 is the widest. It publishes A-12 to anyone who resolves the name.
 Plex asks a client from T-1 to sign in, but its allowed-networks
