@@ -3,11 +3,9 @@
 
 # Connect the blog build to its Cloudflare analytics token
 
-Run this once in `blog.alunduil.com` after the bootstrap apply. Only the
-workflow wiring is left: bootstrap creates the token, the Secret Manager
-entry, and the federation, and `scripts/configure-github-secrets.sh` puts the
-identifiers the build needs into that repo's Actions secrets. Rotation doesn't
-repeat it — the build fetches the current value on every run.
+Point `blog.alunduil.com`'s Pages build at the analytics token that
+`just bootstrap` provisions. Run it once, in that repo; the build re-fetches on
+every run, so a rotation doesn't bring you back here.
 
 ## Prerequisites
 

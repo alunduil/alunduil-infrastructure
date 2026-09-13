@@ -11,6 +11,8 @@ variable "billing_account_id" {
   }
 }
 
+# Account Analytics is here for the blog's account-scoped analytics token; the
+# rest of the rows serve the two zone-scoped deployer tokens.
 variable "cloudflare_master_token" {
   type        = string
   sensitive   = true

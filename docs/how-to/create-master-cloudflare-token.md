@@ -24,9 +24,6 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
    The account row adds an **Account Resources** selector: set it to
    `Include` → `alunduil-infrastructure`.
 
-   The account row is what lets the apply create the blog's
-   account-scoped analytics token.
-
    Under **TTL** set an **Expiration Date** a day or two out. The token
    self-revokes when it lapses, so a bootstrap run can't leave a
    standing `User > API Tokens` credential behind.
