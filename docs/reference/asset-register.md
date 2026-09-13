@@ -74,11 +74,18 @@ Containers separate several assets from the hosts they run on, so a
 compromised service doesn't start out holding the host.
 
 TrueNAS runs its apps as Docker containers on per-app bridge networks.
-Home Assistant runs its add-ons the same way under its supervisor. A
-container's strength as a boundary depends on what it mounts and
-whether it runs privileged, and this register hasn't checked either, so
-treat these as boundaries of `Unverified` strength rather than assumed
-ones.
+Home Assistant runs its add-ons the same way under its supervisor.
+
+A-12's boundary is the only one checked, and it holds up. It runs on a
+bridge rather than host networking and publishes one port, mounts the
+media library read-only, keeps its writable state to its own datasets,
+declares no host mounts, and is capped at two processors and 4 GiB. Its
+configuration names a non-root user, while the catalog metadata
+describes the container as running as root; confirm which before
+relying on it.
+
+Every other container is unchecked, so treat those boundaries as
+`Unverified` rather than assumed.
 
 ## Assets
 
@@ -192,9 +199,9 @@ configures.
 ### A-12 — Plex
 
 - Description: media server, running as a container on A-01 and reading
-  the library from its pool. The only asset here that T-1 reaches
-  without a credential. Compromising it yields the container rather
-  than A-01, to the extent the isolation above holds
+  the library from its pool read-only. The only asset here that T-1
+  reaches without holding a credential. Compromising it yields the
+  container rather than A-01; see Isolation for how far that goes
 - Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
 - Exposed to: T-1, via E-01
 - Administered by: P-1
@@ -216,8 +223,10 @@ Interfaces where data arrives.
 | E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
 | E-10 | The `home.alunduil.com` A record | A-08 | P-1 |
 
-E-01 is the widest. It publishes a service on A-01, the host holding
-the most data, to anyone who resolves the name.
+E-01 is the widest. It publishes A-12 to anyone who resolves the name.
+Plex asks a client from T-1 to sign in, but its allowed-networks
+setting covers every RFC 1918 range, so a client already in T-2 reaches
+it without doing so — the eleven devices T-2 can't identify included.
 
 E-04 reaches T-5's credentials because `terraform-plan.yml` triggers on
 `pull_request` with no environment gate. What keeps a stranger out is
