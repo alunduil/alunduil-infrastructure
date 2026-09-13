@@ -98,7 +98,8 @@ entry says otherwise.
 - Monitoring: Grafana Cloud metrics (`truenas-scale`) and logs
   (`truenas`); Netdata; Scrutiny SMART; UptimeRobot through the Plex
   endpoints
-- Backup: configuration bundle to Google Drive on a schedule, per
+- Backup: everything goes to Google Drive, including the configuration
+  bundle scheduled by
   [the config backup how-to](../how-to/configure-truenas-config-backup.md)
 
 ### `homeassistant`
@@ -114,7 +115,8 @@ entry says otherwise.
 - Classification: Personal
 - Monitoring: Grafana Cloud metrics (`home-assistant`) and journal
   logs; UptimeRobot heartbeat
-- Backup: `Unverified`
+- Backup: Nabu Casa, and restores from it have succeeded more than
+  once
 
 ### `slzb-mr4u`
 
@@ -255,8 +257,8 @@ alunduil owns every account below.
 ### Google Drive
 
 - Identifier: `Unverified`
-- Role: backup destination for the TrueNAS configuration bundle,
-  Google Takeout archives, and the NanoPi-NEO3
+- Role: backup destination for TrueNAS, Google Takeout archives, and
+  the NanoPi-NEO3
 - Criticality: High
 - Classification: Personal, Operational
 - Monitoring: `None`
@@ -275,6 +277,16 @@ above don't apply.
 | `rogxboxallyx` | Windows | alunduil | Expires 2026-12-15 |
 | `pixel-9a` | Android | partner | Expired 2026-08-02 |
 | `chromeos-google-octopus` | Android | partner | Expired 2025-11-21 |
+
+### Nabu Casa
+
+- Identifier: the Home Assistant Cloud subscription
+- Role: holds the backups for `homeassistant`, and serves the remote
+  interface that reaches it from outside the house
+- Criticality: High
+- Classification: Personal
+- Monitoring: `None`
+- Backup: `Not applicable` — this is the backup destination
 
 ## LAN devices
 

@@ -31,6 +31,7 @@ Netdata
 Mosquitto
 Zigbee
 Zigbee2MQTT
+Nabu Casa
 MagicDNS
 mDNS
 Deco
