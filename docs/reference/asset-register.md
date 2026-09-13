@@ -68,24 +68,27 @@ P-2 and P-3 are separate because a pull request supplies the workflow
 that runs. They reach different credentials by design, and the pool's
 attribute condition is what keeps a fork out of both.
 
-## Isolation
+## Trust boundaries
 
-Containers separate several assets from the hosts they run on, so a
-compromised service doesn't start out holding the host.
+Privilege changes that aren't a zone edge. The boundaries between zones
+are implied by their order; these sit inside a single host.
 
-TrueNAS runs its apps as Docker containers on per-app bridge networks.
-Home Assistant runs its add-ons the same way under its supervisor.
+| ID | Boundary | Separates |
+| --- | --- | --- |
+| B-1 | Container isolation on A-01 | A-12 and five other apps from A-01 |
+| B-2 | Add-on isolation on A-02 | Eight add-ons from A-02 |
 
-A-12's boundary is the only one checked, and it holds up. It runs on a
-bridge rather than host networking and publishes one port, mounts the
-media library read-only, keeps its writable state to its own datasets,
-declares no host mounts, and is capped at two processors and 4 GiB. Its
-configuration names a non-root user, while the catalog metadata
-describes the container as running as root; confirm which before
-relying on it.
+B-1 is checked for A-12 alone, and it holds. That container declares no
+host mounts, takes the media library read-only, and runs on a bridge
+rather than sharing the host's network, so a T-1 client arriving at
+E-01 lands inside the container and can't write what it serves.
 
-Every other container is unchecked, so treat those boundaries as
-`Unverified` rather than assumed.
+One thing decides whether that separation is real. A-12's configuration
+names a non-root user while the catalog metadata describes the
+container as running as root, and nobody has established which governs.
+
+B-1's other containers and all of B-2 are unchecked. Treat both as
+boundaries of `Unverified` strength rather than assumed ones.
 
 ## Assets
 
@@ -201,7 +204,7 @@ configures.
 - Description: media server, running as a container on A-01 and reading
   the library from its pool read-only. The only asset here that T-1
   reaches without holding a credential. Compromising it yields the
-  container rather than A-01; see Isolation for how far that goes
+  container rather than A-01, across B-1
 - Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
 - Exposed to: T-1, via E-01
 - Administered by: P-1
