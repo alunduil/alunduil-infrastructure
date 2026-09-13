@@ -16,6 +16,14 @@ process](https://community.owasp.org/Threat_Modeling_Process) asks for
 ahead of a data flow diagram. The network map, the data-flow diagram,
 and the threat model cite entries here by ID.
 
+Records carry that page's fields under clearer headers: an entry
+point's Interface holds its name and description together, and
+Reachable from holds its trust levels. Three things extend the page,
+each marked where it happens. Trust levels split into zones and
+principals. External dependencies carry what leaves to them, because
+the page gives exit points no fields of their own. Credentials get a
+section the page doesn't name.
+
 Out of scope:
 
 - Component inventory fields — model, serial number, firmware version,
