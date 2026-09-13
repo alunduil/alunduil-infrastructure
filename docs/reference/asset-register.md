@@ -3,8 +3,9 @@
 
 # Asset register
 
-The assets in the personal estate, the trust levels that reach them,
-and the credentials that grant those levels.
+The assets in the personal estate, the zones they're exposed to, the
+principals that act on them, and the credentials that grant those
+principals.
 
 Verified 2026-09-13.
 
@@ -33,25 +34,51 @@ Out of scope:
 An `Unverified` field was out of reach of both the repository and a
 live query at the verification date.
 
-## Trust levels
+## Zones
 
-| ID | Name | Who holds it |
+Network positions, ordered by trust. An asset's exposure is the
+least-trusted zone with a path to it, and no asset has more than one.
+
+| ID | Name | Who is in it |
 | --- | --- | --- |
 | T-1 | Public internet | Anyone |
 | T-2 | LAN | Anything on `192.168.68.0/22` |
 | T-3 | Tailnet | Devices approved onto the tailnet |
-| T-4 | Operator | alunduil, at a console or the workstation |
-| T-5 | CI plan | A pull request against this repository |
-| T-6 | CI apply | A push to `refs/heads/main` |
 
 T-2 is one flat segment. Around twenty devices answer on it, of which
 eleven advertise no service and this register doesn't identify them, so
-T-2 should be read as larger and less known than the assets listed
-under it.
+read T-2 as larger and less known than the assets sitting in it.
 
-T-5 and T-6 are separate because a pull request supplies the workflow
+T-4 through T-6 are retired. They named principals rather than
+positions, which put them on a scale they didn't belong to. IDs
+aren't reused.
+
+## Principals
+
+Who acts, as distinct from where they act. Credentials grant these.
+
+| ID | Name | Who holds it |
+| --- | --- | --- |
+| P-1 | Operator | alunduil, at a console or the workstation |
+| P-2 | CI plan | A pull request against this repository |
+| P-3 | CI apply | A push to `refs/heads/main` |
+| P-4 | Host service | A service on a host, holding its own credential |
+
+P-2 and P-3 are separate because a pull request supplies the workflow
 that runs. They reach different credentials by design, and the pool's
 attribute condition is what keeps a fork out of both.
+
+## Isolation
+
+Containers separate several assets from the hosts they run on, so a
+compromised service doesn't start out holding the host.
+
+TrueNAS runs its apps as Docker containers on per-app bridge networks.
+Home Assistant runs its add-ons the same way under its supervisor. A
+container's strength as a boundary depends on what it mounts and
+whether it runs privileged, and this register hasn't checked either, so
+treat these as boundaries of `Unverified` strength rather than assumed
+ones.
 
 ## Assets
 
@@ -65,7 +92,8 @@ configures.
   `192.168.68.0/22` to the tailnet as a subnet router, and offers an
   exit node
 - Names: `truenas.local`, `truenas-scale.tail3af06.ts.net`
-- Reached from: T-1 through Plex, T-2, T-3, T-4
+- Exposed to: T-2, via E-05. A-12 carries its only path from T-1
+- Administered by: P-1
 
 ### A-02 — `homeassistant`
 
@@ -73,7 +101,8 @@ configures.
   Matter server, an OpenThread Border Router, alloy, Tailscale, SSH,
   and the File editor. Every automation in the house runs here
 - Names: `192.168.68.56`, `homeassistant.tail3af06.ts.net`
-- Reached from: T-1 through Nabu Casa, T-2, T-3, T-4
+- Exposed to: T-1, via E-03
+- Administered by: P-1
 
 ### A-03 — `slzb-mr4u`
 
@@ -82,7 +111,8 @@ configures.
   A-02 reaches the Thread radio the same way, but no Thread devices
   are paired, so that half is unexercised
 - Names: `SLZB-MR4U.local`
-- Reached from: T-2
+- Exposed to: T-2, via E-07
+- Administered by: P-1
 
 ### A-04 — Deco mesh
 
@@ -90,7 +120,8 @@ configures.
   Owns the DHCP reservations that LAN names follow, and the app that
   holds them is the only place they exist
 - Names: `192.168.68.1`, fixed by its gateway role
-- Reached from: T-1 at its WAN interface, T-2
+- Exposed to: T-1, at its WAN interface
+- Administered by: P-1
 
 ### A-05 — `nanopi-neo3`
 
@@ -99,7 +130,8 @@ configures.
   administered remotely from London. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Names: `nanopi-neo3.tail3af06.ts.net`
-- Reached from: T-3, T-4
+- Exposed to: T-3, via E-09
+- Administered by: P-1
 
 ### A-06 — `penguin`
 
@@ -107,14 +139,17 @@ configures.
   break-glass Terraform applies, `chezmoi`, and Claude Code, so it
   holds the operator's credentials
 - Names: `penguin.tail3af06.ts.net`
-- Reached from: T-4
+- Exposed to: no inbound path; it initiates its own connections
+- Administered by: P-1
 
 ### A-07 — Google Cloud
 
 - Description: project `alunduil` in `europe-west1`. Holds the
   Terraform state bucket, Secret Manager, the workload identity
   federation pool, and the audit log configuration
-- Reached from: T-4, T-5, T-6
+- Exposed to: T-1. Its API is public, so a leaked credential is
+  usable from anywhere
+- Administered by: P-1, P-2, P-3
 
 ### A-08 — Cloudflare
 
@@ -122,7 +157,8 @@ configures.
   and zone settings. Every record except `home.alunduil.com` is
   declared in `terraform/alunduil/dns.tf`; that one is written by
   `ddns-updater` on A-01
-- Reached from: T-1 as a resolver, T-4, T-5, T-6
+- Exposed to: T-1, both as a resolver and through a public API
+- Administered by: P-1, P-2, P-3
 
 ### A-09 — GitHub
 
@@ -130,7 +166,8 @@ configures.
   repository, and the runtime that applies this infrastructure.
   Repository settings are declared in
   `terraform/alunduil/repositories.tf`
-- Reached from: T-1, T-4, T-5, T-6
+- Exposed to: T-1, via E-02 and E-04
+- Administered by: P-1, P-2, P-3
 
 ### A-10 — Tailscale
 
@@ -140,14 +177,27 @@ configures.
   exit nodes carry per-device key-expiry exemptions set outside
   Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
-- Reached from: T-3, T-4, T-5, T-6
+- Exposed to: T-1. Its API is public; T-3 is what the tailnet grants,
+  not what reaches the account
+- Administered by: P-1, P-2, P-3
 
 ### A-11 — Grafana Cloud
 
 - Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
   traces, profiles, and dashboards. Dashboards sync from this
   repository's `grafana/` directory through Git Sync
-- Reached from: T-4, T-6
+- Exposed to: T-1. Its API is public
+- Administered by: P-1, P-3
+
+### A-12 — Plex
+
+- Description: media server, running as a container on A-01 and reading
+  the library from its pool. The only asset here that T-1 reaches
+  without a credential. Compromising it yields the container rather
+  than A-01, to the extent the isolation above holds
+- Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
+- Exposed to: T-1, via E-01
+- Administered by: P-1
 
 ## Entry points
 
@@ -155,7 +205,7 @@ Interfaces where data arrives.
 
 | ID | Interface | Asset | Reachable from |
 | --- | --- | --- | --- |
-| E-01 | Plex on 32400, over HTTP and HTTPS | A-01 | T-1 |
+| E-01 | Plex on 32400, over HTTP and HTTPS | A-12 | T-1 |
 | E-02 | `blog.alunduil.com`, served by GitHub Pages | A-09 | T-1 |
 | E-03 | The Nabu Casa remote interface | A-02 | T-1 |
 | E-04 | Pull requests against a public repository | A-09 | T-1 |
@@ -164,7 +214,7 @@ Interfaces where data arrives.
 | E-07 | Web interface on 80, `_slzb-06._tcp` on 7638 | A-03 | T-2 |
 | E-08 | Administration through the vendor's app | A-04 | T-2 |
 | E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
-| E-10 | The `home.alunduil.com` A record | A-08 | T-4 |
+| E-10 | The `home.alunduil.com` A record | A-08 | P-1 |
 
 E-01 is the widest. It publishes a service on A-01, the host holding
 the most data, to anyone who resolves the name.
@@ -214,7 +264,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 - Kind: Cloudflare API token
 - Scope: Zone Read, DNS Read, and Zone Settings Read on `alunduil.com`
 - Consumer: `terraform plan` in CI
-- Grants: T-5
+- Grants: P-2
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
 #### C-02 — `alunduil-infrastructure deployer (RW)`
@@ -223,7 +273,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 - Scope: Zone Read, DNS Write, and Zone Settings Write on
   `alunduil.com`
 - Consumer: `terraform apply` in CI, and `just alunduil`
-- Grants: T-6, and T-4 through the break-glass path
+- Grants: P-3, and P-1 through the break-glass path
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
 #### C-03 — `github-deployer-ro`
@@ -233,7 +283,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
   the state bucket
 - Consumer: `terraform plan` in CI, through workload identity
   federation
-- Grants: T-5
+- Grants: P-2
 - Source: `terraform/bootstrap/service_account_github_deployer_ro.tf`
 
 #### C-04 — `github-deployer-rw`
@@ -242,7 +292,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 - Scope: the `githubDeployerApplier` custom role, and object admin on
   the state bucket
 - Consumer: `terraform apply` in CI, restricted to `refs/heads/main`
-- Grants: T-6
+- Grants: P-3
 - Source: `terraform/bootstrap/service_account_github_deployer_rw.tf`
 
 #### C-05 — `grafana-gcp-reader`
@@ -250,7 +300,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 - Kind: Google Cloud service account key
 - Scope: `monitoring.viewer`, `logging.viewer`, `logging.viewAccessor`
 - Consumer: A-11's Cloud Monitoring data source
-- Grants: T-4
+- Grants: P-1
 - Source: `terraform/bootstrap/grafana_gcp_reader.tf`
 
 #### C-06 — `alunduil-infrastructure-provisioner`
@@ -258,7 +308,7 @@ enumerated Cloudflare, Google Cloud, GitHub, or Tailscale.
 - Kind: Grafana stack service account token
 - Scope: stack Admin
 - Consumer: the Grafana resources in `terraform/alunduil/`
-- Grants: T-6
+- Grants: P-3
 - Source: `terraform/bootstrap/grafana.tf`
 
 ### Created by hand
@@ -270,7 +320,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: Cloudflare API token, time-limited
 - Scope: `User:API Tokens` Edit, plus zone reads
 - Consumer: one `terraform/bootstrap/` apply, then expiry
-- Grants: T-4
+- Grants: P-1
 - Source: [`create-master-cloudflare-token.md`](../how-to/create-master-cloudflare-token.md)
 
 #### C-08 — Grafana Cloud access-policy token
@@ -278,7 +328,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: access-policy token
 - Scope: `stacks:read`, `stack-service-accounts:write`
 - Consumer: one `terraform/bootstrap/` apply
-- Grants: T-4
+- Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
 #### C-09 — Deployer GitHub App
@@ -286,7 +336,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: GitHub App ID and private key
 - Scope: installed across the managed repositories
 - Consumer: the `integrations/github` provider in CI
-- Grants: T-5, T-6
+- Grants: P-2, P-3
 - Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
 
 #### C-10 — Git Sync GitHub App
@@ -294,7 +344,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: GitHub App ID, installation ID, and private key
 - Scope: installed on `alunduil-infrastructure` alone
 - Consumer: A-11's Git Sync, for dashboard pull requests
-- Grants: T-6
+- Grants: P-3
 - Source: [`create-git-sync-github-app.md`](../how-to/create-git-sync-github-app.md)
 
 #### C-11 — Tailscale trust credential (read)
@@ -302,7 +352,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: workload identity federation client ID
 - Scope: tailnet read
 - Consumer: the `tailscale` provider during plan
-- Grants: T-5
+- Grants: P-2
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
 #### C-12 — Tailscale trust credential (write)
@@ -310,7 +360,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: workload identity federation client ID
 - Scope: tailnet write
 - Consumer: the `tailscale` provider during apply
-- Grants: T-6
+- Grants: P-3
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
 #### C-13 — `GH_PROJECT_SYNC_TOKEN`
@@ -318,7 +368,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: GitHub classic personal access token
 - Scope: Projects v2 write
 - Consumer: the Projects v2 sync workflow
-- Grants: T-6
+- Grants: P-3
 - Source: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
 
 #### C-14 — Web Analytics beacon
@@ -326,7 +376,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: Cloudflare site token; public, and no secret
 - Scope: beacon submission for `blog.alunduil.com`
 - Consumer: client-side JavaScript on the blog
-- Grants: T-1
+- Grants: nothing; the value is public and carries no access
 - Source: [`create-web-analytics-site.md`](../how-to/create-web-analytics-site.md)
 
 #### C-15 — Cloudflare DDNS token
@@ -335,7 +385,7 @@ Each needs an operator in a console; no apply rotates them.
 - Scope: writes the `home.alunduil.com` A record; its granted
   permissions are `Unverified`
 - Consumer: `ddns-updater` on A-01
-- Grants: T-2
+- Grants: P-4
 - Source: `None`. Issue #269 tracks writing a how-to
 
 #### C-16 — Google Drive credential
@@ -343,7 +393,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: OAuth grant
 - Scope: Drive read and write
 - Consumer: A-01's Cloud Sync tasks
-- Grants: T-2
+- Grants: P-4
 - Source: `None`
 
 #### C-17 — Tailscale auth keys
@@ -351,7 +401,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: pre-authentication keys
 - Scope: device enrolment
 - Consumer: enrolling a host by hand; deliberately unmanaged
-- Grants: T-3
+- Grants: P-1, when enrolling a host
 - Source: `None`
 
 #### C-18 — `vscode-mcp-access`
@@ -359,7 +409,7 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: Grafana stack service account holding one token
 - Scope: stack Viewer
 - Consumer: `Unverified`
-- Grants: T-4
+- Grants: P-1
 - Source: `None`
 
 ## Maintenance
