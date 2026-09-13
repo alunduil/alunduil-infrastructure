@@ -54,6 +54,10 @@ least-trusted zone with a path to it, and no asset has more than one.
 | T-2 | LAN | `192.168.68.0/22`; ~20 devices, 11 unidentified |
 | T-3 | Tailnet | Devices approved onto the tailnet |
 
+A-04 translates addresses between T-1 and T-2, so T-1 reaches a T-2
+asset only through a forward. One exists, for E-01. E-05's SMB, E-06,
+E-11 and E-12 answer nothing on the WAN address.
+
 ## Principals
 
 Identities that hold credentials, as distinct from the zones they act
@@ -127,8 +131,11 @@ beyond it.
 
 - Description: router, Wi-Fi mesh, DHCP, and DNS relay. Three units.
   Owns the DHCP reservations that LAN names follow, and the app that
-  holds them is the only place they exist
-- Exposed to: T-1, at its WAN interface
+  holds them is the only place they exist. Translates addresses between
+  T-1 and T-2
+- Exposed to: T-1, at its WAN interface. Its management interface
+  answers 80 and 443 on the WAN address from inside the network;
+  whether it answers from outside is `Unverified`
 
 ### A-05 — `nanopi-neo3`
 
