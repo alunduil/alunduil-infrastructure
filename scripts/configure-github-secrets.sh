@@ -105,6 +105,33 @@ resolve_project_sync_token() {
   fi
 }
 
+# BOOTSTRAP_DIR is populated by the executable body, as the *_secrets
+# globals above are.
+tf_output() {
+  terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
+}
+
+# Writes one secret, unless the resolved value is the __KEEP__ sentinel — which
+# means it was already set and deliberately not re-resolved. Derived values
+# never carry the sentinel, so they write on every run. A repo argument targets
+# that repo instead of the current one.
+set_secret() {
+  local name="$1" value="$2" repo="${3:-}"
+  local target=() label=""
+
+  if [[ ${value} == "__KEEP__" ]]; then
+    return
+  fi
+
+  if [[ -n ${repo} ]]; then
+    target=(--repo "${repo}")
+    label=" (repo: ${repo})"
+  fi
+
+  echo "Setting secret: ${name}${label}"
+  gh secret set "${name}" "${target[@]}" --body "${value}"
+}
+
 ensure_environment() {
   gh api -X PUT "repos/{owner}/{repo}/environments/${ENVIRONMENT}" \
     --input - >/dev/null <<'JSON'
@@ -154,12 +181,12 @@ gh auth status >/dev/null 2>&1 || {
   exit 1
 }
 
-WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
-RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
-RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
-BLOG_WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw blog_analytics_workload_identity_provider)"
-BLOG_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw blog_analytics_reader_email)"
-BLOG_SECRET_NAME="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw cloudflare_api_token_blog_analytics_ro_secret)"
+WIF_PROVIDER="$(tf_output workload_identity_provider)"
+RO_SA_EMAIL="$(tf_output github_deployer_ro_email)"
+RW_SA_EMAIL="$(tf_output github_deployer_rw_email)"
+BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
+BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
+BLOG_SECRET_NAME="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
@@ -186,11 +213,7 @@ declare -A SECRETS=(
 )
 
 for name in "${!SECRETS[@]}"; do
-  if [[ "${SECRETS[${name}]}" == "__KEEP__" ]]; then
-    continue
-  fi
-  echo "Setting secret: ${name}"
-  gh secret set "${name}" --body "${SECRETS[${name}]}"
+  set_secret "${name}" "${SECRETS[${name}]}"
 done
 
 declare -A BLOG_SECRETS=(
@@ -199,13 +222,12 @@ declare -A BLOG_SECRETS=(
   [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_NAME}"
 )
 
-# Derived from terraform outputs, so they are re-set every run: a pool or
-# service account recreated here has to reach the blog, and a stale value there
-# fails the token exchange without failing the build. The drift check below
-# stays scoped to this repo: these names are the only ones we own in the blog's.
+# All three are derived from terraform outputs, so a pool or service account
+# recreated here reaches the blog on the next run; a stale value there fails
+# the token exchange without failing the build. The drift check below stays
+# scoped to this repo: these names are the only ones we own in the blog's.
 for name in "${!BLOG_SECRETS[@]}"; do
-  echo "Setting secret: ${name} (repo: ${BLOG_REPO})"
-  gh secret set "${name}" --repo "${BLOG_REPO}" --body "${BLOG_SECRETS[${name}]}"
+  set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
 done
 
 ensure_environment

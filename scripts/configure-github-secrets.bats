@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: MIT
 #
 # Unit tests for the pure helpers in configure-github-secrets.sh: the
-# needs_*_prompt precedence and the resolve_* value/__KEEP__ handling. The
-# network- and prompt-touching paths (gh, terraform, interactive read) are
-# not exercised — they're covered by running the script against the live
-# repo, which alunduil performs out-of-band.
+# needs_*_prompt precedence, the resolve_* value/__KEEP__ handling, and the
+# command set_secret builds against a stubbed gh. The paths that reach the
+# network or prompt (terraform, real gh, interactive read) are not
+# exercised — they're covered by running the script against the live repo,
+# which alunduil performs out-of-band.
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
@@ -18,6 +19,12 @@ setup() {
   # shellcheck source=configure-github-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-github-secrets.sh"
 }
+
+# Echoes its arguments instead of reaching GitHub, so a test can assert the
+# command that was built. set_secret calls it indirectly, which shellcheck
+# can't follow.
+# shellcheck disable=SC2329
+gh() { echo "gh $*"; }
 
 # --- has_secret -----------------------------------------------------------
 
@@ -128,4 +135,30 @@ setup() {
   existing_env_secrets=$'GH_PROJECT_SYNC_TOKEN'
   result="$(resolve_project_sync_token 2>/dev/null)"
   [[ ${result} == "__KEEP__" ]]
+}
+
+# --- set_secret -----------------------------------------------------------
+
+@test "set_secret writes a resolved value to the current repo" {
+  run set_secret "GH_APP_ID" "98765"
+  [[ ${output} == *"gh secret set GH_APP_ID --body 98765"* ]]
+  [[ ${output} != *"--repo"* ]]
+}
+
+@test "set_secret skips the __KEEP__ sentinel without calling gh" {
+  run set_secret "GH_APP_ID" "__KEEP__"
+  [[ ${output} != *"gh secret set"* ]]
+}
+
+@test "set_secret targets another repo when given one" {
+  run set_secret "GCP_SERVICE_ACCOUNT_EMAIL" "sa@example.test" "owner/other"
+  [[ ${output} == *"--repo owner/other"* ]]
+  [[ ${output} == *"--body sa@example.test"* ]]
+}
+
+# Derived values never carry the sentinel, so nothing should skip them. This
+# is the path that keeps a rotated identifier reaching the blog.
+@test "set_secret writes a derived value through to another repo" {
+  run set_secret "CLOUDFLARE_ANALYTICS_SECRET_NAME" "a-secret-name" "owner/other"
+  [[ ${output} == *"gh secret set CLOUDFLARE_ANALYTICS_SECRET_NAME"* ]]
 }
