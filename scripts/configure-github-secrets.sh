@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Configures the GitHub Actions secrets the CI workflows consume.
-# Re-running is a no-op.
+# Configures the GitHub Actions secrets the CI workflows consume, here and
+# in blog.alunduil.com. Re-running is a no-op.
 
 set -euo pipefail
 
@@ -11,6 +11,10 @@ set -euo pipefail
 # (restricted to main) so only the sync workflow, which declares the
 # environment, can read it. Every other secret stays repo-level.
 ENVIRONMENT="project-sync"
+
+# blog.alunduil.com's Pages build federates into this project to read its
+# Cloudflare analytics token, so its identifiers are configured here too.
+BLOG_REPO="alunduil/blog.alunduil.com"
 
 # existing_secrets / existing_env_secrets are populated by the executable
 # body (from `gh secret list`) before these run; the bats suite sets them
@@ -153,6 +157,9 @@ gh auth status >/dev/null 2>&1 || {
 WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
 RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
 RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
+BLOG_WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw blog_analytics_workload_identity_provider)"
+BLOG_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw blog_analytics_reader_email)"
+BLOG_SECRET_NAME="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw cloudflare_api_token_blog_analytics_ro_secret)"
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
@@ -184,6 +191,21 @@ for name in "${!SECRETS[@]}"; do
   fi
   echo "Setting secret: ${name}"
   gh secret set "${name}" --body "${SECRETS[${name}]}"
+done
+
+declare -A BLOG_SECRETS=(
+  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${BLOG_WIF_PROVIDER}"
+  [GCP_SERVICE_ACCOUNT_EMAIL]="${BLOG_SA_EMAIL}"
+  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_NAME}"
+)
+
+# Derived from terraform outputs, so they are re-set every run: a pool or
+# service account recreated here has to reach the blog, and a stale value there
+# fails the token exchange without failing the build. The drift check below
+# stays scoped to this repo: these names are the only ones we own in the blog's.
+for name in "${!BLOG_SECRETS[@]}"; do
+  echo "Setting secret: ${name} (repo: ${BLOG_REPO})"
+  gh secret set "${name}" --repo "${BLOG_REPO}" --body "${BLOG_SECRETS[${name}]}"
 done
 
 ensure_environment

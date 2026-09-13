@@ -4,27 +4,15 @@
 # Connect the blog build to its Cloudflare analytics token
 
 Run this once in `blog.alunduil.com` after the bootstrap apply. Bootstrap
-already created the token, the Secret Manager entry, and the federation, so
-only the workflow wiring is left. Rotation doesn't repeat it — the build
-fetches the current value on every run.
+creates the token, the Secret Manager entry, and the federation, and
+`scripts/configure-github-secrets.sh` sets the three identifiers the build
+needs as Actions secrets in that repo, so only the workflow wiring is left.
+Rotation doesn't repeat it — the build fetches the current value on every run.
 
 ## Prerequisites
 
 - `just bootstrap` applied.
 - Push access to `alunduil/blog.alunduil.com`.
-
-## Collect the identifiers
-
-None of these are credentials, so they belong in the workflow file rather
-than in the repo's secrets:
-
-```sh
-terraform -chdir=terraform/bootstrap output -raw \
-  blog_analytics_workload_identity_provider
-terraform -chdir=terraform/bootstrap output -raw blog_analytics_reader_email
-terraform -chdir=terraform/bootstrap output -raw \
-  cloudflare_api_token_blog_analytics_ro_secret
-```
 
 ## Wire up the Pages build
 
@@ -45,13 +33,14 @@ jobs:
       - uses: actions/checkout@v7
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: PROVIDER_FROM_ABOVE
-          service_account: EMAIL_FROM_ABOVE
+          workload_identity_provider:
+            ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
       - id: analytics
         uses: google-github-actions/get-secretmanager-secrets@v2
         with:
           secrets: |-
-            token:alunduil/SECRET_NAME_FROM_ABOVE
+            token:alunduil/${{ secrets.CLOUDFLARE_ANALYTICS_SECRET_NAME }}
       - uses: withastro/action@v6
         env:
           CLOUDFLARE_ANALYTICS_API_TOKEN: ${{ steps.analytics.outputs.token }}
