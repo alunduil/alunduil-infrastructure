@@ -122,12 +122,12 @@ entry says otherwise.
 
 - Address: `SLZB-MR4U.local`, serving a web interface on port 80 and
   `_slzb-06._tcp` on 7638
-- Role: Zigbee coordinator, carrying every Zigbee message the house
-  sends. Zigbee2MQTT on `homeassistant` depends on it, which puts it on
-  the same critical path. The vendor service type and the model name
-  are the evidence for the role; the web interface exposes no
-  identifying text. The Thread border router advertises from
-  `homeassistant` instead
+- Role: Zigbee and Thread radio coordinator, carrying every Zigbee
+  message the house sends. Zigbee2MQTT on `homeassistant` depends on
+  it, which puts it on the same critical path. Home Assistant reaches
+  the Thread radio the same way, through the border router that
+  advertises from `homeassistant`, but no Thread devices are paired, so
+  that half is unexercised
 - OS: `Unverified`
 - Criticality: High
 - Classification: Personal
@@ -142,17 +142,20 @@ entry says otherwise.
   `192.168.68.0/22`
 - Role: router, Wi-Fi mesh, DHCP, and DNS relay to Quad9 over DNS over
   HTTPS
-- OS: TP-Link Deco; model and firmware `Unverified`
+- Hardware: three units — an X50-5G in the living room, and an X50
+  each in the bedroom and the office
+- OS: firmware version `Unverified`
 - Criticality: High
 - Classification: Operational
 - Monitoring: `None`
-- Backup: `Unverified`
+- Backup: the Deco app's own automated backup, never restored
 
 ### `nanopi-neo3`
 
 - Address: `nanopi-neo3.tail3af06.ts.net`; DHCP on its local network
 - Role: Tailscale exit node presenting a US address
-- OS: Armbian, version `Unverified`
+- OS: Debian 12 (bookworm). The recovery image ADR 0002 specifies is
+  built with Armbian, which isn't what runs today
 - Location: American Midwest, in a household that isn't alunduil's
 - Owner: alunduil, administered remotely from London
 - Criticality: Low
@@ -174,7 +177,8 @@ entry says otherwise.
 - Classification: Operational
 - Monitoring: Grafana Cloud `integrations/unix` and
   `integrations/process`; zellij logs to Loki
-- Backup: `Unverified`
+- Backup: `chezmoi`, which carries the configuration this container is
+  rebuilt from
 
 ## Cloud and identity services
 
