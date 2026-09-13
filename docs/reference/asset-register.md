@@ -50,18 +50,27 @@ eleven advertise no service and this register doesn't identify them.
 
 ## Principals
 
-Who acts, as distinct from where they act. Credentials grant these.
+Identities that hold credentials, as distinct from the zones they act
+from. What sets one running isn't the same as what it holds, so both
+are recorded.
 
-| ID | Name | Who holds it |
-| --- | --- | --- |
-| P-1 | Operator | alunduil, at a console or the workstation |
-| P-2 | CI plan | A pull request against this repository |
-| P-3 | CI apply | A push to `refs/heads/main` |
-| P-4 | Host service | A service on a host, holding its own credential |
+| ID | Name | What runs | Invoked from |
+| --- | --- | --- | --- |
+| P-1 | Operator | A console or the workstation | alunduil |
+| P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
+| P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
+| P-4 | Host service | A service holding its own credential | Its host |
 
 P-2 and P-3 are separate because a pull request supplies the workflow
-that runs. They reach different credentials by design; E-04 records
-what keeps a fork out of both.
+that runs, so they reach different credentials by design.
+
+T-1 can set P-2 running: the repository is public, so anyone can open
+a pull request and start a plan. A fork's run reaches no credential,
+for the reason E-04 gives. A pull request from a branch here needs
+write access, and reaches P-2's.
+
+Whoever holds a host sets its P-4 running, which is why B-1 decides
+how much C-15 and C-16 are worth to an attacker.
 
 ## Trust boundaries
 
@@ -244,8 +253,7 @@ E-04 reaches P-2's credentials because `terraform-plan.yml` triggers on
 `pull_request` with no environment gate. What keeps a stranger out is
 `terraform/bootstrap/github_oidc.tf`, whose pool requires
 `assertion.repository == 'alunduil/alunduil-infrastructure'`, so a
-token minted for a fork matches nothing. A branch pull request inside
-this repository does reach the read-only deployer.
+token minted for a fork matches nothing.
 
 ## External dependencies
 
