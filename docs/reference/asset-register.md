@@ -55,8 +55,10 @@ least-trusted zone with a path to it, and no asset has more than one.
 | T-3 | Tailnet | Devices approved onto the tailnet |
 
 A-04 translates addresses between T-1 and T-2, so T-1 reaches a T-2
-asset only through a forward. One exists, for E-01. E-05's SMB, E-06,
-E-11 and E-12 answer nothing on the WAN address.
+asset either through a forward or through a vendor cloud the asset
+dials out to. One forward exists, for E-01; E-03 and E-08 are cloud
+paths. E-05's SMB, E-06, E-11 and E-12 answer nothing on the WAN
+address and have no cloud path.
 
 ## Principals
 
@@ -133,9 +135,9 @@ beyond it.
   Owns the DHCP reservations that LAN names follow, and the app that
   holds them is the only place they exist. Translates addresses between
   T-1 and T-2
-- Exposed to: T-1, at its WAN interface. Its management interface
-  answers 80 and 443 on the WAN address from inside the network;
-  whether it answers from outside is `Unverified`
+- Exposed to: T-1, via E-08. Its management interface also answers 80
+  and 443 on the WAN address from inside the network; whether it
+  answers from outside is `Unverified`
 
 ### A-05 — `nanopi-neo3`
 
@@ -221,7 +223,7 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-05 | Web interface on 443, SMB on 445, HTTP on 80 | A-01 | T-2 |
 | E-06 | Home Assistant on 8123 | A-02 | T-2 |
 | E-07 | Web interface on 80, `_slzb-06._tcp` on 7638 | A-03 | T-2 |
-| E-08 | Administration through the vendor's app | A-04 | T-2 |
+| E-08 | Administration through the Deco app, via D-06 | A-04 | T-1 |
 | E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
 | E-10 | The `home.alunduil.com` A record | A-08 | P-1 |
 | E-11 | Netdata on 20489 | A-01 | T-2 |
@@ -248,6 +250,7 @@ Services outside our control, and what leaves to them.
 | D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
 | D-04 | UptimeRobot | Probes against E-01; heartbeats from A-02, A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
+| D-06 | TP-Link cloud | Administration of A-04; its telemetry is `Unverified` |
 
 Telemetry from A-01, A-02, A-03, and A-06 leaves to A-11, which is an
 asset because Terraform configures it.
@@ -418,6 +421,15 @@ Each needs an operator in a console; no apply rotates them.
 - Kind: Grafana stack service account holding one token
 - Scope: stack Viewer
 - Consumer: `Unverified`
+- Grants: P-1
+- Source: `None`
+
+#### C-19 — TP-Link account
+
+- Kind: Vendor account
+- Scope: administration of A-04, including DHCP, DNS and the forwards
+  that define T-2
+- Consumer: the Deco app, through D-06
 - Grants: P-1
 - Source: `None`
 
