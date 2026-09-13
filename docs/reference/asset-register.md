@@ -19,8 +19,9 @@ and the threat model cite entries here by ID.
 Out of scope:
 
 - Component inventory fields — model, serial number, firmware version,
-  physical location, purchase details. Those live in a private Notion
-  inventory. Recording them twice would be duplicate accounting.
+  physical location, machine names, network addresses. Those live in a
+  private Notion inventory, and recording them twice would be duplicate
+  accounting.
 - Criticality tiers and data classification, which belong to a
   reliability map rather than a threat model.
 - The workstation's own configuration, which belongs to
@@ -86,8 +87,10 @@ unchecked.
 ## Assets
 
 Hosts and devices alunduil owns, and accounts this repository
-configures. P-1 administers every one; an entry names `Administered by`
-only to add a principal beyond it.
+configures. `Exposed to` and `Administered by` are together the trust
+levels an OWASP asset record carries, split by kind. P-1 administers
+every asset; an entry names `Administered by` only to add a principal
+beyond it.
 
 ### A-01 — `truenas`
 
@@ -95,7 +98,6 @@ only to add a principal beyond it.
   Tailscale, `ddns-updater`, and Scrutiny. Advertises
   `192.168.68.0/22` to the tailnet as a subnet router, and offers an
   exit node
-- Names: `truenas.local`, `truenas-scale.tail3af06.ts.net`
 - Exposed to: T-2, via E-05. A-12 carries its only path from T-1
 
 ### A-02 — `homeassistant`
@@ -103,7 +105,6 @@ only to add a principal beyond it.
 - Description: home automation hub. Runs Zigbee2MQTT, Mosquitto, a
   Matter server, an OpenThread Border Router, alloy, Tailscale, SSH,
   and the File editor. Every automation in the house runs here
-- Names: `192.168.68.56`, `homeassistant.tail3af06.ts.net`
 - Exposed to: T-1, via E-03
 
 ### A-03 — `slzb-mr4u`
@@ -112,7 +113,6 @@ only to add a principal beyond it.
   Zigbee message the house sends. A-02's Zigbee2MQTT depends on it.
   A-02 reaches the Thread radio the same way, but no Thread devices
   are paired, so that half is unexercised
-- Names: `SLZB-MR4U.local`
 - Exposed to: T-2, via E-07
 
 ### A-04 — Deco mesh
@@ -120,7 +120,6 @@ only to add a principal beyond it.
 - Description: router, Wi-Fi mesh, DHCP, and DNS relay. Three units.
   Owns the DHCP reservations that LAN names follow, and the app that
   holds them is the only place they exist
-- Names: `192.168.68.1`, fixed by its gateway role
 - Exposed to: T-1, at its WAN interface
 
 ### A-05 — `nanopi-neo3`
@@ -129,7 +128,6 @@ only to add a principal beyond it.
   the American Midwest in a household that isn't alunduil's, and is
   administered remotely from London. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
-- Names: `nanopi-neo3.tail3af06.ts.net`
 - Exposed to: T-3, via E-09
 
 ### A-06 — `penguin`
@@ -137,54 +135,53 @@ only to add a principal beyond it.
 - Description: operator workstation, a Crostini container. Runs
   break-glass Terraform applies, `chezmoi`, and Claude Code, so it
   holds the operator's credentials
-- Names: `penguin.tail3af06.ts.net`
 - Exposed to: no inbound path; it initiates its own connections
 
 ### A-07 — Google Cloud
 
-- Description: holds the Terraform state bucket, Secret Manager, the
+- Description: project `alunduil` in `europe-west1`, holding the
+  Terraform state bucket, Secret Manager, the
   workload identity federation pool, and the audit log configuration
-- Names: project `alunduil`, in `europe-west1`
 - Exposed to: T-1. Its API is public
 - Administered by: P-2, P-3
 
 ### A-08 — Cloudflare
 
-- Description: authoritative DNS and zone settings, DNSSEC active.
+- Description: zone `alunduil.com`, DNSSEC active. Authoritative DNS
+  and zone settings.
   Every record except `home.alunduil.com` is
   declared in `terraform/alunduil/dns.tf`; that one is written by
   `ddns-updater` on A-01
-- Names: zone `alunduil.com`
 - Exposed to: T-1, both as a resolver and through a public API
 - Administered by: P-2, P-3
 
 ### A-09 — GitHub
 
-- Description: source of record for every managed repository, and the
+- Description: account `alunduil`, source of record for every managed
+  repository, and the
   runtime that applies this infrastructure. Repository settings are
   declared in `terraform/alunduil/repositories.tf`
-- Names: account `alunduil`
 - Exposed to: T-1, via E-02 and E-04
 - Administered by: P-2, P-3
 
 ### A-10 — Tailscale
 
-- Description: private network joining every host above. Device
+- Description: tailnet `tail3af06.ts.net`, joining every host above.
+  Device
   approval on, key duration 180 days, MagicDNS
   on, HTTPS certificates on, global nameservers pinned to Quad9. Both
   exit nodes carry per-device key-expiry exemptions set outside
   Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
-- Names: tailnet `tail3af06.ts.net`
 - Exposed to: T-1. Its API is public; T-3 is what it grants, not what
   reaches it
 - Administered by: P-2, P-3
 
 ### A-11 — Grafana Cloud
 
-- Description: metrics, logs, traces, profiles, and dashboards, syncing
+- Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
+  traces, profiles, and dashboards, syncing
   from this repository's `grafana/` directory through Git Sync
-- Names: stack `alunduil`, in `prod-gb-south-1`
 - Exposed to: T-1. Its API is public
 - Administered by: P-3
 
@@ -192,7 +189,6 @@ only to add a principal beyond it.
 
 - Description: media server, running as a container on A-01 and reading
   the library from its pool read-only
-- Names: `plex.alunduil.com`, resolving through `home.alunduil.com`
 - Exposed to: T-1, via E-01
 
 ## Entry points
@@ -203,7 +199,7 @@ which is why E-01 names A-12 and E-11 names A-01.
 
 | ID | Interface | Asset | Reachable from |
 | --- | --- | --- | --- |
-| E-01 | Plex on 32400, over HTTP and HTTPS | A-12 | T-1 |
+| E-01 | Plex on 32400 at `plex.alunduil.com` | A-12 | T-1 |
 | E-02 | `blog.alunduil.com`, served by GitHub Pages | A-09 | T-1 |
 | E-03 | The Nabu Casa remote interface | A-02 | T-1 |
 | E-04 | Pull requests against a public repository | A-09 | T-1 |
