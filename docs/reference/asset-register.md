@@ -46,12 +46,7 @@ least-trusted zone with a path to it, and no asset has more than one.
 | T-3 | Tailnet | Devices approved onto the tailnet |
 
 T-2 is one flat segment. Around twenty devices answer on it, of which
-eleven advertise no service and this register doesn't identify them, so
-read T-2 as larger and less known than the assets sitting in it.
-
-T-4 through T-6 are retired. They named principals rather than
-positions, which put them on a scale they didn't belong to. IDs
-aren't reused.
+eleven advertise no service and this register doesn't identify them.
 
 ## Principals
 
@@ -65,8 +60,8 @@ Who acts, as distinct from where they act. Credentials grant these.
 | P-4 | Host service | A service on a host, holding its own credential |
 
 P-2 and P-3 are separate because a pull request supplies the workflow
-that runs. They reach different credentials by design; E-04 records what keeps a
-fork out of both.
+that runs. They reach different credentials by design; E-04 records
+what keeps a fork out of both.
 
 ## Trust boundaries
 
@@ -78,8 +73,8 @@ are implied by their order; these sit inside a single host.
 | B-1 | Container isolation on A-01 | A-12 and five other apps from A-01 |
 | B-2 | Add-on isolation on A-02 | Eight add-ons from A-02 |
 
-B-1 isn't one boundary. It holds for A-12 and is absent for Netdata, so
-what crossing it means depends on which container is on the far side.
+B-1 isn't one boundary. What crossing it means depends on which
+container is on the far side.
 
 A-12 declares no host mounts, takes the media library read-only, runs
 on a bridge rather than sharing the host's network, and names a
@@ -88,9 +83,8 @@ can't write what it serves.
 
 Netdata mounts `/proc`, `/sys`, and the host's Docker socket, holds
 `SYS_ADMIN`, `SYS_PTRACE` and `SYS_RAWIO`, and runs as root. A socket
-that can start a privileged container is host authority under another
-name, so B-1 separates Netdata from A-01 in name only, and E-11 should
-be read as reaching A-01 itself.
+that can start a privileged container is host authority, so B-1
+separates Netdata from A-01 in name only and E-11 reaches A-01 itself.
 
 Scrutiny sits between them. It holds no Docker socket, but runs as root
 with `/dev` and `/run/udev` mounted and `MKNOD` held, which is raw
@@ -98,13 +92,12 @@ access to the disks A-01 exists to hold. Its two ports answer T-2 as
 E-12.
 
 Every one of these catalogue entries describes running as root. A-12's
-configuration overrides that with a named user, and Netdata's and
-Scrutiny's carry no override, which is the whole of the difference.
+configuration overrides that with a named user; Netdata's and
+Scrutiny's carry no override.
 
 alloy, Tailscale, and `ddns-updater` stay unchecked. Each keeps a
 credential in its application configuration, so establishing their
-boundaries means reading those values, and no question so far has
-needed it. All of B-2 is unchecked too.
+boundaries means reading those values. All of B-2 is unchecked too.
 
 ## Assets
 
