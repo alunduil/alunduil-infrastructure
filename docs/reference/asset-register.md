@@ -78,17 +78,25 @@ are implied by their order; these sit inside a single host.
 | B-1 | Container isolation on A-01 | A-12 and five other apps from A-01 |
 | B-2 | Add-on isolation on A-02 | Eight add-ons from A-02 |
 
-B-1 is checked for A-12 alone, and it holds. That container declares no
-host mounts, takes the media library read-only, and runs on a bridge
-rather than sharing the host's network, so a T-1 client arriving at
-E-01 lands inside the container and can't write what it serves.
+B-1 isn't one boundary. It holds for A-12 and is absent for Netdata, so
+what crossing it means depends on which container is on the far side.
 
-One thing decides whether that separation is real. A-12's configuration
-names a non-root user while the catalog metadata describes the
-container as running as root, and nobody has established which governs.
+A-12 declares no host mounts, takes the media library read-only, runs
+on a bridge rather than sharing the host's network, and names a
+non-root user, so a T-1 client arriving at E-01 lands somewhere that
+can't write what it serves.
 
-B-1's other containers and all of B-2 are unchecked. Treat both as
-boundaries of `Unverified` strength rather than assumed ones.
+Netdata mounts `/proc`, `/sys`, and the host's Docker socket, holds
+`SYS_ADMIN`, `SYS_PTRACE` and `SYS_RAWIO`, and runs as root. A socket
+that can start a privileged container is host authority under another
+name, so B-1 separates Netdata from A-01 in name only, and E-11 should
+be read as reaching A-01 itself.
+
+Both containers' catalogue metadata describes running as root. A-12's
+configuration overrides that with a named user and Netdata's carries no
+override, which is the difference between the two.
+
+The remaining containers under B-1, and all of B-2, are unchecked.
 
 ## Assets
 
@@ -225,6 +233,7 @@ Interfaces where data arrives.
 | E-08 | Administration through the vendor's app | A-04 | T-2 |
 | E-09 | Services published to the tailnet | A-01, A-02 | T-3 |
 | E-10 | The `home.alunduil.com` A record | A-08 | P-1 |
+| E-11 | Netdata on 20489 | A-01 | T-2 |
 
 E-01 is the widest. It publishes A-12 to anyone who resolves the name.
 Plex asks a client from T-1 to sign in, but its allowed-networks
