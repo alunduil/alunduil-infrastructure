@@ -39,6 +39,10 @@ Supporting how-tos:
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
 - [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
 
+Estate assets, trust levels, entry points, and credentials:
+
+- [docs/reference/asset-register.md](docs/reference/asset-register.md)
+
 ## Support and contributions
 
 This is personal infrastructure maintained for the author's own use.
