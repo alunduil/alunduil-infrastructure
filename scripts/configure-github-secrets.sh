@@ -182,7 +182,7 @@ RO_SA_EMAIL="$(tf_output github_deployer_ro_email)"
 RW_SA_EMAIL="$(tf_output github_deployer_rw_email)"
 BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
 BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
-BLOG_SECRET_NAME="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
+BLOG_SECRET_MANAGER_ID="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
@@ -215,7 +215,7 @@ done
 declare -A BLOG_SECRETS=(
   [GCP_WORKLOAD_IDENTITY_PROVIDER]="${BLOG_WIF_PROVIDER}"
   [GCP_SERVICE_ACCOUNT_EMAIL]="${BLOG_SA_EMAIL}"
-  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_NAME}"
+  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_MANAGER_ID}"
 )
 
 # Derived from terraform outputs, so a pool or service account recreated here
