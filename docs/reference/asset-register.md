@@ -54,12 +54,16 @@ Identities that hold credentials, as distinct from the zones they act
 from. What sets one running isn't the same as what it holds, so both
 are recorded.
 
-| ID | Name | What runs | Invoked from |
+| ID | Name | Identity | Invoked from |
 | --- | --- | --- | --- |
-| P-1 | Operator | A console or the workstation | alunduil |
+| P-1 | Operator | A shell on A-06, or a provider console | alunduil |
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service holding its own credential | Its host |
+
+Whoever holds A-06 sets P-1 running. The workstation keeps the
+operator's credentials for break-glass applies, so taking it takes P-1;
+that A-06 has no inbound path is what stands in the way.
 
 P-2 and P-3 are separate because a pull request supplies the workflow
 that runs, so they reach different credentials by design.
