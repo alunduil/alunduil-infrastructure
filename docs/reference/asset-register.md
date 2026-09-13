@@ -131,8 +131,10 @@ entry says otherwise.
 - OS: `Unverified`
 - Criticality: High
 - Classification: Personal
-- Monitoring: syslog to Loki (`slzb-mr4u`)
-- Backup: `None`; configuration lives on the device
+- Monitoring: syslog to Loki (`slzb-mr4u`), and no availability check;
+  see issue #537
+- Backup: `Unverified`. Its own settings have none, and whether Home
+  Assistant's backup carries the Zigbee network state is unconfirmed
 
 ### Deco mesh
 
