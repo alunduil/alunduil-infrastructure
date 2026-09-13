@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for the pure helpers in configure-github-secrets.sh: the
+# Unit tests for the sourceable helpers in configure-github-secrets.sh: the
 # needs_*_prompt precedence, the resolve_* value/__KEEP__ handling, and the
 # command set_secret builds against a stubbed gh. The paths that reach the
 # network or prompt (terraform, real gh, interactive read) are not
@@ -20,9 +20,8 @@ setup() {
   source "${BATS_TEST_DIRNAME}/configure-github-secrets.sh"
 }
 
-# Echoes its arguments instead of reaching GitHub, so a test can assert the
-# command that was built. set_secret calls it indirectly, which shellcheck
-# can't follow.
+# Lets a test assert the command that was built rather than reaching GitHub.
+# set_secret calls it indirectly, which shellcheck can't follow.
 # shellcheck disable=SC2329
 gh() { echo "gh $*"; }
 

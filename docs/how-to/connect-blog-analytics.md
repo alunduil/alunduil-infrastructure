@@ -3,11 +3,11 @@
 
 # Connect the blog build to its Cloudflare analytics token
 
-Run this once in `blog.alunduil.com` after the bootstrap apply. Bootstrap
-creates the token, the Secret Manager entry, and the federation, and
-`scripts/configure-github-secrets.sh` sets the three identifiers the build
-needs as Actions secrets in that repo, so only the workflow wiring is left.
-Rotation doesn't repeat it — the build fetches the current value on every run.
+Run this once in `blog.alunduil.com` after the bootstrap apply. Only the
+workflow wiring is left: bootstrap creates the token, the Secret Manager
+entry, and the federation, and `scripts/configure-github-secrets.sh` puts the
+identifiers the build needs into that repo's Actions secrets. Rotation doesn't
+repeat it — the build fetches the current value on every run.
 
 ## Prerequisites
 
@@ -55,7 +55,7 @@ section, so a broken exchange still leaves a green run. Check the page, not
 the exit status: after the next push to `main`, the homepage should carry a
 Popular section between Featured and Recent.
 
-When it doesn't, the logs name which half failed. `unable to acquire
+When it doesn't, the logs name the failure. `unable to acquire
 impersonated credentials` from the `auth` step means the workflow's file path
 or branch doesn't match the pinned `job_workflow_ref`. `authz: not authorized
 for that account` in the build output means the token arrived but carries the

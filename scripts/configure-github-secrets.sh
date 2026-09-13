@@ -105,16 +105,12 @@ resolve_project_sync_token() {
   fi
 }
 
-# BOOTSTRAP_DIR is populated by the executable body, as the *_secrets
-# globals above are.
 tf_output() {
   terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
 }
 
-# Writes one secret, unless the resolved value is the __KEEP__ sentinel — which
-# means it was already set and deliberately not re-resolved. Derived values
-# never carry the sentinel, so they write on every run. A repo argument targets
-# that repo instead of the current one.
+# The __KEEP__ sentinel means the secret is already set and was deliberately
+# not re-resolved, so it is left alone.
 set_secret() {
   local name="$1" value="$2" repo="${3:-}"
   local target=() label=""
@@ -222,10 +218,10 @@ declare -A BLOG_SECRETS=(
   [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_NAME}"
 )
 
-# All three are derived from terraform outputs, so a pool or service account
-# recreated here reaches the blog on the next run; a stale value there fails
-# the token exchange without failing the build. The drift check below stays
-# scoped to this repo: these names are the only ones we own in the blog's.
+# Derived from terraform outputs, so a pool or service account recreated here
+# reaches the blog on the next run; a stale value there fails the token
+# exchange without failing the build. The drift check below stays scoped to
+# this repo: these are the only names we own in the blog's.
 for name in "${!BLOG_SECRETS[@]}"; do
   set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
 done
