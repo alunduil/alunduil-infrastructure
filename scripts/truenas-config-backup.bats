@@ -13,9 +13,7 @@ ARCHIVE_PREFIX='truenas-config-'
 EXPIRED_ARCHIVE="${ARCHIVE_PREFIX}2000-01-01-000000.tar"
 
 setup() {
-  # Seeding the config database needs sqlite3, which CI's runner image carries
-  # and a workstation may not. Skipping keeps a full local run green instead of
-  # failing on a dependency this suite never declared.
+  # CI's runner image carries sqlite3; a workstation may not.
   command -v sqlite3 >/dev/null || skip "sqlite3 not installed"
 
   SOURCE="${BATS_TEST_TMPDIR}/data"

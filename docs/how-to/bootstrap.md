@@ -5,9 +5,8 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets, both here and in `blog.alunduil.com`, whose Pages build
-federates in to read its analytics token. Run when starting from scratch
-or rotating the core credentials.
+Actions secrets, both here and in `blog.alunduil.com`. Run when starting
+from scratch or rotating the core credentials.
 
 ## Prerequisites
 

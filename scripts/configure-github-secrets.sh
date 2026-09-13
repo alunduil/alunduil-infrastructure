@@ -221,7 +221,7 @@ declare -A BLOG_SECRETS=(
 # Derived from terraform outputs, so a pool or service account recreated here
 # reaches the blog on the next run; a stale value there fails the token
 # exchange without failing the build. The drift check below stays scoped to
-# this repo: these are the only names we own in the blog's.
+# this repo: these are the only names we own there.
 for name in "${!BLOG_SECRETS[@]}"; do
   set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
 done
