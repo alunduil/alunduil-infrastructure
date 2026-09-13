@@ -37,9 +37,9 @@ output "cloudflare_api_token_deployer_rw_secret" {
   sensitive   = false
 }
 
-# blog.alunduil.com's Pages build consumes these three directly — they are
-# identifiers, not credentials, so they live in that repo's workflow rather than
-# its secrets. See docs/how-to/connect-blog-analytics.md.
+# blog.alunduil.com's Pages build consumes these: identifiers rather than
+# credentials, so they belong in that repo's workflow rather than its secrets.
+# See docs/how-to/connect-blog-analytics.md.
 output "blog_analytics_workload_identity_provider" {
   value       = google_iam_workload_identity_pool_provider.blog.name
   description = "Full resource name of the blog's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/blog/providers/github-provider"

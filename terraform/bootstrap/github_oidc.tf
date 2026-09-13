@@ -54,9 +54,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 locals {
-  # Federated principals differ only in the tail after the pool id, so the
-  # project-scoped prefix is shared — blog_analytics.tf builds the blog pool's
-  # principal from it too.
   wif_pool_prefix = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools"
 
   wif_principal      = "${local.wif_pool_prefix}/github/attribute.repository/alunduil/alunduil-infrastructure"

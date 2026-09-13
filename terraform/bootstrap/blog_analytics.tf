@@ -1,19 +1,17 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# blog.alunduil.com ranks its popular posts at build time from the Cloudflare
-# Web Analytics RUM dataset. That query filters on viewer.accounts(accountTag),
-# so it needs an account-level token; the deployer tokens in
-# cloudflare_tokens.tf are scoped to the alunduil.com zone and return
-# "authz: not authorized for that account".
+# The blog's build reads the Web Analytics RUM dataset through
+# viewer.accounts(accountTag), which a zone-scoped token answers with
+# "authz: not authorized for that account". Every token in cloudflare_tokens.tf
+# is zone-scoped, hence a second one here.
 data "cloudflare_api_token_permission_groups_list" "account_analytics_read" {
   name  = "Account Analytics Read"
   scope = "com.cloudflare.api.account"
 }
 
 locals {
-  # The account the alunduil.com zone sits under, and the accountTag the blog's
-  # GraphQL query names.
+  # The account the alunduil.com zone sits under.
   alunduil_account_resource = jsonencode({
     "com.cloudflare.api.account.76626ec3f004e86f1a4d85faca9ac3a2" = "*" # pragma: allowlist secret
   })
@@ -47,20 +45,18 @@ resource "google_secret_manager_secret_version" "cloudflare_api_token_blog_analy
   secret_data = cloudflare_api_token.blog_analytics_ro.value
 }
 
-# The provider's condition and the reader's binding have to keep naming the
-# same repository, and a disagreement between them fails silently. Deriving
-# both from one name is what stops them drifting apart.
+# The provider's condition and the reader's binding have to name the same
+# repository, and a disagreement between them fails the exchange silently.
 locals {
   blog_repository         = "alunduil/blog.alunduil.com"
   blog_pages_workflow_ref = "${local.blog_repository}/.github/workflows/pages.yml@refs/heads/main"
   blog_wif_principal      = "${local.wif_pool_prefix}/blog/attribute.repository/${local.blog_repository}"
 }
 
-# A pool of its own rather than another provider in `github`. principalSet paths
-# are pool-scoped and provider-agnostic, and that pool's RW deployer binding
-# (local.wif_principal_main) is keyed on attribute.ref with no repository
-# component — so admitting a second repository there would hand its default
-# branch the apply identity. See #530.
+# Its own pool, not another provider in `github`. principalSet paths are
+# pool-scoped, and that pool binds the RW deployer on attribute.ref with no
+# repository component, so a second repository admitted there would inherit the
+# apply identity. See #530.
 resource "google_iam_workload_identity_pool" "blog" {
   project                   = google_project.env.project_id
   workload_identity_pool_id = "blog"
@@ -84,14 +80,13 @@ resource "google_iam_workload_identity_pool_provider" "blog" {
     "attribute.repository" = "assertion.repository"
   }
 
-  # Pinned to one workflow, not to a branch. Five workflows run on the blog's
-  # default branch and labels.yml fires on `issues: opened`, which any stranger
-  # can trigger; a branch-level condition would leave the boundary resting on
-  # each of those files continuing to decline id-token: write.
+  # Pinned to the workflow, not the branch. Other workflows share the blog's
+  # default branch and one of them fires on `issues: opened`, which any stranger
+  # can trigger, so a branch-level condition would rest the boundary on each of
+  # those files continuing to decline id-token: write.
   #
-  # Renaming or moving pages.yml revokes access here, and the build degrades to
-  # no Popular section rather than failing — so the symptom is a missing widget,
-  # not a red run.
+  # Renaming or moving pages.yml revokes access, and the build treats a missing
+  # token as no data — so the symptom is a missing section on a green run.
   attribute_condition = "assertion.job_workflow_ref == '${local.blog_pages_workflow_ref}'"
 
   oidc {
@@ -109,8 +104,7 @@ resource "google_service_account" "blog_analytics_reader" {
 }
 
 # workloadIdentityUser admits the federated identity; serviceAccountTokenCreator
-# lets it mint the access token get-secretmanager-secrets calls with. Both are
-# scoped to this one service account.
+# lets it generate the access token get-secretmanager-secrets calls with.
 resource "google_service_account_iam_member" "blog_analytics_reader" {
   for_each = toset([
     "roles/iam.workloadIdentityUser",
@@ -124,8 +118,7 @@ resource "google_service_account_iam_member" "blog_analytics_reader" {
   depends_on = [google_iam_workload_identity_pool_provider.blog]
 }
 
-# The reader holds no project IAM at all: this one grant is its entire
-# authority, matching the per-secret accessor pattern the deployer tokens use.
+# The reader holds no project IAM; this grant is its entire authority.
 resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_blog_analytics_ro_accessor" {
   project   = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.project
   secret_id = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.secret_id
