@@ -46,3 +46,6 @@ It then prompts the same way for the two Tailscale trust credential client
 IDs, read-only for plan and read-write for apply. Set
 `TAILSCALE_CLIENT_ID_RO` and `TAILSCALE_CLIENT_ID_RW` to answer without the
 prompts, or press Enter at each to defer until the credentials exist.
+
+The blog's Pages build needs wiring to the federation once, in
+`blog.alunduil.com`. Its own `docs/how-to/` carries that procedure.
