@@ -4,7 +4,7 @@
 # Every step is idempotent; safe to re-run after partial failure. The bootstrap
 # layer still needs the master Grafana and Cloudflare tokens on every run — see
 # docs/how-to/bootstrap.md.
-[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets.")]
+[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets, here and in blog.alunduil.com.")]
 bootstrap:
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
@@ -47,6 +47,8 @@ alunduil:
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
 
+# Argument list matches the one bats.yml hands kcov, so a local run covers
+# what CI covers.
 [doc("Run bats unit tests for shell helpers.")]
 test:
-    bats github/projects/*.bats
+    bats --recursive github/projects scripts

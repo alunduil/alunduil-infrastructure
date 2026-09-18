@@ -11,15 +11,18 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
    each row has three dropdowns — the group (defaults to `Account`),
    the permission, and the access level. Add these rows:
 
-   | Group | Permission    | Access |
-   | ----- | ------------- | ------ |
-   | User  | API Tokens    | Edit   |
-   | Zone  | Zone          | Read   |
-   | Zone  | DNS           | Read   |
-   | Zone  | Zone Settings | Read   |
+   | Group   | Permission        | Access |
+   | ------- | ----------------- | ------ |
+   | User    | API Tokens        | Edit   |
+   | Zone    | Zone              | Read   |
+   | Zone    | DNS               | Read   |
+   | Zone    | Zone Settings     | Read   |
+   | Account | Account Analytics | Read   |
 
    Under **Zone Resources** set `Include` → `Specific zone` →
    `alunduil.com` (read is enough; the token only references the zone).
+   The account row adds an **Account Resources** selector: set it to
+   `Include` → `alunduil-infrastructure`.
 
    Under **TTL** set an **Expiration Date** a day or two out. The token
    self-revokes when it lapses, so a bootstrap run can't leave a

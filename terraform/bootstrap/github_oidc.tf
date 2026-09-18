@@ -54,6 +54,8 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 locals {
-  wif_principal      = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.repository/alunduil/alunduil-infrastructure"
-  wif_principal_main = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools/github/attribute.ref/refs/heads/main"
+  wif_pool_prefix = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools"
+
+  wif_principal      = "${local.wif_pool_prefix}/github/attribute.repository/alunduil/alunduil-infrastructure"
+  wif_principal_main = "${local.wif_pool_prefix}/github/attribute.ref/refs/heads/main"
 }

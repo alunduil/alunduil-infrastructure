@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Configures the GitHub Actions secrets the CI workflows consume.
-# Re-running is a no-op.
+# Configures the GitHub Actions secrets the CI workflows consume, here and
+# in blog.alunduil.com. Re-running is a no-op.
 
 set -euo pipefail
 
@@ -11,6 +11,10 @@ set -euo pipefail
 # (restricted to main) so only the sync workflow, which declares the
 # environment, can read it. Every other secret stays repo-level.
 ENVIRONMENT="project-sync"
+
+# blog.alunduil.com's Pages build federates into this project to read its
+# Cloudflare analytics token, so its identifiers are configured here too.
+BLOG_REPO="alunduil/blog.alunduil.com"
 
 # existing_secrets / existing_env_secrets are populated by the executable
 # body (from `gh secret list`) before these run; the bats suite sets them
@@ -101,6 +105,29 @@ resolve_project_sync_token() {
   fi
 }
 
+tf_output() {
+  terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
+}
+
+# The __KEEP__ sentinel means the secret is already set and was deliberately
+# not re-resolved, so it is left alone.
+set_secret() {
+  local name="$1" value="$2" repo="${3:-}"
+  local target=() label=""
+
+  if [[ ${value} == "__KEEP__" ]]; then
+    return
+  fi
+
+  if [[ -n ${repo} ]]; then
+    target=(--repo "${repo}")
+    label=" (repo: ${repo})"
+  fi
+
+  echo "Setting secret: ${name}${label}"
+  gh secret set "${name}" "${target[@]}" --body "${value}"
+}
+
 ensure_environment() {
   gh api -X PUT "repos/{owner}/{repo}/environments/${ENVIRONMENT}" \
     --input - >/dev/null <<'JSON'
@@ -150,9 +177,12 @@ gh auth status >/dev/null 2>&1 || {
   exit 1
 }
 
-WIF_PROVIDER="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw workload_identity_provider)"
-RO_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_ro_email)"
-RW_SA_EMAIL="$(terraform -chdir="${BOOTSTRAP_DIR}" output -raw github_deployer_rw_email)"
+WIF_PROVIDER="$(tf_output workload_identity_provider)"
+RO_SA_EMAIL="$(tf_output github_deployer_ro_email)"
+RW_SA_EMAIL="$(tf_output github_deployer_rw_email)"
+BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
+BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
+BLOG_SECRET_MANAGER_ID="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
 
 existing_secrets="$(gh secret list --json name --jq '.[].name')"
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
@@ -179,11 +209,21 @@ declare -A SECRETS=(
 )
 
 for name in "${!SECRETS[@]}"; do
-  if [[ "${SECRETS[${name}]}" == "__KEEP__" ]]; then
-    continue
-  fi
-  echo "Setting secret: ${name}"
-  gh secret set "${name}" --body "${SECRETS[${name}]}"
+  set_secret "${name}" "${SECRETS[${name}]}"
+done
+
+declare -A BLOG_SECRETS=(
+  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${BLOG_WIF_PROVIDER}"
+  [GCP_SERVICE_ACCOUNT_EMAIL]="${BLOG_SA_EMAIL}"
+  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_MANAGER_ID}"
+)
+
+# Derived from terraform outputs, so a pool or service account recreated here
+# reaches the blog on the next run; a stale value there fails the token
+# exchange without failing the build. The drift check below stays scoped to
+# this repo: these are the only names we own there.
+for name in "${!BLOG_SECRETS[@]}"; do
+  set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
 done
 
 ensure_environment

@@ -13,6 +13,9 @@ ARCHIVE_PREFIX='truenas-config-'
 EXPIRED_ARCHIVE="${ARCHIVE_PREFIX}2000-01-01-000000.tar"
 
 setup() {
+  # CI's runner image carries sqlite3; a workstation may not.
+  command -v sqlite3 >/dev/null || skip "sqlite3 not installed"
+
   SOURCE="${BATS_TEST_TMPDIR}/data"
   DEST="${BATS_TEST_TMPDIR}/config-backups"
   mkdir -p "${SOURCE}" "${DEST}"

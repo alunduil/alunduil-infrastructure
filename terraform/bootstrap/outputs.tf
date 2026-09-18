@@ -37,6 +37,26 @@ output "cloudflare_api_token_deployer_rw_secret" {
   sensitive   = false
 }
 
+# configure-github-secrets.sh publishes these to blog.alunduil.com as Actions
+# secrets; its Pages build reads them by name.
+output "blog_analytics_workload_identity_provider" {
+  value       = google_iam_workload_identity_pool_provider.blog.name
+  description = "Full resource name of the blog's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/blog/providers/github-provider"
+  sensitive   = false
+}
+
+output "blog_analytics_reader_email" {
+  value       = google_service_account.blog_analytics_reader.email
+  description = "Email of the service account blog.alunduil.com's Pages build impersonates"
+  sensitive   = false
+}
+
+output "cloudflare_api_token_blog_analytics_ro_secret" {
+  value       = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.secret_id
+  description = "Secret Manager short name holding the blog's Cloudflare analytics token; fetched at build time by the blog's Pages workflow"
+  sensitive   = false
+}
+
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates reach
 # the alunduil layer through the published bootstrap-outputs.json object (see
 # published_outputs.tf); the App's three values are fetched from Secret Manager
