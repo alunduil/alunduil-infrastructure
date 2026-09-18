@@ -20,8 +20,8 @@ variable "cloudflare_master_token" {
     Master Cloudflare token, created by hand and revoked after apply.
 
     At https://dash.cloudflare.com/profile/api-tokens choose
-    Create Custom Token. Each Permissions row has three dropdowns —
-    group (defaults to Account), permission, access. Add these rows:
+    Create Custom Token. Each row's group dropdown defaults to Account,
+    so set it per row:
 
       User    | API Tokens        | Edit
       Zone    | Zone              | Read
