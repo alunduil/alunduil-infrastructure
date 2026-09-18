@@ -50,14 +50,15 @@ variable "grafana_cloud_access_policy_token" {
     after apply. Used only to read the stack and create the provisioning
     service-account token stored in Secret Manager.
 
-    In the Cloud Portal (grafana.com, then your org) go to
+    At https://grafana.com choose your org, then
     Security > Access Policies > Create access policy. The Scopes grid
-    lists only data-plane resources by default; click Add scope to add:
+    lists only data-plane resources; choose Add scope and tick:
 
-      stacks                 read
-      stack-service-accounts write
+      stacks                 | read
+      stack-service-accounts | write
 
-    Save, then Add token on the policy and copy the value (shown once).
+    Leave every other resource unchecked. Save, then Add token on the
+    policy and copy the value (shown once).
 
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT
