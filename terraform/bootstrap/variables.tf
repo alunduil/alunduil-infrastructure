@@ -51,14 +51,9 @@ variable "grafana_cloud_access_policy_token" {
     service-account token stored in Secret Manager.
 
     At https://grafana.com choose your org, then
-    Security > Access Policies > Create access policy. The Scopes grid
-    lists only data-plane resources; choose Add scope and tick:
-
-      stacks                 | read
-      stack-service-accounts | write
-
-    Leave every other resource unchecked. Save, then Add token on the
-    policy and copy the value (shown once).
+    Security > Access Policies. On the alunduil-infrastructure-bootstrap
+    policy choose Add token, set a short expiration, and copy the value
+    (shown once).
 
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT
