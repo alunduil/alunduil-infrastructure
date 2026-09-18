@@ -46,7 +46,6 @@ Rockchip
 Ansible
 Armbian
 Armbian's
-Astro
 Buildroot
 Yocto
 gh
