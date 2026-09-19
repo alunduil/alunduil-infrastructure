@@ -12,15 +12,11 @@ resource "google_storage_bucket_object" "published_outputs" {
   bucket       = data.google_storage_bucket.state.name
   name         = "bootstrap-outputs.json"
   content_type = "application/json"
-  # Grafana Cloud issues a separate user ID per product, so none of the three
-  # *_user_id values below is grafana_stack_id and none is interchangeable with
-  # another. Each is the username half of that product's basic auth.
+  # Each *_user_id is the username half of that product's basic auth, not
+  # grafana_stack_id above: Grafana Cloud issues a separate user ID per product.
   #
-  # The logs and metrics coordinates are here so Fleet Management pipeline
-  # contents in terraform/alunduil/ can interpolate their endpoints instead of
-  # carrying hardcoded cluster names that go stale if the stack moves. logs_url
-  # is a base URL — alloy's loki.write wants /loki/api/v1/push appended — while
-  # prometheus_remote_write_endpoint is already the full push path.
+  # logs_url is a base URL — alloy's loki.write wants /loki/api/v1/push appended
+  # — while prometheus_remote_write_endpoint is already the full push path.
   content = jsonencode({
     project_id                               = google_project.env.project_id
     grafana_stack_url                        = data.grafana_cloud_stack.this.url

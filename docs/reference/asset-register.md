@@ -348,8 +348,7 @@ Google Cloud, GitHub, or Tailscale.
 - Kind: Grafana Cloud access-policy token
 - Scope: `logs:write` and `metrics:write` on the stack realm
 - Consumer: alloy on A-01, as the `GCLOUD_RW_API_KEY` its Fleet
-  Management pipelines authenticate with. Neither deployer can read
-  it; an operator sets it on the app
+  Management pipelines authenticate with; no deployer reads it
 - Grants: P-4
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
 
