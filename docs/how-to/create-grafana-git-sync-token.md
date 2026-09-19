@@ -66,9 +66,15 @@ the policy, not the token, so a policy created before the scope list
 above grew fails mid-apply — but editing it leaves the old token
 unable to authenticate, so add the scopes and then create a token.
 
-The two failures read differently, and only one is about scopes:
+Both failures surface as `401 Unauthorized`, and what failed tells them
+apart:
 
-- `invalid permission: access policy missing required scope [...],
-  received [...]` — the policy is too narrow. Add what it names.
-- A bare `401 Unauthorized` with no scope list — the token is invalid.
-  Create a new one on the policy.
+- The message names the missing and received scopes — the policy is too
+  narrow. Add what it names.
+- Everything fails, the stack data source included — the token is
+  invalid. Create a new one on the policy.
+- Some resources fail while the stack read succeeds — the policy is
+  missing a scope only those need, and the message won't say which.
+  Creating an access policy takes `accesspolicies:write` and reading it
+  back takes `accesspolicies:read`, so a policy holding only the first
+  applies once and then fails on the next refresh.
