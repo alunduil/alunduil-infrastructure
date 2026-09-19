@@ -13,26 +13,20 @@ locals {
   # from which policy.
   grafana_fleet_management_name = "alunduil-infrastructure-fleet-management"
 
-  grafana_fleet_management_deployers = {
-    ro = {
-      scopes = ["fleet-management:read"]
-      email  = google_service_account.github_deployer_ro.email
-    }
-    rw = {
-      scopes = ["fleet-management:read", "fleet-management:write"]
-      email  = google_service_account.github_deployer_rw.email
-    }
+  grafana_fleet_management_scopes = {
+    ro = ["fleet-management:read"]
+    rw = ["fleet-management:read", "fleet-management:write"]
   }
 }
 
 resource "grafana_cloud_access_policy" "fleet_management" {
-  for_each = local.grafana_fleet_management_deployers
+  for_each = local.grafana_fleet_management_scopes
 
   region       = data.grafana_cloud_stack.this.region_slug
   name         = "${local.grafana_fleet_management_name}-${each.key}"
   display_name = "alunduil-infrastructure Fleet Management (${upper(each.key)})"
 
-  scopes = each.value.scopes
+  scopes = each.value
 
   realm {
     type       = "stack"
@@ -44,7 +38,7 @@ resource "grafana_cloud_access_policy" "fleet_management" {
 # one. Rotation is a bootstrap re-run, which replaces the token and the Secret
 # Manager version together.
 resource "grafana_cloud_access_policy_token" "fleet_management" {
-  for_each = local.grafana_fleet_management_deployers
+  for_each = local.grafana_fleet_management_scopes
 
   region           = data.grafana_cloud_stack.this.region_slug
   access_policy_id = grafana_cloud_access_policy.fleet_management[each.key].policy_id
@@ -52,7 +46,7 @@ resource "grafana_cloud_access_policy_token" "fleet_management" {
 }
 
 resource "google_secret_manager_secret" "grafana_fleet_management_token" {
-  for_each = local.grafana_fleet_management_deployers
+  for_each = local.grafana_fleet_management_scopes
 
   project   = google_project.env.project_id
   secret_id = "grafana-fleet-management-token-${each.key}"
@@ -65,17 +59,17 @@ resource "google_secret_manager_secret" "grafana_fleet_management_token" {
 }
 
 resource "google_secret_manager_secret_version" "grafana_fleet_management_token" {
-  for_each = local.grafana_fleet_management_deployers
+  for_each = local.grafana_fleet_management_scopes
 
   secret      = google_secret_manager_secret.grafana_fleet_management_token[each.key].id
   secret_data = grafana_cloud_access_policy_token.fleet_management[each.key].token
 }
 
 resource "google_secret_manager_secret_iam_member" "grafana_fleet_management_token" {
-  for_each = local.grafana_fleet_management_deployers
+  for_each = local.grafana_fleet_management_scopes
 
   project   = google_secret_manager_secret.grafana_fleet_management_token[each.key].project
   secret_id = google_secret_manager_secret.grafana_fleet_management_token[each.key].secret_id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${each.value.email}"
+  member    = "serviceAccount:${local.deployers[each.key]}"
 }
