@@ -91,6 +91,18 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
+  # "Confirm every test leg passed" is ci.yml's aggregator job. The per-cell
+  # Test contexts carry their matrix values in the name, so a matrix edit
+  # renames them and silently un-gates the branch; the aggregator's name is
+  # stable. Codecov's upload legs and commit statuses stay advisory.
+  required_status_checks = {
+    contexts = [
+      "Confirm every test leg passed",
+      "Build every package",
+      "Run every pre-commit hook",
+      "Enforce Conventional Commits",
+    ]
+  }
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
