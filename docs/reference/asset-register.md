@@ -332,7 +332,7 @@ Google Cloud, GitHub, or Tailscale.
 - Scope: `fleet-management:read` on the stack realm
 - Consumer: `terraform plan` in CI
 - Grants: P-2
-- Source: `terraform/bootstrap/grafana.tf`
+- Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
 #### C-21 — `alunduil-infrastructure-fleet-management-rw`
 
@@ -341,7 +341,7 @@ Google Cloud, GitHub, or Tailscale.
   stack realm
 - Consumer: `terraform apply` in CI
 - Grants: P-3
-- Source: `terraform/bootstrap/grafana.tf`
+- Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
 ### Created by hand
 

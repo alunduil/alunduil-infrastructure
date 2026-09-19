@@ -1,22 +1,16 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Fleet Management answers on its own regional host, not the stack server —
-# `/apis/fleet.ext.grafana.app/...` against https://<slug>.grafana.net is a 404 —
-# and it takes basic auth rather than a stack service-account token. The
-# provisioner token in grafana.tf reaches none of it, so the alunduil layer
-# needs a second Grafana credential: a Cloud access policy on this stack's
-# realm.
+# Fleet Management answers on its own regional host, not the stack server, and
+# takes basic auth rather than a stack service-account token. The provisioner
+# token in grafana.tf reaches none of it, so the alunduil layer needs a second
+# Grafana credential: a Cloud access policy on this stack's realm.
 #
-# Split by role for the reason tailscale.tf gives: plan runs on pull requests,
-# which supply the workflow that runs, so the credential plan can reach grants
-# no write. The stack Admin role had no read-only variant; access-policy scopes
-# do. Driving policy, token, secret, and binding from one map keeps each role's
-# scopes paired with the one service account that can read them.
+# Split by role for the reason tailscale.tf gives. The stack Admin role has no
+# read-only variant; access-policy scopes do.
 locals {
-  # Policy and token carry the same name so the Cloud Portal shows which token
-  # came from which policy; they are separate resources with separate name
-  # fields, and nothing but this reference keeps the pair legible there.
+  # Policy and token carry one name so the Cloud Portal shows which token came
+  # from which policy.
   grafana_fleet_management_name = "alunduil-infrastructure-fleet-management"
 
   grafana_fleet_management_deployers = {
@@ -46,9 +40,9 @@ resource "grafana_cloud_access_policy" "fleet_management" {
   }
 }
 
-# No expires_at: the token would strand plan and apply the day it lapsed, and
-# nothing here would renew it. Rotation means re-running bootstrap, which
-# replaces the token and the Secret Manager version together.
+# No expires_at: a lapse would strand plan and apply, and nothing here renews
+# one. Rotation is a bootstrap re-run, which replaces the token and the Secret
+# Manager version together.
 resource "grafana_cloud_access_policy_token" "fleet_management" {
   for_each = local.grafana_fleet_management_deployers
 

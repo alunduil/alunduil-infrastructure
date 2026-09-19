@@ -17,7 +17,7 @@ for this infrastructure; only export it to target a different stack.
 ## Master access-policy token
 
 Used only to read the stack and create the credentials that land in
-Secret Manager: the provisioning service-account token and the two Fleet
+Secret Manager: the provisioning service-account token and the Fleet
 Management access-policy tokens. Create it by hand; recreate when you
 next need to run bootstrap.
 
@@ -32,9 +32,10 @@ next need to run bootstrap.
     - `stack-service-accounts` → **write**
     - `accesspolicies` → **read**, **write**, **delete**
 
-   `accesspolicies` covers the Fleet Management policies and tokens the
-   bootstrap creates; `delete` is there so replacing one doesn't fail
-   part-applied. Leave every other resource unchecked, then **Create**.
+   `accesspolicies` covers the Fleet Management policies and tokens
+   bootstrap creates. `delete` lets a replacement complete rather than
+   fail part-applied. Leave every other resource unchecked, then
+   **Create**.
 3. Select the policy → **Add token** → name it, set a short expiration,
    **Create**, and copy the value — Grafana shows it once.
 
