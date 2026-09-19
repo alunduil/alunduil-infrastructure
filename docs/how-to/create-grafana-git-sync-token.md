@@ -60,3 +60,8 @@ Regenerate the access-policy token, re-export, and re-run
 `just bootstrap`. The next workflow run picks up the new Secret Manager
 version. To rotate the GitHub App key, see
 [create-git-sync-github-app.md](create-git-sync-github-app.md).
+
+Scopes are checked against the policy, not the token, so a policy
+created before the list above grew fails mid-apply with
+`invalid permission: access policy missing required scope`. Add the
+missing scopes to the policy and run again.
