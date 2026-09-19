@@ -91,6 +91,18 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
+  # A matrix edit renames the per-cell Test contexts, and a pinned name that
+  # stops reporting blocks merge indefinitely, so this pins ci.yml's
+  # aggregator instead. Codecov's upload legs and commit statuses stay
+  # advisory.
+  required_status_checks = {
+    contexts = [
+      "Confirm every test leg passed",
+      "Build every package",
+      "Run every pre-commit hook",
+      "Enforce Conventional Commits",
+    ]
+  }
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
