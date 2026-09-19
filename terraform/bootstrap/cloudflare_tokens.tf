@@ -61,11 +61,10 @@ resource "cloudflare_api_token" "deployer_rw" {
 }
 
 # The deployer SAs hold `objectViewer`/`objectAdmin` on the shared
-# `alunduil-tfstate` bucket, which means anything that lands a plan job
-# could `gsutil cat` bootstrap state. Holding token values directly in
-# state — even with `sensitive = true` — leaks them at that layer. Per-
-# secret accessor IAM moves the authorization check off the bucket and
-# onto each secret: RO SA reaches only the RO token, RW SA only the RW.
+# `alunduil-tfstate` bucket, so anything that lands a plan job can read
+# bootstrap state. Holding token values directly in state — even with
+# `sensitive = true` — leaks them at that layer. Per-secret accessor
+# IAM moves the authorization check off the bucket and onto each secret.
 resource "google_secret_manager_secret" "cloudflare_api_token_deployer_ro" {
   project   = google_project.env.project_id
   secret_id = "cloudflare-api-token-deployer-ro"
