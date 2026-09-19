@@ -12,7 +12,7 @@ set -euo pipefail
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 
 # gcloud names the permission and the project but not the secret, and this runs
-# against six of them, so a denial otherwise says only that one of the six is
+# against several of them, so a denial otherwise says only that one of them is
 # unreachable. The message lands on stderr and the empty substitution that
 # follows trips set -e in the caller.
 access() {
@@ -85,12 +85,16 @@ command -v gcloud >/dev/null || {
 
 export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}"
 
-# Plan and apply share one set of Grafana credentials; the reason lives with the
+# Plan and apply share the Git Sync credentials below; the reason lives with the
 # service account in terraform/bootstrap/grafana.tf.
 export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
+
+# Fleet Management reaches a different Grafana API than the token above, on a
+# credential whose scopes do split by role, so plan gets read and apply write.
+export_secret TF_VAR_grafana_fleet_management_token "grafana-fleet-management-token-${role}"
 
 # Role-split like the Cloudflare token above: plan runs on pull requests, which
 # can edit the workflow that holds the credential, so it gets the read-only one.

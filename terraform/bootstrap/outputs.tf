@@ -85,6 +85,12 @@ output "grafana_git_sync_app_secrets" {
   sensitive   = false
 }
 
+output "grafana_fleet_management_token_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.grafana_fleet_management_token : secret.secret_id])
+  description = "Secret Manager short names holding the Fleet Management access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
 output "grafana_gcp_reader_email" {
   value       = google_service_account.grafana_gcp_reader.email
   description = "Email of the read-only SA Grafana Cloud authenticates as; the alunduil layer uses it as the data-source clientEmail"

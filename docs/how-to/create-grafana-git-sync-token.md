@@ -16,8 +16,9 @@ for this infrastructure; only export it to target a different stack.
 
 ## Master access-policy token
 
-Used only to read the stack and create the provisioning service-account
-token that lands in Secret Manager. Create it by hand; recreate when you
+Used only to read the stack and create the credentials that land in
+Secret Manager: the provisioning service-account token and the two Fleet
+Management access-policy tokens. Create it by hand; recreate when you
 next need to run bootstrap.
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
@@ -25,12 +26,15 @@ next need to run bootstrap.
    (for example, `alunduil-infrastructure-bootstrap`); there is no realm
    field.
 2. The **Scopes** grid lists only data-plane resources (metrics, logs,
-   …) by default. Select **Add scope** to add the two control-plane
+   …) by default. Select **Add scope** to add the three control-plane
    resources and tick:
     - `stacks` → **read**
     - `stack-service-accounts` → **write**
+    - `accesspolicies` → **read**, **write**, **delete**
 
-   Leave every other resource unchecked, then **Create**.
+   `accesspolicies` covers the Fleet Management policies and tokens the
+   bootstrap creates; `delete` is there so replacing one doesn't fail
+   part-applied. Leave every other resource unchecked, then **Create**.
 3. Select the policy → **Add token** → name it, set a short expiration,
    **Create**, and copy the value — Grafana shows it once.
 

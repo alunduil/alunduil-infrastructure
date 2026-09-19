@@ -326,6 +326,23 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3
 - Source: `terraform/bootstrap/grafana.tf`
 
+#### C-20 — `alunduil-infrastructure-fleet-management-ro`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `fleet-management:read` on the stack realm
+- Consumer: `terraform plan` in CI
+- Grants: P-2
+- Source: `terraform/bootstrap/grafana.tf`
+
+#### C-21 — `alunduil-infrastructure-fleet-management-rw`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `fleet-management:read` and `fleet-management:write` on the
+  stack realm
+- Consumer: `terraform apply` in CI
+- Grants: P-3
+- Source: `terraform/bootstrap/grafana.tf`
+
 ### Created by hand
 
 Each needs an operator in a console; no apply rotates them.
@@ -341,7 +358,8 @@ Each needs an operator in a console; no apply rotates them.
 #### C-08 — Grafana Cloud access-policy token
 
 - Kind: access-policy token
-- Scope: `stacks:read`, `stack-service-accounts:write`
+- Scope: `stacks:read`, `stack-service-accounts:write`,
+  `accesspolicies:read|write|delete`
 - Consumer: one `terraform/bootstrap/` apply
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
