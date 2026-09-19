@@ -62,6 +62,14 @@ export_identifier() {
   write_var "${1}" "${value}"
 }
 
+# A role-split credential: one secret per deployer, each carrying secretAccessor
+# for that deployer alone, so the suffix is the whole isolation. Plan runs on
+# pull requests, which supply the workflow that runs — Renovate edits those files
+# whenever it bumps an action — so the version plan can reach grants no write.
+export_role_secret() {
+  export_secret "${1}" "${2}-${role}"
+}
+
 # Skip the executable body when sourced (e.g. by
 # export-terraform-credentials.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
@@ -83,7 +91,7 @@ command -v gcloud >/dev/null || {
   exit 1
 }
 
-export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}"
+export_role_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer
 
 # Plan and apply share the Git Sync credentials below; the reason lives with the
 # service account in terraform/bootstrap/grafana.tf.
@@ -93,12 +101,10 @@ export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
 
 # Fleet Management reaches a different Grafana API than the token above, on a
-# credential whose scopes do split by role, so plan gets read and apply write.
-export_secret TF_VAR_grafana_fleet_management_token "grafana-fleet-management-token-${role}"
+# credential whose scopes do split by role: plan gets read, apply gets write.
+export_role_secret TF_VAR_grafana_fleet_management_token grafana-fleet-management-token
 
-# Role-split like the Cloudflare token above: plan runs on pull requests, which
-# can edit the workflow that holds the credential, so it gets the read-only one.
 # Masked though it is not a secret: it authenticates nothing without an OIDC
 # token the tailnet trusts, but these logs are public and naming a credential
 # buys a reader something for nothing.
-export_secret TF_VAR_tailscale_client_id "tailscale-client-id-${role}"
+export_role_secret TF_VAR_tailscale_client_id tailscale-client-id
