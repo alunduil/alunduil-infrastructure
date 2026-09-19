@@ -40,4 +40,4 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
 3. Once the apply succeeds you can revoke the token in the dashboard
    early, but the expiration handles it if you don't. Cloudflare only
    shows the value at creation time, so any future bootstrap apply
-   needs a freshly created bootstrap token.
+   needs a freshly created token.

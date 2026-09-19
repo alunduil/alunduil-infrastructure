@@ -23,8 +23,8 @@ from scratch or rotating the core credentials.
 
 ## Run
 
-The two bootstrap tokens are created by hand and revoked once the apply
-finishes, so every run needs a fresh pair.
+The Cloudflare and Grafana tokens are created by hand and revoked once
+the apply finishes, so every run needs a fresh pair.
 
 ```sh
 gcloud auth application-default login
