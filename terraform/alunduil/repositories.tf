@@ -91,10 +91,10 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
-  # "Confirm every test leg passed" is ci.yml's aggregator job. The per-cell
-  # Test contexts carry their matrix values in the name, so a matrix edit
-  # renames them and silently un-gates the branch; the aggregator's name is
-  # stable. Codecov's upload legs and commit statuses stay advisory.
+  # A matrix edit renames the per-cell Test contexts, and a pinned name that
+  # stops reporting blocks merge indefinitely, so this pins ci.yml's
+  # aggregator instead. Codecov's upload legs and commit statuses stay
+  # advisory.
   required_status_checks = {
     contexts = [
       "Confirm every test leg passed",
