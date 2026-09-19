@@ -10,8 +10,8 @@ from scratch or rotating the core credentials.
 
 ## Prerequisites
 
-- A master Cloudflare API token — see
-  [create-master-cloudflare-token.md](create-master-cloudflare-token.md).
+- A bootstrap Cloudflare API token — see
+  [create-bootstrap-cloudflare-token.md](create-bootstrap-cloudflare-token.md).
 - The deployer GitHub App created and installed — see
   [create-deployer-github-app.md](create-deployer-github-app.md).
 - Grafana Cloud credentials — see
@@ -23,13 +23,13 @@ from scratch or rotating the core credentials.
 
 ## Run
 
-The two master tokens are created by hand and revoked once the apply
-finishes, so every run needs a fresh pair.
+The Cloudflare and Grafana tokens are created by hand and revoked once
+the apply finishes, so every run needs a fresh pair.
 
 ```sh
 gcloud auth application-default login
 export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
-export TF_VAR_cloudflare_master_token=...
+export TF_VAR_cloudflare_bootstrap_token=...
 export TF_VAR_grafana_cloud_access_policy_token=...
 
 just bootstrap
