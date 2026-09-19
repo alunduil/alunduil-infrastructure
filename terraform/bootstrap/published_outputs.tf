@@ -12,10 +12,15 @@ resource "google_storage_bucket_object" "published_outputs" {
   bucket       = data.google_storage_bucket.state.name
   name         = "bootstrap-outputs.json"
   content_type = "application/json"
+  # fleet_management_user_id is the username half of Fleet Management's basic
+  # auth, not grafana_stack_id above: Grafana Cloud issues a separate user ID
+  # per product.
   content = jsonencode({
-    project_id               = google_project.env.project_id
-    grafana_stack_url        = data.grafana_cloud_stack.this.url
-    grafana_stack_id         = data.grafana_cloud_stack.this.id
-    grafana_gcp_reader_email = google_service_account.grafana_gcp_reader.email
+    project_id                       = google_project.env.project_id
+    grafana_stack_url                = data.grafana_cloud_stack.this.url
+    grafana_stack_id                 = data.grafana_cloud_stack.this.id
+    grafana_gcp_reader_email         = google_service_account.grafana_gcp_reader.email
+    grafana_fleet_management_url     = data.grafana_cloud_stack.this.fleet_management_url
+    grafana_fleet_management_user_id = data.grafana_cloud_stack.this.fleet_management_user_id
   })
 }

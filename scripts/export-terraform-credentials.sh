@@ -12,7 +12,7 @@ set -euo pipefail
 PROJECT_ID="${PROJECT_ID:-alunduil}"
 
 # gcloud names the permission and the project but not the secret, and this runs
-# against six of them, so a denial otherwise says only that one of the six is
+# against several of them, so a denial otherwise says only that one is
 # unreachable. The message lands on stderr and the empty substitution that
 # follows trips set -e in the caller.
 access() {
@@ -62,6 +62,13 @@ export_identifier() {
   write_var "${1}" "${value}"
 }
 
+# A role-split credential: one secret per deployer, readable by that deployer
+# alone, so the suffix is the whole isolation. Plan runs on pull requests, which
+# supply the workflow that runs, so the version it reaches grants no write.
+export_role_secret() {
+  export_secret "${1}" "${2}-${role}"
+}
+
 # Skip the executable body when sourced (e.g. by
 # export-terraform-credentials.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
@@ -83,18 +90,20 @@ command -v gcloud >/dev/null || {
   exit 1
 }
 
-export_secret TF_VAR_cloudflare_api_token "cloudflare-api-token-deployer-${role}"
+export_role_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer
 
-# Plan and apply share one set of Grafana credentials; the reason lives with the
-# service account in terraform/bootstrap/grafana.tf.
+# Plan and apply share the provisioner and Git Sync credentials; the reason
+# lives with the service account in terraform/bootstrap/grafana.tf.
 export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
 
-# Role-split like the Cloudflare token above: plan runs on pull requests, which
-# can edit the workflow that holds the credential, so it gets the read-only one.
+# Fleet Management is a different Grafana API, out of the provisioner token's
+# reach, on a credential whose scopes split by role.
+export_role_secret TF_VAR_grafana_fleet_management_token grafana-fleet-management-token
+
 # Masked though it is not a secret: it authenticates nothing without an OIDC
 # token the tailnet trusts, but these logs are public and naming a credential
 # buys a reader something for nothing.
-export_secret TF_VAR_tailscale_client_id "tailscale-client-id-${role}"
+export_role_secret TF_VAR_tailscale_client_id tailscale-client-id
