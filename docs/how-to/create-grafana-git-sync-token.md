@@ -61,20 +61,19 @@ Regenerate the access-policy token, re-export, and re-run
 version. To rotate the GitHub App key, see
 [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
-Widening a policy takes a new token as well. Scopes are checked against
-the policy, not the token, so a policy created before the scope list
-above grew fails mid-apply — but editing it leaves the old token
-unable to authenticate, so add the scopes and then create a token.
+## Diagnose a 401
 
-Both failures surface as `401 Unauthorized`, and what failed tells them
-apart:
+A too-narrow policy and an invalid token both stop bootstrap with
+`401 Unauthorized`. Which resources failed separates them:
 
 - The message names the missing and received scopes — the policy is too
-  narrow. Add what it names.
+  narrow. Add what it names, then create a token: editing a policy
+  leaves its existing tokens unable to authenticate, because scopes are
+  checked against the policy rather than the token.
 - Everything fails, the stack data source included — the token is
   invalid. Create a new one on the policy.
 - Some resources fail while the stack read succeeds — the policy is
-  missing a scope only those need, and the message won't say which.
+  missing a scope only those need, and the message won't name it.
   Creating an access policy takes `accesspolicies:write` and reading it
   back takes `accesspolicies:read`, so a policy holding only the first
   applies once and then fails on the next refresh.
