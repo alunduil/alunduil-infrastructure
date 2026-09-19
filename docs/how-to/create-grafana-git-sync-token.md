@@ -61,7 +61,14 @@ Regenerate the access-policy token, re-export, and re-run
 version. To rotate the GitHub App key, see
 [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
-Scopes are checked against the policy, not the token, so a policy
-created before the list above grew fails mid-apply with
-`invalid permission: access policy missing required scope`. Add the
-missing scopes to the policy and run again.
+Widening a policy takes a new token as well. Scopes are checked against
+the policy, not the token, so a policy created before the scope list
+above grew fails mid-apply — but editing it leaves the old token
+unable to authenticate, so add the scopes and then create a token.
+
+The two failures read differently, and only one is about scopes:
+
+- `invalid permission: access policy missing required scope [...],
+  received [...]` — the policy is too narrow. Add what it names.
+- A bare `401 Unauthorized` with no scope list — the token is invalid.
+  Create a new one on the policy.
