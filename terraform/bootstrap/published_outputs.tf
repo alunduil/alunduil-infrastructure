@@ -12,15 +12,21 @@ resource "google_storage_bucket_object" "published_outputs" {
   bucket       = data.google_storage_bucket.state.name
   name         = "bootstrap-outputs.json"
   content_type = "application/json"
-  # fleet_management_user_id is the username half of Fleet Management's basic
-  # auth, not grafana_stack_id above: Grafana Cloud issues a separate user ID
-  # per product.
+  # Each *_user_id is the username half of that product's basic auth, not
+  # grafana_stack_id above: Grafana Cloud issues a separate user ID per product.
+  #
+  # logs_url is a base URL — alloy's loki.write wants /loki/api/v1/push appended
+  # — while prometheus_remote_write_endpoint is already the full push path.
   content = jsonencode({
-    project_id                       = google_project.env.project_id
-    grafana_stack_url                = data.grafana_cloud_stack.this.url
-    grafana_stack_id                 = data.grafana_cloud_stack.this.id
-    grafana_gcp_reader_email         = google_service_account.grafana_gcp_reader.email
-    grafana_fleet_management_url     = data.grafana_cloud_stack.this.fleet_management_url
-    grafana_fleet_management_user_id = data.grafana_cloud_stack.this.fleet_management_user_id
+    project_id                               = google_project.env.project_id
+    grafana_stack_url                        = data.grafana_cloud_stack.this.url
+    grafana_stack_id                         = data.grafana_cloud_stack.this.id
+    grafana_gcp_reader_email                 = google_service_account.grafana_gcp_reader.email
+    grafana_fleet_management_url             = data.grafana_cloud_stack.this.fleet_management_url
+    grafana_fleet_management_user_id         = data.grafana_cloud_stack.this.fleet_management_user_id
+    grafana_logs_url                         = data.grafana_cloud_stack.this.logs_url
+    grafana_logs_user_id                     = data.grafana_cloud_stack.this.logs_user_id
+    grafana_prometheus_remote_write_endpoint = data.grafana_cloud_stack.this.prometheus_remote_write_endpoint
+    grafana_prometheus_user_id               = data.grafana_cloud_stack.this.prometheus_user_id
   })
 }

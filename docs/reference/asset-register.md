@@ -343,6 +343,15 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
+#### C-22 — `alunduil-infrastructure-alloy-push`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `logs:write` and `metrics:write` on the stack realm
+- Consumer: alloy on A-01, as the `GCLOUD_RW_API_KEY` its Fleet
+  Management pipelines authenticate with; no deployer reads it
+- Grants: P-4
+- Source: `terraform/bootstrap/grafana_alloy_push.tf`
+
 ### Created by hand
 
 Each needs an operator in a console; no apply rotates them.

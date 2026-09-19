@@ -91,6 +91,12 @@ output "grafana_fleet_management_token_secrets" {
   sensitive   = false
 }
 
+output "grafana_alloy_push_token_secret" {
+  value       = google_secret_manager_secret.grafana_alloy_push_token.secret_id
+  description = "Secret Manager short name holding the access-policy token alloy pushes logs and metrics with; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
+  sensitive   = false
+}
+
 output "grafana_gcp_reader_email" {
   value       = google_service_account.grafana_gcp_reader.email
   description = "Email of the read-only SA Grafana Cloud authenticates as; the alunduil layer uses it as the data-source clientEmail"

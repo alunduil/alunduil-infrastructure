@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Fleet Management serves pipeline contents to a collector, which evaluates them
+# itself, so a pipeline can't carry the credential it pushes with: the collector
+# has to already hold it as GCLOUD_RW_API_KEY. Grafana's generated
+# self_monitoring_* pipelines have that name hardcoded.
+#
+# This lives in bootstrap because a Cloud access policy needs Cloud API auth
+# carrying accesspolicies:write. terraform/alunduil/ authenticates to the stack,
+# and granting it policy-write would let a pull request rewrite any policy here,
+# including the ones gating its own plan.
+locals {
+  # Policy and token carry one name so the Cloud Portal shows which token came
+  # from which policy.
+  grafana_alloy_push_name = "alunduil-infrastructure-alloy-push"
+}
+
+resource "grafana_cloud_access_policy" "alloy_push" {
+  region       = data.grafana_cloud_stack.this.region_slug
+  name         = local.grafana_alloy_push_name
+  display_name = "alunduil-infrastructure alloy push"
+
+  # Write-only: alloy ships logs and metrics and reads neither back, so there is
+  # no RO/RW split. Traces and profiles are absent because nothing sends them.
+  scopes = ["logs:write", "metrics:write"]
+
+  realm {
+    type       = "stack"
+    identifier = data.grafana_cloud_stack.this.id
+  }
+}
+
+# No expires_at: a lapse would silently stop ingestion and nothing here renews
+# one. Rotation is a bootstrap re-run, which replaces the token and the Secret
+# Manager version together.
+resource "grafana_cloud_access_policy_token" "alloy_push" {
+  region           = data.grafana_cloud_stack.this.region_slug
+  access_policy_id = grafana_cloud_access_policy.alloy_push.policy_id
+  name             = local.grafana_alloy_push_name
+}
+
+# Secret Manager is the publication channel rather than a bootstrap output: this
+# layer's state holds the token in plaintext and no deployer can read that state.
+#
+# No secretAccessor binding, though every other secret this layer creates grants
+# one to at least one deployer. Nothing in terraform/alunduil/ resolves this
+# value — pipeline contents carry the literal string sys.env("GCLOUD_RW_API_KEY")
+# — so a CI binding would grant plan and apply log and metric write for nothing.
+# The consumer is the alloy container on A-01, a P-4 an operator configures from
+# docs/how-to/configure-alloy-push-credential.md.
+resource "google_secret_manager_secret" "grafana_alloy_push_token" {
+  project   = google_project.env.project_id
+  secret_id = "grafana-alloy-push-token"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "grafana_alloy_push_token" {
+  secret      = google_secret_manager_secret.grafana_alloy_push_token.id
+  secret_data = grafana_cloud_access_policy_token.alloy_push.token
+}
