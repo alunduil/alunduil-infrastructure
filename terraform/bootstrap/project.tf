@@ -55,9 +55,8 @@ resource "google_project_service" "secretmanager" {
 }
 
 # Data Access logs are opt-in per service. Without these, a compromised
-# plan job could `gsutil cat` state or `gcloud secrets versions access`
-# a deployer token and leave no trace beyond the STS impersonation row
-# in Admin Activity.
+# plan job could read state or access a deployer token and leave no
+# trace beyond the STS impersonation row in Admin Activity.
 resource "google_project_iam_audit_config" "storage" {
   project = google_project.env.project_id
   service = "storage.googleapis.com"
