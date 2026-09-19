@@ -13,11 +13,11 @@ variable "billing_account_id" {
 
 # Account Analytics is here for the blog's account-scoped analytics token; the
 # rest of the rows serve the two zone-scoped deployer tokens.
-variable "cloudflare_master_token" {
+variable "cloudflare_bootstrap_token" {
   type        = string
   sensitive   = true
   description = <<-EOT
-    Master Cloudflare token, created by hand and revoked after apply.
+    Bootstrap Cloudflare token, created by hand and revoked after apply.
 
     At https://dash.cloudflare.com/profile/api-tokens choose
     Create Custom Token. Each row's group dropdown defaults to Account,
@@ -32,7 +32,7 @@ variable "cloudflare_master_token" {
     Set Zone Resources to: Include | Specific zone | alunduil.com, and
     Account Resources to: Include | alunduil-infrastructure.
 
-    Full steps: docs/how-to/create-master-cloudflare-token.md
+    Full steps: docs/how-to/create-bootstrap-cloudflare-token.md
   EOT
 }
 
@@ -46,7 +46,7 @@ variable "grafana_cloud_access_policy_token" {
   type        = string
   sensitive   = true
   description = <<-EOT
-    Master Grafana Cloud access-policy token, created by hand and revoked
+    Bootstrap Grafana Cloud access-policy token, created by hand and revoked
     after apply. Used only to read the stack and create the provisioning
     service-account token stored in Secret Manager.
 

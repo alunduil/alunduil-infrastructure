@@ -356,13 +356,13 @@ Google Cloud, GitHub, or Tailscale.
 
 Each needs an operator in a console; no apply rotates them.
 
-#### C-07 — Master Cloudflare token
+#### C-07 — Bootstrap Cloudflare token
 
 - Kind: Cloudflare API token, time-limited
 - Scope: `User:API Tokens` Edit, plus zone reads
 - Consumer: one `terraform/bootstrap/` apply, then expiry
 - Grants: P-1
-- Source: [`create-master-cloudflare-token.md`](../how-to/create-master-cloudflare-token.md)
+- Source: [`create-bootstrap-cloudflare-token.md`](../how-to/create-bootstrap-cloudflare-token.md)
 
 #### C-08 — Grafana Cloud access-policy token
 

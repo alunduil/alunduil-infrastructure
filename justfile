@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # Every step is idempotent; safe to re-run after partial failure. The bootstrap
-# layer still needs the master Grafana and Cloudflare tokens on every run — see
+# layer still needs the bootstrap Grafana and Cloudflare tokens on every run — see
 # docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets, here and in blog.alunduil.com.")]
 bootstrap:

@@ -14,7 +14,7 @@ first-time and on rotation.
 `https://<slug>.grafana.net`. Defaults to `alunduil`, the sole stack
 for this infrastructure; only export it to target a different stack.
 
-## Master access-policy token
+## Bootstrap access-policy token
 
 Used only to read the stack and create the credentials that land in
 Secret Manager: the provisioning service-account token and the Fleet

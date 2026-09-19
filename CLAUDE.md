@@ -54,7 +54,7 @@ check what's already in place:
   `import` in one draft PR.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
-  `docs/how-to/create-master-cloudflare-token.md`. Don't enumerate
+  `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
   token paths in committed files.
 
 ## Scope discipline

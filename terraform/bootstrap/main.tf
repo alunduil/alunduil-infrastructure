@@ -25,7 +25,7 @@ provider "google" {
 }
 
 provider "cloudflare" {
-  api_token = var.cloudflare_master_token
+  api_token = var.cloudflare_bootstrap_token
 }
 
 # Cloud mode (cloud_access_policy_token) to read the stack and derive a

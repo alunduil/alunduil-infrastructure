@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the master Cloudflare token
+# Create the bootstrap Cloudflare token
 
 Used once during `terraform/bootstrap/` apply to create the two
 deployer Cloudflare tokens. Operator-only — never enters CI.
@@ -31,7 +31,7 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
    `just bootstrap`:
 
    ```sh
-   export TF_VAR_cloudflare_master_token=...
+   export TF_VAR_cloudflare_bootstrap_token=...
    ```
 
    Exporting sidesteps Terraform's interactive prompt, which can mangle
@@ -40,4 +40,4 @@ deployer Cloudflare tokens. Operator-only — never enters CI.
 3. Once the apply succeeds you can revoke the token in the dashboard
    early, but the expiration handles it if you don't. Cloudflare only
    shows the value at creation time, so any future bootstrap apply
-   needs a freshly created master token.
+   needs a freshly created bootstrap token.
