@@ -32,9 +32,8 @@ locals {
 
 # Grafana reads GCP through Cloud Monitoring, so the audit trail has to become a
 # metric before it can appear there. It arrives as metric type
-# logging.googleapis.com/user/audit-data-access. The metric keeps every caller;
-# the alert below decides which ones are unexpected, so dashboards can still
-# slice CI traffic by principal.
+# logging.googleapis.com/user/audit-data-access. The allowlist lives in the
+# alert, so dashboards can still slice CI traffic by principal.
 resource "google_logging_metric" "audit_data_access" {
   name   = "audit-data-access"
   filter = "logName=\"${local.data_access_log}\""
@@ -71,9 +70,9 @@ resource "grafana_folder" "gcp_observability" {
 }
 
 locals {
-  # Matches the callers the audit alert treats as expected: the CI deployers,
-  # and an empty principal. Cloud Audit Logs skips public-object access, so an
-  # anonymous caller only ever appears as a denied request that read nothing.
+  # The trailing ? also matches an empty principal. Cloud Audit Logs skips
+  # public-object access, so an anonymous caller only appears as a denied
+  # request that read nothing.
   audit_expected_principal_regex = "(${join("|", [
     for email in values(local.bootstrap.github_deployers) : replace(email, ".", "\\.")
   ])})?"
@@ -82,11 +81,8 @@ locals {
   audit_window_seconds = 600
 }
 
-# Every other principal fires, the owner included: CI bursts overlap break-glass
-# volume, so a count threshold can't tell a stolen credential from a run. One
-# instance per principal and service, so a firing alert names who touched what.
-# The query aligns the DELTA counter per period (A), sums the window (B), and
-# fires on any event (C).
+# Any event from an unexpected principal fires, the owner included. A count
+# threshold can't tell a stolen deployer credential from a CI run.
 resource "grafana_rule_group" "gcp_audit" {
   name             = "GCP audit"
   folder_uid       = grafana_folder.gcp_observability.uid

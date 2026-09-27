@@ -26,7 +26,7 @@ scripts/set-grafana-gcp-credentials.sh
 Confirm it authenticates: **Connections → Data sources → GCP Cloud Monitoring →
 Save & test**.
 
-## Validate the metric and alert
+## Test the alert
 
 Generate a synthetic Data Access event as yourself:
 
@@ -39,7 +39,8 @@ Within a few minutes **Alerting → Alert rules → GCP Observability → Unexpe
 Data Access** fires, with `principal` set to your account. It stays firing for
 ten minutes after the event, then resolves.
 
-An anonymous request is denied and reads nothing, so it must not fire:
+The alert ignores anonymous callers, because Cloud Storage denies them and they
+read nothing. Send an anonymous request and confirm the alert stays quiet:
 
 ```sh
 curl -s https://storage.googleapis.com/storage/v1/b/blog.alunduil.com/o >/dev/null
