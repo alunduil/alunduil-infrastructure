@@ -71,20 +71,22 @@ resource "grafana_folder" "gcp_observability" {
 }
 
 locals {
-  # Callers the audit alert treats as expected: the two CI deployers, and an
-  # empty principal. Cloud Audit Logs skips public-object access, so an
+  # Matches the callers the audit alert treats as expected: the CI deployers,
+  # and an empty principal. Cloud Audit Logs skips public-object access, so an
   # anonymous caller only ever appears as a denied request that read nothing.
-  # Everyone else, the owner included, fires: CI bursts overlap break-glass
-  # volume, so a count threshold can't tell a stolen credential from a run.
-  audit_expected_principals = "(${join("|", [
-    for email in [local.bootstrap.github_deployer_ro_email, local.bootstrap.github_deployer_rw_email] :
-    replace(email, ".", "\\.")
+  audit_expected_principal_regex = "(${join("|", [
+    for email in values(local.bootstrap.github_deployers) : replace(email, ".", "\\.")
   ])})?"
+
+  # How long a single event keeps the alert firing.
+  audit_window_seconds = 600
 }
 
-# One instance per unexpected principal and service, so a firing alert names
-# who touched what. The query aligns the DELTA counter per period (A), sums the
-# window (B), and fires on any event (C).
+# Every other principal fires, the owner included: CI bursts overlap break-glass
+# volume, so a count threshold can't tell a stolen credential from a run. One
+# instance per principal and service, so a firing alert names who touched what.
+# The query aligns the DELTA counter per period (A), sums the window (B), and
+# fires on any event (C).
 resource "grafana_rule_group" "gcp_audit" {
   name             = "GCP audit"
   folder_uid       = grafana_folder.gcp_observability.uid
@@ -102,7 +104,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "A"
       datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
       relative_time_range {
-        from = 600
+        from = local.audit_window_seconds
         to   = 0
       }
       model = jsonencode({
@@ -116,7 +118,7 @@ resource "grafana_rule_group" "gcp_audit" {
           projectName = local.bootstrap.project_id
           filters = [
             "metric.type", "=", "logging.googleapis.com/user/${google_logging_metric.audit_data_access.name}",
-            "AND", "metric.label.principal", "!=~", local.audit_expected_principals,
+            "AND", "metric.label.principal", "!=~", local.audit_expected_principal_regex,
           ]
           groupBys           = ["metric.label.principal", "metric.label.service"]
           perSeriesAligner   = "ALIGN_DELTA"
@@ -130,7 +132,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "B"
       datasource_uid = "__expr__"
       relative_time_range {
-        from = 600
+        from = local.audit_window_seconds
         to   = 0
       }
       model = jsonencode({
@@ -146,7 +148,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "C"
       datasource_uid = "__expr__"
       relative_time_range {
-        from = 600
+        from = local.audit_window_seconds
         to   = 0
       }
       model = jsonencode({

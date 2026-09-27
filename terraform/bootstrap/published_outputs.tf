@@ -22,8 +22,7 @@ resource "google_storage_bucket_object" "published_outputs" {
     grafana_stack_url                        = data.grafana_cloud_stack.this.url
     grafana_stack_id                         = data.grafana_cloud_stack.this.id
     grafana_gcp_reader_email                 = google_service_account.grafana_gcp_reader.email
-    github_deployer_ro_email                 = google_service_account.github_deployer_ro.email
-    github_deployer_rw_email                 = google_service_account.github_deployer_rw.email
+    github_deployers                         = local.deployers
     grafana_fleet_management_url             = data.grafana_cloud_stack.this.fleet_management_url
     grafana_fleet_management_user_id         = data.grafana_cloud_stack.this.fleet_management_user_id
     grafana_logs_url                         = data.grafana_cloud_stack.this.logs_url
