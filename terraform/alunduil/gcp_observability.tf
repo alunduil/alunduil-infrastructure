@@ -76,7 +76,10 @@ locals {
   # anonymous caller only ever appears as a denied request that read nothing.
   # Everyone else, the owner included, fires: CI bursts overlap break-glass
   # volume, so a count threshold can't tell a stolen credential from a run.
-  audit_expected_principals = "(github-deployer-(ro|rw)@${local.bootstrap.project_id}\\.iam\\.gserviceaccount\\.com)?"
+  audit_expected_principals = "(${join("|", [
+    for email in [local.bootstrap.github_deployer_ro_email, local.bootstrap.github_deployer_rw_email] :
+    replace(email, ".", "\\.")
+  ])})?"
 }
 
 # One instance per unexpected principal and service, so a firing alert names
