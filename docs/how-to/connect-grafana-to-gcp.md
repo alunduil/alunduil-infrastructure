@@ -3,11 +3,11 @@
 
 # Connect Grafana Cloud to GCP metrics and audit logs
 
-Terraform creates the data source, the log-based metric, and the alert rule. It
-can't set the data source's service-account key: that would persist the key in
-bucket-readable state, so you set it through the Grafana API instead. Run this
-when the data source is first created, when a UID or type change recreates it,
-and on key rotation; routine applies leave the key untouched.
+Terraform creates the data source and the log-based metric. It can't set the
+data source's service-account key: that would persist the key in bucket-readable
+state, so you set it through the Grafana API instead. Run this when the data
+source is first created, when a UID or type change recreates it, and on key
+rotation; routine applies leave the key untouched.
 
 ## Prerequisites
 
@@ -26,22 +26,15 @@ scripts/set-grafana-gcp-credentials.sh
 Confirm it authenticates: **Connections → Data sources → GCP Cloud Monitoring →
 Save & test**.
 
-## Test the alert
+## Validate the metric
 
-Generate a synthetic Data Access event as yourself:
+Generate a synthetic Data Access event and confirm it reaches Grafana:
 
 ```sh
 gcloud secrets versions access latest \
   --secret=grafana-gcp-reader-key --project=alunduil >/dev/null
 ```
 
-Within a few minutes **Alerting → Alert rules → GCP Observability → Unexpected
-Data Access** fires, with `principal` set to your account. It stays firing for
-ten minutes after the event, then resolves.
-
-The alert ignores anonymous callers, because Cloud Storage denies them and they
-read nothing. Send an anonymous request and confirm the alert stays quiet:
-
-```sh
-curl -s https://storage.googleapis.com/storage/v1/b/blog.alunduil.com/o >/dev/null
-```
+Within a minute the `audit-data-access` metric increments — query
+`logging.googleapis.com/user/audit-data-access` against the GCP Cloud
+Monitoring data source in Explore to confirm.
