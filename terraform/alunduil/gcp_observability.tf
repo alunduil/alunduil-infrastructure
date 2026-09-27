@@ -74,7 +74,8 @@ locals {
   # Callers the audit alert treats as expected: the two CI deployers, and an
   # empty principal. Cloud Audit Logs skips public-object access, so an
   # anonymous caller only ever appears as a denied request that read nothing.
-  # docs/adr/0003-alert-on-unexpected-gcp-data-access.md records why.
+  # Everyone else, the owner included, fires: CI bursts overlap break-glass
+  # volume, so a count threshold can't tell a stolen credential from a run.
   audit_expected_principals = "(github-deployer-(ro|rw)@${local.bootstrap.project_id}\\.iam\\.gserviceaccount\\.com)?"
 }
 
