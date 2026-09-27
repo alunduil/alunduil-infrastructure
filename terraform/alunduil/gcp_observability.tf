@@ -62,8 +62,8 @@ resource "google_logging_metric" "audit_data_access" {
   depends_on = [google_project_service.kept["logging.googleapis.com"]]
 }
 
-# Kept separate from the Git Sync dashboard folders so a dashboard sync can't
-# disturb alerting.
+# Alert rules must live in a folder, and deleting a Git Sync folder deletes the
+# alert rules inside it without recreating them, so these get their own.
 resource "grafana_folder" "gcp_observability" {
   title = "GCP Observability"
   uid   = "gcp-observability"
