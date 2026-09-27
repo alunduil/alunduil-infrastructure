@@ -32,7 +32,8 @@ locals {
 
 # Grafana reads GCP through Cloud Monitoring, so the audit trail has to become a
 # metric before it can appear there. It arrives as metric type
-# logging.googleapis.com/user/audit-data-access.
+# logging.googleapis.com/user/audit-data-access. The allowlist lives in the
+# alert, so dashboards can still slice CI traffic by principal.
 resource "google_logging_metric" "audit_data_access" {
   name   = "audit-data-access"
   filter = "logName=\"${local.data_access_log}\""
@@ -41,7 +42,118 @@ resource "google_logging_metric" "audit_data_access" {
     metric_kind = "DELTA"
     value_type  = "INT64"
     unit        = "1"
+
+    labels {
+      key        = "principal"
+      value_type = "STRING"
+    }
+
+    labels {
+      key        = "service"
+      value_type = "STRING"
+    }
+  }
+
+  label_extractors = {
+    principal = "EXTRACT(protoPayload.authenticationInfo.principalEmail)"
+    service   = "EXTRACT(protoPayload.serviceName)"
   }
 
   depends_on = [google_project_service.kept["logging.googleapis.com"]]
+}
+
+# Alert rules must live in a folder, and deleting a Git Sync folder deletes the
+# alert rules inside it without recreating them, so these get their own.
+resource "grafana_folder" "gcp" {
+  title = "GCP"
+  uid   = "gcp"
+}
+
+locals {
+  # The trailing ? also matches an empty principal. Cloud Audit Logs skips
+  # public-object access, so an anonymous caller only appears as a denied
+  # request that read nothing.
+  audit_expected_principal_regex = "(${join("|", [
+    for email in values(local.bootstrap.github_deployer_emails) : replace(email, ".", "\\.")
+  ])})?"
+
+  # How long a single event keeps the alert firing.
+  audit_alert_window_seconds = 600
+}
+
+# Any event from an unexpected principal fires, the owner included. A count
+# threshold can't tell a stolen deployer credential from a CI run.
+resource "grafana_rule_group" "gcp_audit_logs" {
+  name             = "Audit logs"
+  folder_uid       = grafana_folder.gcp.uid
+  interval_seconds = 60
+
+  rule {
+    name           = "Unexpected Data Access"
+    condition      = "C"
+    for            = "0s"
+    no_data_state  = "OK"
+    exec_err_state = "Error"
+    labels         = { severity = "warning" }
+
+    data {
+      ref_id         = "A"
+      datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
+      relative_time_range {
+        from = local.audit_alert_window_seconds
+        to   = 0
+      }
+      model = jsonencode({
+        refId     = "A"
+        queryType = "timeSeriesList"
+        datasource = {
+          type = "stackdriver"
+          uid  = grafana_data_source.gcp_cloud_monitoring.uid
+        }
+        timeSeriesList = {
+          projectName = local.bootstrap.project_id
+          filters = [
+            "metric.type", "=", "logging.googleapis.com/user/${google_logging_metric.audit_data_access.name}",
+            "AND", "metric.label.principal", "!=~", local.audit_expected_principal_regex,
+          ]
+          groupBys           = ["metric.label.principal", "metric.label.service"]
+          perSeriesAligner   = "ALIGN_DELTA"
+          crossSeriesReducer = "REDUCE_SUM"
+          alignmentPeriod    = "cloud-monitoring-auto"
+        }
+      })
+    }
+
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
+      relative_time_range {
+        from = local.audit_alert_window_seconds
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "B"
+        type       = "reduce"
+        datasource = { type = "__expr__", uid = "__expr__" }
+        expression = "A"
+        reducer    = "sum"
+      })
+    }
+
+    data {
+      ref_id         = "C"
+      datasource_uid = "__expr__"
+      relative_time_range {
+        from = local.audit_alert_window_seconds
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "C"
+        type       = "threshold"
+        datasource = { type = "__expr__", uid = "__expr__" }
+        expression = "B"
+        conditions = [{ evaluator = { type = "gt", params = [0] } }]
+      })
+    }
+  }
 }
