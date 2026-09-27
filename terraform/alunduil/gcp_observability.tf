@@ -64,9 +64,9 @@ resource "google_logging_metric" "audit_data_access" {
 
 # Alert rules must live in a folder, and deleting a Git Sync folder deletes the
 # alert rules inside it without recreating them, so these get their own.
-resource "grafana_folder" "gcp_observability" {
-  title = "GCP Observability"
-  uid   = "gcp-observability"
+resource "grafana_folder" "gcp" {
+  title = "GCP"
+  uid   = "gcp"
 }
 
 locals {
@@ -74,18 +74,18 @@ locals {
   # public-object access, so an anonymous caller only appears as a denied
   # request that read nothing.
   audit_expected_principal_regex = "(${join("|", [
-    for email in values(local.bootstrap.github_deployers) : replace(email, ".", "\\.")
+    for email in values(local.bootstrap.github_deployer_emails) : replace(email, ".", "\\.")
   ])})?"
 
   # How long a single event keeps the alert firing.
-  audit_window_seconds = 600
+  audit_alert_window_seconds = 600
 }
 
 # Any event from an unexpected principal fires, the owner included. A count
 # threshold can't tell a stolen deployer credential from a CI run.
-resource "grafana_rule_group" "gcp_audit" {
-  name             = "GCP audit"
-  folder_uid       = grafana_folder.gcp_observability.uid
+resource "grafana_rule_group" "gcp_audit_logs" {
+  name             = "Audit logs"
+  folder_uid       = grafana_folder.gcp.uid
   interval_seconds = 60
 
   rule {
@@ -100,7 +100,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "A"
       datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
       relative_time_range {
-        from = local.audit_window_seconds
+        from = local.audit_alert_window_seconds
         to   = 0
       }
       model = jsonencode({
@@ -128,7 +128,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "B"
       datasource_uid = "__expr__"
       relative_time_range {
-        from = local.audit_window_seconds
+        from = local.audit_alert_window_seconds
         to   = 0
       }
       model = jsonencode({
@@ -144,7 +144,7 @@ resource "grafana_rule_group" "gcp_audit" {
       ref_id         = "C"
       datasource_uid = "__expr__"
       relative_time_range {
-        from = local.audit_window_seconds
+        from = local.audit_alert_window_seconds
         to   = 0
       }
       model = jsonencode({
