@@ -63,6 +63,18 @@ module "projects_v2_sync" {
   topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
 }
 
+module "renovate_config" {
+  source      = "../modules/github_repository"
+  name        = "renovate-config"
+  description = "Extend this from any repo's renovate.json to inherit the shared Renovate policy."
+  topics      = ["renovate", "renovate-config", "dependency-management"]
+}
+
+import {
+  to = module.renovate_config.github_repository.this
+  id = "renovate-config"
+}
+
 module "siren_json_hs" {
   source      = "../modules/github_repository"
   name        = "siren-json.hs"
