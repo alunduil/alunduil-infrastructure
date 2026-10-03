@@ -45,6 +45,7 @@ zellij
 # Product and interface names, spelled as their vendors spell them
 GitHub
 GitHub App
+Dependabot
 OAuth
 Google Drive
 Google Takeout
@@ -67,6 +68,7 @@ gh
 github_repository
 markdownlint
 yamllint
+rsync
 Hackage
 Haskell
 Diátaxis
@@ -84,6 +86,7 @@ Nygard's
 (?i)deployer
 (?i)devcontainer
 (?i)env
+(?i)failover
 (?i)hardcoded
 (?i)homelab
 (?i)homelab's
@@ -91,6 +94,7 @@ Nygard's
 (?i)hostnames
 (?i)machineconfig
 (?i)machineconfigs
+(?i)middleware
 (?i)multicast
 (?i)nameserver
 (?i)nameservers
