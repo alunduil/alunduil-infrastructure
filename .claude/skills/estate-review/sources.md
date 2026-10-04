@@ -6,7 +6,7 @@ brief" followed by one source section.
 ## Every brief
 
 - Read-only.
-- The window in UTC, and the 30-day history range.
+- The window, history range and due-soon horizon, as UTC dates.
 - Every claim carries its evidence — job or run ID, timestamp, error string,
   the exact query — and whether the source is authoritative (configuration)
   or a proxy (logs, alerts).
@@ -118,7 +118,7 @@ spend the shared GraphQL budget.
   until a later apply succeeds.
 - Scheduled workflows that didn't run, and workflows not in the `active`
   state.
-- Renovate: open PRs older than 7 days or failing checks, and the Dependency
+- Renovate: open PRs opened before the window or failing checks, and the Dependency
   Dashboard issue's error and rate-limit sections. A failure repeated
   across repositories shares one cause.
 - Open Dependabot, code scanning and secret scanning alerts. A 403 or 404
@@ -139,5 +139,5 @@ Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
 --project=alunduil`. Never answer `gcloud`'s prompts to enable an API.
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
-expiring within 30 days or already expired, and whether both exit nodes and
-`homeassistant` are online.
+expiring within the due-soon horizon or already expired, and whether both
+exit nodes and `homeassistant` are online.

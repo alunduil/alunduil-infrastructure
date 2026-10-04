@@ -6,8 +6,14 @@ description: Review the personal estate's health over a recent window — outage
 # Estate review
 
 Survey every source read-only, report ranked findings marked tracked or
-untracked, then file only what alunduil approves. Default window: the last 7
-days, with 30 days of history to tell a recurrence from a one-off.
+untracked, then file only what alunduil approves.
+
+Three parameters, in UTC, set before step 2:
+
+- **Window**: the period under review. Default: the last 7 days.
+- **History range**: the 30 days ending with the window, to tell a
+  recurrence from a one-off.
+- **Due-soon horizon**: 30 days from today, for anything that expires.
 
 Runs on alunduil's workstation only: the TrueNAS MCP server answers on the
 LAN, and `gcx` and the other MCP servers are host configuration. In a web or
@@ -63,8 +69,8 @@ Send partial results as agents finish, then one consolidated report:
 2. **Broken**, numbered and ranked by impact. Each item: what, evidence, and
    either the tracking issue (`#N`, repo-qualified outside this repo) or
    "untracked".
-3. **Due soon**: credentials, certificates, keys, domains expiring within 30
-   days.
+3. **Due soon**: credentials, certificates, keys, domains expiring within the
+   due-soon horizon.
 4. **Blind spots**: assets or failure modes no source could see this run.
 5. **Working**: one line per source, with numbers.
 6. A closing ask, by number: which to file, which become comments on
