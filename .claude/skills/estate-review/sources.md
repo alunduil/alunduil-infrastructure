@@ -1,7 +1,6 @@
 # Estate review sources
 
-Agent briefs for the estate-review skill. Each agent's prompt is "Every
-brief" followed by one source section.
+Agent briefs for the estate-review skill.
 
 ## Every brief
 
@@ -51,8 +50,7 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   CPU.
 - The middleware keeps only its latest 1,000 jobs, a few days at the
   15-minute cloud-sync cadence. Say where coverage starts.
-- Report jobs RUNNING for more than a day. A stuck sync job blocks its task's
-  later runs.
+- Report jobs RUNNING for more than a day.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
@@ -118,8 +116,8 @@ GraphQL budget free.
 - Scheduled workflows that didn't run, and workflows not in the `active`
   state.
 - Renovate: open PRs opened before the window or failing checks, and the Dependency
-  Dashboard issue's error and rate-limit sections. A failure repeated
-  across repositories shares one cause.
+  Dashboard issue's error and rate-limit sections. Group a failure repeated
+  across repositories as one finding.
 - Open Dependabot, code scanning and secret scanning alerts. A 403 or 404
   means the feature is off.
 

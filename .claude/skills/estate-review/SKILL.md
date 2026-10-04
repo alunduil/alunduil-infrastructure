@@ -8,6 +8,10 @@ description: Review the personal estate's health over a recent window — outage
 Survey every source read-only, report ranked findings marked tracked or
 untracked, then file only what alunduil approves.
 
+Runs on alunduil's workstation only: the TrueNAS MCP server answers on the
+LAN, and `gcx` and the other MCP servers are host configuration. In a web or
+cloud session, say so and stop.
+
 Three parameters, in UTC, set before step 2:
 
 - **Window**: the period under review. Default: the last 7 days.
@@ -15,15 +19,11 @@ Three parameters, in UTC, set before step 2:
   recurrence from a one-off.
 - **Due-soon horizon**: 30 days from today, for anything that expires.
 
-Runs on alunduil's workstation only: the TrueNAS MCP server answers on the
-LAN, and `gcx` and the other MCP servers are host configuration. In a web or
-cloud session, say so and stop.
-
 ## 1. Load context
 
 - `docs/reference/asset-register.md` — the scope. Every asset, entry point,
-  dependency and credential should be covered by some source below, or named
-  as a blind spot.
+  dependency and credential should be covered by a brief in `sources.md`, or
+  named as a blind spot.
 - Open issues in `alunduil/alunduil-infrastructure` and
   `alunduil/alunduil-chezmoi` through REST
   (`gh api 'repos/<r>/issues?state=open&per_page=100' --paginate`), saved to
@@ -43,7 +43,7 @@ message. Each prompt is that file's "Every brief" section followed by the
 source's section, both verbatim.
 
 If an agent dies on a transport error, resume it with `SendMessage` once the
-network is back, rather than starting a fresh one that loses its context.
+network is back; it keeps its context.
 
 ## 3. Verify before reporting
 
@@ -73,8 +73,8 @@ Send partial results as agents finish, then one consolidated report:
 6. A closing ask, by number: which to file, which become comments on
    existing issues, which questions alunduil can answer.
 
-Numbering stays stable across follow-up messages, so replies like "all
-except 2" stay unambiguous. Stop after the report and wait for the answer.
+Keep numbering stable across follow-up messages. Stop after the report and
+wait for the answer.
 
 ## 5. File what's approved
 
