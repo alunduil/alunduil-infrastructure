@@ -1,6 +1,17 @@
 # Estate review sources
 
-One section per agent. Paste a section into that agent's prompt verbatim.
+Agent briefs for the estate-review skill. Each agent's prompt is "Every
+brief" followed by one source section.
+
+## Every brief
+
+- Read-only.
+- The window in UTC, and the 30-day history range.
+- Every claim carries its evidence — job or run ID, timestamp, error string,
+  the exact query — and whether the source is authoritative (configuration)
+  or a proxy (logs, alerts).
+- Report what failed or couldn't be retrieved, instead of inferring around it.
+- Structure: broken, working, blind spots. About 800 words.
 
 ## UptimeRobot
 

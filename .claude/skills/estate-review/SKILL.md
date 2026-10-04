@@ -33,15 +33,8 @@ Probe each source with one cheap call before spawning agents: a TrueNAS
 and leave it out; never fill its gap from another source.
 
 Spawn one read-only background agent per source in `sources.md`, in a single
-message. Paste the source's section into the prompt, plus:
-
-- The window in UTC, and the 30-day history range.
-- Read-only: list the mutating tools by name as forbidden.
-- Every claim carries its evidence — job or run ID, timestamp, error string,
-  the exact query — and whether the source is authoritative (configuration)
-  or a proxy (logs, alerts).
-- Report what failed or couldn't be retrieved, instead of inferring around it.
-- Structure: broken, working, blind spots. About 800 words.
+message. Each prompt is that file's "Every brief" section followed by the
+source's section, both verbatim.
 
 If an agent dies on a transport error, resume it with `SendMessage` once the
 network is back, rather than starting a fresh one that loses its context.
