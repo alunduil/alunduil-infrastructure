@@ -5,7 +5,7 @@ brief" followed by one source section.
 
 ## Every brief
 
-- Read-only.
+- Call only what the source section below lists.
 - The window, history range and due-soon horizon, as UTC dates.
 - Every claim carries its evidence — job or run ID, timestamp, error string,
   the exact query — and whether the source is authoritative (configuration)
@@ -17,8 +17,9 @@ brief" followed by one source section.
 
 Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
 
-- Calls: `list-monitors`, `list-incidents` (page by cursor), `get-incident-details`
-  for every incident, `get-monitor-stats`, `get-response-times`.
+- Call only: `list-monitors`, `list-incidents` (page by cursor),
+  `get-incident-details` for every incident, `get-monitor-details`,
+  `get-monitor-stats`, `get-response-times`.
 - The MCP server allows 20 requests a minute. On a rate-limit error, wait 60s
   and retry once.
 - Report each monitor's status, and its uptime computed from incident
@@ -40,16 +41,14 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
 
 ## TrueNAS
 
-Covers A-01, A-12 and D-02's backups. Read-only MCP calls: `system_info`,
+Covers A-01, A-12 and D-02's backups. Call only these MCP tools: `system_info`,
 `list_alerts`, `query_jobs` (filter by state FAILED and ABORTED, then by
 RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 `update_status`, `query_boot_environments`, `get_system_metrics`,
 `get_disk_metrics`.
 
-- Forbidden: every `dismiss_*`, `restore_*`, `run_*`, `start_*`, `stop_*`,
-  `update_*`, `upgrade_*`, `apply_*`, `download_*`, `create_*`, `delete_*`,
-  `system_reboot`.
-- Skip `query_snapshots`; it never finishes on this box's CPU.
+- `query_snapshots` stays off the list: it never finishes on this box's
+  CPU.
 - The middleware keeps only its latest 1,000 jobs, a few days at the
   15-minute cloud-sync cadence. Say where coverage starts.
 - Report jobs RUNNING for more than a day. A stuck sync job blocks its task's
@@ -63,8 +62,8 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 
 ## Grafana Cloud
 
-Covers telemetry from A-01, A-02, A-03, A-06 and A-05 (D-11). Query with
-`gcx`, setting `GRAFANA_ORG_ID=1` on every call, GET only:
+Covers telemetry from A-01, A-02, A-03, A-06 and A-05 (D-11). Call only
+`gcx api` GET requests, setting `GRAFANA_ORG_ID=1` on each:
 
 ```bash
 ds=/api/datasources/proxy/uid
@@ -106,9 +105,9 @@ series. A `<aggregated>` label is a known gap, not an empty result.
 
 ## GitHub
 
-Covers A-09 and every repository in `terraform/*/repositories.tf`. REST
-only: `gh api` and `gh search`. Leave out `gh run|pr|issue list|view`, which
-spend the shared GraphQL budget.
+Covers A-09 and every repository in `terraform/*/repositories.tf`. Call only
+`gh api` GET requests and `gh search`. Both use REST, which keeps the shared
+GraphQL budget free.
 
 - Failed, cancelled and timed-out Actions runs per repository in the window
   (`/repos/{r}/actions/runs?created=>=YYYY-MM-DD`). Fetch the failing job's
@@ -126,17 +125,19 @@ spend the shared GraphQL budget.
 
 ## Network and cloud
 
-Cloudflare (A-08): the Cloudflare MCP servers. The DNS report caps at 6 hours
-on this plan, so use GraphQL `dnsAnalyticsAdaptiveGroups` with explicit
-`datetime_geq` and `datetime_leq` for the week. Report response codes, DNSSEC
-status, and zone or DNSSEC settings modified in the window. Match any
-modification against this repository's commits to `main`.
+Call only the read tools and commands named below.
+
+Cloudflare (A-08): the Cloudflare MCP servers' read tools. The DNS report
+caps at 6 hours on this plan, so use GraphQL `dnsAnalyticsAdaptiveGroups`
+with explicit `datetime_geq` and `datetime_leq` covering the window. Report
+response codes, DNSSEC status, and zone or DNSSEC settings modified in the
+window. Match any modification against this repository's commits to `main`.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
 
 Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
---project=alunduil`. Never answer `gcloud`'s prompts to enable an API.
+--project=alunduil`.
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
