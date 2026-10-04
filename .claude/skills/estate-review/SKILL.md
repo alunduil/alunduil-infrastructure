@@ -53,11 +53,8 @@ network is back, rather than starting a fresh one that loses its context.
   configuration would confirm it.
 - An alarm alunduil can settle from what they already know — a domain's
   renewal, a scheduled router restart — goes in as a question, not a
-  finding. Known answers so far:
-  - `alunduil.com` renews automatically at Squarespace.
-  - The Deco restarts every Saturday at 06:00 on its own clock, so a short
-    Saturday blip at ~05:00Z (BST) or ~06:00Z (GMT) is most likely the
-    restart. Anything longer, or at another hour, is a finding.
+  finding. Settled answers live in the brief for their source in
+  `sources.md`; add each new one there.
 - Search both repos (open and closed) for each finding before calling it
   untracked.
 
