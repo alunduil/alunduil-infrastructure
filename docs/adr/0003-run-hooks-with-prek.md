@@ -129,16 +129,6 @@ behave differently from the pinned Python versions:
 
 Setting `PREK_NO_FAST_PATH=1` runs the pinned Python hooks instead.
 
-### Risks accepted
-
-- **One maintainer.** The project's author has about 1,450 commits.
-  The next human contributor has 40. Keeping the YAML config is the
-  mitigation, because leaving costs an action swap.
-- **Pre-1.0 churn.** `prek` is at 0.5.5. Minor releases may change
-  behaviour, and the Rust hooks can drift further from the Python ones
-  they replace. Pinning `prek-version` turns each change into a
-  reviewed Renovate PR.
-
 ### Consequences
 
 Good:
@@ -154,6 +144,13 @@ Bad / accepted:
 - Each repo's CI, contributor setup docs, and the workstation install
   all change.
 - The two fast-path behaviour differences under Hook compatibility.
+- `prek` has one maintainer. Its author has about 1,450 commits and
+  the next human contributor has 40. Keeping the YAML config is the
+  mitigation, because leaving costs an action swap.
+- `prek` is pre-1.0, at 0.5.5. Minor releases may change
+  behaviour, and the Rust hooks can drift further from the Python ones
+  they replace. Pinning `prek-version` turns each change into a
+  reviewed Renovate PR.
 
 Neutral:
 
