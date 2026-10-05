@@ -1,0 +1,51 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Set up Terraform providers
+description: >-
+  Restores a provider mirror keyed on the lock files and points terraform
+  init at it, so a warm cache installs every root without the registry.
+
+runs:
+  using: composite
+  steps:
+    - id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: ${{ runner.temp }}/terraform-providers
+        key: tf-providers-${{ runner.os }}-${{ hashFiles('terraform/**/.terraform.lock.hcl') }}
+
+    # Every workflow shares the cache key, so a miss mirrors every root's
+    # providers, not only the roots the calling workflow inits.
+    - name: Mirror providers
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        MIRROR: ${{ runner.temp }}/terraform-providers
+      run: |
+        for root in terraform/alunduil terraform/bootstrap; do
+          for attempt in 1 2 3; do
+            terraform -chdir="$root" providers mirror "$MIRROR" && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 30
+          done
+        done
+
+    # Mirror as the sole installation method: adding direct {} makes init
+    # query the registry for available versions even when the mirror holds
+    # them. Packages are still checked against the lock file's hashes.
+    - name: Point Terraform at the mirror
+      shell: bash
+      env:
+        MIRROR: ${{ runner.temp }}/terraform-providers
+      run: |
+        config="$RUNNER_TEMP/terraformrc"
+        cat > "$config" <<EOF
+        provider_installation {
+          filesystem_mirror {
+            path = "$MIRROR"
+          }
+        }
+        EOF
+        echo "TF_CLI_CONFIG_FILE=$config" >> "$GITHUB_ENV"
