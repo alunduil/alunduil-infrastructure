@@ -118,9 +118,8 @@ variable "allowed_action_patterns" {
   type        = list(string)
   default     = []
   description = <<-EOT
-    Actions this repo may run beyond the module's baseline, as
-    owner/repo@* patterns. Needed only for an action that GitHub doesn't
-    own, no verified Marketplace creator publishes, and no other managed
-    repo calls. Composite actions count their nested actions too.
+    Actions only this repo calls, as owner/repo@* patterns, including
+    those nested in composite actions. GitHub-owned actions and those
+    from verified Marketplace creators are already allowed.
   EOT
 }

@@ -131,9 +131,7 @@ resource "github_workflow_repository_permissions" "this" {
 }
 
 locals {
-  # Actions from neither GitHub nor a verified Marketplace creator that two or
-  # more managed repos call, directly or nested in a composite action. One
-  # repo's needs go in its allowed_action_patterns instead.
+  # Actions two or more repos call, counting those nested in composite actions.
   baseline_allowed_action_patterns = [
     "8c6794b6/hpc-codecov-action@*",
     "amannn/action-semantic-pull-request@*",
@@ -149,9 +147,8 @@ locals {
   ]
 }
 
-# An action missing from the allow-list fails its workflow at job setup, so a
-# new third-party action lands here or in allowed_action_patterns before the
-# workflow that calls it.
+# A workflow calling an unlisted action fails at job setup, so allow-list a new
+# action before merging the workflow that calls it.
 resource "github_actions_repository_permissions" "this" {
   repository           = github_repository.this.name
   allowed_actions      = "selected"
