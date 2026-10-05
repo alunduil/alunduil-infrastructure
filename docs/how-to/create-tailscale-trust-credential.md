@@ -25,7 +25,7 @@ match—a pattern without one matches literally, and so matches nothing.
 ### Read-only, for plan
 
 - **Description**—`alunduil-infrastructure terraform plan`
-- **Issuer**—GitHub; the issuer URL fills itself in
+- **Issuer**—GitHub; the issuer address fills itself in
 - **Subject**—`repo:alunduil/alunduil-infrastructure:pull_request`
 - **Custom claim**—key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`

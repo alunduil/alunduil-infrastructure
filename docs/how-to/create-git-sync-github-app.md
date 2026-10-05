@@ -14,10 +14,10 @@ Grafana Cloud can reach nothing else.
      prompts ask for it by this name; change one and change the other.
      App names are unique across GitHub, so a rebuild needs the old App
      deleted first.
-   - **Homepage URL** (required): the repo,
+   - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
-   - **Webhook**: uncheck "Active" (otherwise it demands a URL).
-   - Leave the user-authorization checkboxes under Callback URL
+   - **Webhook**: uncheck "Active" (otherwise it demands an address).
+   - Leave the user-authorization checkboxes under `Callback URL`
      (Expire user authorization tokens, Request user authorization on
      install, Enable Device Flow) at their defaults. This App
      authenticates as an installation, not a user, so none apply.
@@ -31,7 +31,7 @@ Grafana Cloud can reach nothing else.
    shows it once—regenerate if lost.
 3. **Install App** → **Install** on your account → **Only select
    repositories** → `alunduil-infrastructure`. The installation page
-   URL is `https://github.com/settings/installations/<id>`; that `<id>`
+   address is `https://github.com/settings/installations/<id>`; that `<id>`
    is the **installation ID** (reachable later via Settings →
    Applications → Installed GitHub Apps → Configure).
 

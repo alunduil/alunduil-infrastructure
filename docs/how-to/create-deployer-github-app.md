@@ -10,10 +10,10 @@ tokens via OIDC.
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, for example
      `alunduil-infra-deployer`. Display only.
-   - **Homepage URL** (required): the repo,
+   - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - Webhook: uncheck "Active"
-   - Leave the user-authorization checkboxes under Callback URL
+   - Leave the user-authorization checkboxes under `Callback URL`
      (Expire user authorization tokens, Request user authorization on
      install, Enable Device Flow) at their defaults. The deployer
      authenticates as an installation, not a user.
