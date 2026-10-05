@@ -5,7 +5,7 @@
 name: Set up Terraform providers
 description: >-
   Restores a provider mirror keyed on the lock files and points terraform
-  init at it, so a warm cache installs every root without the registry.
+  init at it, so a warm cache needs no registry.
 
 runs:
   using: composite
@@ -20,8 +20,8 @@ runs:
         path: ${{ steps.mirror.outputs.dir }}
         key: tf-providers-${{ runner.os }}-${{ hashFiles('terraform/**/.terraform.lock.hcl') }}
 
-    # Mirrors the roots the cache key hashes, not only the ones the calling
-    # workflow inits: every workflow restores the same key.
+    # Every workflow restores this key, so mirroring only the caller's roots
+    # would break the others.
     - name: Mirror providers
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
@@ -39,9 +39,9 @@ runs:
           done
         done
 
-    # Mirror as the sole installation method: adding direct {} makes init
-    # query the registry for available versions even when the mirror holds
-    # them. Packages are still checked against the lock file's hashes.
+    # No direct {} fallback: with one, init queries the registry for
+    # available versions even when the mirror holds them. Lock file hashes
+    # still verify each package.
     - name: Point Terraform at the mirror
       shell: bash
       env:
