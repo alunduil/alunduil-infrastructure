@@ -19,14 +19,11 @@ transitively, and `pre-commit/action@v3.0.1` calls an unpinned
 _Set up job_ before any step ran.
 
 The stopgap swapped in `tox-dev/action-pre-commit-uv`. Its composite
-calls `astral-sh/setup-uv` and `actions/cache`, both pinned by SHA
-today. That compliance holds only while its maintainers keep pinning.
+calls `astral-sh/setup-uv` and `actions/cache`, both pinned by SHA.
+That compliance holds only while its maintainers keep pinning.
 Upstream `pre-commit/action` is maintenance-only and points at hosted
 pre-commit.ci, which can't run hooks that need system binaries such as
 `terraform`, `just`, `cabal`, or `pnpm`.
-
-This record decides which tool runs the hook suites, in CI and on
-workstations.
 
 ### Requirements
 
@@ -68,8 +65,7 @@ an action swap and a workstation reinstall, with no config rewrite.
 ### Migration constraints
 
 - Keep config files free of prek-only keys and arguments such as
-  `repo: builtin`, so returning to `pre-commit` needs no config
-  rewrite.
+  `repo: builtin`.
 - Pin the action's `prek-version` input. It defaults to `latest`.
   Annotate the pin so Renovate tracks it.
 - Keep each CI job's `name:` unchanged. Branch protection matches
@@ -80,10 +76,7 @@ an action swap and a workstation reinstall, with no config rewrite.
 
 ### Hook compatibility
 
-Inventory taken on 2026-10-05 across the eleven repos' config files.
-Each hook's language comes from its repo's `.pre-commit-hooks.yaml` at
-the pinned `rev`. The count after each source is the number of repos
-using it.
+The count after each source is the number of repos using it.
 
 - **`python`**, run in a Python environment `prek` manages:
   `pre-commit/pre-commit-hooks` (11), `adrienverge/yamllint` (6),
@@ -141,18 +134,14 @@ Bad / accepted:
 
 - Each repo's CI, contributor setup docs, and the workstation install
   all change.
-- The two fast-path behaviour differences under Hook compatibility.
+- `check-yaml` and `check-json` change behaviour on the fast path.
 - `prek` has one maintainer. Its author has about 1,450 commits and
   the next human contributor has 40. Keeping the YAML config is the
-  mitigation, because leaving costs an action swap.
+  mitigation.
 - `prek` is pre-1.0, at 0.5.5. Minor releases may change behaviour,
   and the Rust hooks can drift further from the Python ones they
   replace. Pinning `prek-version` turns each change into a
   reviewed Renovate PR.
-
-Neutral:
-
-- The config format and hook revisions are unchanged.
 
 ## More Information
 
