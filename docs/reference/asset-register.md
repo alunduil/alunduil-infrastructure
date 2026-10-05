@@ -26,7 +26,7 @@ section the page doesn't name.
 
 Out of scope:
 
-- Component inventory fields — model, serial number, firmware version,
+- Component inventory fields—model, serial number, firmware version,
   physical location, machine names, network addresses. Those live in a
   private Notion inventory, and recording them twice would be duplicate
   accounting.
@@ -106,7 +106,7 @@ levels an OWASP asset record carries, split by kind. P-1 administers
 every asset; an entry names `Administered by` only to add a principal
 beyond it.
 
-### A-01 — `truenas`
+### A-01—`truenas`
 
 - Description: NAS and application host. Runs Plex, Netdata, alloy,
   Tailscale, `ddns-updater`, and Scrutiny. Advertises
@@ -114,14 +114,14 @@ beyond it.
   exit node
 - Exposed to: T-2, via E-05. A-12 carries its only path from T-1
 
-### A-02 — `homeassistant`
+### A-02—`homeassistant`
 
 - Description: home automation hub. Runs Zigbee2MQTT, Mosquitto, a
   Matter server, an OpenThread Border Router, alloy, Tailscale, SSH,
   and the File editor. Every automation in the house runs here
 - Exposed to: T-1, via E-03
 
-### A-03 — `slzb-mr4u`
+### A-03—`slzb-mr4u`
 
 - Description: Zigbee and Thread radio coordinator, carrying every
   Zigbee message the house sends. A-02's Zigbee2MQTT depends on it.
@@ -129,7 +129,7 @@ beyond it.
   are paired, so that half is unexercised
 - Exposed to: T-2, via E-07
 
-### A-04 — Deco mesh
+### A-04—Deco mesh
 
 - Description: router, Wi-Fi mesh, DHCP, and DNS relay. Three units.
   Owns the DHCP reservations that LAN names follow, and the app that
@@ -139,7 +139,7 @@ beyond it.
   and 443 on the WAN address from inside the network; whether it
   answers from outside is `Unverified`
 
-### A-05 — `nanopi-neo3`
+### A-05—`nanopi-neo3`
 
 - Description: Tailscale exit node presenting a US address. Sits in
   the American Midwest in a household that isn't alunduil's, and is
@@ -147,14 +147,14 @@ beyond it.
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Exposed to: T-3, via E-09
 
-### A-06 — `penguin`
+### A-06—`penguin`
 
 - Description: operator workstation, a Crostini container. Runs
   break-glass Terraform applies, `chezmoi`, and Claude Code, so it
   holds the operator's credentials
 - Exposed to: no inbound path; it initiates its own connections
 
-### A-07 — Google Cloud
+### A-07—Google Cloud
 
 - Description: project `alunduil` in `europe-west1`, holding the
   Terraform state bucket, Secret Manager, the
@@ -162,7 +162,7 @@ beyond it.
 - Exposed to: T-1. Its API is public
 - Administered by: P-2, P-3
 
-### A-08 — Cloudflare
+### A-08—Cloudflare
 
 - Description: zone `alunduil.com`, DNSSEC active. Authoritative DNS
   and zone settings. Every record except `home.alunduil.com` is
@@ -171,7 +171,7 @@ beyond it.
 - Exposed to: T-1, both as a resolver and through a public API
 - Administered by: P-2, P-3
 
-### A-09 — GitHub
+### A-09—GitHub
 
 - Description: account `alunduil`, source of record for every managed
   repository, and the
@@ -180,7 +180,7 @@ beyond it.
 - Exposed to: T-1, via E-02 and E-04
 - Administered by: P-2, P-3
 
-### A-10 — Tailscale
+### A-10—Tailscale
 
 - Description: tailnet `tail3af06.ts.net`, joining every host above.
   Device
@@ -193,7 +193,7 @@ beyond it.
   reaches it
 - Administered by: P-2, P-3
 
-### A-11 — Grafana Cloud
+### A-11—Grafana Cloud
 
 - Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
   traces, profiles, and dashboards, syncing
@@ -201,7 +201,7 @@ beyond it.
 - Exposed to: T-1. Its API is public
 - Administered by: P-3
 
-### A-12 — Plex
+### A-12—Plex
 
 - Description: media server, running as a container on A-01 and reading
   the library from its pool read-only
@@ -274,7 +274,7 @@ Google Cloud, GitHub, or Tailscale.
 
 `terraform apply` creates and rotates each of these.
 
-#### C-01 — `alunduil-infrastructure deployer (RO)`
+#### C-01—`alunduil-infrastructure deployer (RO)`
 
 - Kind: Cloudflare API token
 - Scope: Zone Read, DNS Read, and Zone Settings Read on `alunduil.com`
@@ -282,7 +282,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-2
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
-#### C-02 — `alunduil-infrastructure deployer (RW)`
+#### C-02—`alunduil-infrastructure deployer (RW)`
 
 - Kind: Cloudflare API token
 - Scope: Zone Read, DNS Write, and Zone Settings Write on
@@ -291,7 +291,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3, and P-1 through the break-glass path
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`
 
-#### C-03 — `github-deployer-ro`
+#### C-03—`github-deployer-ro`
 
 - Kind: Google Cloud service account
 - Scope: the `githubDeployerPlanner` custom role, and object read on
@@ -301,7 +301,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-2
 - Source: `terraform/bootstrap/service_account_github_deployer_ro.tf`
 
-#### C-04 — `github-deployer-rw`
+#### C-04—`github-deployer-rw`
 
 - Kind: Google Cloud service account
 - Scope: the `githubDeployerApplier` custom role, and object admin on
@@ -310,7 +310,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3
 - Source: `terraform/bootstrap/service_account_github_deployer_rw.tf`
 
-#### C-05 — `grafana-gcp-reader`
+#### C-05—`grafana-gcp-reader`
 
 - Kind: Google Cloud service account key
 - Scope: `monitoring.viewer`, `logging.viewer`, `logging.viewAccessor`
@@ -318,7 +318,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-1
 - Source: `terraform/bootstrap/grafana_gcp_reader.tf`
 
-#### C-06 — `alunduil-infrastructure-provisioner`
+#### C-06—`alunduil-infrastructure-provisioner`
 
 - Kind: Grafana stack service account token
 - Scope: stack Admin
@@ -326,7 +326,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3
 - Source: `terraform/bootstrap/grafana.tf`
 
-#### C-20 — `alunduil-infrastructure-fleet-management-ro`
+#### C-20—`alunduil-infrastructure-fleet-management-ro`
 
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read` on the stack realm
@@ -334,7 +334,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-2
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
-#### C-21 — `alunduil-infrastructure-fleet-management-rw`
+#### C-21—`alunduil-infrastructure-fleet-management-rw`
 
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read` and `fleet-management:write` on the
@@ -343,7 +343,7 @@ Google Cloud, GitHub, or Tailscale.
 - Grants: P-3
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
-#### C-22 — `alunduil-infrastructure-alloy-push`
+#### C-22—`alunduil-infrastructure-alloy-push`
 
 - Kind: Grafana Cloud access-policy token
 - Scope: `logs:write` and `metrics:write` on the stack realm
@@ -356,7 +356,7 @@ Google Cloud, GitHub, or Tailscale.
 
 Each needs an operator in a console; no apply rotates them.
 
-#### C-07 — Bootstrap Cloudflare token
+#### C-07—Bootstrap Cloudflare token
 
 - Kind: Cloudflare API token, time-limited
 - Scope: `User:API Tokens` Edit, plus zone reads
@@ -364,7 +364,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-1
 - Source: [`create-bootstrap-cloudflare-token.md`](../how-to/create-bootstrap-cloudflare-token.md)
 
-#### C-08 — Grafana Cloud access-policy token
+#### C-08—Grafana Cloud access-policy token
 
 - Kind: access-policy token
 - Scope: `stacks:read`, `stack-service-accounts:write`,
@@ -373,7 +373,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
-#### C-09 — Deployer GitHub App
+#### C-09—Deployer GitHub App
 
 - Kind: GitHub App ID and private key
 - Scope: installed across the managed repositories
@@ -381,7 +381,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-2, P-3
 - Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
 
-#### C-10 — Git Sync GitHub App
+#### C-10—Git Sync GitHub App
 
 - Kind: GitHub App ID, installation ID, and private key
 - Scope: installed on `alunduil-infrastructure` alone
@@ -389,7 +389,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-3
 - Source: [`create-git-sync-github-app.md`](../how-to/create-git-sync-github-app.md)
 
-#### C-11 — Tailscale trust credential (read)
+#### C-11—Tailscale trust credential (read)
 
 - Kind: workload identity federation client ID
 - Scope: tailnet read
@@ -397,7 +397,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-2
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
-#### C-12 — Tailscale trust credential (write)
+#### C-12—Tailscale trust credential (write)
 
 - Kind: workload identity federation client ID
 - Scope: tailnet write
@@ -405,7 +405,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-3
 - Source: [`create-tailscale-trust-credential.md`](../how-to/create-tailscale-trust-credential.md)
 
-#### C-13 — `GH_PROJECT_SYNC_TOKEN`
+#### C-13—`GH_PROJECT_SYNC_TOKEN`
 
 - Kind: GitHub classic personal access token
 - Scope: Projects v2 write
@@ -413,7 +413,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-3
 - Source: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
 
-#### C-14 — Web Analytics beacon
+#### C-14—Web Analytics beacon
 
 - Kind: Cloudflare site token; public, and no secret
 - Scope: beacon submission for `blog.alunduil.com`
@@ -421,7 +421,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: nothing; the value is public and carries no access
 - Source: [`create-web-analytics-site.md`](../how-to/create-web-analytics-site.md)
 
-#### C-15 — Cloudflare DDNS token
+#### C-15—Cloudflare DDNS token
 
 - Kind: Cloudflare API token
 - Scope: writes the `home.alunduil.com` A record; its granted
@@ -430,7 +430,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-4
 - Source: `None`. Issue #269 tracks writing a how-to
 
-#### C-16 — Google Drive credential
+#### C-16—Google Drive credential
 
 - Kind: OAuth grant
 - Scope: Drive read and write
@@ -438,7 +438,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-4
 - Source: `None`
 
-#### C-17 — Tailscale auth keys
+#### C-17—Tailscale auth keys
 
 - Kind: pre-authentication keys
 - Scope: device enrolment
@@ -446,7 +446,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-1, when enrolling a host
 - Source: `None`
 
-#### C-18 — `vscode-mcp-access`
+#### C-18—`vscode-mcp-access`
 
 - Kind: Grafana stack service account holding one token
 - Scope: stack Viewer
@@ -454,7 +454,7 @@ Each needs an operator in a console; no apply rotates them.
 - Grants: P-1
 - Source: `None`
 
-#### C-19 — TP-Link account
+#### C-19—TP-Link account
 
 - Kind: Vendor account
 - Scope: administration of A-04, including DHCP, DNS and the forwards

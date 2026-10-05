@@ -15,10 +15,10 @@ both for first-time setup and for rotation.
 2. **Note**: any (for example, `alunduil-infrastructure-project-sync`).
 3. **Expiration**: 1 year.
 4. Select scopes:
-    - **`project`** — add and update board items.
-    - **`repo`** — read issues and pull requests across the board's
+    - **`project`**—add and update board items.
+    - **`repo`**—read issues and pull requests across the board's
       sources, private repos included.
-    - **`read:org`** — resolve the org-owned sources; `gh project`
+    - **`read:org`**—resolve the org-owned sources; `gh project`
       also needs it to look up the board's owner, even a user one.
 5. Select **Generate token** and copy the value.
 
@@ -38,7 +38,7 @@ scripts/configure-github-secrets.sh
 The script upserts the secret; re-running with the same value is a
 no-op. It stores the token on the `project-sync` deployment
 environment (restricted to `main`), not as a repo secret, so only the
-sync workflow — which declares that environment — can read it. The
+sync workflow—which declares that environment—can read it. The
 other CI secrets stay repo-level.
 
 ## Rotate

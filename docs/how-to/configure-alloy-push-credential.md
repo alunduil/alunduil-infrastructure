@@ -41,5 +41,5 @@ gcx metrics query 'alloy_build_info'
 The self-monitoring pipelines emit that metric, so a result with a `version`
 label confirms both that the credential authenticates and that the collector is
 applying remote configuration. An empty result after a few minutes means the
-pipelines are still failing to push — check the token scopes in the Cloud Portal
+pipelines are still failing to push—check the token scopes in the Cloud Portal
 before suspecting the collector.

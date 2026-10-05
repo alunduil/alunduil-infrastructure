@@ -10,7 +10,7 @@ first-time and on rotation.
 
 ## Stack slug (optional)
 
-`TF_VAR_grafana_stack_slug` — the `<slug>` in
+`TF_VAR_grafana_stack_slug`—the `<slug>` in
 `https://<slug>.grafana.net`. Defaults to `alunduil`, the sole stack
 for this infrastructure; only export it to target a different stack.
 
@@ -37,7 +37,7 @@ next need to run bootstrap.
    fail part-applied. Leave every other resource unchecked, then
    **Create**.
 3. Select the policy → **Add token** → name it, set a short expiration,
-   **Create**, and copy the value — Grafana shows it once.
+   **Create**, and copy the value—Grafana shows it once.
 
 Export as `TF_VAR_grafana_cloud_access_policy_token`.
 
@@ -66,13 +66,13 @@ version. To rotate the GitHub App key, see
 A too-narrow policy and an invalid token both stop bootstrap with
 `401 Unauthorized`. Which resources failed separates them:
 
-- The message names the missing and received scopes — the policy is too
+- The message names the missing and received scopes—the policy is too
   narrow. Add what it names, then create a token: editing a policy
   leaves its existing tokens unable to authenticate, because scopes are
   checked against the policy rather than the token.
-- Everything fails, the stack data source included — the token is
+- Everything fails, the stack data source included—the token is
   invalid. Create a new one on the policy.
-- Some resources fail while the stack read succeeds — the policy is
+- Some resources fail while the stack read succeeds—the policy is
   missing a scope only those need, and the message won't name it.
   Creating an access policy takes `accesspolicies:write` and reading it
   back takes `accesspolicies:read`, so a policy holding only the first

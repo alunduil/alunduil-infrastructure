@@ -35,6 +35,6 @@ gcloud secrets versions access latest \
   --secret=grafana-gcp-reader-key --project=alunduil >/dev/null
 ```
 
-Within a minute the `audit-data-access` metric increments — query
+Within a minute the `audit-data-access` metric increments—query
 `logging.googleapis.com/user/audit-data-access` against the GCP Cloud
 Monitoring data source in Explore to confirm.

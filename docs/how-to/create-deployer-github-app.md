@@ -32,6 +32,6 @@ tokens via OIDC.
    so new repos work without re-issuing credentials.
 
 The App ID and the `.pem` file are inputs to
-`scripts/configure-github-secrets.sh` — pass them via `GH_APP_ID` and
+`scripts/configure-github-secrets.sh`—pass them via `GH_APP_ID` and
 `GH_APP_PRIVATE_KEY_FILE` (path to the `.pem`) environment variables,
 or let the script prompt for them.

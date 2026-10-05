@@ -4,11 +4,11 @@
 # Create the bootstrap Cloudflare token
 
 Used once during `terraform/bootstrap/` apply to create the two
-deployer Cloudflare tokens. Operator-only — never enters CI.
+deployer Cloudflare tokens. Operator-only—never enters CI.
 
 1. At <https://dash.cloudflare.com/profile/api-tokens> choose
    **Create Token** → **Create Custom Token**. Under **Permissions**
-   each row has three dropdowns — the group (defaults to `Account`),
+   each row has three dropdowns—the group (defaults to `Account`),
    the permission, and the access level. Add these rows:
 
    | Group   | Permission        | Access |

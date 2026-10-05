@@ -22,10 +22,10 @@ approving a merge.
 
 The two operator entrypoints:
 
-- `just bootstrap` — first-time setup, and rotation of the credentials
+- `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
-- `just alunduil` — break-glass local `terraform apply` against the
+- `just alunduil`—break-glass local `terraform apply` against the
   alunduil environment, for when CI is unavailable.
 
 Supporting how-tos:
@@ -51,5 +51,5 @@ solicited and may not be triaged.
 
 ## License
 
-MIT — see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the
+MIT—see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the
 `SPDX-License-Identifier` headers on each file.

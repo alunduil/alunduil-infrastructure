@@ -20,22 +20,22 @@ Two fields resist copying from what the form offers. The **Subject**
 placeholder `repo:octo-org/octo-repo:environment:*` matches only jobs that
 name an environment, which neither Terraform workflow does. And the custom
 claim carries the ref a run came from, so its trailing `*` is what makes it
-match — a pattern without one matches literally, and so matches nothing.
+match—a pattern without one matches literally, and so matches nothing.
 
 ### Read-only, for plan
 
-- **Description** — `alunduil-infrastructure terraform plan`
-- **Issuer** — GitHub; the issuer URL fills itself in
-- **Subject** — `repo:alunduil/alunduil-infrastructure:pull_request`
-- **Custom claim** — key `job_workflow_ref`, value
+- **Description**—`alunduil-infrastructure terraform plan`
+- **Issuer**—GitHub; the issuer URL fills itself in
+- **Subject**—`repo:alunduil/alunduil-infrastructure:pull_request`
+- **Custom claim**—key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`
 
 ### Read-write, for apply
 
-- **Description** — `alunduil-infrastructure terraform apply`
-- **Issuer** — GitHub
-- **Subject** — `repo:alunduil/alunduil-infrastructure:ref:refs/heads/main`
-- **Custom claim** — key `job_workflow_ref`, value
+- **Description**—`alunduil-infrastructure terraform apply`
+- **Issuer**—GitHub
+- **Subject**—`repo:alunduil/alunduil-infrastructure:ref:refs/heads/main`
+- **Custom claim**—key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-apply.yml@*`
 
 ### Scopes
@@ -61,7 +61,7 @@ A missing scope reads back as a zero value rather than an error, so a
 setting can look imported and still reject the write.
 
 Core and Auth Keys stay at read on both. Write on either demands tags chosen
-alongside it, and tags have to exist in the policy file first — which is
+alongside it, and tags have to exist in the policy file first—which is
 itself something Terraform does, through the Policy File scope above. Raise
 these two once the tags exist; a trust credential's scopes can be edited
 afterwards.
@@ -70,7 +70,7 @@ afterwards.
 
 Leave the audience to Tailscale rather than setting one: the provider
 derives it from the client ID, and a hand-picked value would have to be
-carried separately. Then copy the **client ID** — there is no secret to
+carried separately. Then copy the **client ID**—there is no secret to
 capture.
 
 ## Store the client IDs

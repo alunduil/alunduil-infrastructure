@@ -22,8 +22,8 @@ thing go?" into a settled, paved-road answer. The two candidates are
 
 The decision hangs on an honest read of the workload:
 
-- **Count and lifecycle.** A long tail — a handful today, growing —
-  mostly small and experimental (comes and goes), with a few that
+- **Count and lifecycle.** A long tail—a handful today, growing—mostly
+  small and experimental (comes and goes), with a few that
   persist. The unit of change is "add/remove a small service," often.
 - **Resource shape.** Each service is small: typically a single
   container, low CPU and RAM. The aggregate matters more than any one
@@ -36,7 +36,7 @@ The decision hangs on an honest read of the workload:
   integrates with Cloudflare (tunnel / DNS), per the repo gotchas.
 - **Relationship to existing infra.** TrueNAS stays the storage + Plex
   appliance. The platform runs *beside* it (transitionally *on* it as a
-  VM — see the migration sketch), consuming TrueNAS for persistent
+  VM—see the migration sketch), consuming TrueNAS for persistent
   volumes rather than replacing it.
 
 The shape that matters most: **many small services, churning often,
@@ -63,7 +63,7 @@ them:
   today is one, and nothing in the footprint is appliance-shaped. VM
   hosting stays on TrueNAS, where phase 1's own node runs.
 - Operational burden and day-2 upgrade path.
-- Declarative / GitOps fit — the repo already treats git as the source
+- Declarative / GitOps fit—the repo already treats git as the source
   of truth (Terraform, Grafana Git Sync).
 - Per-service overhead as the service count grows.
 - Hardware needs against what exists today (a 16 GB, 2-core TrueNAS
@@ -71,35 +71,35 @@ them:
 - Backup and recovery.
 - Networking / ingress + DNS, integrating with Cloudflare.
 - Secrets management.
-- Blast radius — keeping an experimental long tail from taking down the
+- Blast radius—keeping an experimental long tail from taking down the
   storage + Plex appliance.
 
 ## Considered Options
 
-- **TrueNAS apps** (the status quo) — Docker apps on the existing
+- **TrueNAS apps** (the status quo)—Docker apps on the existing
   appliance. Free and already running, but there's no declarative loop,
   the catalog is thin, and it fails multi-node outright.
-- **Docker Compose, or Podman with quadlets** — compose files in git on
+- **Docker Compose, or Podman with quadlets**—compose files in git on
   a plain Linux host. The lowest operational floor of anything here,
   and genuinely declarative for a handful of services. Fails automatic
   rescheduling: a dead host is a hands-on recovery.
-- **Incus / LXD** — the previous plan for this platform, and the only
+- **Incus / LXD**—the previous plan for this platform, and the only
   option here that runs system containers and VMs equally well.
   Clears the requirements. Loses on the declarative loop: its GitOps
   and CSI ecosystems are thin next to Kubernetes, so the services
   inside the instances stay hand-managed even when the instances
   themselves are declared.
-- **Proxmox VE** — VMs and LXC, with a mature single-node story,
+- **Proxmox VE**—VMs and LXC, with a mature single-node story,
   snapshots, and backups. Clears the requirements, but optimizes for
   fewer, heavier, longer-lived instances and has no native declarative
-  service loop, so every service stays a hand-rolled unit — the
+  service loop, so every service stays a hand-rolled unit—the
   per-service drift this platform exists to end.
-- **Nomad** — a single-binary orchestrator with real multi-node
+- **Nomad**—a single-binary orchestrator with real multi-node
   scheduling, and HCL jobs in a repo already fluent in HCL. Clears the
   requirements. Loses on storage: its CSI ecosystem is thinner, with
   nothing equivalent to democratic-csi driving the TrueNAS API, and
   the 2023 move to a BUSL license adds a durability question.
-- **Small Kubernetes** — k3s, k0s, or Talos Linux. Clears the
+- **Small Kubernetes**—k3s, k0s, or Talos Linux. Clears the
   requirements, with the deepest storage and ingress ecosystem of the
   options here. Costs the highest conceptual floor.
 
@@ -111,14 +111,14 @@ automatic rescheduling. Among the four that remain, the declarative
 service loop decides it: Incus and Proxmox manage instances well but
 leave the services inside them hand-managed, and Nomad schedules well
 but has nothing equivalent to democratic-csi driving the TrueNAS API.
-Kubernetes' per-service unit — a pod and a few lines of YAML in git —
-is what makes a churning long tail cheap to add to and cheap to retire
+Kubernetes' per-service unit—a pod and a few lines of YAML in git—is
+what makes a churning long tail cheap to add to and cheap to retire
 from, and its storage and ingress ecosystems are the deepest here.
 
 Within that family, k3s and k0s are reasonable distributions, but they
 leave a general-purpose Linux host to own and patch per node. Talos
-removes that surface — immutable, API-managed, atomic image-based
-upgrades, no host to hand-patch — which neutralizes the day-2 tax that
+removes that surface—immutable, API-managed, atomic image-based
+upgrades, no host to hand-patch—which neutralizes the day-2 tax that
 is the usual reason to reject small Kubernetes at a homelab's staffing
 level of one person, part-time.
 
@@ -132,7 +132,7 @@ under the cluster without a rebuild:
    single-node cluster has stable quorum (1-of-1); it's not redundant,
    which is acceptable for bootstrap.
 2. **Three nodes on dedicated hardware.** When hardware is acquired, go
-   straight from one node to three — deliberately skipping the fragile
+   straight from one node to three—deliberately skipping the fragile
    two-node etcd state, which loses quorum if either node dies. This may
    be two VMs plus one metal node, or three matched metal nodes bought
    together to complete the move in one step. Nodes drain and are
@@ -145,8 +145,8 @@ under the cluster without a rebuild:
 These bind only while the cluster runs as a VM on TrueNAS, and retire
 when phase 2 lands:
 
-- **Capacity.** The 2-core Atom C3338 is the throughput ceiling — it
-  already sits near a load average of 1 — and free memory runs
+- **Capacity.** The 2-core Atom C3338 is the throughput ceiling—it
+  already sits near a load average of 1—and free memory runs
   1–1.5 GB once the ZFS cache has warmed, so a node large enough to be
   useful means capping that cache and trading NAS read performance for
   the cluster. Quorum and blast radius stay coupled to the NAS until
@@ -167,7 +167,7 @@ when phase 2 lands:
 Good:
 
 - Adding or retiring a service is a git commit against declarative
-  manifests, not a hand-built VM — the paved road the platform exists
+  manifests, not a hand-built VM—the paved road the platform exists
   to provide, and a fit with the repo's existing GitOps posture.
 - Per-service overhead stays low as the count grows; the control-plane
   cost is paid once and amortized across the long tail.

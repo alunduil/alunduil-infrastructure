@@ -16,7 +16,7 @@ Recovery today means flashing a stock image, restoring package
 selections and `/home` from the hourly `rclone` backup in Google
 Drive, then merging `/etc` by hand over SSH. The merge is the fragile
 part. The backed-up `fstab` names the old card's root UUID, and
-restoring it leaves a box that can't find its root — no console, no
+restoring it leaves a box that can't find its root—no console, no
 way in, and a second trip to arrange for hands on another continent.
 DHCP keeps network configuration out of that merge entirely.
 
@@ -29,8 +29,8 @@ card is flashed, and what applies it after the box boots.
 ### Recovery framing
 
 - **The hands on site are willing and not technical.** They can swap a
-  card, apply power, forward a port on the router, and — given lay
-  instructions and equipment bought and delivered locally — write an
+  card, apply power, forward a port on the router, and—given lay
+  instructions and equipment bought and delivered locally—write an
   image to a card. Posting a card from London isn't wanted.
 - **The board hides its own failures.** `config/boards/nanopineo3.csc`
   sets `HAS_VIDEO_OUTPUT="no"` and puts the console on `ttyS2`, and
@@ -66,15 +66,15 @@ Where options both clear the requirements, these decide between them:
   nothing else; it earns a workflow file, not a distribution to
   maintain.
 - Configured wherever configuration is free. Anything settable without
-  a secret — Tailscale, Grafana Alloy, unattended upgrades, hostname,
-  DHCP — should already be settled when the card boots.
+  a secret—Tailscale, Grafana Alloy, unattended upgrades, hostname,
+  DHCP—should already be settled when the card boots.
 - Testable without an outage.
 - One description of the box, applied both at build time and
   afterwards, so the two can't drift.
 - A normal patching path after recovery.
 - Board reality. `nanopineo3` carries `BOARD_MAINTAINER=""`, sits in
-  Armbian's community tier, and has exactly one published artifact —
-  a weekly `-trunk` build of Debian 13. No option here changes that,
+  Armbian's community tier, and has exactly one published artifact—a
+  weekly `-trunk` build of Debian 13. No option here changes that,
   so no option can be credited for it.
 
 ## Considered Options
@@ -93,8 +93,8 @@ Where options both clear the requirements, these decide between them:
   Clears all three requirements. Costs a rolling Debian userspace that
   the framework can't pin.
 - **Customize a stock image in CI.** Loop-mount Armbian's published
-  image, enter it with `qemu-user-static`, write files, repack —
-  by hand, or through Packer's ARM builder or CustomPiOS. Clears the
+  image, enter it with `qemu-user-static`, write files, repack—by
+  hand, or through Packer's ARM builder or CustomPiOS. Clears the
   requirements and reuses a boot chain rather than building one, but
   loop-device partition nodes have been broken on GitHub-hosted
   runners since December 2024, so the approach whose appeal was "a
@@ -108,7 +108,7 @@ Where options both clear the requirements, these decide between them:
   here: `authorizedKeys`, `services.tailscale`, `services.alloy` and
   `system.autoUpgrade` are declarations, and the closure is pinned in
   a way no Debian option matches. Costs board bring-up that exists
-  nowhere upstream — no entry in `nixos-hardware`, no NEO3 device tree
+  nowhere upstream—no entry in `nixos-hardware`, no NEO3 device tree
   in mainline Linux, and no NEO3 u-boot `defconfig`. The device tree
   lives only as a patch in Armbian's tree.
 - **Buildroot or Yocto.** Both can place u-boot correctly for this
@@ -140,8 +140,8 @@ trust a key before it boots. Among the options that produce an image,
 the framework asks for the least: the action copies this repo's
 overlay into a checkout it manages and publishes the result, so what
 is owned here is an overlay and a workflow rather than a boot chain.
-Every option that builds a root filesystem from scratch — `debos`,
-Buildroot, NixOS — requires supplying RK3328 u-boot, and NixOS also
+Every option that builds a root filesystem from scratch—`debos`,
+Buildroot, NixOS—requires supplying RK3328 u-boot, and NixOS also
 requires carrying a device tree that only Armbian has. Every option
 that edits a published image has to work around GitHub's loop devices.
 
@@ -161,7 +161,7 @@ unattended upgrades installed and enabled.
 Deliberately absent: any Tailscale auth key or OAuth client secret,
 any Alloy credential, any private key. The artifact is public, so it
 holds public key material only. A card that can't authenticate itself
-to the tailnet is the point — the two credential-bearing steps belong
+to the tailnet is the point—the two credential-bearing steps belong
 to the operator's SSH session.
 
 This also settles the direction of #262: the Tailscale identity
@@ -195,7 +195,7 @@ for one host.
 5. A fresh spare is flashed and taped back to the unit.
 
 Step 5 is also the rehearsal. Refreshing the spare exercises the whole
-pipeline — build, publish, flash, boot — while the live exit node
+pipeline—build, publish, flash, boot—while the live exit node
 keeps running, which is what the current plan can't do. A spare that
 fails to boot costs a swap back, not an outage.
 
@@ -221,8 +221,8 @@ fails to boot costs a swap back, not an outage.
 Good:
 
 - Recovery stops depending on a hand-merged `/etc`. The trap that
-  motivated the whole plan — restoring an `fstab` that names a UUID
-  the new card doesn't have — can't occur, because nothing is restored
+  motivated the whole plan—restoring an `fstab` that names a UUID
+  the new card doesn't have—can't occur, because nothing is restored
   over the image.
 - The configuration becomes reviewable in a diff, rather than
   reconstructed from a backup at recovery time.
@@ -253,8 +253,8 @@ Neutral:
 ## More Information
 
 Build work is tracked in #261. The Tailscale identity question is #262,
-and the Alloy outage that stopped this box shipping telemetry is #473 —
-independent of this decision, since the image installs Alloy without
+and the Alloy outage that stopped this box shipping telemetry is #473—independent
+of this decision, since the image installs Alloy without
 inheriting its broken state.
 
 The recovery plan this replaces is described in
