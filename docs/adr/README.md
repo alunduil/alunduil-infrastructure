@@ -5,7 +5,8 @@
 
 Architecturally significant, hard-to-reverse decisions, one file per
 decision. See [0000](0000-record-architecture-decisions.md) for the
-practice and the template convention (MADR for substantive records).
+practice and the template convention (Markdown Architectural Decision
+Records (MADR) for substantive records).
 
 | ADR | Decision |
 | --- | --- |

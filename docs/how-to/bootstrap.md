@@ -10,15 +10,15 @@ from scratch or rotating the core credentials.
 
 ## Prerequisites
 
-- A bootstrap Cloudflare API token — see
+- A bootstrap Cloudflare API token—see
   [create-bootstrap-cloudflare-token.md](create-bootstrap-cloudflare-token.md).
-- The deployer GitHub App created and installed — see
+- The deployer GitHub App created and installed—see
   [create-deployer-github-app.md](create-deployer-github-app.md).
-- Grafana Cloud credentials — see
+- Grafana Cloud credentials—see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
-- A Git Sync GitHub App created and installed — see
+- A Git Sync GitHub App created and installed—see
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
-- Two Tailscale trust credentials — see
+- Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
 
 ## Run

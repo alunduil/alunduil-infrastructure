@@ -27,7 +27,7 @@ Under **Data Protection → Cloud Sync Tasks**, add a task with these settings:
 - **Direction**: `PUSH`.
 - **Remote folder**: `/truenas-config-backups`. Every tar holds
   `pwenc_secret`, so read access to this folder is equivalent to root on the
-  NAS.
+  TrueNAS box.
 - **Directory/Files**:
   `/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/config-backups`.
 - **Schedule**: daily at 03:00, after the 02:00 takeout pull so the two
