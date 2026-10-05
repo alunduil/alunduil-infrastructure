@@ -113,3 +113,13 @@ variable "pages" {
     will treat the flag as a no-op confirmation.
   EOT
 }
+
+variable "allowed_action_patterns" {
+  type        = list(string)
+  default     = []
+  description = <<-EOT
+    Actions only this repo calls, as owner/repo@* patterns, including
+    those nested in composite actions. GitHub-owned actions and those
+    from verified Marketplace creators are already allowed.
+  EOT
+}

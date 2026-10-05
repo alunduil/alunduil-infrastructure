@@ -17,6 +17,11 @@ module "alunduil_infrastructure" {
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
+  # setup-crate is nested in setup-just.
+  allowed_action_patterns = [
+    "extractions/setup-crate@*",
+    "extractions/setup-just@*",
+  ]
 }
 
 module "blog_alunduil_com" {
@@ -30,6 +35,7 @@ module "blog_alunduil_com" {
     build_type     = "workflow"
     https_enforced = true
   }
+  allowed_action_patterns = ["withastro/action@*"]
 }
 
 module "collection_json_hs" {
@@ -54,6 +60,11 @@ module "network_arbitrary" {
   description  = "Arbitrary Instances for Network Types"
   topics       = ["haskell-library", "haskell", "network", "quickcheck"]
   environments = { hackage = {} }
+  # create-pull-request is nested in haskell-bounds-bump-action.
+  allowed_action_patterns = [
+    "nomeata/haskell-bounds-bump-action@*",
+    "peter-evans/create-pull-request@*",
+  ]
 }
 
 module "projects_v2_sync" {
@@ -128,6 +139,8 @@ module "zellij_claude_pair" {
   name        = "zellij-claude-pair"
   description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
+
+  allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
 module "zfs_replicate" {
