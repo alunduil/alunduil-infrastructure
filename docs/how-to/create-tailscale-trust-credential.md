@@ -4,7 +4,7 @@
 # Create the Tailscale trust credentials
 
 Authenticates the `tailscale` provider from CI. Creating them and choosing
-their scopes are console steps; `just bootstrap` stores the client IDs
+their scopes are console steps. `just bootstrap` stores the client IDs
 afterwards.
 
 Make two: plan gets read scopes, apply gets write, so the credential a pull
@@ -13,8 +13,8 @@ request can reach holds no write access.
 ## Create each credential
 
 On the [Trust credentials][trust-credentials] page choose **Credential**,
-then **OpenID Connect**. The form runs **Settings** then **Scopes**; the
-values for each credential are below.
+then **OpenID Connect**. The form runs **Settings** then **Scopes**. The
+values for each credential follow.
 
 Two fields resist copying from what the form offers. The **Subject**
 placeholder `repo:octo-org/octo-repo:environment:*` matches only jobs that
@@ -25,7 +25,7 @@ match—a pattern without one matches literally, and so matches nothing.
 ### Read-only, for plan
 
 - **Description**—`alunduil-infrastructure terraform plan`
-- **Issuer**—GitHub; the issuer address fills itself in
+- **Issuer**—GitHub. The issuer address fills itself in.
 - **Subject**—`repo:alunduil/alunduil-infrastructure:pull_request`
 - **Custom claim**—key `job_workflow_ref`, value
   `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`
@@ -62,9 +62,9 @@ setting can look imported and still reject the write.
 
 Core and Auth Keys stay at read on both. Write on either demands tags chosen
 alongside it, and tags have to exist in the policy file first—which is
-itself something Terraform does, through the Policy File scope listed earlier. Raise
-these two once the tags exist; a trust credential's scopes can be edited
-afterwards.
+itself something Terraform does, through the Policy File scope listed
+earlier. Raise these two once the tags exist. A trust credential's scopes
+can be edited afterwards.
 
 ### Finish each one
 

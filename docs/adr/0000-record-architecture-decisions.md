@@ -50,7 +50,7 @@ new record rather than a revision to the old one.
   replaced.
 - Every significant decision now carries the cost of writing it down.
   This is deliberate friction, warranted only when the choice is
-  significant *and* hard to reverse; tactical, cheap-to-reverse choices
+  significant *and* hard to reverse. Tactical, cheap-to-reverse choices
   stay in commit messages and PR descriptions.
 - The decision in an `Accepted` record is immutable. A changed
   decision is a new ADR superseding the old one, never an edit to the

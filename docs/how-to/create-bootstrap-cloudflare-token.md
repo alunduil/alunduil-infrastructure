@@ -20,7 +20,7 @@ deployer Cloudflare tokens. Operator-only—never enters CI.
    | Account | Account Analytics | Read   |
 
    Under **Zone Resources** set `Include` → `Specific zone` →
-   `alunduil.com` (read is enough; the token only references the zone).
+   `alunduil.com`. Read is enough, because the token only references the zone.
    The account row adds an **Account Resources** selector: set it to
    `Include` → `alunduil-infrastructure`.
 

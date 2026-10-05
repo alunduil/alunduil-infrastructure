@@ -31,7 +31,7 @@ The decision hangs on an honest read of the workload:
 - **State.** Mostly stateless or lightly stateful. Durable data belongs
   on TrueNAS (the existing storage appliance) over NFS/iSCSI, not
   trapped inside the platform.
-- **Exposure.** Mostly LAN-only; some behind `home.alunduil.com`. DNS
+- **Exposure.** Mostly LAN-only, some behind `home.alunduil.com`. DNS
   for `alunduil.com` is on Cloudflare, not Cloud DNS, so ingress
   integrates with Cloudflare (tunnel / DNS), per the repo gotchas.
 - **Relationship to existing infra.** TrueNAS stays the storage + Plex
@@ -129,7 +129,7 @@ under the cluster without a rebuild:
 
 1. **Single node.** Run one Talos node as a VM on the TrueNAS box,
    whose 16 GB leaves room for it. Learn the platform, wire GitOps. A
-   single-node cluster has stable quorum (1-of-1); it's not redundant,
+   single-node cluster has stable quorum (1-of-1). It's not redundant,
    which is acceptable for bootstrap.
 2. **Three nodes on dedicated hardware.** When hardware is acquired, go
    straight from one node to three—deliberately skipping the fragile
@@ -137,7 +137,7 @@ under the cluster without a rebuild:
    be two VMs plus one metal node, or three matched metal nodes bought
    together to complete the move in one step. Nodes drain and are
    replaced with metal while services keep running.
-3. **End state.** Three dedicated nodes beside TrueNAS; the VMs retired.
+3. **End state.** Three dedicated nodes beside TrueNAS, with the VMs retired.
    Quorum and blast radius fully decoupled from the storage appliance.
 
 ### Phase 1 risks
@@ -156,7 +156,7 @@ when phase 2 lands:
   log device, so those commits queue behind Plex and share traffic on
   the same vdevs. Slow commits surface as leader elections and an
   unresponsive API server rather than as a disk alert. Watch
-  `etcd_disk_wal_fsync_duration_seconds` from the start; sustained
+  `etcd_disk_wal_fsync_duration_seconds` from the start. Sustained
   trouble there argues for moving to metal sooner.
 - **QuickSync can't be tested here.** The Atom C3338 has no integrated
   GPU, so the i915 extension, the Intel device plugin, and the Plex
@@ -169,7 +169,7 @@ Good:
 - Adding or retiring a service is a git commit to declarative
   manifests, not a hand-built VM—the paved road the platform exists
   to provide, and a fit with the repo's existing GitOps posture.
-- Per-service overhead stays low as the count grows; the control-plane
+- Per-service overhead stays low as the count grows. The control-plane
   cost is paid once and amortized across the long tail.
 - Talos' atomic, image-based upgrades and absence of a hand-patched host
   OS give the best day-2 story of the options considered.
@@ -180,10 +180,10 @@ Good:
 
 Bad / accepted:
 
-- A higher conceptual floor than Proxmox's VM-and-web-UI model; running
+- A higher conceptual floor than Proxmox's VM-and-web-UI model. Running
   this means owning Kubernetes concepts.
 - etcd is a shared failure domain. Real redundancy arrives only at the
-  three-node, separate-hardware phase; earlier phases trade redundancy
+  three-node, separate-hardware phase. Earlier phases trade redundancy
   for a cheap start.
 - Backup is more assembly (etcd snapshots + volume snapshots + git for
   config) than Proxmox's one-stop `vzdump` / Proxmox Backup Server.

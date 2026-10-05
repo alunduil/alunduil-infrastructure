@@ -3,7 +3,7 @@
 
 # Create the Grafana Git Sync credentials
 
-The Grafana Cloud inputs for `just bootstrap`; the GitHub side is a
+The Grafana Cloud inputs for `just bootstrap`. The GitHub side is a
 dedicated App in
 [create-git-sync-github-app.md](create-git-sync-github-app.md). Do this
 first-time and on rotation.
@@ -12,18 +12,18 @@ first-time and on rotation.
 
 `TF_VAR_grafana_stack_slug`—the `<slug>` in
 `https://<slug>.grafana.net`. Defaults to `alunduil`, the sole stack
-for this infrastructure; only export it to target a different stack.
+for this infrastructure. Export it only to target a different stack.
 
 ## Bootstrap access-policy token
 
 Used only to read the stack and create the credentials that land in
 Secret Manager: the provisioning service-account token and the Fleet
-Management access-policy tokens. Create it by hand; recreate when you
+Management access-policy tokens. Create it by hand, and recreate it when you
 next need to run bootstrap.
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
    Access Policies → Create access policy**. Give it a display name
-   (for example, `alunduil-infrastructure-bootstrap`); there is no realm
+   (for example, `alunduil-infrastructure-bootstrap`). There is no realm
    field.
 2. The **Scopes** grid lists only data-plane resources (metrics, logs,
    …) by default. Select **Add scope** to add the three control-plane

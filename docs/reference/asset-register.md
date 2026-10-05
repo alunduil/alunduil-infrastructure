@@ -51,12 +51,12 @@ least-trusted zone with a path to it, and no asset has more than one.
 | ID | Name | Who is in it |
 | --- | --- | --- |
 | T-1 | Public internet | Anyone |
-| T-2 | LAN | `192.168.68.0/22`; ~20 devices, 11 unidentified |
+| T-2 | LAN | `192.168.68.0/22`, ~20 devices, 11 unidentified |
 | T-3 | Tailnet | Devices approved onto the tailnet |
 
 A-04 translates addresses between T-1 and T-2, so T-1 reaches a T-2
 asset either through a forward or through a vendor cloud the asset
-dials out to. One forward exists, for E-01; E-03 and E-08 are cloud
+dials out to. One forward exists, for E-01. E-03 and E-08 are cloud
 paths. E-05's SMB, E-06, E-11 and E-12 answer nothing on the WAN
 address and have no cloud path.
 
@@ -75,7 +75,7 @@ from.
 ## Trust boundaries
 
 Privilege changes that aren't a zone edge. The boundaries between zones
-are implied by their order; these sit inside a single host.
+are implied by their order. These sit inside a single host.
 
 | ID | Boundary | Separates |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ B-1 differs per container.
 | Scrutiny | `/dev`, `/run/udev`, `MKNOD`, root | A-01's disks |
 | alloy, Tailscale, `ddns-updater` | Unchecked | `Unverified` |
 
-Every catalogue entry here describes running as root; A-12's
+Every catalogue entry here describes running as root. A-12's
 configuration overrides that with a named user.
 
 The unchecked containers each keep a credential in their application
@@ -103,7 +103,7 @@ unchecked.
 Hosts and devices alunduil owns, and accounts this repository
 configures. `Exposed to` and `Administered by` are together the trust
 levels an OWASP asset record carries, split by kind. P-1 administers
-every asset; an entry names `Administered by` only to add a principal
+every asset, and an entry names `Administered by` only to add a principal
 beyond it.
 
 ### A-01—`truenas`
@@ -136,7 +136,7 @@ beyond it.
   holds them is the only place they exist. Translates addresses between
   T-1 and T-2
 - Exposed to: T-1, via E-08. Its management interface also answers 80
-  and 443 on the WAN address from inside the network; whether it
+  and 443 on the WAN address from inside the network. Whether it
   answers from outside is `Unverified`
 
 ### A-05—`nanopi-neo3`
@@ -152,7 +152,7 @@ beyond it.
 - Description: operator workstation, a Crostini container. Runs
   break-glass Terraform applies, `chezmoi`, and Claude Code, so it
   holds the operator's credentials
-- Exposed to: no inbound path; it initiates its own connections
+- Exposed to: no inbound path, since it initiates its own connections
 
 ### A-07—Google Cloud
 
@@ -166,7 +166,7 @@ beyond it.
 
 - Description: zone `alunduil.com`, DNSSEC active. Authoritative DNS
   and zone settings. Every record except `home.alunduil.com` is
-  declared in `terraform/alunduil/dns.tf`; that one is written by
+  declared in `terraform/alunduil/dns.tf`. That one is written by
   `ddns-updater` on A-01
 - Exposed to: T-1, both as a resolver and through a public API
 - Administered by: P-2, P-3
@@ -189,7 +189,7 @@ beyond it.
   exit nodes carry per-device key-expiry exemptions set outside
   Terraform. The policy file is declared in
   `terraform/alunduil/tailscale-acl.hujson`
-- Exposed to: T-1. Its API is public; T-3 is what it grants, not what
+- Exposed to: T-1. Its API is public. T-3 is what it grants, not what
   reaches it
 - Administered by: P-2, P-3
 
@@ -249,11 +249,11 @@ vendor.
 | D-01 | Nabu Casa | A-02's backups, and its remote interface traffic |
 | D-02 | Google Drive | A-01's backups, Takeout archives, A-05's `/home` |
 | D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
-| D-04 | UptimeRobot | Probes of E-01; heartbeats from A-02, A-05 |
+| D-04 | UptimeRobot | Probes of E-01, heartbeats from A-02 and A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
-| D-06 | TP-Link cloud | Administration of A-04; its telemetry is `Unverified` |
+| D-06 | TP-Link cloud | Administration of A-04, telemetry (`Unverified`) |
 | D-07 | Google Cloud (A-07) | Terraform state and every secret |
-| D-08 | Cloudflare (A-08) | Zone configuration; the home address via C-15 |
+| D-08 | Cloudflare (A-08) | Zone configuration, the home address via C-15 |
 | D-09 | GitHub (A-09) | This repository and its CI logs |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
 | D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
@@ -348,13 +348,13 @@ Google Cloud, GitHub, or Tailscale.
 - Kind: Grafana Cloud access-policy token
 - Scope: `logs:write` and `metrics:write` on the stack realm
 - Consumer: alloy on A-01, as the `GCLOUD_RW_API_KEY` its Fleet
-  Management pipelines authenticate with; no deployer reads it
+  Management pipelines authenticate with. No deployer reads it
 - Grants: P-4
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
 
 ### Created by hand
 
-Each needs an operator in a console; no apply rotates them.
+Each needs an operator in a console, because no apply rotates them.
 
 #### C-07—Bootstrap Cloudflare token
 
@@ -415,16 +415,16 @@ Each needs an operator in a console; no apply rotates them.
 
 #### C-14—Web Analytics beacon
 
-- Kind: Cloudflare site token; public, and no secret
+- Kind: Cloudflare site token, public and not a secret
 - Scope: beacon submission for `blog.alunduil.com`
 - Consumer: client-side JavaScript on the blog
-- Grants: nothing; the value is public and carries no access
+- Grants: nothing, because the value is public and carries no access
 - Source: [`create-web-analytics-site.md`](../how-to/create-web-analytics-site.md)
 
 #### C-15—Cloudflare DDNS token
 
 - Kind: Cloudflare API token
-- Scope: writes the `home.alunduil.com` A record; its granted
+- Scope: writes the `home.alunduil.com` A record. Its granted
   permissions are `Unverified`
 - Consumer: `ddns-updater` on A-01
 - Grants: P-4
@@ -442,7 +442,7 @@ Each needs an operator in a console; no apply rotates them.
 
 - Kind: pre-authentication keys
 - Scope: device enrolment
-- Consumer: enrolling a host by hand; deliberately unmanaged
+- Consumer: enrolling a host by hand, deliberately unmanaged
 - Grants: P-1, when enrolling a host
 - Source: `None`
 

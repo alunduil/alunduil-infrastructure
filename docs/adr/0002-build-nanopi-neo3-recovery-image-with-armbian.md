@@ -63,7 +63,7 @@ out regardless of how it scores elsewhere.
 Where options both clear the requirements, these decide between them:
 
 - Machinery budget. This box is an exit node for geolocation and
-  nothing else; it earns a workflow file, not a distribution to
+  nothing else. It earns a workflow file, not a distribution to
   maintain.
 - Configured wherever configuration is free. Anything settable without
   a secret—Tailscale, Grafana Alloy, unattended upgrades, hostname,
@@ -80,7 +80,7 @@ Where options both clear the requirements, these decide between them:
 ## Considered Options
 
 - **Flash a stock image, configure over break-glass SSH.** No build at
-  all; configuration lives as a script in this repo and runs after the
+  all. Configuration lives as a script in this repo and runs after the
   operator gets in. Fails the second requirement: a stock image trusts
   no key of ours, so the way in is the default root password that
   ships in every copy of that image, over a port forward open to the
@@ -123,9 +123,9 @@ Where options both clear the requirements, these decide between them:
   The automation file sits on that single ext4 partition, so editing
   it before flashing needs a Linux machine on site.
 - **Clone the running card with `dd`.** Imaging a live, mounted ext4
-  root captures a dirty journal; the copy carries the SSH host keys
+  root captures a dirty journal. The copy carries the SSH host keys
   and `/var/lib/tailscale` into offsite storage in the clear, failing
-  the third requirement; and the cloned identity collides with the
+  the third requirement. The cloned identity also collides with the
   original if it ever returns.
 
 ## Decision Outcome
@@ -173,7 +173,7 @@ a drawer would carry a credential that rots long before it's needed.
 
 One idempotent shell script in `scripts/` is the single description of
 the box. `customize-image.sh` runs it inside the `chroot` at build
-time; the operator runs it over SSH during recovery and for ordinary
+time, and the operator runs it over SSH during recovery and for ordinary
 changes afterwards. Applying the same script at both moments is what
 keeps the image and the running box from drifting into two different
 answers.
@@ -191,7 +191,7 @@ for one host.
 3. The operator connects over SSH on the baked-in key and runs the
    configuration script, supplying the Tailscale and Alloy
    credentials.
-4. The port forward comes down; the box is on the tailnet.
+4. The port forward comes down, and the box is on the tailnet.
 5. A fresh spare is flashed and taped back to the unit.
 
 Step 5 is also the rehearsal. Refreshing the spare exercises the whole
@@ -210,7 +210,7 @@ fails to boot costs a swap back, not an outage.
   or commit, and the framework itself pins by action ref.
 - **The SD card is the only boot device.** No eMMC, no SPI, no USB
   boot on this SoC. The single point of failure survives this
-  decision; the spare card is the mitigation.
+  decision, and the spare card is the mitigation.
 - **A cold build compiles a kernel**, which takes over an hour on
   comparable Rockchip boards. Warm builds pull a cached kernel package
   and finish in roughly a quarter of an hour. Neither figure has been
@@ -239,7 +239,7 @@ Bad / accepted:
   Removing it would mean putting a bearer credential on a card kept in
   a home on another continent.
 - The image and the running box can still diverge between refreshes.
-  The script is idempotent, not enforcing; nothing detects a change
+  The script is idempotent, not enforcing. Nothing detects a change
   made by hand and never committed.
 
 Neutral:

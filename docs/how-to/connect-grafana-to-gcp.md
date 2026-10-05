@@ -7,7 +7,7 @@ Terraform creates the data source and the log-based metric. It can't set the
 data source's service-account key: that would persist the key in bucket-readable
 state, so you set it through the Grafana API instead. Run this when the data
 source is first created, when a UID or type change recreates it, and on key
-rotation; routine applies leave the key untouched.
+rotation. Routine applies leave the key untouched.
 
 ## Prerequisites
 

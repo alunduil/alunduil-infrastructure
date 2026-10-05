@@ -16,7 +16,7 @@ Personal infrastructure as code, managed with Terraform.
 ## Getting started
 
 Changes reach the `alunduil` environment through CI. Opening a PR runs
-`terraform plan` and posts the output as a PR comment; merging to
+`terraform plan` and posts the output as a PR comment. Merging to
 `main` applies it automatically. Review the plan comment before
 approving a merge.
 

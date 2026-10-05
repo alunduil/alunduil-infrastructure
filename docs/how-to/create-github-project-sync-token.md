@@ -18,7 +18,7 @@ both for first-time setup and for rotation.
     - **`project`**—add and update board items.
     - **`repo`**—read issues and pull requests across the board's
       sources, private repos included.
-    - **`read:org`**—resolve the org-owned sources; `gh project`
+    - **`read:org`**—resolve the org-owned sources. `gh project`
       also needs it to look up the board's owner, even a user one.
 5. Select **Generate token** and copy the value.
 
@@ -35,7 +35,7 @@ export GH_PROJECT_SYNC_TOKEN=<paste-here>
 scripts/configure-github-secrets.sh
 ```
 
-The script upserts the secret; re-running with the same value is a
+The script upserts the secret, so re-running with the same value is a
 no-op. It stores the token on the `project-sync` deployment
 environment (restricted to `main`), not as a repo secret, so only the
 sync workflow—which declares that environment—can read it. The
