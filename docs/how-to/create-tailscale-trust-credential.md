@@ -43,15 +43,15 @@ match—a pattern without one matches literally, and so matches nothing.
 The Scopes page groups every area and offers read or write on each. Leave
 the rest untouched:
 
-| Group    | Scope               | Plan | Apply |
-| -------- | ------------------- | ---- | ----- |
-| General  | DNS                 | Read | Write |
-| General  | Policy File         | Read | Write |
-| Devices  | Core                | Read | Read  |
-| Devices  | Routes              | Read | Write |
-| Keys     | Auth Keys           | Read | Read  |
-| Settings | Feature Settings    | Read | Write |
-| Settings | Networking Settings | Read | Write |
+| Group    | Scope                 | Plan | Apply |
+| -------- | --------------------- | ---- | ----- |
+| General  | `DNS`                 | Read | Write |
+| General  | `Policy File`         | Read | Write |
+| Devices  | `Core`                | Read | Read  |
+| Devices  | `Routes`              | Read | Write |
+| Keys     | `Auth Keys`           | Read | Read  |
+| Settings | `Feature Settings`    | Read | Write |
+| Settings | `Networking Settings` | Read | Write |
 
 The endpoint behind the tailnet settings answers to several scopes: Feature
 Settings covers device approval and key expiry, Networking Settings covers

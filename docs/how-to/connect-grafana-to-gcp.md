@@ -1,13 +1,14 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Connect Grafana Cloud to GCP metrics and audit logs
+# Connect Grafana Cloud to Google Cloud metrics and audit logs
 
-Terraform creates the data source and the log-based metric. It can't set the
-data source's service-account key: that would persist the key in bucket-readable
-state, so you set it through the Grafana API instead. Run this when the data
-source is first created, when a UID or type change recreates it, and on key
-rotation. Routine applies leave the key untouched.
+Terraform creates the data source and the log-based metric. It can't set
+the data source's service-account key: that would persist the key in
+bucket-readable state, so you set it through the Grafana API instead.
+Run this when the data source is first created, when a change of Unique
+Identifier (UID) or type recreates it, and on key rotation. Routine
+applies leave the key untouched.
 
 ## Prerequisites
 
@@ -23,8 +24,8 @@ rotation. Routine applies leave the key untouched.
 scripts/set-grafana-gcp-credentials.sh
 ```
 
-Confirm it authenticates: **Connections → Data sources → GCP Cloud Monitoring →
-Save & test**.
+Confirm it authenticates: **Connections → Data sources → `GCP Cloud
+Monitoring` → Save & test**.
 
 ## Validate the metric
 
@@ -36,5 +37,5 @@ gcloud secrets versions access latest \
 ```
 
 Within a minute the `audit-data-access` metric increments—query
-`logging.googleapis.com/user/audit-data-access` in the GCP Cloud
-Monitoring data source in Explore to confirm.
+`logging.googleapis.com/user/audit-data-access` in the `GCP Cloud
+Monitoring` data source in Explore to confirm.

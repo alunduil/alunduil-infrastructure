@@ -13,12 +13,13 @@ exit node that puts traffic on a US address. It's administered from
 London.
 
 Recovery today means flashing a stock image, restoring package
-selections and `/home` from the hourly `rclone` backup in Google
-Drive, then merging `/etc` by hand over SSH. The merge is the fragile
-part. The backed-up `fstab` names the old card's root UUID, and
-restoring it leaves a box that can't find its root—no console, no
-way in, and a second trip to arrange for hands on another continent.
-DHCP keeps network configuration out of that merge entirely.
+selections and `/home` from the hourly `rclone` backup in Google Drive,
+then merging `/etc` by hand over SSH. The merge is the fragile part. The
+backed-up `fstab` names the old card's root by Universally Unique
+Identifier (UUID), and restoring it leaves a box that can't find its
+root—no console, no way in, and a second trip to arrange for hands on
+another continent. Dynamic Host Configuration Protocol (DHCP) keeps
+network configuration out of that merge entirely.
 
 The plan has never been run. Rehearsing it means breaking the exit
 node nobody can reach.
@@ -35,8 +36,9 @@ card is flashed, and what applies it after the box boots.
 - **The board hides its own failures.** `config/boards/nanopineo3.csc`
   sets `HAS_VIDEO_OUTPUT="no"` and puts the console on `ttyS2`, and
   FriendlyELEC's specification lists one microSD slot and no eMMC or
-  SPI flash. A board that fails to boot looks exactly like a dead card
-  unless someone on site attaches a USB-TTL adapter.
+  Serial Peripheral Interface (SPI) flash. A board that fails to boot
+  looks exactly like a dead card unless someone on site attaches a USB
+  serial adapter.
 - **Break-glass SSH is acceptable as a step, not as the mechanism.**
   Reaching the box over a temporary port forward to finish recovery is
   fine. Depending on that session to carry the configuration is what
@@ -102,7 +104,8 @@ Where options both clear the requirements, these decide between them:
 - **`debos`.** A declarative recipe builder whose `raw` action can
   write boot blobs at the byte offsets RK3328 needs. Clears the
   requirements. Costs supplying RK3328 u-boot, and it builds inside a
-  virtual machine that wants KVM, which GitHub-hosted runners don't
+  virtual machine that wants Kernel-based Virtual Machine (KVM)
+  acceleration, which GitHub-hosted runners don't
   expose.
 - **NixOS `sd-image-aarch64`.** The strongest configuration story
   here: `authorizedKeys`, `services.tailscale`, `services.alloy` and

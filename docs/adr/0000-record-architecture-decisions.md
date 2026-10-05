@@ -28,7 +28,8 @@ We will record architecturally significant decisions as ADRs under
 `docs/adr/`, one file per decision, named `NNNN-kebab-title.md` with a
 zero-padded sequence starting at `0000` (this record).
 
-Substantive decisions use the **MADR** template
+Substantive decisions use the Markdown Architectural Decision
+Records (MADR) template
 (<https://adr.github.io/madr/>)—its Decision Drivers and per-option
 pros/cons carry a multi-alternative comparison better than Nygard's
 lighter shape. This meta-record, which only establishes the practice,

@@ -15,8 +15,8 @@ new service is a fresh ad-hoc decision and the drift accumulates.
 
 We need one platform, chosen on purpose, that turns "where does this new
 thing go?" into a settled, paved-road answer. The two candidates are
-**Proxmox VE** (a VM/LXC hypervisor) and a **small Kubernetes cluster**
-(k3s / k0s / Talos). Which one, and why?
+**Proxmox VE**, a hypervisor for VMs and Linux Containers (LXC), and a
+**small Kubernetes cluster** (k3s / k0s / Talos). Which one, and why?
 
 ### Workload framing
 
@@ -29,9 +29,10 @@ The decision hangs on an honest read of the workload:
   container, low CPU and RAM. The aggregate matters more than any one
   service.
 - **State.** Mostly stateless or lightly stateful. Durable data belongs
-  on TrueNAS (the existing storage appliance) over NFS/iSCSI, not
-  trapped inside the platform.
-- **Exposure.** Mostly LAN-only, some behind `home.alunduil.com`. DNS
+  on TrueNAS (the existing storage appliance) over Network File
+  System (NFS) or iSCSI, not trapped inside the platform.
+- **Exposure.** Mostly reachable only on the Local Area Network (LAN),
+  some behind `home.alunduil.com`. Domain Name System (DNS) records
   for `alunduil.com` is on Cloudflare, not Cloud DNS, so ingress
   integrates with Cloudflare (tunnel / DNS), per the repo gotchas.
 - **Relationship to existing infra.** TrueNAS stays the storage + Plex
@@ -84,21 +85,22 @@ them:
   and genuinely declarative for a handful of services. Fails automatic
   rescheduling: a dead host is a hands-on recovery.
 - **Incus / LXD**—the previous plan for this platform, and the only
-  option here that runs system containers and VMs equally well.
-  Clears the requirements. Loses on the declarative loop: its GitOps
-  and CSI ecosystems are thin next to Kubernetes, so the services
-  inside the instances stay hand-managed even when the instances
-  themselves are declared.
+  option here that runs system containers and VMs equally well. Clears
+  the requirements. Loses on the declarative loop: its GitOps and
+  Container Storage Interface (CSI) ecosystems are thin next to
+  Kubernetes, so the services inside the instances stay hand-managed
+  even when the instances themselves are declared.
 - **Proxmox VE**—VMs and LXC, with a mature single-node story,
   snapshots, and backups. Clears the requirements, but optimizes for
   fewer, heavier, longer-lived instances and has no native declarative
   service loop, so every service stays a hand-rolled unit—the
   per-service drift this platform exists to end.
 - **Nomad**—a single-binary orchestrator with real multi-node
-  scheduling, and HCL jobs in a repo already fluent in HCL. Clears the
+  scheduling, and HashiCorp Configuration Language (HCL) jobs in a repo already
+  fluent in HCL. Clears the
   requirements. Loses on storage: its CSI ecosystem is thinner, with
   nothing equivalent to democratic-csi driving the TrueNAS API, and
-  the 2023 move to a BUSL license adds a durability question.
+  the 2023 move to the Business Source License (BUSL) adds a durability question.
 - **Small Kubernetes**—k3s, k0s, or Talos Linux. Clears the
   requirements, with the deepest storage and ingress ecosystem of the
   options here. Costs the highest conceptual floor.
@@ -146,11 +148,11 @@ These bind only while the cluster runs as a VM on TrueNAS, and retire
 when phase 2 lands:
 
 - **Capacity.** The 2-core Atom C3338 is the throughput ceiling—it
-  already sits near a load average of 1—and free memory runs
-  1–1.5 GB once the ZFS cache has warmed, so a node large enough to be
-  useful means capping that cache and trading NAS read performance for
-  the cluster. Quorum and blast radius stay coupled to the NAS until
-  nodes move to metal.
+  already sits near a load average of 1—and free memory runs 1–1.5 GB
+  once the ZFS cache has warmed, so a node large enough to be useful
+  means capping that cache and trading Network Attached Storage (NAS)
+  read performance for the cluster. Quorum and blast radius stay coupled
+  to the NAS until nodes move to metal.
 - **etcd on the NAS pool**, the sharpest of the three. etcd commits
   every write with `fsync`, and the pool is raidz2 with no separate
   log device, so those commits queue behind Plex and share traffic on

@@ -12,7 +12,7 @@ token.
 1. At <https://dash.cloudflare.com> open **Analytics & Logs** → **Web
    Analytics** → **Add a site**. Enter hostname `blog.alunduil.com`.
 2. Turn **automatic setup off**. The blog is gray-clouded (GitHub Pages
-   origin, DNS-only through Cloudflare), so Cloudflare can't inject the
+   origin, proxy status `DNS only` in Cloudflare), so Cloudflare can't inject the
    beacon—the blog hand-injects it from source.
 3. Copy the site's beacon token (the `token` value in the snippet
    Cloudflare shows). It ships in client-side JS, so it's public, not a
