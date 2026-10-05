@@ -30,18 +30,18 @@ workstations.
 
 ### Requirements
 
-- **Pinning compliance by construction.** The CI action must pass
-  `sha_pinning_required` without relying on nested actions staying
-  pinned.
-- **Every existing hook runs.** That includes `repo: local` hooks with
-  `language: system`, which call tools installed on the runner.
-- **Renovate keeps bumping hook revisions.**
+- **Pinning.** The CI action passes `sha_pinning_required` by
+  construction, without relying on nested actions staying pinned.
+- **Coverage.** Every existing hook runs. That includes `repo: local`
+  hooks with `language: system`, which call tools installed on the
+  runner.
+- **Renovate.** Renovate keeps bumping hook revisions.
 
 ## Considered Options
 
 - **Stay on `pre-commit` with `tox-dev/action-pre-commit-uv`.** It
-  meets the second and third requirements. It meets the first only
-  while its maintainers keep pinning their nested actions.
+  meets coverage and Renovate. It meets pinning only while its
+  maintainers keep pinning their nested actions.
 - **`prek` in CI only.** It meets all three requirements, but
   workstations and CI would run different implementations of the same
   hooks. The fast-path differences below would then let a commit pass
