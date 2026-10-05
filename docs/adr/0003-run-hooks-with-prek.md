@@ -67,6 +67,9 @@ such as `repo: builtin`.
 
 ### Migration constraints
 
+- Add `j178/prek-action@*` to the baseline allowed actions in
+  `terraform/modules/github_repository/main.tf` before any managed repo
+  calls it. Drop `tox-dev/action-pre-commit-uv@*` once none does.
 - Pin the action's `prek-version` input. It defaults to `latest`.
   Annotate the pin so Renovate tracks it.
 - Keep each CI job's `name:` unchanged. Branch protection matches
