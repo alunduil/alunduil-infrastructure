@@ -160,6 +160,5 @@ Neutral:
 
 ## More Information
 
-The decision and research are tracked in
-alunduil/alunduil-chezmoi#574. Related pinning work is
-alunduil/alunduil-chezmoi#448 and alunduil/alunduil-chezmoi#449.
+The decision and research are tracked in #681. Related pinning work
+is alunduil/alunduil-chezmoi#448 and alunduil/alunduil-chezmoi#449.
