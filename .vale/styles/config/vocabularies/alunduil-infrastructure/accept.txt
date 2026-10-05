@@ -68,6 +68,7 @@ gh
 github_repository
 markdownlint
 yamllint
+prek
 rsync
 Hackage
 Haskell
