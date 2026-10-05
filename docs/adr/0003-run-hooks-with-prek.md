@@ -54,8 +54,8 @@ Chosen option: **`prek` in CI and on workstations, keeping
 `.pre-commit-config.yaml` as the config file.**
 
 `j178/prek-action` runs as `node24` with no nested `uses:`, so pinning
-compliance comes from the action's structure. Every hook in the
-inventory below runs under `prek` unchanged.
+compliance comes from the action's structure. Every hook runs under
+`prek` unchanged.
 
 The config stays in YAML because Renovate has a `pre-commit` manager
 that reads `.pre-commit-config.yaml`, and no manager for `prek.toml`.
@@ -76,37 +76,15 @@ an action swap and a workstation reinstall, with no config rewrite.
 
 ### Hook compatibility
 
-The count after each source is the number of repos using it.
+The per-hook matrix is on #681.
 
-- **`python`**, run in a Python environment `prek` manages:
-  `pre-commit/pre-commit-hooks` (11), `adrienverge/yamllint` (6),
-  `fsfe/reuse-tool` (6), `shellcheck-py/shellcheck-py` (5),
-  `scop/pre-commit-shfmt` (4), `compilerla/conventional-pre-commit`
-  (4, `commit-msg` stage), `tombi-toml/tombi-pre-commit` (2, one hook
-  on the `manual` stage), `zizmorcore/zizmor-pre-commit` (2), and
-  one repo each for `python-jsonschema/check-jsonschema`,
-  `Yelp/detect-secrets`, `ComPWA/taplo-pre-commit`,
-  `astral-sh/ruff-pre-commit`, `pre-commit/mirrors-mypy`,
-  `jendrikseipp/vulture`,
-  `macisamuele/language-formatters-pre-commit-hooks`, and
-  `tweag/FawltyDeps`.
-- **`node`**, run on a Node release `prek` downloads:
-  `renovatebot/pre-commit-hooks` (10), `DavidAnson/markdownlint-cli2`
-  (8), and `igorshubovych/markdownlint-cli` (1).
-- **`golang`**, built with a Go release `prek` downloads:
-  `errata-ai/vale` and `vale-cli/vale` (10 together), and
-  `rhysd/actionlint` (8).
-- **`docker_image`**, run through the host's container engine:
-  `actionlint-docker` from `rhysd/actionlint`,
-  `koalaman/shellcheck-precommit`, and `hadolint/hadolint` (1 each).
-- **`script`**, which runs the hook repo's own script:
-  `antonbabenko/pre-commit-terraform` (2), using the runner's
-  `terraform` and `trivy`.
-- **`system`**, which runs `entry` directly, as `pre-commit` does:
-  `repo: local` hooks in 10 repos calling `pnpm`, `cargo`, `lychee`,
-  `just`, `fourmolu`, `hlint`, and repo scripts.
-- **`haskell`**, built with the runner's `cabal` and `ghc`, as
-  `pre-commit` does: `repo: local` hooks in `network-arbitrary`.
+- **`python`, `node`, `golang`**: `prek` installs the language
+  runtime, covering `reuse`, `shfmt`, `markdownlint-cli2`, and `vale`.
+- **`script`**: `pre-commit-terraform` runs with the runner's
+  `terraform`, as under `pre-commit`.
+- **`system`, `haskell`**: `repo: local` hooks call tools on the
+  runner, such as `just`, `pnpm`, and `cabal`, as under `pre-commit`.
+- **`docker_image`**: runs through the host's container engine.
 
 The fast path supports every argument the config files pass to
 `pre-commit/pre-commit-hooks`: `--maxkb`, `--fix=lf`,
