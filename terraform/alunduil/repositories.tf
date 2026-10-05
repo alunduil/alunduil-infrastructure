@@ -11,31 +11,31 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
-  # setup-crate is nested in setup-just.
-  allowed_action_patterns = [
-    "extractions/setup-crate@*",
-    "extractions/setup-just@*",
-  ]
   # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
   # branch policy pins the token to main so a workflow_dispatch from an
   # arbitrary branch can't reach it. Token injected out of band.
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
+  # setup-crate is nested in setup-just.
+  allowed_action_patterns = [
+    "extractions/setup-crate@*",
+    "extractions/setup-just@*",
+  ]
 }
 
 module "blog_alunduil_com" {
-  source                  = "../modules/github_repository"
-  name                    = "blog.alunduil.com"
-  description             = "Personal blog at blog.alunduil.com"
-  homepage_url            = "https://blog.alunduil.com"
-  topics                  = ["blog", "github-pages"]
-  allowed_action_patterns = ["withastro/action@*"]
+  source       = "../modules/github_repository"
+  name         = "blog.alunduil.com"
+  description  = "Personal blog at blog.alunduil.com"
+  homepage_url = "https://blog.alunduil.com"
+  topics       = ["blog", "github-pages"]
   pages = {
     cname          = "blog.alunduil.com"
     build_type     = "workflow"
     https_enforced = true
   }
+  allowed_action_patterns = ["withastro/action@*"]
 }
 
 module "collection_json_hs" {
@@ -55,16 +55,16 @@ module "git_worktree_poi" {
 }
 
 module "network_arbitrary" {
-  source      = "../modules/github_repository"
-  name        = "network-arbitrary"
-  description = "Arbitrary Instances for Network Types"
-  topics      = ["haskell-library", "haskell", "network", "quickcheck"]
+  source       = "../modules/github_repository"
+  name         = "network-arbitrary"
+  description  = "Arbitrary Instances for Network Types"
+  topics       = ["haskell-library", "haskell", "network", "quickcheck"]
+  environments = { hackage = {} }
   # create-pull-request is nested in haskell-bounds-bump-action.
   allowed_action_patterns = [
     "nomeata/haskell-bounds-bump-action@*",
     "peter-evans/create-pull-request@*",
   ]
-  environments = { hackage = {} }
 }
 
 module "projects_v2_sync" {
@@ -135,10 +135,11 @@ module "woodland_generators" {
 }
 
 module "zellij_claude_pair" {
-  source                  = "../modules/github_repository"
-  name                    = "zellij-claude-pair"
-  description             = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
-  topics                  = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
+  source      = "../modules/github_repository"
+  name        = "zellij-claude-pair"
+  description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
+  topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
+
   allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
