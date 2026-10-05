@@ -25,6 +25,7 @@ runs:
         MIRROR: ${{ runner.temp }}/terraform-providers
       run: |
         for root in terraform/alunduil terraform/bootstrap; do
+          terraform -chdir="$root" get
           for attempt in 1 2 3; do
             terraform -chdir="$root" providers mirror "$MIRROR" && break
             if [ "$attempt" -eq 3 ]; then exit 1; fi
