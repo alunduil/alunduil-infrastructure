@@ -130,12 +130,38 @@ resource "github_workflow_repository_permissions" "this" {
   can_approve_pull_request_reviews = false
 }
 
-# allowed_actions is set to GitHub's default rather than omitted: the provider
-# sends it on every write, so leaving it unset puts an empty value on the wire.
+locals {
+  # Actions from neither GitHub nor a verified Marketplace creator that two or
+  # more managed repos call, directly or nested in a composite action. One
+  # repo's needs go in its allowed_action_patterns instead.
+  baseline_allowed_action_patterns = [
+    "8c6794b6/hpc-codecov-action@*",
+    "amannn/action-semantic-pull-request@*",
+    "bats-core/bats-action@*",
+    "haskell-actions/hlint-setup@*",
+    "haskell-actions/setup@*",
+    "JasonEtco/create-an-issue@*",
+    "lycheeverse/lychee-action@*",
+    "peter-evans/create-issue-from-file@*",
+    "pnpm/action-setup@*",
+    "reviewdog/action-setup@*",
+    "tox-dev/action-pre-commit-uv@*",
+  ]
+}
+
+# An action missing from the allow-list fails its workflow at job setup, so a
+# new third-party action lands here or in allowed_action_patterns before the
+# workflow that calls it.
 resource "github_actions_repository_permissions" "this" {
   repository           = github_repository.this.name
-  allowed_actions      = "all"
+  allowed_actions      = "selected"
   sha_pinning_required = true
+
+  allowed_actions_config {
+    github_owned_allowed = true
+    verified_allowed     = true
+    patterns_allowed     = concat(local.baseline_allowed_action_patterns, var.allowed_action_patterns)
+  }
 }
 
 resource "github_repository_environment" "this" {
