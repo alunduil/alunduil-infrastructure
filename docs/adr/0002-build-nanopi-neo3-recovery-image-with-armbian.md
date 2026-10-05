@@ -256,9 +256,9 @@ Neutral:
 ## More Information
 
 Build work is tracked in #261. The Tailscale identity question is #262,
-and the Alloy outage that stopped this box shipping telemetry is #473—independent
-of this decision, since the image installs Alloy without
-inheriting its broken state.
+and the Alloy outage that stopped this box shipping telemetry is #473.
+That outage is independent of this decision, since the image installs
+Alloy without inheriting its broken state.
 
 The recovery plan this replaces is described in
 <https://blog.alunduil.com/posts/how-i-recover>.

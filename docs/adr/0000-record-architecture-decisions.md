@@ -9,13 +9,13 @@ Accepted
 
 ## Context
 
-Architecturally significant, hard-to-reverse choices in this repo—platform
-selection, dependency lock-in, cross-cutting conventions—have
-so far lived only in commit messages and PR descriptions. That
-scatters the reasoning: the *what* survives in the diff, but the *why*
-and the *rejected alternative* are hard to reconstruct later. As the
-personal-systems surface grows (see the C4 model in #84), the next
-decision keeps re-litigating settled ground.
+Architecturally significant, hard-to-reverse choices in this
+repo—platform selection, dependency lock-in, cross-cutting
+conventions—have so far lived only in commit messages and PR
+descriptions. That scatters the reasoning: the *what* survives in the
+diff, but the *why* and the *rejected alternative* are hard to
+reconstruct later. As the personal-systems surface grows (see the C4
+model in #84), the next decision keeps re-litigating settled ground.
 
 An Architecture Decision Record (ADR) captures one decision—its
 context, the choice, and the consequences accepted—as a short,

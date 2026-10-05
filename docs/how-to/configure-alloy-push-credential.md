@@ -17,7 +17,8 @@ rotates the token.
 
 - `just bootstrap` applied, so the secret holds a version.
 - `gcloud` available, authenticated as an identity that can read the
-  `grafana-alloy-push-token` secret, which the deployer service accounts can't.
+  `grafana-alloy-push-token` secret. The deployer service accounts
+  can't read it.
 
 ## Read the token
 

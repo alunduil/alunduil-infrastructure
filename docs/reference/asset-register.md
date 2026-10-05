@@ -55,11 +55,10 @@ least-trusted zone with a path to it, and no asset has more than one.
 | T-3 | Tailnet | Devices approved onto the tailnet |
 
 A-04 translates addresses between T-1 and T-2, so T-1 reaches a T-2
-asset either through a forward or through a vendor cloud the asset
-dials out to. One forward exists, for E-01. E-03 and E-08 are cloud
-paths. E-05's Server Message Block (SMB), E-06, E-11 and E-12 answer nothing
-on the Wide Area Network (WAN)
-address and have no cloud path.
+asset either through a forward or through a vendor cloud the asset dials
+out to. One forward exists, for E-01. E-03 and E-08 are cloud paths.
+E-05's Server Message Block (SMB), E-06, E-11 and E-12 answer nothing on
+the Wide Area Network (WAN) address and have no cloud path.
 
 ## Principals
 
@@ -133,10 +132,9 @@ beyond it.
 ### A-04: Deco mesh
 
 - Description: router, Wi-Fi mesh, Domain Name System (DNS) relay, and
-  Dynamic Host Configuration Protocol (DHCP). Three units.
-  Owns the DHCP reservations that T-2 hostnames follow,
-  and the app that holds them is the only place they exist. Translates
-  addresses between T-1 and T-2
+  Dynamic Host Configuration Protocol (DHCP). Three units. Owns the DHCP
+  reservations that T-2 hostnames follow, and the app that holds them is
+  the only place they exist. Translates addresses between T-1 and T-2
 - Exposed to: T-1, via E-08. Its management interface also answers 80
   and 443 on the WAN address from inside the network. Whether it
   answers from outside is `Unverified`
@@ -230,8 +228,8 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
 
 Plex asks a T-1 client to sign in. Its allowed-networks setting covers
-every private IPv4 range, so a client
-already in T-2 reaches it without signing in.
+every private IPv4 range, so a client already in T-2 reaches it without
+signing in.
 
 E-04 reaches P-2's credentials: `terraform-plan.yml` triggers on
 `pull_request` with no environment gate. The pool in

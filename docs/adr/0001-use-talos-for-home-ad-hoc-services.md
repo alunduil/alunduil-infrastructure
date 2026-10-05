@@ -31,10 +31,10 @@ The decision hangs on an honest read of the workload:
 - **State.** Mostly stateless or lightly stateful. Durable data belongs
   on TrueNAS (the existing storage appliance) over Network File
   System (NFS) or iSCSI, not trapped inside the platform.
-- **Exposure.** Mostly reachable only on the local network,
-  some behind `home.alunduil.com`. Domain Name System (DNS) records
-  for `alunduil.com` is on Cloudflare, not Cloud DNS, so ingress
-  integrates with Cloudflare (tunnel / DNS), per the repo gotchas.
+- **Exposure.** Mostly local-network only, some behind
+  `home.alunduil.com`. The Domain Name System (DNS) zone for
+  `alunduil.com` is on Cloudflare, not Cloud DNS, so ingress integrates
+  with Cloudflare (tunnel / DNS), per the repo gotchas.
 - **Relationship to existing infra.** TrueNAS stays the storage + Plex
   appliance. The platform runs *beside* it (transitionally *on* it as a
   VM—see the migration sketch), consuming TrueNAS for persistent
@@ -96,11 +96,11 @@ them:
   service loop, so every service stays a hand-rolled unit—the
   per-service drift this platform exists to end.
 - **Nomad**—a single-binary orchestrator with real multi-node
-  scheduling, and HashiCorp Configuration Language (HCL) jobs in a repo already
-  fluent in HCL. Clears the
-  requirements. Loses on storage: its CSI ecosystem is thinner, with
-  nothing equivalent to democratic-csi driving the TrueNAS API, and
-  the 2023 move to the Business Source License adds a durability question.
+  scheduling, and HashiCorp Configuration Language (HCL) jobs in a repo
+  already fluent in HCL. Clears the requirements. Loses on storage: its
+  CSI ecosystem is thinner, with nothing equivalent to democratic-csi
+  driving the TrueNAS API, and the 2023 move to the Business Source
+  License adds a durability question.
 - **Small Kubernetes**—k3s, k0s, or Talos Linux. Clears the
   requirements, with the deepest storage and ingress ecosystem of the
   options here. Costs the highest conceptual floor.

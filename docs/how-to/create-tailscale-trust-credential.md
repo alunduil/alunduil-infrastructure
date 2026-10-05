@@ -60,11 +60,11 @@ HTTPS certificates, and Policy File covers the externally-managed flag.
 A missing scope reads back as a zero value rather than an error, so a
 setting can look imported and still reject the write.
 
-Core and Auth Keys stay at read on both. Write on either demands tags chosen
-alongside it, and tags have to exist in the policy file first—which is
-itself something Terraform does, through the Policy File scope listed
-earlier. Raise these two once the tags exist. A trust credential's scopes
-can be edited afterwards.
+Core and Auth Keys stay at read on both. Write on either demands tags
+chosen alongside it, and tags have to exist in the policy file
+first—which is itself something Terraform does, through the
+`Policy File` scope listed earlier. Raise these two once the tags exist.
+A trust credential's scopes can be edited afterwards.
 
 ### Finish each one
 
