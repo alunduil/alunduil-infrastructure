@@ -44,8 +44,10 @@ workstations.
   maintainers keep pinning their nested actions.
 - **`prek` in CI only.** It meets all three requirements, but
   workstations and CI would run different implementations of the same
-  hooks. The fast-path differences below would then let a commit pass
-  locally and fail in CI, or the reverse.
+  hooks. `prek` replaces the `pre-commit/pre-commit-hooks` entries
+  with Rust implementations, called its automatic fast path. The
+  fast-path differences listed under Hook compatibility would let a
+  commit pass locally and fail in CI, or the reverse.
 - **`prek` in CI and on workstations.** It meets all three
   requirements with one implementation everywhere.
 
@@ -115,9 +117,8 @@ using it.
 - **`haskell`**, built with the runner's `cabal` and `ghc`, as
   `pre-commit` does: `repo: local` hooks in `network-arbitrary`.
 
-`prek` replaces the `pre-commit/pre-commit-hooks` entries with Rust
-implementations, called its automatic fast path. Every argument the
-config files pass is supported: `--maxkb`, `--fix=lf`,
+The fast path supports every argument the config files pass to
+`pre-commit/pre-commit-hooks`: `--maxkb`, `--fix=lf`,
 `--markdown-linebreak-ext`, `--branch`, and `--unsafe`. Two hooks
 behave differently from the pinned Python versions:
 
