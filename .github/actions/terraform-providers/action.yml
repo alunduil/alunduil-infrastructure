@@ -1,0 +1,58 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Set up Terraform providers
+description: >-
+  Restores a provider mirror keyed on the lock files and points terraform
+  init at it, so a warm cache needs no registry.
+
+runs:
+  using: composite
+  steps:
+    - id: mirror
+      shell: bash
+      run: echo "dir=$RUNNER_TEMP/terraform-providers" >> "$GITHUB_OUTPUT"
+
+    - id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: ${{ steps.mirror.outputs.dir }}
+        key: tf-providers-${{ runner.os }}-${{ hashFiles('terraform/**/.terraform.lock.hcl') }}
+
+    # Every workflow restores this key, so mirroring only the caller's roots
+    # would break the others.
+    - name: Mirror providers
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        MIRROR: ${{ steps.mirror.outputs.dir }}
+      run: |
+        shopt -s globstar
+        for lock in terraform/**/.terraform.lock.hcl; do
+          root=$(dirname "$lock")
+          terraform -chdir="$root" get
+          for attempt in 1 2 3; do
+            terraform -chdir="$root" providers mirror "$MIRROR" && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 30
+          done
+        done
+
+    # No direct {} fallback: with one, init queries the registry for
+    # available versions even when the mirror holds them. Lock file hashes
+    # still verify each package.
+    - name: Point Terraform at the mirror
+      shell: bash
+      env:
+        MIRROR: ${{ steps.mirror.outputs.dir }}
+      run: |
+        config="$RUNNER_TEMP/terraformrc"
+        cat > "$config" <<EOF
+        provider_installation {
+          filesystem_mirror {
+            path = "$MIRROR"
+          }
+        }
+        EOF
+        echo "TF_CLI_CONFIG_FILE=$config" >> "$GITHUB_ENV"
