@@ -68,12 +68,8 @@ an action swap and a workstation reinstall, with no config rewrite.
 ### Migration constraints
 
 - Keep config files free of prek-only keys and arguments such as
-  `repo: builtin`, so returning to `pre-commit` stays a config-free
-  change.
-
-- Add `j178/prek-action@*` to the baseline allowed actions in
-  `terraform/modules/github_repository/main.tf` before any managed repo
-  calls it. Drop `tox-dev/action-pre-commit-uv@*` once none does.
+  `repo: builtin`, so returning to `pre-commit` needs no config
+  rewrite.
 - Pin the action's `prek-version` input. It defaults to `latest`.
   Annotate the pin so Renovate tracks it.
 - Keep each CI job's `name:` unchanged. Branch protection matches
@@ -149,9 +145,9 @@ Bad / accepted:
 - `prek` has one maintainer. Its author has about 1,450 commits and
   the next human contributor has 40. Keeping the YAML config is the
   mitigation, because leaving costs an action swap.
-- `prek` is pre-1.0, at 0.5.5. Minor releases may change
-  behaviour, and the Rust hooks can drift further from the Python ones
-  they replace. Pinning `prek-version` turns each change into a
+- `prek` is pre-1.0, at 0.5.5. Minor releases may change behaviour,
+  and the Rust hooks can drift further from the Python ones they
+  replace. Pinning `prek-version` turns each change into a
   reviewed Renovate PR.
 
 Neutral:
