@@ -10,21 +10,27 @@ description: >-
 runs:
   using: composite
   steps:
+    - id: mirror
+      shell: bash
+      run: echo "dir=$RUNNER_TEMP/terraform-providers" >> "$GITHUB_OUTPUT"
+
     - id: cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
-        path: ${{ runner.temp }}/terraform-providers
+        path: ${{ steps.mirror.outputs.dir }}
         key: tf-providers-${{ runner.os }}-${{ hashFiles('terraform/**/.terraform.lock.hcl') }}
 
-    # Every workflow shares the cache key, so a miss mirrors every root's
-    # providers, not only the roots the calling workflow inits.
+    # Mirrors the roots the cache key hashes, not only the ones the calling
+    # workflow inits: every workflow restores the same key.
     - name: Mirror providers
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       env:
-        MIRROR: ${{ runner.temp }}/terraform-providers
+        MIRROR: ${{ steps.mirror.outputs.dir }}
       run: |
-        for root in terraform/alunduil terraform/bootstrap; do
+        shopt -s globstar
+        for lock in terraform/**/.terraform.lock.hcl; do
+          root=$(dirname "$lock")
           terraform -chdir="$root" get
           for attempt in 1 2 3; do
             terraform -chdir="$root" providers mirror "$MIRROR" && break
@@ -39,7 +45,7 @@ runs:
     - name: Point Terraform at the mirror
       shell: bash
       env:
-        MIRROR: ${{ runner.temp }}/terraform-providers
+        MIRROR: ${{ steps.mirror.outputs.dir }}
       run: |
         config="$RUNNER_TEMP/terraformrc"
         cat > "$config" <<EOF
