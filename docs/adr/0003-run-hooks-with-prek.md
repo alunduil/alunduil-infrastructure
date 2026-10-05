@@ -143,8 +143,6 @@ Setting `PREK_NO_FAST_PATH=1` runs the pinned Python hooks instead.
 
 Good:
 
-- Pinning compliance no longer depends on a third party's nested
-  actions.
 - Hook runs get faster, on workstations most noticeably, from the Rust
   fast path and language installs shared across hooks.
 - `prek update` adds `--cooldown-days` and detects impostor commits
@@ -155,8 +153,7 @@ Bad / accepted:
 
 - Each repo's CI, contributor setup docs, and the workstation install
   all change.
-- `check-yaml` becomes more permissive about unknown tags in repos
-  that don't pass `--unsafe`.
+- The two fast-path behaviour differences under Hook compatibility.
 
 Neutral:
 
