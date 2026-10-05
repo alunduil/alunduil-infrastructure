@@ -64,10 +64,12 @@ The config stays in YAML because Renovate has a `pre-commit` manager
 that reads `.pre-commit-config.yaml`, and no manager for `prek.toml`.
 YAML also keeps the decision reversible: returning to `pre-commit` is
 an action swap and a workstation reinstall, with no config rewrite.
-For the same reason, config files avoid prek-only keys and arguments
-such as `repo: builtin`.
 
 ### Migration constraints
+
+- Keep config files free of prek-only keys and arguments such as
+  `repo: builtin`, so returning to `pre-commit` stays a config-free
+  change.
 
 - Add `j178/prek-action@*` to the baseline allowed actions in
   `terraform/modules/github_repository/main.tf` before any managed repo
