@@ -36,5 +36,5 @@ gcloud secrets versions access latest \
 ```
 
 Within a minute the `audit-data-access` metric increments—query
-`logging.googleapis.com/user/audit-data-access` against the GCP Cloud
+`logging.googleapis.com/user/audit-data-access` in the GCP Cloud
 Monitoring data source in Explore to confirm.

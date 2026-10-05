@@ -182,7 +182,7 @@ beyond it.
 
 ### A-10—Tailscale
 
-- Description: tailnet `tail3af06.ts.net`, joining every host above.
+- Description: tailnet `tail3af06.ts.net`, joining every host listed earlier.
   Device
   approval on, key duration 180 days, MagicDNS
   on, HTTPS certificates on, global nameservers pinned to Quad9. Both
@@ -218,7 +218,7 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-01 | Plex on 32400 at `plex.alunduil.com` | A-12 | T-1 |
 | E-02 | `blog.alunduil.com`, served by GitHub Pages | A-09 | T-1 |
 | E-03 | The Nabu Casa remote interface | A-02 | T-1 |
-| E-04 | Pull requests against a public repository | A-09 | T-1 |
+| E-04 | Pull requests to a public repository | A-09 | T-1 |
 | E-05 | Web interface on 443, SMB on 445, HTTP on 80 | A-01 | T-2 |
 | E-06 | Home Assistant on 8123 | A-02 | T-2 |
 | E-07 | Web interface on 80, `_slzb-06._tcp` on 7638 | A-03 | T-2 |
@@ -240,7 +240,7 @@ token minted for a fork matches nothing.
 ## External dependencies
 
 Third parties the estate relies on, and what leaves to each. A-07
-through A-11 appear here as well as in Assets: the asset entry records
+through A-11 appear here and in Assets: the asset entry records
 what the estate holds there, and this one records what reaches the
 vendor.
 
@@ -249,7 +249,7 @@ vendor.
 | D-01 | Nabu Casa | A-02's backups, and its remote interface traffic |
 | D-02 | Google Drive | A-01's backups, Takeout archives, A-05's `/home` |
 | D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
-| D-04 | UptimeRobot | Probes against E-01; heartbeats from A-02, A-05 |
+| D-04 | UptimeRobot | Probes of E-01; heartbeats from A-02, A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
 | D-06 | TP-Link cloud | Administration of A-04; its telemetry is `Unverified` |
 | D-07 | Google Cloud (A-07) | Terraform state and every secret |
@@ -467,4 +467,4 @@ Each needs an operator in a console; no apply rotates them.
 
 Adding or removing an asset, entry point, dependency, or credential
 updates this register in the same pull request, and the verification
-date above changes with it. IDs aren't reused.
+date at the top changes with it. IDs aren't reused.

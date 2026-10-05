@@ -25,7 +25,7 @@ The two operator entrypoints:
 - `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
-- `just alunduil`—break-glass local `terraform apply` against the
+- `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
 
 Supporting how-tos:

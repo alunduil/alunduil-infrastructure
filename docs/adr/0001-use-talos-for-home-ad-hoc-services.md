@@ -66,7 +66,7 @@ them:
 - Declarative / GitOps fit—the repo already treats git as the source
   of truth (Terraform, Grafana Git Sync).
 - Per-service overhead as the service count grows.
-- Hardware needs against what exists today (a 16 GB, 2-core TrueNAS
+- Hardware needs: what exists today (a 16 GB, 2-core TrueNAS
   Mini 3.0-E) versus new nodes.
 - Backup and recovery.
 - Networking / ingress + DNS, integrating with Cloudflare.
@@ -166,7 +166,7 @@ when phase 2 lands:
 
 Good:
 
-- Adding or retiring a service is a git commit against declarative
+- Adding or retiring a service is a git commit to declarative
   manifests, not a hand-built VM—the paved road the platform exists
   to provide, and a fit with the repo's existing GitOps posture.
 - Per-service overhead stays low as the count grows; the control-plane
@@ -174,7 +174,7 @@ Good:
 - Talos' atomic, image-based upgrades and absence of a hand-patched host
   OS give the best day-2 story of the options considered.
 - The same declarative config runs the cluster as VMs now and as metal
-  later, enabling the reversible migration above.
+  later, enabling the reversible migration described earlier.
 - Ingress (Gateway API / an ingress controller + cert-manager) and
   Cloudflare integration are first-class, matching the DNS reality.
 

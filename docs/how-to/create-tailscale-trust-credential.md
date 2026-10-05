@@ -62,7 +62,7 @@ setting can look imported and still reject the write.
 
 Core and Auth Keys stay at read on both. Write on either demands tags chosen
 alongside it, and tags have to exist in the policy file first—which is
-itself something Terraform does, through the Policy File scope above. Raise
+itself something Terraform does, through the Policy File scope listed earlier. Raise
 these two once the tags exist; a trust credential's scopes can be edited
 afterwards.
 
@@ -87,7 +87,7 @@ export TAILSCALE_CLIENT_ID_RW=...
 
 `just alunduil` uses the read-write client ID and needs
 `TAILSCALE_IDENTITY_TOKEN` set to a token the tailnet trusts. That means a
-third credential, created as above, whose issuer vouches for you locally.
+third credential, created the same way, whose issuer vouches for you locally.
 
 ## Stays manual
 

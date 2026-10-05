@@ -206,7 +206,7 @@ fails to boot costs a swap back, not an outage.
   apply fixes for them. This is equally true of the image the box runs
   now.
 - **The Debian userspace can't be pinned** by the framework, which
-  builds against live archives. Kernel, u-boot and firmware pin by tag
+  builds from live archives. Kernel, u-boot and firmware pin by tag
   or commit, and the framework itself pins by action ref.
 - **The SD card is the only boot device.** No eMMC, no SPI, no USB
   boot on this SoC. The single point of failure survives this
@@ -227,7 +227,7 @@ Good:
 - The configuration becomes reviewable in a diff, rather than
   reconstructed from a backup at recovery time.
 - The recovery path becomes testable without risking the exit node,
-  through the spare-card refresh above.
+  through the spare-card refresh described earlier.
 - A lost or stolen card grants nothing, and no credential in the
   pipeline expires while waiting to be used.
 

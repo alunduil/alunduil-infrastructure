@@ -69,7 +69,7 @@ A too-narrow policy and an invalid token both stop bootstrap with
 - The message names the missing and received scopes—the policy is too
   narrow. Add what it names, then create a token: editing a policy
   leaves its existing tokens unable to authenticate, because scopes are
-  checked against the policy rather than the token.
+  read from the policy rather than the token.
 - Everything fails, the stack data source included—the token is
   invalid. Create a new one on the policy.
 - Some resources fail while the stack read succeeds—the policy is
