@@ -109,7 +109,7 @@ beyond it.
 
 ### A-01: `truenas`
 
-- Description: Network Attached Storage (NAS) and application host. Runs
+- Description: network storage and application host. Runs
   Plex, Netdata, alloy, Tailscale, `ddns-updater`, and Scrutiny.
   Advertises `192.168.68.0/22` to the tailnet as a subnet router, and
   offers an exit node
@@ -134,7 +134,7 @@ beyond it.
 
 - Description: router, Wi-Fi mesh, Domain Name System (DNS) relay, and
   Dynamic Host Configuration Protocol (DHCP). Three units.
-  Owns the DHCP reservations that Local Area Network (LAN) names follow,
+  Owns the DHCP reservations that T-2 hostnames follow,
   and the app that holds them is the only place they exist. Translates
   addresses between T-1 and T-2
 - Exposed to: T-1, via E-08. Its management interface also answers 80
@@ -230,7 +230,7 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
 
 Plex asks a T-1 client to sign in. Its allowed-networks setting covers
-every private range in Request for Comments (RFC) 1918, so a client
+every private IPv4 range, so a client
 already in T-2 reaches it without signing in.
 
 E-04 reaches P-2's credentials: `terraform-plan.yml` triggers on

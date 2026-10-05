@@ -31,7 +31,7 @@ The decision hangs on an honest read of the workload:
 - **State.** Mostly stateless or lightly stateful. Durable data belongs
   on TrueNAS (the existing storage appliance) over Network File
   System (NFS) or iSCSI, not trapped inside the platform.
-- **Exposure.** Mostly reachable only on the Local Area Network (LAN),
+- **Exposure.** Mostly reachable only on the local network,
   some behind `home.alunduil.com`. Domain Name System (DNS) records
   for `alunduil.com` is on Cloudflare, not Cloud DNS, so ingress
   integrates with Cloudflare (tunnel / DNS), per the repo gotchas.
@@ -100,7 +100,7 @@ them:
   fluent in HCL. Clears the
   requirements. Loses on storage: its CSI ecosystem is thinner, with
   nothing equivalent to democratic-csi driving the TrueNAS API, and
-  the 2023 move to the Business Source License (BUSL) adds a durability question.
+  the 2023 move to the Business Source License adds a durability question.
 - **Small Kubernetes**—k3s, k0s, or Talos Linux. Clears the
   requirements, with the deepest storage and ingress ecosystem of the
   options here. Costs the highest conceptual floor.

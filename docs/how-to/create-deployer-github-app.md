@@ -5,7 +5,7 @@
 
 Authenticates the `integrations/github` Terraform provider in CI. The
 workflow exchanges App ID + private key for short-lived installation
-tokens via OpenID Connect (OIDC).
+tokens via OpenID Connect.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, for example
