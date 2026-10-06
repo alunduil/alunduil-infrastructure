@@ -36,6 +36,14 @@ module "blog_alunduil_com" {
     https_enforced = true
   }
   allowed_action_patterns = ["withastro/action@*"]
+  required_status_checks = {
+    contexts = [
+      "Lint and format",
+      "Test skill scripts",
+      "Test TypeScript utilities",
+      "Build the site",
+    ]
+  }
 }
 
 module "collection_json_hs" {
