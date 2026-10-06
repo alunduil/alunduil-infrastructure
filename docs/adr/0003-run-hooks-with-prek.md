@@ -116,10 +116,14 @@ Bad / accepted:
 - `prek` has one maintainer. Its author has about 1,450 commits and
   the next human contributor has 40. Keeping the YAML config is the
   mitigation.
-- `prek` is pre-1.0, at 0.5.5. Minor releases may change behaviour,
-  and the Rust hooks can drift further from the Python ones they
-  replace. Pinning `prek-version` turns each change into a
-  reviewed Renovate PR.
+- `prek` is pre-1.0, at 0.5.5, with no 1.0 timeline. The maintainer
+  aims to add features without breaking `pre-commit` compatibility
+  ([j178/prek#1211](https://github.com/j178/prek/issues/1211)), and
+  the breaking changes through 0.5.0 removed prek-only aliases and
+  edge features, not standard config behaviour. The Rust hooks can
+  still drift from the Python ones they replace. Pinning
+  `prek-version` turns each release into a Renovate PR whose CI runs
+  every hook.
 
 ## More Information
 
