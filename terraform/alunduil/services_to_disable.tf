@@ -46,7 +46,8 @@ resource "google_project_service" "legacy" {
     # Messaging
     "pubsub.googleapis.com",
 
-    # Security / KMS
+    # Security / KMS. Disabling leaves the empty `hackage` key ring behind:
+    # KMS can't delete key rings.
     "cloudkms.googleapis.com",
 
     # Legacy / deprecated
