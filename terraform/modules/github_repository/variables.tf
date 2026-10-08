@@ -114,6 +114,19 @@ variable "pages" {
   EOT
 }
 
+variable "labels" {
+  type = map(object({
+    color       = string
+    description = optional(string, "")
+  }))
+  default     = {}
+  description = <<-EOT
+    Issue labels only this repo uses, keyed by name, added to the
+    baseline every repo gets. Declare any label a bot applies by name,
+    such as release-please's, or apply deletes it.
+  EOT
+}
+
 variable "allowed_action_patterns" {
   type        = list(string)
   default     = []

@@ -161,6 +161,50 @@ resource "github_actions_repository_permissions" "this" {
   }
 }
 
+locals {
+  baseline_labels = {
+    "bug"              = { color = "d73a4a", description = "Something isn't working" }
+    "enhancement"      = { color = "a2eeef", description = "Committed feature work" }
+    "idea"             = { color = "fbca04", description = "Proposal not yet committed to" }
+    "documentation"    = { color = "0075ca", description = "Improvements or additions to documentation" }
+    "chore"            = { color = "d4c5f9", description = "Build, CI, tests, refactoring, or tooling; no user-facing change" }
+    "security"         = { color = "b60205", description = "Security-sensitive issue or exposure" }
+    "question"         = { color = "d876e3", description = "Further information is requested" }
+    "good first issue" = { color = "7057ff", description = "Good for newcomers" }
+    "dependencies"     = { color = "0366d6", description = "Pull requests that update a dependency file" }
+    "blocked"          = { color = "e99695", description = "Waiting on other work; exempt from the stale sweep" }
+    "stale"            = { color = "ededed", description = "No recent activity; closes unless updated" }
+  }
+  labels = merge(local.baseline_labels, var.labels)
+}
+
+# Authoritative: apply deletes every undeclared label. Renaming a label
+# replaces it, which strips it from its issues; rename it in GitHub first.
+resource "github_issue_labels" "this" {
+  repository = github_repository.this.name
+
+  dynamic "label" {
+    for_each = local.labels
+    content {
+      name        = label.key
+      color       = label.value.color
+      description = label.value.description
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = length(setintersection(keys(local.baseline_labels), keys(var.labels))) == 0
+      error_message = "Repository ${var.name}: labels redeclares baseline labels (${join(", ", setintersection(keys(local.baseline_labels), keys(var.labels)))}). Change the baseline so every repo keeps the same label."
+    }
+
+    precondition {
+      condition     = alltrue([for label in values(local.labels) : can(regex("^[0-9a-f]{6}$", label.color))])
+      error_message = "Repository ${var.name}: label colours must be six lowercase hex digits without #. The provider compares them as strings with the API's lowercase values, so any other form shows a diff on every plan."
+    }
+  }
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 

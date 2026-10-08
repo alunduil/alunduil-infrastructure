@@ -151,6 +151,11 @@ module "woodland_generators" {
     owner      = "League-of-Foundry-Developers"
     repository = "FoundryVTT-Module-Template"
   }
+  # release-please finds its release pull request by these names.
+  labels = {
+    "autorelease: pending" = { color = "ededed" }
+    "autorelease: tagged"  = { color = "ededed" }
+  }
 }
 
 module "zellij_claude_pair" {
@@ -183,4 +188,8 @@ module "zfs_replicate" {
   # branch policy: the release workflow runs from a tag ref, which the
   # module's branch patterns would refuse.
   environments = { pypi = {} }
+  labels = {
+    "python" = { color = "2b67c6", description = "Python versions and packaging" }
+    "nix"    = { color = "7ac7e4", description = "Nix flake and packaging" }
+  }
 }
