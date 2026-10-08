@@ -48,8 +48,7 @@ resource "github_branch_default" "this" {
 }
 
 locals {
-  # Mode "always" keeps direct pushes to the default branch possible when
-  # wanted, past every rule in the ruleset that lists it.
+  # Mode "always" keeps direct pushes to the default branch possible.
   admin_bypass_actor = {
     actor_id    = 5 # built-in repository "admin" role
     actor_type  = "RepositoryRole"
@@ -107,11 +106,9 @@ resource "github_repository_ruleset" "default_branch" {
 }
 
 # The pull request rule sits in a ruleset of its own because bypass_actors is
-# per ruleset: an actor allowed past review here still has to pass the status
-# checks above. Rulesets layer, so the split changes nothing for a repo with no
-# extra bypass actors. The admin bypasses here because a solo maintainer can't
-# satisfy a required review, while the default path stays
-# PR-with-resolved-conversations.
+# per ruleset: an actor allowed past review here still has to pass the default
+# ruleset's status checks. The admin bypasses because a solo maintainer can't
+# satisfy a required review.
 resource "github_repository_ruleset" "review" {
   name        = "review"
   repository  = github_repository.this.name

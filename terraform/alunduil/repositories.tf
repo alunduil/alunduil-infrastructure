@@ -172,7 +172,7 @@ module "zfs_replicate" {
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
   # non-owner pull request.
   require_code_owner_review = true
-  # Renovate skips review only; the required checks still gate its merges.
+  # Lets Renovate automerge past the code owner review.
   review_bypass_actors = [{
     actor_id    = 2740 # GET /apps/renovate
     actor_type  = "Integration"

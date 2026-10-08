@@ -71,12 +71,9 @@ variable "review_bypass_actors" {
   }))
   default     = []
   description = <<-EOT
-    Actors allowed past the pull request rule (review and thread
-    resolution) on the default branch, beside the repository admin role.
-    They still need the required status checks. For an app, actor_type
-    is "Integration" and actor_id its app ID (GET /apps/<slug>);
-    bypass_mode "pull_request" limits the bypass to merging a pull
-    request.
+    Actors besides the repository admin that bypass the pull request
+    rule on the default branch. The required status checks still apply
+    to them.
   EOT
 }
 
@@ -84,9 +81,8 @@ variable "allow_auto_merge" {
   type        = bool
   default     = false
   description = <<-EOT
-    Allow pull requests to merge automatically once their requirements
-    pass. GitHub auto-merge waits on the required status checks alone, so
-    it needs required_status_checks.
+    Enable GitHub auto-merge. It merges once the required status checks
+    pass, ignoring any check that isn't required.
   EOT
 
   validation {
