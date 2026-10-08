@@ -6,6 +6,16 @@ module "alunduil_chezmoi" {
   name        = "alunduil-chezmoi"
   description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
   topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
+  required_status_checks = {
+    contexts = [
+      "Run pre-commit hooks",
+      "Test shell scripts",
+      "Validate chezmoi source",
+      "Validate zellij config",
+      "Validate telemetry config",
+      "Check prose",
+    ]
+  }
 }
 
 module "alunduil_infrastructure" {
