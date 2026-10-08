@@ -53,9 +53,6 @@ module "collection_json_hs" {
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
   environments = { hackage = {} }
-  labels = {
-    "release" = { color = "5319e7", description = "Release process and Hackage publishing" }
-  }
 }
 
 module "git_worktree_poi" {
@@ -103,9 +100,6 @@ module "siren_json_hs" {
   description  = "Siren+JSON Tools for Haskell"
   topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
   environments = { hackage = {} }
-  labels = {
-    "release" = { color = "5319e7", description = "Release process and Hackage publishing" }
-  }
 }
 
 module "woodland_generators" {
