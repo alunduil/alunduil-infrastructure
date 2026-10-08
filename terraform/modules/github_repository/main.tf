@@ -161,6 +161,41 @@ resource "github_actions_repository_permissions" "this" {
   }
 }
 
+locals {
+  # Colours are lowercase because the provider compares them as strings
+  # against the API's lowercase values.
+  baseline_labels = {
+    "bug"              = { color = "d73a4a", description = "Something isn't working" }
+    "enhancement"      = { color = "a2eeef", description = "Committed feature work" }
+    "idea"             = { color = "fbca04", description = "Proposal not yet committed to" }
+    "documentation"    = { color = "0075ca", description = "Improvements or additions to documentation" }
+    "chore"            = { color = "c5def5", description = "CI, build, or tooling; no user-facing change" }
+    "security"         = { color = "b60205", description = "Security-sensitive issue or exposure" }
+    "question"         = { color = "d876e3", description = "Further information is requested" }
+    "good first issue" = { color = "7057ff", description = "Good for newcomers" }
+    "dependencies"     = { color = "0366d6", description = "Pull requests that update a dependency file" }
+    "blocked"          = { color = "e99695", description = "Waiting on other work; exempt from the stale sweep" }
+    "stale"            = { color = "ededed", description = "Quiet too long; closes unless updated" }
+  }
+}
+
+# Authoritative: apply deletes any label not declared here, so a workflow
+# still writing a retired label recreates it for the next apply to delete.
+# Renaming a label replaces it, stripping it from every issue it was on;
+# rename in GitHub first to keep them.
+resource "github_issue_labels" "this" {
+  repository = github_repository.this.name
+
+  dynamic "label" {
+    for_each = merge(local.baseline_labels, var.labels)
+    content {
+      name        = label.key
+      color       = label.value.color
+      description = label.value.description
+    }
+  }
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 

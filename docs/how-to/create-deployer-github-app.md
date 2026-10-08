@@ -24,6 +24,7 @@ tokens via OpenID Connect.
    - Repository permissions:
      - `Administration: Read and write`
      - `Contents: Read and write`
+     - `Issues: Read and write`
      - `Metadata: Read` (granted automatically)
      - `Pages: Read and write`
 2. After creation, on the App's settings page: note the App ID, then
