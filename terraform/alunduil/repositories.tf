@@ -170,7 +170,7 @@ module "zfs_replicate" {
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request.
+  # non-owner pull request but Renovate's.
   require_code_owner_review = true
   admin_only_updates        = false
   required_status_checks = {

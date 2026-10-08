@@ -77,8 +77,8 @@ variable "renovate_automerge" {
   type        = bool
   default     = false
   description = <<-EOT
-    Renovate merges its own pull requests without code owner review, once
-    the required status checks pass. Only Renovate can push to its
+    Renovate merges its own pull requests without review, once the
+    required status checks pass. Only Renovate can push to its
     renovate/** branches, so its pull requests carry only its commits.
     Enables GitHub auto-merge, which ignores any check that isn't
     required.

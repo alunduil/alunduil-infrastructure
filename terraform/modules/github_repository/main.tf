@@ -70,8 +70,8 @@ locals {
 
 # Rulesets rather than classic github_branch_protection: rulesets are GitHub's
 # strategic mechanism and the only one with first-class bypass actors. Bypass
-# actors are per ruleset, so each ruleset holds one policy and an actor
-# bypassing it skips that policy alone.
+# actors are per ruleset, so each ruleset holds one policy and a bypass skips
+# that policy alone.
 resource "github_repository_ruleset" "default" {
   name        = "default"
   repository  = github_repository.this.name
@@ -179,7 +179,8 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-# Renovate is absent from the bypass list, so its merges wait on these checks.
+# Renovate never bypasses this: these checks are all that gate its unreviewed
+# merges.
 resource "github_repository_ruleset" "checks" {
   count = var.required_status_checks != null ? 1 : 0
 
