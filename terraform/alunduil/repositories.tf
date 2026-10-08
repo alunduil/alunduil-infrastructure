@@ -95,10 +95,11 @@ import {
 }
 
 module "siren_json_hs" {
-  source      = "../modules/github_repository"
-  name        = "siren-json.hs"
-  description = "Siren+JSON Tools for Haskell"
-  topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  source       = "../modules/github_repository"
+  name         = "siren-json.hs"
+  description  = "Siren+JSON Tools for Haskell"
+  topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  environments = { hackage = {} }
 }
 
 module "woodland_generators" {
