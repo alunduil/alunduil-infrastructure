@@ -14,6 +14,7 @@ resource "google_service_account" "github_deployer_ro" {
 # The applier role inherits this list.
 locals {
   deployer_ro_permissions = [
+    "cloudkms.keyRings.getIamPolicy",
     "logging.logMetrics.get",
     "logging.logMetrics.list",
     "resourcemanager.projects.get",
