@@ -167,7 +167,7 @@ locals {
     "enhancement"      = { color = "a2eeef", description = "Committed feature work" }
     "idea"             = { color = "fbca04", description = "Proposal not yet committed to" }
     "documentation"    = { color = "0075ca", description = "Improvements or additions to documentation" }
-    "chore"            = { color = "d4c5f9", description = "CI, build, or tooling; no user-facing change" }
+    "chore"            = { color = "d4c5f9", description = "Build, CI, tests, refactoring, or tooling; no user-facing change" }
     "security"         = { color = "b60205", description = "Security-sensitive issue or exposure" }
     "question"         = { color = "d876e3", description = "Further information is requested" }
     "good first issue" = { color = "7057ff", description = "Good for newcomers" }
