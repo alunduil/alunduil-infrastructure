@@ -63,6 +63,33 @@ variable "require_code_owner_review" {
   EOT
 }
 
+variable "admin_only_updates" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Only the repository admin, and Renovate under renovate_automerge, can
+    update the default branch, whether by push or by merging a pull
+    request. Set false once others merge pull requests.
+  EOT
+}
+
+variable "renovate_automerge" {
+  type        = bool
+  default     = false
+  description = <<-EOT
+    Renovate merges its own pull requests without review, once the
+    required status checks pass. Only Renovate can push to its
+    renovate/** branches, so its pull requests carry only its commits.
+    Enables GitHub auto-merge, which ignores any check that isn't
+    required.
+  EOT
+
+  validation {
+    condition     = !var.renovate_automerge || var.required_status_checks != null
+    error_message = "renovate_automerge needs required_status_checks; without them Renovate would merge on nothing."
+  }
+}
+
 variable "has_discussions" {
   type        = bool
   default     = false

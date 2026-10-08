@@ -86,7 +86,7 @@ Two hard rules:
 
    ```hcl
    import {
-     to = module.<name>.github_repository_ruleset.default_branch
+     to = module.<name>.github_repository_ruleset.default
      id = "<name>:<ruleset_id>"
    }
    ```

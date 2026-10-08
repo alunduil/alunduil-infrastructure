@@ -170,14 +170,15 @@ module "zfs_replicate" {
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request, Renovate's included.
+  # non-owner pull request but Renovate's.
   require_code_owner_review = true
+  admin_only_updates        = false
   required_status_checks = {
-    contexts = ["Validate PR title"]
-    # The check reads only the PR title, so it can't go stale against the
-    # base branch.
-    strict = false
+    # Check CI results aggregates every gating job, so its name survives
+    # Python matrix changes.
+    contexts = ["Validate PR title", "Check CI results"]
   }
+  renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
   # environment, so the publish job has to run in this one. No deployment
   # branch policy: the release workflow runs from a tag ref, which the
