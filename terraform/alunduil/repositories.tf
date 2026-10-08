@@ -172,18 +172,13 @@ module "zfs_replicate" {
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
   # non-owner pull request.
   require_code_owner_review = true
-  # Lets Renovate automerge past the code owner review.
-  review_bypass_actors = [{
-    actor_id    = 2740 # GET /apps/renovate
-    actor_type  = "Integration"
-    bypass_mode = "pull_request"
-  }]
+  admin_only_updates        = false
   required_status_checks = {
     # Check CI results aggregates every gating job, so its name survives
     # Python matrix changes.
     contexts = ["Validate PR title", "Check CI results"]
   }
-  allow_auto_merge = true
+  renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
   # environment, so the publish job has to run in this one. No deployment
   # branch policy: the release workflow runs from a tag ref, which the

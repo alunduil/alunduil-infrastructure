@@ -63,31 +63,30 @@ variable "require_code_owner_review" {
   EOT
 }
 
-variable "review_bypass_actors" {
-  type = list(object({
-    actor_id    = number
-    actor_type  = string
-    bypass_mode = string
-  }))
-  default     = []
+variable "admin_only_updates" {
+  type        = bool
+  default     = true
   description = <<-EOT
-    Actors besides the repository admin that bypass the pull request
-    rule on the default branch. The required status checks still apply
-    to them.
+    Only the repository admin, and Renovate under renovate_automerge, can
+    update the default branch, whether by push or by merging a pull
+    request. Set false once others merge pull requests.
   EOT
 }
 
-variable "allow_auto_merge" {
+variable "renovate_automerge" {
   type        = bool
   default     = false
   description = <<-EOT
-    Enable GitHub auto-merge. It merges once the required status checks
-    pass, ignoring any check that isn't required.
+    Renovate merges its own pull requests without code owner review, once
+    the required status checks pass. Only Renovate can push to its
+    renovate/** branches, so its pull requests carry only its commits.
+    Enables GitHub auto-merge, which ignores any check that isn't
+    required.
   EOT
 
   validation {
-    condition     = !var.allow_auto_merge || var.required_status_checks != null
-    error_message = "allow_auto_merge needs required_status_checks; without them a pull request would auto-merge on nothing."
+    condition     = !var.renovate_automerge || var.required_status_checks != null
+    error_message = "renovate_automerge needs required_status_checks; without them Renovate would merge on nothing."
   }
 }
 

@@ -15,7 +15,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = false
   allow_squash_merge          = true
   allow_rebase_merge          = false
-  allow_auto_merge            = var.allow_auto_merge
+  allow_auto_merge            = var.renovate_automerge
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
@@ -54,11 +54,22 @@ locals {
     actor_type  = "RepositoryRole"
     bypass_mode = "always"
   }
+
+  renovate_app_id = 2740 # GET /apps/renovate
+
+  # Mode "pull_request" lets Renovate merge its pull requests without letting
+  # it push to the default branch.
+  renovate_merge_bypass = var.renovate_automerge ? [{
+    actor_id    = local.renovate_app_id
+    actor_type  = "Integration"
+    bypass_mode = "pull_request"
+  }] : []
 }
 
-# Default-branch protection. Ruleset (not classic github_branch_protection)
-# because rulesets are GitHub's strategic mechanism and the only one with
-# first-class bypass actors.
+# Rulesets rather than classic github_branch_protection: rulesets are GitHub's
+# strategic mechanism and the only one with first-class bypass actors. Bypass
+# actors are per ruleset, so each ruleset holds one policy and an actor
+# bypassing it skips that policy alone.
 resource "github_repository_ruleset" "default_branch" {
   name        = "default"
   repository  = github_repository.this.name
@@ -86,29 +97,43 @@ resource "github_repository_ruleset" "default_branch" {
     deletion                = true
     non_fast_forward        = true
     required_linear_history = true
-
-    # Status check contexts differ per repo, so the baseline leaves this
-    # ungated and each repo opts in via var.required_status_checks.
-    dynamic "required_status_checks" {
-      for_each = var.required_status_checks != null ? [var.required_status_checks] : []
-      content {
-        strict_required_status_checks_policy = required_status_checks.value.strict
-
-        dynamic "required_check" {
-          for_each = required_status_checks.value.contexts
-          content {
-            context = required_check.value
-          }
-        }
-      }
-    }
   }
 }
 
-# The pull request rule sits in a ruleset of its own because bypass_actors is
-# per ruleset: an actor allowed past review here still has to pass the default
-# ruleset's status checks. The admin bypasses because a solo maintainer can't
-# satisfy a required review.
+# Merging a pull request updates the branch too, so only bypass actors can
+# merge.
+resource "github_repository_ruleset" "admin_only" {
+  count = var.admin_only_updates ? 1 : 0
+
+  name        = "admin-only"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = concat([local.admin_bypass_actor], local.renovate_merge_bypass)
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    update = true
+  }
+}
+
+# The admin bypasses because a solo maintainer can't satisfy a required review.
 resource "github_repository_ruleset" "review" {
   name        = "review"
   repository  = github_repository.this.name
@@ -125,7 +150,7 @@ resource "github_repository_ruleset" "review" {
   }
 
   dynamic "bypass_actors" {
-    for_each = concat([local.admin_bypass_actor], var.review_bypass_actors)
+    for_each = concat([local.admin_bypass_actor], local.renovate_merge_bypass)
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -143,6 +168,79 @@ resource "github_repository_ruleset" "review" {
     }
   }
 }
+
+# Renovate is absent from the bypass list, so its merges wait on these checks.
+resource "github_repository_ruleset" "checks" {
+  count = var.required_status_checks != null ? 1 : 0
+
+  name        = "checks"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
+  }
+
+  rules {
+    required_status_checks {
+      strict_required_status_checks_policy = var.required_status_checks.strict
+
+      dynamic "required_check" {
+        for_each = var.required_status_checks.contexts
+        content {
+          context = required_check.value
+        }
+      }
+    }
+  }
+}
+
+# Without this, anyone who can push to a Renovate branch could add commits to a
+# pull request Renovate then merges past review.
+resource "github_repository_ruleset" "renovate" {
+  count = var.renovate_automerge ? 1 : 0
+
+  name        = "renovate"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["refs/heads/renovate/**"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = [
+      local.admin_bypass_actor,
+      { actor_id = local.renovate_app_id, actor_type = "Integration", bypass_mode = "always" },
+    ]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    update = true
+  }
+}
+
 
 # Load-bearing for Renovate, not just for the GitHub UI: Renovate's
 # vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
