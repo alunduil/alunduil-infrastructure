@@ -256,6 +256,38 @@ resource "github_repository_ruleset" "renovate" {
   }
 }
 
+# A tag push can publish to a registry that can't recall an upload, so a moved
+# tag leaves the registry and the repository silently disagreeing. The admin
+# bypass keeps a botched tag fixable.
+resource "github_repository_ruleset" "immutable_tags" {
+  name        = "immutable-tags"
+  repository  = github_repository.this.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["~ALL"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  # No non_fast_forward: update already blocks fast-forwards.
+  rules {
+    deletion = true
+    update   = true
+  }
+}
+
 # Load-bearing for Renovate, not just for the GitHub UI: Renovate's
 # vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
 # and goes quiet if the feed is off.
