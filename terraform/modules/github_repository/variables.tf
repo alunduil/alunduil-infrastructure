@@ -63,6 +63,33 @@ variable "require_code_owner_review" {
   EOT
 }
 
+variable "review_bypass_actors" {
+  type = list(object({
+    actor_id    = number
+    actor_type  = string
+    bypass_mode = string
+  }))
+  default     = []
+  description = <<-EOT
+    Actors allowed past the pull request rule (review and thread
+    resolution) on the default branch, beside the repository admin role.
+    They still need the required status checks. For an app, actor_type
+    is "Integration" and actor_id its app ID (GET /apps/<slug>);
+    bypass_mode "pull_request" limits the bypass to merging a pull
+    request.
+  EOT
+}
+
+variable "allow_auto_merge" {
+  type        = bool
+  default     = false
+  description = <<-EOT
+    Allow pull requests to merge automatically once their requirements
+    pass. GitHub auto-merge waits on the required status checks alone, so
+    enable it only alongside required_status_checks.
+  EOT
+}
+
 variable "has_discussions" {
   type        = bool
   default     = false

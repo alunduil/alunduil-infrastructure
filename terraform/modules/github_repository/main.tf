@@ -15,7 +15,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = false
   allow_squash_merge          = true
   allow_rebase_merge          = false
-  allow_auto_merge            = false
+  allow_auto_merge            = var.allow_auto_merge
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
@@ -81,14 +81,6 @@ resource "github_repository_ruleset" "default_branch" {
     non_fast_forward        = true
     required_linear_history = true
 
-    # Code owner review is a separate condition from the review count, so a
-    # repo can gate on CODEOWNERS while the count stays at 0.
-    pull_request {
-      required_approving_review_count   = 0
-      require_code_owner_review         = var.require_code_owner_review
-      required_review_thread_resolution = true
-    }
-
     # Status check contexts differ per repo, so the baseline leaves this
     # ungated and each repo opts in via var.required_status_checks.
     dynamic "required_status_checks" {
@@ -103,6 +95,51 @@ resource "github_repository_ruleset" "default_branch" {
           }
         }
       }
+    }
+  }
+}
+
+# The pull request rule sits in a ruleset of its own because bypass_actors is
+# per ruleset: an actor allowed past review here still has to pass the status
+# checks above. Rulesets layer, so the split changes nothing for a repo with no
+# extra bypass actors.
+resource "github_repository_ruleset" "review" {
+  name        = "review"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = 5 # built-in repository "admin" role
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  dynamic "bypass_actors" {
+    for_each = var.review_bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    # Code owner review is a separate condition from the review count, so a
+    # repo can gate on CODEOWNERS while the count stays at 0.
+    pull_request {
+      required_approving_review_count   = 0
+      require_code_owner_review         = var.require_code_owner_review
+      required_review_thread_resolution = true
     }
   }
 }
