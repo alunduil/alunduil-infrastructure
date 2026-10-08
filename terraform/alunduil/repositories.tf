@@ -185,7 +185,7 @@ module "zfs_replicate" {
   # module's branch patterns would refuse.
   environments = { pypi = {} }
   labels = {
-    "python" = { color = "3572a5", description = "Python versions and packaging" }
-    "nix"    = { color = "7e7eff", description = "Nix flake and packaging" }
+    "python" = { color = "2b67c6", description = "Python versions and packaging" }
+    "nix"    = { color = "7ac7e4", description = "Nix flake and packaging" }
   }
 }
