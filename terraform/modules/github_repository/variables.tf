@@ -122,9 +122,10 @@ variable "labels" {
   default     = {}
   description = <<-EOT
     Issue labels only this repo uses, keyed by name, on top of the
-    baseline set every repo gets. color is six lowercase hex digits
-    without the leading #. A label a bot writes by name, such as
-    release-please's, must be declared here or apply deletes it.
+    baseline set every repo gets; a name can't repeat a baseline label.
+    color is six lowercase hex digits without the leading #. A label a
+    bot writes by name, such as release-please's, must be declared here
+    or apply deletes it.
   EOT
 }
 

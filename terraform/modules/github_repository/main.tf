@@ -162,8 +162,6 @@ resource "github_actions_repository_permissions" "this" {
 }
 
 locals {
-  # Colours are lowercase because the provider compares them as strings
-  # against the API's lowercase values.
   baseline_labels = {
     "bug"              = { color = "d73a4a", description = "Something isn't working" }
     "enhancement"      = { color = "a2eeef", description = "Committed feature work" }
@@ -177,6 +175,7 @@ locals {
     "blocked"          = { color = "e99695", description = "Waiting on other work; exempt from the stale sweep" }
     "stale"            = { color = "ededed", description = "Quiet too long; closes unless updated" }
   }
+  labels = merge(local.baseline_labels, var.labels)
 }
 
 # Authoritative: apply deletes any label not declared here, so a workflow
@@ -187,11 +186,23 @@ resource "github_issue_labels" "this" {
   repository = github_repository.this.name
 
   dynamic "label" {
-    for_each = merge(local.baseline_labels, var.labels)
+    for_each = local.labels
     content {
       name        = label.key
       color       = label.value.color
       description = label.value.description
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = length(setintersection(keys(local.baseline_labels), keys(var.labels))) == 0
+      error_message = "Repository ${var.name}: labels redeclares a baseline label. Change the baseline instead, so the label stays the same on every repo."
+    }
+
+    precondition {
+      condition     = alltrue([for label in values(local.labels) : can(regex("^[0-9a-f]{6}$", label.color))])
+      error_message = "Repository ${var.name}: label colours are six lowercase hex digits without the leading #. The provider compares them as strings against the API's lowercase values, so any other form diffs on every plan."
     }
   }
 }
