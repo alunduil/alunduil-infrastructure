@@ -55,22 +55,24 @@ locals {
     bypass_mode = "always"
   }
 
-  renovate_app_id = 2740 # GET /apps/renovate
+  renovate_actor = {
+    actor_id   = 2740 # GET /apps/renovate
+    actor_type = "Integration"
+  }
 
   # Mode "pull_request" lets Renovate merge its pull requests without letting
   # it push to the default branch.
-  renovate_merge_bypass = var.renovate_automerge ? [{
-    actor_id    = local.renovate_app_id
-    actor_type  = "Integration"
-    bypass_mode = "pull_request"
-  }] : []
+  merge_bypass_actors = concat(
+    [local.admin_bypass_actor],
+    var.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
+  )
 }
 
 # Rulesets rather than classic github_branch_protection: rulesets are GitHub's
 # strategic mechanism and the only one with first-class bypass actors. Bypass
 # actors are per ruleset, so each ruleset holds one policy and an actor
 # bypassing it skips that policy alone.
-resource "github_repository_ruleset" "default_branch" {
+resource "github_repository_ruleset" "default" {
   name        = "default"
   repository  = github_repository.this.name
   target      = "branch"
@@ -85,10 +87,13 @@ resource "github_repository_ruleset" "default_branch" {
     }
   }
 
-  bypass_actors {
-    actor_id    = local.admin_bypass_actor.actor_id
-    actor_type  = local.admin_bypass_actor.actor_type
-    bypass_mode = local.admin_bypass_actor.bypass_mode
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
   }
 
   # No required_signatures: GitHub already signs squash merges, so it would be
@@ -98,6 +103,11 @@ resource "github_repository_ruleset" "default_branch" {
     non_fast_forward        = true
     required_linear_history = true
   }
+}
+
+moved {
+  from = github_repository_ruleset.default_branch
+  to   = github_repository_ruleset.default
 }
 
 # Merging a pull request updates the branch too, so only bypass actors can
@@ -120,7 +130,7 @@ resource "github_repository_ruleset" "admin_only" {
   }
 
   dynamic "bypass_actors" {
-    for_each = concat([local.admin_bypass_actor], local.renovate_merge_bypass)
+    for_each = local.merge_bypass_actors
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -150,7 +160,7 @@ resource "github_repository_ruleset" "review" {
   }
 
   dynamic "bypass_actors" {
-    for_each = concat([local.admin_bypass_actor], local.renovate_merge_bypass)
+    for_each = local.merge_bypass_actors
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -187,10 +197,13 @@ resource "github_repository_ruleset" "checks" {
     }
   }
 
-  bypass_actors {
-    actor_id    = local.admin_bypass_actor.actor_id
-    actor_type  = local.admin_bypass_actor.actor_type
-    bypass_mode = local.admin_bypass_actor.bypass_mode
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
   }
 
   rules {
@@ -224,10 +237,11 @@ resource "github_repository_ruleset" "renovate" {
     }
   }
 
+  # Renovate pushes to its branches directly, so it needs mode "always" here.
   dynamic "bypass_actors" {
     for_each = [
       local.admin_bypass_actor,
-      { actor_id = local.renovate_app_id, actor_type = "Integration", bypass_mode = "always" },
+      merge(local.renovate_actor, { bypass_mode = "always" }),
     ]
     content {
       actor_id    = bypass_actors.value.actor_id
@@ -240,7 +254,6 @@ resource "github_repository_ruleset" "renovate" {
     update = true
   }
 }
-
 
 # Load-bearing for Renovate, not just for the GitHub UI: Renovate's
 # vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
