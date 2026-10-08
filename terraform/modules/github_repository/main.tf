@@ -259,8 +259,8 @@ resource "github_repository_ruleset" "renovate" {
 # Tag pushes publish to registries that can't recall an upload, so a moved tag
 # leaves the registry and the repository silently disagreeing. The admin bypass
 # keeps a botched tag fixable.
-resource "github_repository_ruleset" "tags" {
-  name        = "tags"
+resource "github_repository_ruleset" "immutable_tags" {
+  name        = "immutable-tags"
   repository  = github_repository.this.name
   target      = "tag"
   enforcement = "active"
