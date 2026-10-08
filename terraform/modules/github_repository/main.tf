@@ -256,9 +256,9 @@ resource "github_repository_ruleset" "renovate" {
   }
 }
 
-# Tag pushes publish to registries that can't recall an upload, so a moved tag
-# leaves the registry and the repository silently disagreeing. The admin bypass
-# keeps a botched tag fixable.
+# A tag push can publish to a registry that can't recall an upload, so a moved
+# tag leaves the registry and the repository silently disagreeing. The admin
+# bypass keeps a botched tag fixable.
 resource "github_repository_ruleset" "immutable_tags" {
   name        = "immutable-tags"
   repository  = github_repository.this.name
@@ -281,7 +281,7 @@ resource "github_repository_ruleset" "immutable_tags" {
     }
   }
 
-  # update blocks fast-forwards too, so non_fast_forward would add nothing.
+  # No non_fast_forward: update already blocks fast-forwards.
   rules {
     deletion = true
     update   = true
