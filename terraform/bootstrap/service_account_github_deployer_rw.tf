@@ -16,7 +16,6 @@ resource "google_service_account" "github_deployer_rw" {
 # order can't churn against the API.
 locals {
   deployer_rw_permissions = sort(concat(local.deployer_ro_permissions, [
-    "cloudkms.keyRings.setIamPolicy",
     "logging.logMetrics.create",
     "logging.logMetrics.delete",
     "logging.logMetrics.update",
