@@ -173,15 +173,13 @@ locals {
     "good first issue" = { color = "7057ff", description = "Good for newcomers" }
     "dependencies"     = { color = "0366d6", description = "Pull requests that update a dependency file" }
     "blocked"          = { color = "e99695", description = "Waiting on other work; exempt from the stale sweep" }
-    "stale"            = { color = "ededed", description = "Quiet too long; closes unless updated" }
+    "stale"            = { color = "ededed", description = "No recent activity; closes unless updated" }
   }
   labels = merge(local.baseline_labels, var.labels)
 }
 
-# Authoritative: apply deletes any label not declared here, so a workflow
-# still writing a retired label recreates it for the next apply to delete.
-# Renaming a label replaces it, stripping it from every issue it was on;
-# rename in GitHub first to keep them.
+# Authoritative: apply deletes every undeclared label. Renaming a label
+# replaces it, which strips it from its issues; rename it in GitHub first.
 resource "github_issue_labels" "this" {
   repository = github_repository.this.name
 
@@ -197,12 +195,12 @@ resource "github_issue_labels" "this" {
   lifecycle {
     precondition {
       condition     = length(setintersection(keys(local.baseline_labels), keys(var.labels))) == 0
-      error_message = "Repository ${var.name}: labels redeclares a baseline label. Change the baseline instead, so the label stays the same on every repo."
+      error_message = "Repository ${var.name}: labels redeclares baseline labels (${join(", ", setintersection(keys(local.baseline_labels), keys(var.labels)))}). Change the baseline so every repo keeps the same label."
     }
 
     precondition {
       condition     = alltrue([for label in values(local.labels) : can(regex("^[0-9a-f]{6}$", label.color))])
-      error_message = "Repository ${var.name}: label colours are six lowercase hex digits without the leading #. The provider compares them as strings against the API's lowercase values, so any other form diffs on every plan."
+      error_message = "Repository ${var.name}: label colours must be six lowercase hex digits without #. The provider compares them as strings with the API's lowercase values, so any other form shows a diff on every plan."
     }
   }
 }
