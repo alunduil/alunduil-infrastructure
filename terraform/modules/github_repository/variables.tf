@@ -86,8 +86,13 @@ variable "allow_auto_merge" {
   description = <<-EOT
     Allow pull requests to merge automatically once their requirements
     pass. GitHub auto-merge waits on the required status checks alone, so
-    enable it only alongside required_status_checks.
+    it needs required_status_checks.
   EOT
+
+  validation {
+    condition     = !var.allow_auto_merge || var.required_status_checks != null
+    error_message = "allow_auto_merge needs required_status_checks; without them a pull request would auto-merge on nothing."
+  }
 }
 
 variable "has_discussions" {
