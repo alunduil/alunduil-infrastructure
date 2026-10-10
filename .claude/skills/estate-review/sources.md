@@ -37,6 +37,8 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
+- Leave domain expiry to the RDAP check. The monitors'
+  `domainExpireDate` lags renewals.
 
 ## TrueNAS
 
@@ -126,10 +128,12 @@ GraphQL budget free.
 Call only the read tools and commands named below.
 
 Cloudflare (A-08): the Cloudflare MCP servers' read tools. The DNS report
-caps at 6 hours on this plan, so use GraphQL `dnsAnalyticsAdaptiveGroups`
-with explicit `datetime_geq` and `datetime_leq` covering the window. Report
-response codes, DNSSEC status, and zone or DNSSEC settings modified in the
-window. Match any modification against this repository's commits to `main`.
+caps at 6 hours on this plan, so query GraphQL `dnsAnalyticsAdaptiveGroups`
+once, with `datetime_geq` and `datetime_leq` spanning the window.
+
+Report response codes and zone settings modified in the window. Match any
+modification against this repository's commits to `main`. Neither server
+exposes DNSSEC, so list it under blind spots.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
@@ -139,4 +143,6 @@ Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online.
+exit nodes and `homeassistant` are online. Offline phones, tablets and
+Chromebooks with expired keys renew them at their next sign-in, so list
+them under working.
