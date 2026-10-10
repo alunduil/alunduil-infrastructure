@@ -37,6 +37,8 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
+- The monitors' `domainExpireDate` lags renewals. Take the domain's
+  expiry from RDAP.
 
 ## TrueNAS
 
@@ -57,6 +59,8 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   with no reboot near it is the hang warning.
 - Certificates: report the `truenas-acme-cert` expiry and any
   `certificate.renew_certs` failure.
+- A `RESTAPIUsage` alert from `192.168.68.58` is penguin's fallback
+  when the MCP server fails.
 
 ## Grafana Cloud
 
@@ -96,6 +100,7 @@ Report:
   errors including `rateLimitExceeded`, container restarts.
 - Home Assistant: automation errors by entity and reason, integrations
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
+  webOS TV `is unavailable` means the TV is off.
 - Alert rules: what fired, and anything in an error or no-data state.
 
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
@@ -127,7 +132,8 @@ Call only the read tools and commands named below.
 
 Cloudflare (A-08): the Cloudflare MCP servers' read tools. The DNS report
 caps at 6 hours on this plan, so use GraphQL `dnsAnalyticsAdaptiveGroups`
-with explicit `datetime_geq` and `datetime_leq` covering the window. Report
+with explicit `datetime_geq` and `datetime_leq` covering the window. GraphQL
+accepts the whole window in one query. No dataset exposes DNSSEC. Report
 response codes, DNSSEC status, and zone or DNSSEC settings modified in the
 window. Match any modification against this repository's commits to `main`.
 
@@ -139,4 +145,6 @@ Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online.
+exit nodes and `homeassistant` are online. Offline phones, tablets and
+Chromebooks with expired keys are known devices that renew their keys on
+their next sign-in; list them, don't flag them.
