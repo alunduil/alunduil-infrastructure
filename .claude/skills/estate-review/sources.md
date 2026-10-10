@@ -37,8 +37,8 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
-- The monitors' `domainExpireDate` lags renewals. Take the domain's
-  expiry from RDAP.
+- Leave domain expiry to the RDAP check. The monitors'
+  `domainExpireDate` lags renewals.
 
 ## TrueNAS
 
@@ -59,8 +59,6 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   with no reboot near it is the hang warning.
 - Certificates: report the `truenas-acme-cert` expiry and any
   `certificate.renew_certs` failure.
-- A `RESTAPIUsage` alert from `192.168.68.58` is tracked by #728, which
-  confirms whether it's penguin's fallback when the MCP server fails.
 
 ## Grafana Cloud
 
@@ -130,11 +128,12 @@ GraphQL budget free.
 Call only the read tools and commands named below.
 
 Cloudflare (A-08): the Cloudflare MCP servers' read tools. The DNS report
-caps at 6 hours on this plan, so use GraphQL `dnsAnalyticsAdaptiveGroups`
-with explicit `datetime_geq` and `datetime_leq` covering the window. GraphQL
-accepts the whole window in one query. No dataset exposes DNSSEC. Report
-response codes, DNSSEC status, and zone or DNSSEC settings modified in the
-window. Match any modification against this repository's commits to `main`.
+caps at 6 hours on this plan, so query GraphQL `dnsAnalyticsAdaptiveGroups`
+once, with `datetime_geq` and `datetime_leq` spanning the window.
+
+Report response codes and zone settings modified in the window. Match any
+modification against this repository's commits to `main`. No dataset
+exposes DNSSEC status or changes, so list DNSSEC under blind spots.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
@@ -145,5 +144,5 @@ Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
 exit nodes and `homeassistant` are online. Offline phones, tablets and
-Chromebooks with expired keys are known devices that renew their keys on
-their next sign-in; list them, don't flag them.
+Chromebooks with expired keys renew them at their next sign-in, so list
+them under working.
