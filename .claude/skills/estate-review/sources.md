@@ -132,8 +132,8 @@ caps at 6 hours on this plan, so query GraphQL `dnsAnalyticsAdaptiveGroups`
 once, with `datetime_geq` and `datetime_leq` spanning the window.
 
 Report response codes and zone settings modified in the window. Match any
-modification against this repository's commits to `main`. No dataset
-exposes DNSSEC status or changes, so list DNSSEC under blind spots.
+modification against this repository's commits to `main`. Neither server
+exposes DNSSEC, so list it under blind spots.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
