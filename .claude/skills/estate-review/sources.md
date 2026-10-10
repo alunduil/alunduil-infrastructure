@@ -59,8 +59,8 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   with no reboot near it is the hang warning.
 - Certificates: report the `truenas-acme-cert` expiry and any
   `certificate.renew_certs` failure.
-- A `RESTAPIUsage` alert from `192.168.68.58` is penguin's fallback
-  when the MCP server fails.
+- A `RESTAPIUsage` alert from `192.168.68.58` is tracked by #728, which
+  confirms whether it's penguin's fallback when the MCP server fails.
 
 ## Grafana Cloud
 
@@ -100,7 +100,6 @@ Report:
   errors including `rateLimitExceeded`, container restarts.
 - Home Assistant: automation errors by entity and reason, integrations
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
-  webOS TV `is unavailable` means the TV is off.
 - Alert rules: what fired, and anything in an error or no-data state.
 
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
