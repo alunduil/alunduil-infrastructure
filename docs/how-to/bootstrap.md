@@ -20,6 +20,7 @@ from scratch or rotating the core credentials.
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
 - Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
+- `gh` authenticated with the `project` scope: `gh auth refresh -s project`.
 
 ## Run
 
