@@ -5,13 +5,16 @@
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets, here and in blog.alunduil.com → Projects v2 board fields.")]
-bootstrap:
+bootstrap: && projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-git-sync-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-github-secrets.sh
+
+[doc("Apply the Projects v2 board fields declared in github/projects/*.json.")]
+projects:
     github/projects/bootstrap.sh
 
 # Credentials: gcloud CLI auth with secretAccessor for the secret fetches,
