@@ -31,7 +31,7 @@
         {
           "name": "Blocked",
           "color": "RED",
-          "description": "Open blocked-by edge"
+          "description": "Blocked by an open issue"
         },
         {
           "id": "c090564c",

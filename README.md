@@ -20,13 +20,15 @@ Changes reach the `alunduil` environment through CI. Opening a PR runs
 `main` applies it automatically. Review the plan comment before
 approving a merge.
 
-The two operator entrypoints:
+The three operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
+- `just projects`—Projects v2 board fields, after editing a spec in
+  `github/projects/`. Needs only a `gh` login with the `project` scope.
 
 Supporting how-tos:
 
