@@ -20,6 +20,7 @@ from scratch or rotating the core credentials.
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
 - Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
+- `gh` authenticated with the `project` scope: `gh auth refresh -s project`.
 
 ## Run
 
@@ -46,6 +47,9 @@ It then prompts the same way for the two Tailscale trust credential client
 IDs, read-only for plan and read-write for apply. Set
 `TAILSCALE_CLIENT_ID_RO` and `TAILSCALE_CLIENT_ID_RW` to answer without the
 prompts, or press Enter at each to defer until the credentials exist.
+
+Last, it applies the Projects v2 board fields declared in
+`github/projects/*.json`. Re-run `just bootstrap` after editing a spec.
 
 The blog's Pages build needs wiring to the federation once, in
 `blog.alunduil.com`.

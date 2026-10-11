@@ -4,7 +4,7 @@
 # Every step is idempotent; safe to re-run after partial failure. The Grafana and
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
-[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets, here and in blog.alunduil.com.")]
+[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets, here and in blog.alunduil.com → Projects v2 board fields.")]
 bootstrap:
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
@@ -12,6 +12,7 @@ bootstrap:
     scripts/configure-git-sync-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-github-secrets.sh
+    github/projects/bootstrap.sh
 
 # Credentials: gcloud CLI auth with secretAccessor for the secret fetches,
 # gcloud application-default for the google provider and GCS backend, and an

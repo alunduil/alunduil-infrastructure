@@ -12,7 +12,7 @@
 #     "title": "Inbox",
 #     "filed_by_field": "Filed by",
 #     "status_field": "Status",
-#     "pr_status": "Review",
+#     "pr_status": "Needs me",
 #     "issue_status": "Backlog",
 #     "sources": [
 #       { "type": "owner", "logins": [...] },
