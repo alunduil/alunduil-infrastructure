@@ -20,12 +20,10 @@
 #     ]
 #   }
 #
-# `login` is the person the board answers "whose move is it?" for; the
-# owner-source logins are the repos they merge in. The rules live in
-# classify below and route to the option names in STATUSES, which the
-# status field must declare. The script is authoritative: every run
-# recomputes Status for every board item, so hand moves don't stick.
-# Items from archived repos are removed from the board.
+# `login` is whose move the board tracks; owner-source repos are the ones
+# they merge in. The status field must declare every option in STATUSES.
+# Every run recomputes every item's Status, so hand moves don't stick, and
+# items from archived repos leave the board.
 #
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
 # `gh` auth when GH_PROJECT_SYNC_TOKEN is unset. The scheduled job can't be
@@ -50,29 +48,17 @@ set -Eeuo pipefail
 
 STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Closed")
 
-# Read a JSON array of board items (enriched query shape) on stdin and emit
-# one row per item with a content URL, fields separated by the ASCII unit
-# separator (0x1f). A tab separator would break the consuming `read`, which
-# collapses runs of whitespace separators and so drops empty fields:
+# classify <login> <owned-logins-json>: read a JSON array of
+# BOARD_ITEMS_QUERY item nodes on stdin and emit one row per item with a
+# content URL:
 #
 #   item-id  url  filed  want-filed  status  want-status
 #
-# want-status is REMOVE for an item whose repo is archived. Rules, first
-# match wins ("me" is $me, "owned" means an owner in $owned):
-#
-#   1. Closed: the issue is closed, or the PR is closed or merged.
-#   2. Blocked: an issue with an open blocked-by dependency. GitHub has no
-#      dependencies on PRs.
-#   3. An issue with an open linked PR I authored takes that PR's column.
-#   4. In progress: my draft PR, or my PR with changes requested, failing
-#      CI, or a merge conflict.
-#   5. Waiting on others: my PR in a repo I don't own, or a PR whose latest
-#      review from me requests changes and that hasn't re-requested me.
-#   6. Needs me: any other open PR.
-#   7. Backlog: any other open issue.
-#
-# An issue's linked PR is looked up among the board's PRs, so a linked PR
-# that isn't on the board leaves the issue on the rules below rule 3.
+# Fields are split on the ASCII unit separator (0x1f) because `read` merges
+# runs of whitespace separators such as tab, dropping empty fields.
+# want-status is REMOVE for an item whose repo is archived. Only issues can
+# be Blocked: GitHub has no dependencies on PRs. An issue's linked PR is
+# looked up among the board's PRs, so one missing from the board is ignored.
 classify() {
   jq -r --arg me "$1" --argjson owned "$2" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
@@ -98,8 +84,8 @@ classify() {
       elif .issueDependenciesSummary.blockedBy > 0 then "Blocked"
       else [.closedByPullRequestsReferences.nodes[]? | select(mine) | $prs[.url] // empty] | first // "Backlog"
       end;
-    # Search spells bot logins "name[bot]"; GraphQL drops the suffix. Keep
-    # the search spelling the board already holds.
+    # Search spells bot logins "name[bot]"; GraphQL drops the suffix.
+    # Filed by uses the search spelling.
     def filed_by: if .author.__typename == "Bot" then .author.login + "[bot]" else .author.login // "unknown" end;
     def value($field; $key): [.fieldValues.nodes[]? | select(.field.name == $field) | .[$key]] | first // "";
 
@@ -117,8 +103,8 @@ classify() {
     | join("\u001f")'
 }
 
-# Page through the board node, running the query in $1 with the cursor, and
-# emit each item node as one compact JSON line.
+# Run the paginated board query $1 and emit each item node as a compact
+# JSON line.
 board_pages() {
   local query=$1 cursor="" resp
   while :; do
@@ -142,8 +128,8 @@ BOARD_URLS_QUERY='
     }
   }'
 
-# Everything classify reads. latestOpinionatedReviews holds one review per
-# reviewer, so first: 20 covers any realistic reviewer count.
+# The item state classify reads. latestOpinionatedReviews holds one review
+# per reviewer, so first: 20 covers any realistic reviewer count.
 # shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
 BOARD_ITEMS_QUERY='
   query($id: ID!, $cursor: String) {
@@ -184,7 +170,8 @@ BOARD_ITEMS_QUERY='
     }
   }'
 
-# Set one field on a board item: edit_item <item-id> <field-id> <value-flag> <value>.
+# edit_item <item-id> <field-id> <value-flag> <value>: set one field on a
+# board item.
 edit_item() {
   gh project item-edit --project-id "${PROJECT_ID}" \
     --id "$1" --field-id "$2" "$3" "$4" >/dev/null

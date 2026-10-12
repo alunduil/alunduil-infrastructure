@@ -15,8 +15,8 @@ setup() {
   source "${BATS_TEST_DIRNAME}/sync-project.sh"
 }
 
-# Item node wrapping a content object; repository and author defaults make
-# an open item by someone else in an owned repo.
+# Board item node around content $1. Content defaults to an open item by
+# someone else in an owned repo.
 item() {
   jq -nc --argjson c "$1" --argjson fv "${2:-[]}" '{
     id: "i1",
@@ -38,7 +38,7 @@ linked_pr() {
     '{closedByPullRequestsReferences: {nodes: [{url: $url, author: {login: $author}}]}}'
 }
 
-# Rows classify emits for the given item nodes, with "me" owning repos under "me".
+# classify rows for the given item nodes, as login "me" owning repos under "me".
 rows() {
   printf '%s\n' "$@" | jq -s . | classify me '["me"]'
 }
