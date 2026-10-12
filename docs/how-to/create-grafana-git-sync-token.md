@@ -65,8 +65,8 @@ version. To rotate the GitHub App key, see
 ## Diagnose a 401 or 403
 
 A too-narrow policy and an invalid token both stop bootstrap with
-`401 Unauthorized` or `403 Forbidden`. Which resources failed separates
-them:
+`401 Unauthorized`; a too-narrow policy can also return `403 Forbidden`.
+Which resources failed separates them:
 
 - The message names the missing and received scopes—the policy is too
   narrow. Add what it names, then create a token: editing a policy

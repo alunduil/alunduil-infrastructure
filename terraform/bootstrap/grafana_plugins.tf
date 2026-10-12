@@ -7,7 +7,7 @@
 # that API.
 #
 # Pinned because, on the provider's "latest" default, a new release reads as
-# drift and puts a plugin upgrade into an unrelated PR's plan.
+# drift and the next bootstrap run upgrades the plugin unasked.
 resource "grafana_cloud_plugin_installation" "gcp_cloud_logging" {
   stack_slug = data.grafana_cloud_stack.this.slug
   slug       = "googlecloud-logging-datasource"

@@ -32,8 +32,7 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
 
 # Cloud Monitoring counts audit entries but discards their content, so reading a
 # log line means querying Cloud Logging directly. terraform/bootstrap/ installs
-# the plugin and grants grafana-gcp-reader the logging.viewer and
-# logging.viewAccessor roles it needs.
+# the plugin and grants grafana-gcp-reader its logging roles.
 resource "grafana_data_source" "gcp_cloud_logging" {
   type = "googlecloud-logging-datasource"
   name = "GCP Cloud Logging"
