@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Unit tests for the target selection in set-grafana-gcp-credentials.sh. The
-# gcloud and gcx paths that read and set the key are not exercised.
+# paths that read and set the key need live Secret Manager and Grafana, so they
+# are left to the operator's run.
 
 setup() {
   # shellcheck source=set-grafana-gcp-credentials.sh disable=SC1091

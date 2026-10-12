@@ -24,7 +24,8 @@ leave the key untouched.
 scripts/set-grafana-gcp-credentials.sh
 ```
 
-Pass identifiers to set a subset, for example
+It sets every data source that authenticates as `grafana-gcp-reader`. To set
+only some, pass their identifiers, for example
 `scripts/set-grafana-gcp-credentials.sh gcp-cloud-logging`.
 
 Confirm each authenticates: **Connections → Data sources → `GCP Cloud
