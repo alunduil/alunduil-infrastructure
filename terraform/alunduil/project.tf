@@ -9,9 +9,6 @@ resource "google_project_service" "kept" {
     "logging.googleapis.com",
     "monitoring.googleapis.com",
 
-    # Without this the Cloud Logging plugin's project picker comes up empty.
-    "cloudresourcemanager.googleapis.com",
-
     "storage-api.googleapis.com",
     "storage-component.googleapis.com",
   ])
