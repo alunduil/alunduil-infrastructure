@@ -2,14 +2,18 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-name: Set up Terraform providers
+name: Set up Terraform
 description: >-
-  Restores a provider mirror keyed on the lock files and points terraform
-  init at it, so a warm cache needs no registry.
+  Installs Terraform, restores a provider mirror keyed on the lock files, and
+  points terraform init at it, so a warm cache needs no registry.
 
 runs:
   using: composite
   steps:
+    - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+      with:
+        terraform_version: '1.16.5'
+
     - id: mirror
       shell: bash
       run: echo "dir=$RUNNER_TEMP/terraform-providers" >> "$GITHUB_OUTPUT"

@@ -18,7 +18,7 @@ values for each credential follow.
 
 Two fields resist copying from what the form offers. The **Subject**
 placeholder `repo:octo-org/octo-repo:environment:*` matches only jobs that
-name an environment, which neither Terraform workflow does. And the custom
+name an environment, which the Terraform workflow doesn't. And the custom
 claim carries the ref a run came from, so its trailing `*` is what makes it
 match—a pattern without one matches literally, and so matches nothing.
 
@@ -28,7 +28,7 @@ match—a pattern without one matches literally, and so matches nothing.
 - **Issuer**—GitHub. The issuer address fills itself in.
 - **Subject**—`repo:alunduil/alunduil-infrastructure:pull_request`
 - **Custom claim**—key `job_workflow_ref`, value
-  `alunduil/alunduil-infrastructure/.github/workflows/terraform-plan.yml@*`
+  `alunduil/alunduil-infrastructure/.github/workflows/terraform.yml@*`
 
 ### Read-write, for apply
 
@@ -36,7 +36,7 @@ match—a pattern without one matches literally, and so matches nothing.
 - **Issuer**—GitHub
 - **Subject**—`repo:alunduil/alunduil-infrastructure:ref:refs/heads/main`
 - **Custom claim**—key `job_workflow_ref`, value
-  `alunduil/alunduil-infrastructure/.github/workflows/terraform-apply.yml@*`
+  `alunduil/alunduil-infrastructure/.github/workflows/terraform.yml@*`
 
 ### Scopes
 
