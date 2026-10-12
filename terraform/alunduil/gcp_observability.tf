@@ -3,11 +3,8 @@
 
 locals {
   # Two different plugins, one credential shape: both read @grafana/google-sdk.
-  #
-  # The private key is absent by design: this layer's state is bucket-readable,
-  # so scripts/set-grafana-gcp-credentials.sh sets it as the operator. Grafana
-  # preserves secure fields omitted from an update, so ignoring that field
-  # leaves the key in place.
+  # The private key is absent because this layer's state is bucket-readable;
+  # scripts/set-grafana-gcp-credentials.sh sets it as the operator.
   grafana_gcp_reader_auth = jsonencode({
     authenticationType = "jwt"
     defaultProject     = local.bootstrap.project_id
@@ -27,6 +24,8 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   json_data_encoded = local.grafana_gcp_reader_auth
 
   lifecycle {
+    # Grafana preserves secure fields omitted from an update, so applies leave
+    # the operator-set key in place.
     ignore_changes = [secure_json_data_encoded]
   }
 }
@@ -45,6 +44,8 @@ resource "grafana_data_source" "gcp_cloud_logging" {
   json_data_encoded = local.grafana_gcp_reader_auth
 
   lifecycle {
+    # Grafana preserves secure fields omitted from an update, so applies leave
+    # the operator-set key in place.
     ignore_changes = [secure_json_data_encoded]
   }
 }
