@@ -2,33 +2,46 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-name: Terraform Plan
+name: Terraform
 
 on:
   pull_request:
     paths:
       - 'terraform/alunduil/**'
       - 'terraform/modules/**'
-      - '.github/workflows/terraform-plan.yml'
+      - '.github/workflows/terraform.yml'
       - '.github/actions/terraform-providers/**'
       - 'scripts/export-terraform-credentials.sh'
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/alunduil/**'
+      - 'terraform/modules/**'
+      - '.github/workflows/terraform.yml'
+      - '.github/actions/terraform-providers/**'
+      - 'scripts/export-terraform-credentials.sh'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# A new push to a pull request supersedes its in-flight plan. head_ref is
+# set only on pull_request, so push and dispatch runs each get a group of
+# their own and are never cancelled here.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  run:
+  plan:
+    name: Plan Terraform changes
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Joins terraform-apply.yml's group so a plan waits out an in-flight
-    # apply. The read-only deployer SA can't write a .tflock object, so the
-    # plan below runs -lock=false and would otherwise refresh against state
-    # an apply has already superseded. Job level, not workflow level, so the
-    # per-ref group above still supersedes this PR's own in-flight plan.
+    # Joins the apply job's group so a plan waits out an in-flight apply. The
+    # read-only deployer SA can't write a .tflock object, so the plan below
+    # runs -lock=false and would otherwise refresh against state an apply has
+    # already superseded.
     concurrency:
       group: terraform-state
       queue: max
@@ -119,3 +132,65 @@ jobs:
                 body,
               });
             }
+
+  apply:
+    name: Apply Terraform changes
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Serializes every job touching the shared GCS state. queue: max carries
+    # two guarantees: it forbids cancel-in-progress: true, so no arrival
+    # interrupts a write and orphans the state lock, and it queues runs the
+    # default single slot would cancel — a pending apply among them.
+    concurrency:
+      group: terraform-state
+      queue: max
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: '1.16.5'
+
+      - uses: ./.github/actions/terraform-providers
+
+      # Read-write deployer SA: gated to refs/heads/main by the WIF binding.
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_RW_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_RW_SERVICE_ACCOUNT_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+
+      - id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      # Provider credentials live in Secret Manager, not GitHub secrets.
+      - name: Export provider credentials
+        run: scripts/export-terraform-credentials.sh rw
+
+      - name: Terraform Init
+        working-directory: terraform/alunduil
+        run: terraform init
+
+      # plan-then-apply (not apply direct) so the applied diff is the same
+      # one the pull request's plan comment showed.
+      - name: Terraform Plan
+        working-directory: terraform/alunduil
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: terraform plan -lock=false -no-color -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: terraform/alunduil
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: terraform apply -auto-approve tfplan

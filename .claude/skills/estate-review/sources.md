@@ -113,7 +113,7 @@ GraphQL budget free.
   (`/repos/{r}/actions/runs?created=>=YYYY-MM-DD`). Fetch the failing job's
   log tail for each recurring failure (`gh api --allow-escape-sequences
   .../actions/jobs/{id}/logs`).
-- This repository: every Terraform Apply on `main`. A failed apply is drift
+- This repository: every Terraform apply on `main`. A failed apply is drift
   until a later apply succeeds.
 - Scheduled workflows that didn't run, and workflows not in the `active`
   state.

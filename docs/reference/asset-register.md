@@ -231,7 +231,7 @@ Plex asks a T-1 client to sign in. Its allowed-networks setting covers
 every private IPv4 range, so a client already in T-2 reaches it without
 signing in.
 
-E-04 reaches P-2's credentials: `terraform-plan.yml` triggers on
+E-04 reaches P-2's credentials: `terraform.yml` plans on
 `pull_request` with no environment gate. The pool in
 `terraform/bootstrap/github_oidc.tf` requires
 `assertion.repository == 'alunduil/alunduil-infrastructure'`, so a

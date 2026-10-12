@@ -5,7 +5,7 @@
 
 [![License](https://img.shields.io/github/license/alunduil/alunduil-infrastructure)](LICENSES/MIT.txt)
 [![CI](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/ci.yml)
-[![Terraform Apply](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform-apply.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform-apply.yml)
+[![Terraform](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform.yml)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](renovate.json)
 
 Personal infrastructure as code, managed with Terraform.
