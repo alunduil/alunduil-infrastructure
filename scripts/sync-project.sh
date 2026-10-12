@@ -80,14 +80,15 @@ classify() {
     def owned: .repository.owner.login as $o | $owned | index($o) != null;
     def my_review: [.latestOpinionatedReviews.nodes[]? | select(.author.login == $me) | .state] | first;
     def rerequested: [.reviewRequests.nodes[]?.requestedReviewer.login] | index($me) != null;
+    def needs_my_work:
+      .isDraft
+      or .reviewDecision == "CHANGES_REQUESTED"
+      or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
+      or .mergeable == "CONFLICTING";
+    def awaiting_author: my_review == "CHANGES_REQUESTED" and (rerequested | not);
     def pr_column:
-      if mine and (.isDraft
-                   or .reviewDecision == "CHANGES_REQUESTED"
-                   or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
-                   or .mergeable == "CONFLICTING")
-      then "In progress"
-      elif mine and (owned | not) then "Waiting on others"
-      elif my_review == "CHANGES_REQUESTED" and (rerequested | not) then "Waiting on others"
+      if mine and needs_my_work then "In progress"
+      elif (mine and (owned | not)) or awaiting_author then "Waiting on others"
       else "Needs me"
       end;
     def column($prs):
@@ -182,6 +183,12 @@ BOARD_ITEMS_QUERY='
       }
     }
   }'
+
+# Set one field on a board item: edit_item <item-id> <field-id> <value-flag> <value>.
+edit_item() {
+  gh project item-edit --project-id "${PROJECT_ID}" \
+    --id "$1" --field-id "$2" "$3" "$4" >/dev/null
+}
 
 # Emit one gh-search argument string per source-leg. Two legs per source
 # (issues + prs). The trailing word-split on $leg in the consumer is
@@ -352,21 +359,14 @@ while IFS=$'\x1f' read -r item_id url filed want_filed status want_status; do
   if [[ $filed != "$want_filed" ]]; then
     printf 'updating filed by on %s (%s -> %s)\n' \
       "$url" "${filed:-<none>}" "$want_filed"
-    gh project item-edit \
-      --project-id "${PROJECT_ID}" \
-      --id "$item_id" \
-      --field-id "${FILED_BY_FIELD_ID}" \
-      --text "$want_filed" >/dev/null
+    edit_item "$item_id" "${FILED_BY_FIELD_ID}" --text "$want_filed"
     changed=1
   fi
   if [[ $status != "$want_status" ]]; then
     printf 'updating status on %s (%s -> %s)\n' \
       "$url" "${status:-<none>}" "$want_status"
-    gh project item-edit \
-      --project-id "${PROJECT_ID}" \
-      --id "$item_id" \
-      --field-id "${STATUS_FIELD_ID}" \
-      --single-select-option-id "${status_option_id[$want_status]}" >/dev/null
+    edit_item "$item_id" "${STATUS_FIELD_ID}" \
+      --single-select-option-id "${status_option_id[$want_status]}"
     changed=1
   fi
   if [[ $changed -eq 1 ]]; then

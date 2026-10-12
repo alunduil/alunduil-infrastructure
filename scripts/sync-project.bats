@@ -26,19 +26,29 @@ item() {
   }'
 }
 
-issue() { item "$(jq -c '{__typename: "Issue", url: "https://github.com/me/r/issues/1"} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
-pr() { item "$(jq -c '{__typename: "PullRequest", url: "https://github.com/me/r/pull/2"} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
+ISSUE=https://github.com/me/r/issues/1
+PR=https://github.com/me/r/pull/2
+
+issue() { item "$(jq -c --arg url "$ISSUE" '{__typename: "Issue", url: $url} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
+pr() { item "$(jq -c --arg url "$PR" '{__typename: "PullRequest", url: $url} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
+
+# Issue content linking the PR at URL $1 (default $PR), authored by $2.
+linked_pr() {
+  jq -nc --arg url "${1:-$PR}" --arg author "$2" \
+    '{closedByPullRequestsReferences: {nodes: [{url: $url, author: {login: $author}}]}}'
+}
+
+# Rows classify emits for the given item nodes, with "me" owning repos under "me".
+rows() {
+  printf '%s\n' "$@" | jq -s . | classify me '["me"]'
+}
 
 # Column classify picks for the item with the given URL.
 column_of() {
   local url=$1
   shift
-  printf '%s\n' "$@" | jq -s . | classify me '["me"]' \
-    | awk -F $'\x1f' -v url="$url" '$2 == url { print $6 }'
+  rows "$@" | awk -F $'\x1f' -v url="$url" '$2 == url { print $6 }'
 }
-
-ISSUE=https://github.com/me/r/issues/1
-PR=https://github.com/me/r/pull/2
 
 @test "archived repo items are removed" {
   run column_of "$ISSUE" "$(issue '{"repository": {"isArchived": true, "owner": {"login": "me"}}}')"
@@ -52,29 +62,28 @@ PR=https://github.com/me/r/pull/2
 
 @test "an issue with an open blocker is Blocked, even with my open PR" {
   run column_of "$ISSUE" \
-    "$(issue '{"issueDependenciesSummary": {"blockedBy": 1},
-               "closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "me"}}]}}')" \
+    "$(issue "$(linked_pr "" me | jq -c '. + {issueDependenciesSummary: {blockedBy: 1}}')")" \
     "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
   [[ $output == Blocked ]]
 }
 
 @test "an issue moves with the open PR I authored" {
   run column_of "$ISSUE" \
-    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "me"}}]}}')" \
+    "$(issue "$(linked_pr "" me)")" \
     "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
   [[ $output == "In progress" ]]
 }
 
 @test "an issue ignores a linked PR someone else authored" {
   run column_of "$ISSUE" \
-    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "someone"}}]}}')" \
+    "$(issue "$(linked_pr "" someone)")" \
     "$(pr)"
   [[ $output == Backlog ]]
 }
 
 @test "an issue whose linked PR isn't on the board stays in Backlog" {
   run column_of "$ISSUE" \
-    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/9", "author": {"login": "me"}}]}}')"
+    "$(issue "$(linked_pr https://github.com/me/r/pull/9 me)")"
   [[ $output == Backlog ]]
 }
 
@@ -111,27 +120,19 @@ PR=https://github.com/me/r/pull/2
 }
 
 @test "classify reads current field values and keeps empty ones in place" {
-  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
-    printf "%s\n" "$2" | jq -s . | classify me "[\"me\"]"' _ \
-    "${BATS_TEST_DIRNAME}/sync-project.sh" \
-    "$(issue '{}' '[{"name": "Needs me", "field": {"name": "Status"}}, {"text": "x", "field": {"name": "Title"}}]')"
+  run rows "$(issue '{}' '[{"name": "Needs me", "field": {"name": "Status"}}, {"text": "x", "field": {"name": "Title"}}]')"
   IFS=$'\x1f' read -r id url filed want_filed status want_status <<<"$output"
   [[ $id == i1 && $url == "$ISSUE" && -z $filed && $want_filed == someone ]]
   [[ $status == "Needs me" && $want_status == Backlog ]]
 }
 
 @test "classify keeps the search spelling of bot logins in filed by" {
-  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
-    printf "%s\n" "$2" | jq -s . | classify me "[\"me\"]"' _ \
-    "${BATS_TEST_DIRNAME}/sync-project.sh" \
-    "$(pr '{"author": {"__typename": "Bot", "login": "renovate"}}')"
+  run rows "$(pr '{"author": {"__typename": "Bot", "login": "renovate"}}')"
   IFS=$'\x1f' read -r _ _ _ want_filed _ _ <<<"$output"
   [[ $want_filed == 'renovate[bot]' ]]
 }
 
 @test "classify skips items without a content url (draft items)" {
-  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
-    echo "[{\"id\": \"d1\", \"content\": {}, \"fieldValues\": {\"nodes\": []}}]" | classify me "[\"me\"]"' _ \
-    "${BATS_TEST_DIRNAME}/sync-project.sh"
+  run rows '{"id": "d1", "content": {}, "fieldValues": {"nodes": []}}'
   [[ -z $output ]]
 }
