@@ -10,7 +10,7 @@ data "grafana_cloud_stack" "this" {
 
 # Admin because the alunduil layer needs actions no lesser basic role grants:
 # provisioning.connections:read and :write for the Git Sync connection, and
-# datasources:write for the Cloud Monitoring data source.
+# datasources:write for the GCP data sources.
 # Fine-grained RBAC roles would grant just those, but a stack service account
 # takes a basic role only and custom roles need a stack plan with RBAC. Revisit
 # if this stack moves to one. See the single-secret note below.
