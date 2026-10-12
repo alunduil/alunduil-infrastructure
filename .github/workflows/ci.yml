@@ -5,17 +5,107 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs; never cancel main so each commit completes.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  pre-commit:
+    name: Run pre-commit hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Terraform and just are installed below because some hooks shell
+    # out to those binaries rather than bringing their own.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: '1.16.5'
+
+      - name: Set up Terraform providers
+        uses: ./.github/actions/terraform-providers
+
+      - name: Set up just
+        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+
+      # sha_pinning_required rejects tag refs transitively, so whichever
+      # action runs pre-commit must SHA-pin its own nested actions.
+      - name: Run pre-commit hooks
+        uses: tox-dev/action-pre-commit-uv@e09b8958484dfe71f4ac3bc7afb230ba506402ec # v1.0.5
+        env:
+          # no-commit-to-branch is a local guard and would always fail on
+          # push to main — skip it in CI.
+          SKIP: no-commit-to-branch
+
+  bats:
+    name: Run bats suites
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      # A job-level block replaces the workflow-level one rather than merging,
+      # so the checkout needs `contents` named again here.
+      contents: read
+      # codecov-action authenticates by OIDC, so there is no upload token to
+      # store or rotate.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up bats
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
+        with:
+          # The suites use plain [[ ]] assertions, so the support/assert
+          # libraries (and their BATS_LIB_PATH wiring) aren't needed.
+          support-install: false
+          assert-install: false
+          detik-install: false
+          file-install: false
+          # bats-action curls api.github.com; auth raises the anonymous rate limit.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install kcov
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake ninja-build binutils-dev \
+            libcurl4-openssl-dev zlib1g-dev libdw-dev libiberty-dev libssl-dev
+          scripts/install-kcov.sh --bin-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run suites
+        run: |
+          kcov --include-path=github/projects,scripts \
+            --exclude-pattern=.bats \
+            coverage bats --recursive github/projects scripts
+
+      # kcov writes to coverage/bats.<hash>/ and symlinks coverage/bats beside
+      # it; the symlink is the only stable path.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          use_oidc: true
+          files: coverage/bats/cobertura.xml
+          disable_search: true
+          flags: bats
+
   dependency-review:
     name: Review dependencies
+    # Compares a pull request's base and head; a push has nothing to review.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

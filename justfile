@@ -51,7 +51,7 @@ alunduil:
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
 
-# Argument list matches the one bats.yml hands kcov, so a local run covers
+# Argument list matches the one ci.yml hands kcov, so a local run covers
 # what CI covers.
 [doc("Run bats unit tests for shell helpers.")]
 test:
