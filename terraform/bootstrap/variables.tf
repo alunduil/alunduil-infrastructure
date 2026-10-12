@@ -11,24 +11,28 @@ variable "billing_account_id" {
   }
 }
 
-variable "cloudflare_master_token" {
+# Account Analytics is here for the blog's account-scoped analytics token; the
+# rest of the rows serve the two zone-scoped deployer tokens.
+variable "cloudflare_bootstrap_token" {
   type        = string
   sensitive   = true
   description = <<-EOT
-    Master Cloudflare token, created by hand and revoked after apply.
+    Bootstrap Cloudflare token, created by hand and revoked after apply.
 
     At https://dash.cloudflare.com/profile/api-tokens choose
-    Create Custom Token. Each Permissions row has three dropdowns —
-    group (defaults to Account), permission, access. Add these rows:
+    Create Custom Token. Each row's group dropdown defaults to Account,
+    so set it per row:
 
-      User | API Tokens    | Edit
-      Zone | Zone          | Read
-      Zone | DNS           | Read
-      Zone | Zone Settings | Read
+      User    | API Tokens        | Edit
+      Zone    | Zone              | Read
+      Zone    | DNS               | Read
+      Zone    | Zone Settings     | Read
+      Account | Account Analytics | Read
 
-    Set Zone Resources to: Include | Specific zone | alunduil.com.
+    Set Zone Resources to: Include | Specific zone | alunduil.com, and
+    Account Resources to: Include | alunduil-infrastructure.
 
-    Full steps: docs/how-to/create-master-cloudflare-token.md
+    Full steps: docs/how-to/create-bootstrap-cloudflare-token.md
   EOT
 }
 
@@ -42,18 +46,14 @@ variable "grafana_cloud_access_policy_token" {
   type        = string
   sensitive   = true
   description = <<-EOT
-    Master Grafana Cloud access-policy token, created by hand and revoked
+    Bootstrap Grafana Cloud access-policy token, created by hand and revoked
     after apply. Used only to read the stack and create the provisioning
     service-account token stored in Secret Manager.
 
-    In the Cloud Portal (grafana.com, then your org) go to
-    Security > Access Policies > Create access policy. The Scopes grid
-    lists only data-plane resources by default; click Add scope to add:
-
-      stacks                 read
-      stack-service-accounts write
-
-    Save, then Add token on the policy and copy the value (shown once).
+    At https://grafana.com choose your org, then
+    Security > Access Policies. On the alunduil-infrastructure-bootstrap
+    policy choose Add token, set a short expiration, and copy the value
+    (shown once).
 
     Full steps: docs/how-to/create-grafana-git-sync-token.md
   EOT

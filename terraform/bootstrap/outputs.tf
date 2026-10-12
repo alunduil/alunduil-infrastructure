@@ -37,6 +37,26 @@ output "cloudflare_api_token_deployer_rw_secret" {
   sensitive   = false
 }
 
+# configure-github-secrets.sh publishes these to blog.alunduil.com as Actions
+# secrets; its Pages build reads them by name.
+output "blog_analytics_workload_identity_provider" {
+  value       = google_iam_workload_identity_pool_provider.blog.name
+  description = "Full resource name of the blog's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/blog/providers/github-provider"
+  sensitive   = false
+}
+
+output "blog_analytics_reader_email" {
+  value       = google_service_account.blog_analytics_reader.email
+  description = "Email of the service account blog.alunduil.com's Pages build impersonates"
+  sensitive   = false
+}
+
+output "cloudflare_api_token_blog_analytics_ro_secret" {
+  value       = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.secret_id
+  description = "Secret Manager short name holding the blog's Cloudflare analytics token; fetched at build time by the blog's Pages workflow"
+  sensitive   = false
+}
+
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates reach
 # the alunduil layer through the published bootstrap-outputs.json object (see
 # published_outputs.tf); the App's three values are fetched from Secret Manager
@@ -65,6 +85,18 @@ output "grafana_git_sync_app_secrets" {
   sensitive   = false
 }
 
+output "grafana_fleet_management_token_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.grafana_fleet_management_token : secret.secret_id])
+  description = "Secret Manager short names holding the Fleet Management access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
+output "grafana_alloy_push_token_secret" {
+  value       = google_secret_manager_secret.grafana_alloy_push_token.secret_id
+  description = "Secret Manager short name holding the access-policy token alloy pushes logs and metrics with; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
+  sensitive   = false
+}
+
 output "grafana_gcp_reader_email" {
   value       = google_service_account.grafana_gcp_reader.email
   description = "Email of the read-only SA Grafana Cloud authenticates as; the alunduil layer uses it as the data-source clientEmail"
@@ -74,5 +106,11 @@ output "grafana_gcp_reader_email" {
 output "grafana_gcp_reader_key_secret" {
   value       = google_secret_manager_secret.grafana_gcp_reader_key.secret_id
   description = "Secret Manager short name holding the Grafana GCP reader SA key"
+  sensitive   = false
+}
+
+output "tailscale_client_id_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.tailscale_client_id : secret.secret_id])
+  description = "Secret Manager short names holding the Tailscale trust credential client IDs, read-only for plan and read-write for apply; populated by scripts/configure-tailscale-secrets.sh and fetched via `gcloud secrets versions access`"
   sensitive   = false
 }

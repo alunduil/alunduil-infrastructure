@@ -1,6 +1,7 @@
 {
   "owner": "alunduil",
   "title": "Inbox",
+  "login": "alunduil",
   "fields": [
     {
       "name": "Status",
@@ -10,13 +11,33 @@
           "id": "8080c408",
           "name": "Backlog",
           "color": "GRAY",
-          "description": "Filed, not yet picked up"
+          "description": "Not started"
+        },
+        {
+          "name": "In progress",
+          "color": "BLUE",
+          "description": "My move on my own work"
+        },
+        {
+          "name": "Drafts",
+          "color": "ORANGE",
+          "description": "My draft PRs"
         },
         {
           "id": "bcc940da",
-          "name": "Review",
+          "name": "Needs me",
           "color": "YELLOW",
-          "description": "PR open"
+          "description": "My review or merge"
+        },
+        {
+          "name": "Waiting on others",
+          "color": "PURPLE",
+          "description": "Someone else's move"
+        },
+        {
+          "name": "Blocked",
+          "color": "RED",
+          "description": "Blocked by an open issue"
         },
         {
           "id": "c090564c",
@@ -33,8 +54,6 @@
   ],
   "filed_by_field": "Filed by",
   "status_field": "Status",
-  "pr_status": "Review",
-  "issue_status": "Backlog",
   "sources": [
     { "type": "owner", "logins": ["alunduil", "dungeon-studio", "qua-world"] },
     { "type": "author", "login": "alunduil" },

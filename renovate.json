@@ -16,6 +16,14 @@
   "customManagers": [
     {
       "customType": "regex",
+      "description": "Annotated *_VERSION pins in the install scripts. The paired sha256 is not updated, so the build fails its checksum until the pin is refreshed by hand",
+      "managerFilePatterns": ["/^scripts/install-.*\\.sh$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
+      ]
+    },
+    {
+      "customType": "regex",
       "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
       "matchStrings": ["terraform_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
       "depNameTemplate": "hashicorp/terraform",

@@ -22,13 +22,31 @@ Cloudflare
 TrueNAS
 Grafana
 Plex
+Tailscale
 UptimeRobot
 Renovate
 etcd
+Loki
+Netdata
+Mosquitto
+Zigbee
+Zigbee2MQTT
+Nabu Casa
+MagicDNS
+mDNS
+Deco
+Deco's
+Quad9
+Crostini
+ChromeOS
+Squarespace
+zellij
 
 # Product and interface names, spelled as their vendors spell them
 GitHub
 GitHub App
+Dependabot
+OAuth
 Google Drive
 Google Takeout
 Cloud Sync
@@ -38,15 +56,25 @@ Secret Manager
 Proxmox
 Proxmox's
 Podman
+Rockchip
 
 # Tooling
+Ansible
+Armbian
+Armbian's
+Buildroot
+Yocto
 gh
 github_repository
 markdownlint
 yamllint
+prek
+rsync
 Hackage
 Haskell
 Diátaxis
+OWASP
+OWASP's
 ddbeck's
 Nygard
 Nygard's
@@ -59,23 +87,36 @@ Nygard's
 (?i)deployer
 (?i)devcontainer
 (?i)env
+(?i)failover
 (?i)hardcoded
 (?i)homelab
 (?i)homelab's
 (?i)hostname
+(?i)hostnames
 (?i)machineconfig
 (?i)machineconfigs
+(?i)middleware
+(?i)multicast
+(?i)nameserver
+(?i)nameservers
+(?i)prefilled
+(?i)PRs
 (?i)quadlets
 (?i)repo
 (?i)repos
+(?i)tailnet
 (?i)ruleset
+(?i)subnet
+(?i)subnets
+(?i)syslog
 (?i)transcode
 (?i)triaged
-(?i)UIDs
 (?i)uncheck
+(?i)unmanaged
 (?i)unshipped
 (?i)untracked
 (?i)upserts
+(?i)userspace
 (?i)vdev
 (?i)vdevs
 (?i)VMs

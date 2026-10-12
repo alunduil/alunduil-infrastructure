@@ -38,3 +38,19 @@ variable "grafana_git_sync_app_installation_id" {
   type        = string
   description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_installation_id."
 }
+
+# Left unmarked: a caller holding the id still needs an OIDC token matching the
+# credential's issuer, subject, and audience rules.
+variable "tailscale_client_id" {
+  type        = string
+  description = "Client ID of the Tailscale trust credential the provider federates against. Export as TF_VAR_tailscale_client_id."
+}
+
+# Empty on a runner, which mints its own. Sensitive despite expiring within the
+# hour: it is a bearer token until it does.
+variable "tailscale_identity_token" {
+  type        = string
+  default     = ""
+  description = "OIDC token the Tailscale trust credential accepts, for runs outside a federated runtime. Export as TF_VAR_tailscale_identity_token."
+  sensitive   = true
+}

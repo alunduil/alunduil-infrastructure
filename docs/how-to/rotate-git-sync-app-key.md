@@ -28,12 +28,12 @@ authenticating throughout.
 
 3. Increment `secure_version` in `terraform/alunduil/grafana.tf` and merge the
    change, which runs the apply in CI. The `secure` block is write-only, so the
-   provider re-sends the key only when that counter moves; step 2 on its own
+   provider re-sends the key only when that counter moves. Step 2 on its own
    leaves the connection signing with the old key.
 
 4. Confirm the dashboards repository still syncs, under **Administration >
    Provisioning** in Grafana. A successful apply proves only that Grafana
-   accepted the key; the sync is what proves GitHub accepts it.
+   accepted the key. The sync is what proves GitHub accepts it.
 
 5. Delete the old key on the App's General tab.
 

@@ -15,7 +15,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = false
   allow_squash_merge          = true
   allow_rebase_merge          = false
-  allow_auto_merge            = false
+  allow_auto_merge            = var.renovate_automerge
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
@@ -47,13 +47,32 @@ resource "github_branch_default" "this" {
   branch     = var.default_branch
 }
 
-# Default-branch protection. Ruleset (not classic github_branch_protection)
-# because rulesets are GitHub's strategic mechanism and the only one with
-# first-class bypass actors — needed here since a solo maintainer can't satisfy
-# a required-review count. The repository admin bypasses with mode "always" so
-# direct pushes to the default branch remain possible when wanted, while the
-# default path stays PR-with-resolved-conversations.
-resource "github_repository_ruleset" "default_branch" {
+locals {
+  # Mode "always" keeps direct pushes to the default branch possible.
+  admin_bypass_actor = {
+    actor_id    = 5 # built-in repository "admin" role
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  renovate_actor = {
+    actor_id   = 2740 # GET /apps/renovate
+    actor_type = "Integration"
+  }
+
+  # Mode "pull_request" lets Renovate merge its pull requests without letting
+  # it push to the default branch.
+  merge_bypass_actors = concat(
+    [local.admin_bypass_actor],
+    var.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
+  )
+}
+
+# Rulesets rather than classic github_branch_protection: rulesets are GitHub's
+# strategic mechanism and the only one with first-class bypass actors. Bypass
+# actors are per ruleset, so each ruleset holds one policy and a bypass skips
+# that policy alone.
+resource "github_repository_ruleset" "default" {
   name        = "default"
   repository  = github_repository.this.name
   target      = "branch"
@@ -68,10 +87,13 @@ resource "github_repository_ruleset" "default_branch" {
     }
   }
 
-  bypass_actors {
-    actor_id    = 5 # built-in repository "admin" role
-    actor_type  = "RepositoryRole"
-    bypass_mode = "always"
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
   }
 
   # No required_signatures: GitHub already signs squash merges, so it would be
@@ -80,7 +102,73 @@ resource "github_repository_ruleset" "default_branch" {
     deletion                = true
     non_fast_forward        = true
     required_linear_history = true
+  }
+}
 
+moved {
+  from = github_repository_ruleset.default_branch
+  to   = github_repository_ruleset.default
+}
+
+# Merging a pull request updates the branch too, so only bypass actors can
+# merge.
+resource "github_repository_ruleset" "admin_only" {
+  count = var.admin_only_updates ? 1 : 0
+
+  name        = "admin-only"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = local.merge_bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    update = true
+  }
+}
+
+# The admin bypasses because a solo maintainer can't satisfy a required review.
+resource "github_repository_ruleset" "review" {
+  name        = "review"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = local.merge_bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
     # Code owner review is a separate condition from the review count, so a
     # repo can gate on CODEOWNERS while the count stays at 0.
     pull_request {
@@ -88,22 +176,115 @@ resource "github_repository_ruleset" "default_branch" {
       require_code_owner_review         = var.require_code_owner_review
       required_review_thread_resolution = true
     }
+  }
+}
 
-    # Status check contexts differ per repo, so the baseline leaves this
-    # ungated and each repo opts in via var.required_status_checks.
-    dynamic "required_status_checks" {
-      for_each = var.required_status_checks != null ? [var.required_status_checks] : []
-      content {
-        strict_required_status_checks_policy = required_status_checks.value.strict
+# Renovate never bypasses this: these checks are all that gate its unreviewed
+# merges.
+resource "github_repository_ruleset" "checks" {
+  count = var.required_status_checks != null ? 1 : 0
 
-        dynamic "required_check" {
-          for_each = required_status_checks.value.contexts
-          content {
-            context = required_check.value
-          }
+  name        = "checks"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    required_status_checks {
+      strict_required_status_checks_policy = var.required_status_checks.strict
+
+      dynamic "required_check" {
+        for_each = var.required_status_checks.contexts
+        content {
+          context = required_check.value
         }
       }
     }
+  }
+}
+
+# Without this, anyone who can push to a Renovate branch could add commits to a
+# pull request Renovate then merges past review.
+resource "github_repository_ruleset" "renovate" {
+  count = var.renovate_automerge ? 1 : 0
+
+  name        = "renovate"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["refs/heads/renovate/**"]
+      exclude = []
+    }
+  }
+
+  # Renovate pushes to its branches directly, so it needs mode "always" here.
+  dynamic "bypass_actors" {
+    for_each = [
+      local.admin_bypass_actor,
+      merge(local.renovate_actor, { bypass_mode = "always" }),
+    ]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    update = true
+  }
+}
+
+# A tag push can publish to a registry that can't recall an upload, so a moved
+# tag leaves the registry and the repository silently disagreeing. The admin
+# bypass keeps a botched tag fixable.
+resource "github_repository_ruleset" "immutable_tags" {
+  name        = "immutable-tags"
+  repository  = github_repository.this.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["~ALL"]
+      exclude = []
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = [local.admin_bypass_actor]
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  # No non_fast_forward: update already blocks fast-forwards.
+  rules {
+    deletion = true
+    update   = true
   }
 }
 
@@ -130,12 +311,35 @@ resource "github_workflow_repository_permissions" "this" {
   can_approve_pull_request_reviews = false
 }
 
-# allowed_actions is set to GitHub's default rather than omitted: the provider
-# sends it on every write, so leaving it unset puts an empty value on the wire.
+locals {
+  # Actions two or more repos call, counting those nested in composite actions.
+  baseline_allowed_action_patterns = [
+    "8c6794b6/hpc-codecov-action@*",
+    "amannn/action-semantic-pull-request@*",
+    "bats-core/bats-action@*",
+    "haskell-actions/hlint-setup@*",
+    "haskell-actions/setup@*",
+    "JasonEtco/create-an-issue@*",
+    "lycheeverse/lychee-action@*",
+    "peter-evans/create-issue-from-file@*",
+    "pnpm/action-setup@*",
+    "reviewdog/action-setup@*",
+    "tox-dev/action-pre-commit-uv@*",
+  ]
+}
+
+# A workflow calling an unlisted action fails at job setup, so allow-list a new
+# action before merging the workflow that calls it.
 resource "github_actions_repository_permissions" "this" {
   repository           = github_repository.this.name
-  allowed_actions      = "all"
+  allowed_actions      = "selected"
   sha_pinning_required = true
+
+  allowed_actions_config {
+    github_owned_allowed = true
+    verified_allowed     = true
+    patterns_allowed     = concat(local.baseline_allowed_action_patterns, var.allowed_action_patterns)
+  }
 }
 
 resource "github_repository_environment" "this" {

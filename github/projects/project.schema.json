@@ -27,6 +27,13 @@
       "maxItems": 50,
       "items": {"$ref": "#/$defs/field"}
     },
+    "login": {
+      "type": "string",
+      "description": "GitHub login whose move the sync's status rules track. Consumed by sync-project.sh, not by bootstrap.sh.",
+      "minLength": 1,
+      "maxLength": 39,
+      "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|-(?=[a-zA-Z\\d])){0,38}$"
+    },
     "filed_by_field": {
       "type": "string",
       "description": "Name of the TEXT field the #73 sync workflow stamps with each item's source. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`.",
@@ -34,17 +41,7 @@
     },
     "status_field": {
       "type": "string",
-      "description": "Name of the SINGLE_SELECT field the #73 sync workflow sets per item type. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields`. Requires `pr_status` and `issue_status`.",
-      "minLength": 1
-    },
-    "pr_status": {
-      "type": "string",
-      "description": "Option name in `status_field` assigned to pull requests. Consumed by sync-project.sh; must match an option declared on that field.",
-      "minLength": 1
-    },
-    "issue_status": {
-      "type": "string",
-      "description": "Option name in `status_field` assigned to issues. Consumed by sync-project.sh; must match an option declared on that field.",
+      "description": "Name of the SINGLE_SELECT field the #73 sync workflow sets by whose move each item is. Consumed by sync-project.sh, not by bootstrap.sh; should name a field declared in `fields` with every option sync-project.sh routes to. Requires `login`.",
       "minLength": 1
     },
     "sources": {

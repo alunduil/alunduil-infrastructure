@@ -6,6 +6,16 @@ module "alunduil_chezmoi" {
   name        = "alunduil-chezmoi"
   description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
   topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
+  required_status_checks = {
+    contexts = [
+      "Run pre-commit hooks",
+      "Test shell scripts",
+      "Validate chezmoi source",
+      "Validate zellij config",
+      "Validate telemetry config",
+      "Check prose",
+    ]
+  }
 }
 
 module "alunduil_infrastructure" {
@@ -17,6 +27,11 @@ module "alunduil_infrastructure" {
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
+  # setup-crate is nested in setup-just.
+  allowed_action_patterns = [
+    "extractions/setup-crate@*",
+    "extractions/setup-just@*",
+  ]
 }
 
 module "blog_alunduil_com" {
@@ -25,13 +40,19 @@ module "blog_alunduil_com" {
   description  = "Personal blog at blog.alunduil.com"
   homepage_url = "https://blog.alunduil.com"
   topics       = ["blog", "github-pages"]
-  required_status_checks = {
-    contexts = ["build"]
-  }
   pages = {
     cname          = "blog.alunduil.com"
     build_type     = "workflow"
     https_enforced = true
+  }
+  allowed_action_patterns = ["withastro/action@*"]
+  required_status_checks = {
+    contexts = [
+      "Lint and format",
+      "Test skill scripts",
+      "Test TypeScript utilities",
+      "Build the site",
+    ]
   }
 }
 
@@ -57,6 +78,11 @@ module "network_arbitrary" {
   description  = "Arbitrary Instances for Network Types"
   topics       = ["haskell-library", "haskell", "network", "quickcheck"]
   environments = { hackage = {} }
+  # create-pull-request is nested in haskell-bounds-bump-action.
+  allowed_action_patterns = [
+    "nomeata/haskell-bounds-bump-action@*",
+    "peter-evans/create-pull-request@*",
+  ]
 }
 
 module "projects_v2_sync" {
@@ -66,11 +92,24 @@ module "projects_v2_sync" {
   topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
 }
 
-module "siren_json_hs" {
+module "renovate_config" {
   source      = "../modules/github_repository"
-  name        = "siren-json.hs"
-  description = "Siren+JSON Tools for Haskell"
-  topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  name        = "renovate-config"
+  description = "Extend this from any repo's renovate.json to inherit the shared Renovate policy."
+  topics      = ["renovate", "renovate-config", "dependency-management"]
+}
+
+import {
+  to = module.renovate_config.github_repository.this
+  id = "renovate-config"
+}
+
+module "siren_json_hs" {
+  source       = "../modules/github_repository"
+  name         = "siren-json.hs"
+  description  = "Siren+JSON Tools for Haskell"
+  topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  environments = { hackage = {} }
 }
 
 module "woodland_generators" {
@@ -91,6 +130,18 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
+  # A matrix edit renames the per-cell Test contexts, and a pinned name that
+  # stops reporting blocks merge indefinitely, so this pins ci.yml's
+  # aggregator instead. Codecov's upload legs and commit statuses stay
+  # advisory.
+  required_status_checks = {
+    contexts = [
+      "Confirm every test leg passed",
+      "Build every package",
+      "Run every pre-commit hook",
+      "Enforce Conventional Commits",
+    ]
+  }
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
@@ -107,6 +158,8 @@ module "zellij_claude_pair" {
   name        = "zellij-claude-pair"
   description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
+
+  allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
 module "zfs_replicate" {
@@ -117,14 +170,15 @@ module "zfs_replicate" {
   topics         = ["zfs", "replication", "snapshots"]
   default_branch = "master"
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request, Renovate's included.
+  # non-owner pull request but Renovate's.
   require_code_owner_review = true
+  admin_only_updates        = false
   required_status_checks = {
-    contexts = ["Validate PR title"]
-    # The check reads only the PR title, so it can't go stale against the
-    # base branch.
-    strict = false
+    # Check CI results aggregates every gating job, so its name survives
+    # Python matrix changes.
+    contexts = ["Validate PR title", "Check CI results"]
   }
+  renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
   # environment, so the publish job has to run in this one. No deployment
   # branch policy: the release workflow runs from a tag ref, which the

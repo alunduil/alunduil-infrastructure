@@ -33,6 +33,11 @@ check what's already in place:
 
 - Helper scripts: `scripts/`. New shell helpers go here, not the
   repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+- Estate assets, the trust levels reaching them, entry points, and
+  credentials with their consumers: `docs/reference/asset-register.md`,
+  cited by ID. Component inventory (models, serial numbers, firmware,
+  location) lives in a private Notion base, not here. Adding or
+  removing an asset updates the register in the same PR.
 - GitHub Projects v2: self-contained module at `github/projects/`
   (applier `bootstrap.sh` + `*.bats` tests + `*.json`
   specs + `project.schema.json`), co-located for locality absent a
@@ -49,7 +54,7 @@ check what's already in place:
   `import` in one draft PR.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
-  `docs/how-to/create-master-cloudflare-token.md`. Don't enumerate
+  `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
   token paths in committed files.
 
 ## Scope discipline

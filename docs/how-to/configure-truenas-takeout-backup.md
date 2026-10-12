@@ -40,7 +40,7 @@ add (or confirm) a task with these settings:
   `/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/tarballs`.
 - **Schedule**: daily at 02:00.
 - **Fast list**: on.
-- **Acknowledge abuse**: on — Drive flags Takeout archives, and the pull
+- **Acknowledge abuse**: on—Drive flags Takeout archives, and the pull
   fails without it.
 - **Post-Script**:
   `/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/takeout/extract.sh`.

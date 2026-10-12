@@ -16,27 +16,34 @@ Personal infrastructure as code, managed with Terraform.
 ## Getting started
 
 Changes reach the `alunduil` environment through CI. Opening a PR runs
-`terraform plan` and posts the output as a PR comment; merging to
+`terraform plan` and posts the output as a PR comment. Merging to
 `main` applies it automatically. Review the plan comment before
 approving a merge.
 
-The two operator entrypoints:
+The three operator entrypoints:
 
-- `just bootstrap` — first-time setup, and rotation of the credentials
+- `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
-- `just alunduil` — break-glass local `terraform apply` against the
+- `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
+- `just projects`—Projects v2 board fields, after editing a spec in
+  `github/projects/`. Needs only a `gh` login with the `project` scope.
 
 Supporting how-tos:
 
-- [docs/how-to/create-master-cloudflare-token.md](docs/how-to/create-master-cloudflare-token.md)
+- [docs/how-to/create-bootstrap-cloudflare-token.md](docs/how-to/create-bootstrap-cloudflare-token.md)
 - [docs/how-to/create-deployer-github-app.md](docs/how-to/create-deployer-github-app.md)
 - [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
 - [docs/how-to/connect-grafana-to-gcp.md](docs/how-to/connect-grafana-to-gcp.md)
+- [docs/how-to/create-tailscale-trust-credential.md](docs/how-to/create-tailscale-trust-credential.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
 - [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
+
+Estate assets, trust levels, entry points, and credentials:
+
+- [docs/reference/asset-register.md](docs/reference/asset-register.md)
 
 ## Support and contributions
 
@@ -46,5 +53,5 @@ solicited and may not be triaged.
 
 ## License
 
-MIT — see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the
+MIT—see [LICENSES/MIT.txt](LICENSES/MIT.txt) or the
 `SPDX-License-Identifier` headers on each file.

@@ -5,15 +5,15 @@
 
 Authenticates the `integrations/github` Terraform provider in CI. The
 workflow exchanges App ID + private key for short-lived installation
-tokens via OIDC.
+tokens via OpenID Connect.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, for example
      `alunduil-infra-deployer`. Display only.
-   - **Homepage URL** (required): the repo,
+   - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - Webhook: uncheck "Active"
-   - Leave the user-authorization checkboxes under Callback URL
+   - Leave the user-authorization checkboxes under `Callback URL`
      (Expire user authorization tokens, Request user authorization on
      install, Enable Device Flow) at their defaults. The deployer
      authenticates as an installation, not a user.
@@ -32,6 +32,6 @@ tokens via OIDC.
    so new repos work without re-issuing credentials.
 
 The App ID and the `.pem` file are inputs to
-`scripts/configure-github-secrets.sh` — pass them via `GH_APP_ID` and
+`scripts/configure-github-secrets.sh`—pass them via `GH_APP_ID` and
 `GH_APP_PRIVATE_KEY_FILE` (path to the `.pem`) environment variables,
 or let the script prompt for them.
