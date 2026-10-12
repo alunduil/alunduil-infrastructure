@@ -62,10 +62,11 @@ Regenerate the access-policy token, re-export, and re-run
 version. To rotate the GitHub App key, see
 [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
-## Diagnose a 401
+## Diagnose a 401 or 403
 
 A too-narrow policy and an invalid token both stop bootstrap with
-`401 Unauthorized`. Which resources failed separates them:
+`401 Unauthorized` or `403 Forbidden`. Which resources failed separates
+them:
 
 - The message names the missing and received scopes—the policy is too
   narrow. Add what it names, then create a token: editing a policy
@@ -78,3 +79,6 @@ A too-narrow policy and an invalid token both stop bootstrap with
   Creating an access policy takes `accesspolicies:write` and reading it
   back takes `accesspolicies:read`, so a policy holding only the first
   applies once and then fails on the next refresh.
+- `403 Forbidden` on `grafana_cloud_plugin_installation` alone—the
+  policy lacks `stack-plugins`. Add it with **read**, **write**, and
+  **delete**, then create a token.
