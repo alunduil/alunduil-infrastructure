@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs; never cancel main so each commit completes.
+  # Every commit on main gets a result.
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -23,8 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    # Terraform and just are installed below because some hooks shell
-    # out to those binaries rather than bringing their own.
+    # Some hooks shell out to terraform and just rather than bringing their own.
 
     steps:
       - name: Checkout repository
@@ -41,8 +40,8 @@ jobs:
       - name: Run pre-commit hooks
         uses: tox-dev/action-pre-commit-uv@e09b8958484dfe71f4ac3bc7afb230ba506402ec # v1.0.5
         env:
-          # no-commit-to-branch is a local guard and would always fail on
-          # push to main — skip it in CI.
+          # no-commit-to-branch guards local commits and always fails on a
+          # push to main.
           SKIP: no-commit-to-branch
 
   bats:

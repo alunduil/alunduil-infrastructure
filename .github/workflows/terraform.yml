@@ -25,9 +25,8 @@ on:
 permissions:
   contents: read
 
-# A new push to a pull request supersedes its in-flight plan. head_ref is
-# set only on pull_request, so push and dispatch runs each get a group of
-# their own and are never cancelled here.
+# head_ref exists only on pull_request, so a push supersedes its pull
+# request's in-flight plan, and push and dispatch runs are never cancelled.
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -38,10 +37,9 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Joins the apply job's group so a plan waits out an in-flight apply. The
-    # read-only deployer SA can't write a .tflock object, so the plan below
-    # runs -lock=false and would otherwise refresh against state an apply has
-    # already superseded.
+    # Waits out an in-flight apply. The read-only service account can't write
+    # a .tflock object, so the plan runs -lock=false and would otherwise
+    # refresh against state an apply has already superseded.
     concurrency:
       group: terraform-state
       queue: max
@@ -55,7 +53,7 @@ jobs:
 
       - uses: ./.github/actions/setup-terraform
 
-      # Read-only deployer SA: plan refreshes state but never mutates GCP.
+      # Plan refreshes state but never mutates GCP.
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           workload_identity_provider: ${{ secrets.GCP_RO_WORKLOAD_IDENTITY_PROVIDER }}
@@ -134,10 +132,10 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Serializes every job touching the shared GCS state. queue: max carries
-    # two guarantees: it forbids cancel-in-progress: true, so no arrival
-    # interrupts a write and orphans the state lock, and it queues runs the
-    # default single slot would cancel — a pending apply among them.
+    # Serializes every job touching the shared GCS state. queue: max forbids
+    # cancel-in-progress, so no arrival interrupts a write and orphans the
+    # state lock. It also keeps pending applies the default single slot would
+    # cancel.
     concurrency:
       group: terraform-state
       queue: max
@@ -150,7 +148,7 @@ jobs:
 
       - uses: ./.github/actions/setup-terraform
 
-      # Read-write deployer SA: gated to refs/heads/main by the WIF binding.
+      # The workload identity binding limits this account to refs/heads/main.
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           workload_identity_provider: ${{ secrets.GCP_RW_WORKLOAD_IDENTITY_PROVIDER }}
@@ -173,8 +171,7 @@ jobs:
         working-directory: terraform/alunduil
         run: terraform init
 
-      # plan-then-apply (not apply direct) so the applied diff is the same
-      # one the pull request's plan comment showed.
+      # Applying a saved plan makes the applied diff the one this log shows.
       - name: Terraform Plan
         working-directory: terraform/alunduil
         env:
