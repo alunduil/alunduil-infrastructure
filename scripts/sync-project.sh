@@ -46,7 +46,7 @@
 # helper functions and the search subshells so a failure anywhere is located.
 set -Eeuo pipefail
 
-STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Closed")
+STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backlog" "Closed")
 
 # classify <login> <owned-logins-json>: read a JSON array of
 # BOARD_ITEMS_QUERY item nodes on stdin and emit one row per item with a
@@ -59,6 +59,7 @@ STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Clos
 # want-status is REMOVE for an item whose repo is archived. Only issues can
 # be Blocked: GitHub has no dependencies on PRs. An issue's linked PR is
 # looked up among the board's PRs, so one missing from the board is ignored.
+# Drafts holds PRs only.
 classify() {
   jq -r --arg me "$1" --argjson owned "$2" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
@@ -67,16 +68,18 @@ classify() {
     def my_review: [.latestOpinionatedReviews.nodes[]? | select(.author.login == $me) | .state] | first;
     def rerequested: [.reviewRequests.nodes[]?.requestedReviewer.login] | index($me) != null;
     def needs_my_work:
-      .isDraft
-      or .reviewDecision == "CHANGES_REQUESTED"
+      .reviewDecision == "CHANGES_REQUESTED"
       or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
       or .mergeable == "CONFLICTING";
     def awaiting_author: my_review == "CHANGES_REQUESTED" and (rerequested | not);
+    def others_move: .isDraft or (mine and (owned | not)) or awaiting_author;
     def pr_column:
-      if mine and needs_my_work then "In progress"
-      elif (mine and (owned | not)) or awaiting_author then "Waiting on others"
+      if mine and .isDraft then "Drafts"
+      elif mine and needs_my_work then "In progress"
+      elif others_move then "Waiting on others"
       else "Needs me"
       end;
+    def issue_column: pr_column | if . == "Drafts" then "In progress" else . end;
     def column($prs):
       if .repository.isArchived then "REMOVE"
       elif .state != "OPEN" then "Closed"
@@ -91,7 +94,7 @@ classify() {
 
     map(select(.content.url)) as $items
     | ($items
-       | map(.content | select(.__typename == "PullRequest" and .state == "OPEN") | {key: .url, value: pr_column})
+       | map(.content | select(.__typename == "PullRequest" and .state == "OPEN") | {key: .url, value: issue_column})
        | from_entries) as $prs
     | $items[]
     | [ .id,

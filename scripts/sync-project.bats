@@ -70,6 +70,13 @@ column_of() {
 @test "an issue moves with the open PR I authored" {
   run column_of "$ISSUE" \
     "$(issue "$(linked_pr "" me)")" \
+    "$(pr '{"author": {"login": "me"}, "statusCheckRollup": {"state": "SUCCESS"}, "mergeable": "MERGEABLE"}')"
+  [[ $output == "Needs me" ]]
+}
+
+@test "an issue with my draft PR is In progress, not Drafts" {
+  run column_of "$ISSUE" \
+    "$(issue "$(linked_pr "" me)")" \
     "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
   [[ $output == "In progress" ]]
 }
@@ -87,9 +94,14 @@ column_of() {
   [[ $output == Backlog ]]
 }
 
-@test "my draft PR is In progress" {
-  run column_of "$PR" "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
-  [[ $output == "In progress" ]]
+@test "my draft PR is in Drafts, even with failing CI" {
+  [[ $(column_of "$PR" "$(pr '{"author": {"login": "me"}, "isDraft": true}')") == Drafts ]]
+  [[ $(column_of "$PR" "$(pr '{"author": {"login": "me"}, "isDraft": true, "statusCheckRollup": {"state": "FAILURE"}}')") == Drafts ]]
+}
+
+@test "someone else's draft PR is Waiting on others" {
+  run column_of "$PR" "$(pr '{"isDraft": true}')"
+  [[ $output == "Waiting on others" ]]
 }
 
 @test "my PR with changes requested, failing CI, or a conflict is In progress" {
