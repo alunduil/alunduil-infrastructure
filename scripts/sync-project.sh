@@ -59,7 +59,7 @@ STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backl
 # want-status is REMOVE for an item whose repo is archived. Only issues can
 # be Blocked: GitHub has no dependencies on PRs. An issue's linked PR is
 # looked up among the board's PRs, so one missing from the board is ignored.
-# Drafts holds PRs only, so an issue whose PR is a draft is In progress.
+# Drafts holds PRs only.
 classify() {
   jq -r --arg me "$1" --argjson owned "$2" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
