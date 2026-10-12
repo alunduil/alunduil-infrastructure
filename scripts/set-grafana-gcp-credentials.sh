@@ -8,6 +8,9 @@ set -euo pipefail
 # in state, and the alunduil state is bucket-readable. The key never touches
 # disk.
 #
+# Without arguments, the targets are every data source whose clientEmail names
+# the key's service account, so a new GCP data source needs no edit here.
+#
 # Usage: scripts/set-grafana-gcp-credentials.sh [datasource-uid ...]
 
 PROJECT_ID="${PROJECT_ID:-alunduil}"
@@ -40,12 +43,23 @@ set_datasource_credential() {
   echo "Set GCP credential on Grafana data source '${uid}'."
 }
 
+key="$(read_secret "${KEY_SECRET}")"
+private_key="$(k="${key}" jq -rn 'env.k | fromjson | .private_key')"
+client_email="$(k="${key}" jq -rn 'env.k | fromjson | .client_email')"
+
 datasource_uids=("$@")
 if [[ ${#datasource_uids[@]} -eq 0 ]]; then
-  datasource_uids=(gcp-cloud-monitoring gcp-cloud-logging)
+  datasources="$(gcx api /api/datasources)"
+  mapfile -t datasource_uids < <(
+    email="${client_email}" jq -r \
+      '.[] | select(.jsonData.clientEmail == env.email) | .uid' <<<"${datasources}"
+  )
 fi
 
-private_key="$(read_secret "${KEY_SECRET}" | jq -r '.private_key')"
+if [[ ${#datasource_uids[@]} -eq 0 ]]; then
+  echo "No Grafana data source uses ${client_email}." >&2
+  exit 1
+fi
 
 for uid in "${datasource_uids[@]}"; do
   set_datasource_credential "${uid}"
