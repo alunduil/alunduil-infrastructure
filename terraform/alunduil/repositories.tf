@@ -63,6 +63,11 @@ module "collection_json_hs" {
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
   environments = { hackage = {} }
+  # Check CI results aggregates the GHC matrix, so its name survives the
+  # weekly drift rewrite; the other two live in their own workflows.
+  required_status_checks = {
+    contexts = ["Check CI results", "Hooks", "Check links"]
+  }
 }
 
 module "git_worktree_poi" {
