@@ -7,7 +7,7 @@ The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
 principals.
 
-Verified 2026-09-13.
+Verified 2026-10-12.
 
 ## Scope
 
@@ -314,7 +314,7 @@ Google Cloud, GitHub, or Tailscale.
 
 - Kind: Google Cloud service account key
 - Scope: `monitoring.viewer`, `logging.viewer`, `logging.viewAccessor`
-- Consumer: A-11's Cloud Monitoring data source
+- Consumer: A-11's Cloud Monitoring and Cloud Logging data sources
 - Grants: P-1
 - Source: `terraform/bootstrap/grafana_gcp_reader.tf`
 
@@ -368,7 +368,7 @@ Each needs an operator in a console, because no apply rotates them.
 
 - Kind: access-policy token
 - Scope: `stacks:read`, `stack-service-accounts:write`,
-  `accesspolicies:read|write|delete`
+  `stack-plugins:read|write|delete`, `accesspolicies:read|write|delete`
 - Consumer: one `terraform/bootstrap/` apply
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
