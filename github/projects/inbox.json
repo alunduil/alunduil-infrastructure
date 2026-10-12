@@ -19,6 +19,11 @@
           "description": "My move on my own work"
         },
         {
+          "name": "Drafts",
+          "color": "ORANGE",
+          "description": "My draft PRs"
+        },
+        {
           "id": "bcc940da",
           "name": "Needs me",
           "color": "YELLOW",

@@ -46,7 +46,7 @@
 # helper functions and the search subshells so a failure anywhere is located.
 set -Eeuo pipefail
 
-STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Closed")
+STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backlog" "Closed")
 
 # classify <login> <owned-logins-json>: read a JSON array of
 # BOARD_ITEMS_QUERY item nodes on stdin and emit one row per item with a
@@ -59,6 +59,7 @@ STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Clos
 # want-status is REMOVE for an item whose repo is archived. Only issues can
 # be Blocked: GitHub has no dependencies on PRs. An issue's linked PR is
 # looked up among the board's PRs, so one missing from the board is ignored.
+# Drafts holds PRs only, so an issue whose PR is a draft is In progress.
 classify() {
   jq -r --arg me "$1" --argjson owned "$2" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
@@ -67,14 +68,14 @@ classify() {
     def my_review: [.latestOpinionatedReviews.nodes[]? | select(.author.login == $me) | .state] | first;
     def rerequested: [.reviewRequests.nodes[]?.requestedReviewer.login] | index($me) != null;
     def needs_my_work:
-      .isDraft
-      or .reviewDecision == "CHANGES_REQUESTED"
+      .reviewDecision == "CHANGES_REQUESTED"
       or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
       or .mergeable == "CONFLICTING";
     def awaiting_author: my_review == "CHANGES_REQUESTED" and (rerequested | not);
     def pr_column:
-      if mine and needs_my_work then "In progress"
-      elif (mine and (owned | not)) or awaiting_author then "Waiting on others"
+      if mine and .isDraft then "Drafts"
+      elif mine and needs_my_work then "In progress"
+      elif .isDraft or (mine and (owned | not)) or awaiting_author then "Waiting on others"
       else "Needs me"
       end;
     def column($prs):
@@ -83,6 +84,7 @@ classify() {
       elif .__typename == "PullRequest" then pr_column
       elif .issueDependenciesSummary.blockedBy > 0 then "Blocked"
       else [.closedByPullRequestsReferences.nodes[]? | select(mine) | $prs[.url] // empty] | first // "Backlog"
+        | if . == "Drafts" then "In progress" else . end
       end;
     # Search spells bot logins "name[bot]"; GraphQL drops the suffix.
     # Filed by uses the search spelling.
