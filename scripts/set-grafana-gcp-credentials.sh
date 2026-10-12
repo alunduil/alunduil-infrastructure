@@ -43,6 +43,19 @@ set_datasource_credential() {
   echo "Set GCP credential on Grafana data source '${uid}'."
 }
 
+# Reads a /api/datasources listing on stdin and prints the UIDs of the data
+# sources that authenticate as the given service account.
+uids_for_client_email() {
+  email="$1" jq -r '.[] | select(.jsonData.clientEmail == env.email) | .uid'
+}
+
+# Skip the executable body when sourced (e.g. by
+# set-grafana-gcp-credentials.bats).
+if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
+  # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
+  return 0 2>/dev/null || true
+fi
+
 key="$(read_secret "${KEY_SECRET}")"
 private_key="$(k="${key}" jq -rn 'env.k | fromjson | .private_key')"
 client_email="$(k="${key}" jq -rn 'env.k | fromjson | .client_email')"
@@ -50,10 +63,7 @@ client_email="$(k="${key}" jq -rn 'env.k | fromjson | .client_email')"
 datasource_uids=("$@")
 if [[ ${#datasource_uids[@]} -eq 0 ]]; then
   datasources="$(gcx api /api/datasources)"
-  mapfile -t datasource_uids < <(
-    email="${client_email}" jq -r \
-      '.[] | select(.jsonData.clientEmail == env.email) | .uid' <<<"${datasources}"
-  )
+  mapfile -t datasource_uids < <(uids_for_client_email "${client_email}" <<<"${datasources}")
 fi
 
 if [[ ${#datasource_uids[@]} -eq 0 ]]; then
