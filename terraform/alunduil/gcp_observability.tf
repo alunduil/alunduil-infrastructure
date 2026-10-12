@@ -1,6 +1,18 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # Both plugins read credentials through @grafana/google-sdk. The private key
+  # is absent because this layer's state is bucket-readable;
+  # scripts/set-grafana-gcp-credentials.sh sets it as the operator.
+  grafana_gcp_reader_auth = jsonencode({
+    authenticationType = "jwt"
+    defaultProject     = local.bootstrap.project_id
+    clientEmail        = local.bootstrap.grafana_gcp_reader_email
+    tokenUri           = "https://oauth2.googleapis.com/token"
+  })
+}
+
 # Grafana Cloud queries GCP live at dashboard time instead of ingesting into
 # Loki or Prometheus. The audit-log volume here is a trickle, too small to earn
 # a Pub/Sub topic and an always-on collector.
@@ -9,17 +21,28 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
   name = "GCP Cloud Monitoring"
   uid  = "gcp-cloud-monitoring"
 
-  json_data_encoded = jsonencode({
-    authenticationType = "jwt"
-    defaultProject     = local.bootstrap.project_id
-    clientEmail        = local.bootstrap.grafana_gcp_reader_email
-    tokenUri           = "https://oauth2.googleapis.com/token"
-  })
+  json_data_encoded = local.grafana_gcp_reader_auth
 
   lifecycle {
-    # The private key is set from Secret Manager outside Terraform, so this
-    # layer never holds it. Grafana preserves secure fields omitted from an
-    # update, so applies leave the key in place.
+    # Grafana preserves secure fields omitted from an update, so applies leave
+    # the operator-set key in place.
+    ignore_changes = [secure_json_data_encoded]
+  }
+}
+
+# Cloud Monitoring counts audit entries but discards their content, so reading a
+# log line means querying Cloud Logging directly. terraform/bootstrap/ installs
+# the plugin and grants grafana-gcp-reader its logging roles.
+resource "grafana_data_source" "gcp_cloud_logging" {
+  type = "googlecloud-logging-datasource"
+  name = "GCP Cloud Logging"
+  uid  = "gcp-cloud-logging"
+
+  json_data_encoded = local.grafana_gcp_reader_auth
+
+  lifecycle {
+    # Grafana preserves secure fields omitted from an update, so applies leave
+    # the operator-set key in place.
     ignore_changes = [secure_json_data_encoded]
   }
 }

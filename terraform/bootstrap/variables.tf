@@ -47,8 +47,8 @@ variable "grafana_cloud_access_policy_token" {
   sensitive   = true
   description = <<-EOT
     Bootstrap Grafana Cloud access-policy token, created by hand and revoked
-    after apply. Used only to read the stack and create the provisioning
-    service-account token stored in Secret Manager.
+    after apply. Used only to read the stack, install its data source plugins,
+    and create the credentials stored in Secret Manager.
 
     At https://grafana.com choose your org, then
     Security > Access Policies. On the alunduil-infrastructure-bootstrap

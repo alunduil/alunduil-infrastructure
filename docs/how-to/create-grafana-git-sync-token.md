@@ -16,20 +16,21 @@ for this infrastructure. Export it only to target a different stack.
 
 ## Bootstrap access-policy token
 
-Used only to read the stack and create the credentials that land in
-Secret Manager: the provisioning service-account token and the Fleet
-Management access-policy tokens. Create it by hand, and recreate it when you
-next need to run bootstrap.
+Used only to read the stack, install its data source plugins, and
+create the credentials that land in Secret Manager: the provisioning
+service-account token and the Fleet Management access-policy tokens.
+Create it by hand, and recreate it when you next need to run bootstrap.
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
    Access Policies → Create access policy**. Give it a display name
    (for example, `alunduil-infrastructure-bootstrap`). There is no realm
    field.
 2. The **Scopes** grid lists only data-plane resources (metrics, logs,
-   …) by default. Select **Add scope** to add the three control-plane
+   …) by default. Select **Add scope** to add the four control-plane
    resources and tick:
     - `stacks` → **read**
     - `stack-service-accounts` → **write**
+    - `stack-plugins` → **read**, **write**, **delete**
     - `accesspolicies` → **read**, **write**, **delete**
 
    `accesspolicies` covers the Fleet Management policies and tokens
@@ -61,10 +62,11 @@ Regenerate the access-policy token, re-export, and re-run
 version. To rotate the GitHub App key, see
 [create-git-sync-github-app.md](create-git-sync-github-app.md).
 
-## Diagnose a 401
+## Diagnose a 401 or 403
 
 A too-narrow policy and an invalid token both stop bootstrap with
-`401 Unauthorized`. Which resources failed separates them:
+`401 Unauthorized`; a too-narrow policy can also return `403 Forbidden`.
+Which resources failed separates them:
 
 - The message names the missing and received scopes—the policy is too
   narrow. Add what it names, then create a token: editing a policy
@@ -77,3 +79,6 @@ A too-narrow policy and an invalid token both stop bootstrap with
   Creating an access policy takes `accesspolicies:write` and reading it
   back takes `accesspolicies:read`, so a policy holding only the first
   applies once and then fails on the next refresh.
+- `403 Forbidden` on `grafana_cloud_plugin_installation` alone—the
+  policy lacks `stack-plugins`. Add it with **read**, **write**, and
+  **delete**, then create a token.
