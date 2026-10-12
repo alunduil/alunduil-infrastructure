@@ -95,6 +95,13 @@ module "projects_v2_sync" {
   name        = "projects-v2-sync"
   description = "Mirror issues and PRs onto a GitHub Projects v2 board from a declarative in/out spec"
   topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
+  required_status_checks = {
+    contexts = [
+      "Lint, typecheck, and test",
+      "Bundle is current",
+      "Action loads and exits clean",
+    ]
+  }
 }
 
 module "renovate_config" {
