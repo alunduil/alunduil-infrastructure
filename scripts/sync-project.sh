@@ -72,19 +72,20 @@ classify() {
       or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
       or .mergeable == "CONFLICTING";
     def awaiting_author: my_review == "CHANGES_REQUESTED" and (rerequested | not);
+    def others_move: .isDraft or (mine and (owned | not)) or awaiting_author;
     def pr_column:
       if mine and .isDraft then "Drafts"
       elif mine and needs_my_work then "In progress"
-      elif .isDraft or (mine and (owned | not)) or awaiting_author then "Waiting on others"
+      elif others_move then "Waiting on others"
       else "Needs me"
       end;
+    def issue_column: pr_column | if . == "Drafts" then "In progress" else . end;
     def column($prs):
       if .repository.isArchived then "REMOVE"
       elif .state != "OPEN" then "Closed"
       elif .__typename == "PullRequest" then pr_column
       elif .issueDependenciesSummary.blockedBy > 0 then "Blocked"
       else [.closedByPullRequestsReferences.nodes[]? | select(mine) | $prs[.url] // empty] | first // "Backlog"
-        | if . == "Drafts" then "In progress" else . end
       end;
     # Search spells bot logins "name[bot]"; GraphQL drops the suffix.
     # Filed by uses the search spelling.
@@ -93,7 +94,7 @@ classify() {
 
     map(select(.content.url)) as $items
     | ($items
-       | map(.content | select(.__typename == "PullRequest" and .state == "OPEN") | {key: .url, value: pr_column})
+       | map(.content | select(.__typename == "PullRequest" and .state == "OPEN") | {key: .url, value: issue_column})
        | from_entries) as $prs
     | $items[]
     | [ .id,
