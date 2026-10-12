@@ -2,104 +2,136 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for the pure helpers in sync-project.sh (desired_status,
-# parse_items). Network-touching code paths are not exercised — they're
-# covered by running the script against the live Inbox project, which
-# alunduil performs out-of-band.
+# Unit tests for classify, the pure rule engine in sync-project.sh.
+# Network-touching code paths are not exercised — they're covered by
+# running the script against the live Inbox project, which alunduil
+# performs out-of-band.
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
-  # parse_items keys field values by these names; desired_status maps the
-  # item type to these option ids/names. Set before any helper is called.
   FILED_BY_FIELD_NAME='Filed by'
   STATUS_FIELD_NAME='Status'
-  PR_STATUS_OPTION_ID='rev0'
-  PR_STATUS_NAME='Review'
-  ISSUE_STATUS_OPTION_ID='bak0'
-  ISSUE_STATUS_NAME='Backlog'
   # shellcheck source=sync-project.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/sync-project.sh"
 }
 
-# --- desired_status -------------------------------------------------------
-
-@test "desired_status routes a pull-request url to pr_status" {
-  run desired_status "https://github.com/o/r/pull/7"
-  [[ $output == $'rev0\tReview' ]]
+# Item node wrapping a content object; repository and author defaults make
+# an open item by someone else in an owned repo.
+item() {
+  jq -nc --argjson c "$1" --argjson fv "${2:-[]}" '{
+    id: "i1",
+    content: ({state: "OPEN", author: {login: "someone"},
+               repository: {isArchived: false, owner: {login: "me"}}} + $c),
+    fieldValues: {nodes: $fv}
+  }'
 }
 
-@test "desired_status routes an issue url to issue_status" {
-  run desired_status "https://github.com/o/r/issues/7"
-  [[ $output == $'bak0\tBacklog' ]]
+issue() { item "$(jq -c '{__typename: "Issue", url: "https://github.com/me/r/issues/1"} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
+pr() { item "$(jq -c '{__typename: "PullRequest", url: "https://github.com/me/r/pull/2"} + .' <<<"${1:-{\}}")" "${2:-[]}"; }
+
+# Column classify picks for the item with the given URL.
+column_of() {
+  local url=$1
+  shift
+  printf '%s\n' "$@" | jq -s . | classify me '["me"]' \
+    | awk -F $'\x1f' -v url="$url" '$2 == url { print $6 }'
 }
 
-@test "desired_status keys on the /pull/ path segment, not the substring" {
-  # A repo whose name contains 'pull' must not be mistaken for a PR.
-  run desired_status "https://github.com/o/pull-mirror/issues/7"
-  [[ $output == $'bak0\tBacklog' ]]
+ISSUE=https://github.com/me/r/issues/1
+PR=https://github.com/me/r/pull/2
+
+@test "archived repo items are removed" {
+  run column_of "$ISSUE" "$(issue '{"repository": {"isArchived": true, "owner": {"login": "me"}}}')"
+  [[ $output == REMOVE ]]
 }
 
-@test "desired_status is newline-terminated so the per-item read returns 0" {
-  # Regression: desired_status emitted no trailing newline, so the reconcile
-  # loop's `read` hit EOF and returned 1, aborting the script under set -e on
-  # the first item. The read must succeed and populate both fields.
-  rc=0
-  IFS=$'\t' read -r id name < <(desired_status "https://github.com/o/r/issues/9") || rc=$?
-  [[ $rc -eq 0 ]]
-  [[ $id == bak0 && $name == Backlog ]]
+@test "closed issues and merged PRs are Closed" {
+  [[ $(column_of "$ISSUE" "$(issue '{"state": "CLOSED"}')") == Closed ]]
+  [[ $(column_of "$PR" "$(pr '{"state": "MERGED"}')") == Closed ]]
 }
 
-# --- parse_items ----------------------------------------------------------
-
-# Minimal shape of a `node(id:){ items{ nodes } }` GraphQL response.
-items_response() {
-  printf '{"data":{"node":{"items":{"nodes":[%s]}}}}' "$1"
+@test "an issue with an open blocker is Blocked, even with my open PR" {
+  run column_of "$ISSUE" \
+    "$(issue '{"issueDependenciesSummary": {"blockedBy": 1},
+               "closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "me"}}]}}')" \
+    "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
+  [[ $output == Blocked ]]
 }
 
-@test "parse_items emits url, filed-by, status, and id" {
-  json=$(items_response '
-    {"id":"i1","content":{"url":"https://github.com/o/r/pull/1"},
-     "fieldValues":{"nodes":[
-       {"text":"alunduil","field":{"name":"Filed by"}},
-       {"name":"Review","field":{"name":"Status"}}]}}')
-  run parse_items <<<"$json"
-  [[ $output == $'https://github.com/o/r/pull/1\talunduil\tReview\ti1' ]]
+@test "an issue moves with the open PR I authored" {
+  run column_of "$ISSUE" \
+    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "me"}}]}}')" \
+    "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
+  [[ $output == "In progress" ]]
 }
 
-@test "parse_items defaults a missing status to empty" {
-  json=$(items_response '
-    {"id":"i2","content":{"url":"https://github.com/o/r/issues/2"},
-     "fieldValues":{"nodes":[
-       {"text":"alunduil","field":{"name":"Filed by"}}]}}')
-  run parse_items <<<"$json"
-  [[ $output == $'https://github.com/o/r/issues/2\talunduil\t\ti2' ]]
+@test "an issue ignores a linked PR someone else authored" {
+  run column_of "$ISSUE" \
+    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/2", "author": {"login": "someone"}}]}}')" \
+    "$(pr)"
+  [[ $output == Backlog ]]
 }
 
-@test "parse_items defaults a missing filed-by to empty" {
-  json=$(items_response '
-    {"id":"i3","content":{"url":"https://github.com/o/r/issues/3"},
-     "fieldValues":{"nodes":[
-       {"name":"Backlog","field":{"name":"Status"}}]}}')
-  run parse_items <<<"$json"
-  [[ $output == $'https://github.com/o/r/issues/3\t\tBacklog\ti3' ]]
+@test "an issue whose linked PR isn't on the board stays in Backlog" {
+  run column_of "$ISSUE" \
+    "$(issue '{"closedByPullRequestsReferences": {"nodes": [{"url": "https://github.com/me/r/pull/9", "author": {"login": "me"}}]}}')"
+  [[ $output == Backlog ]]
 }
 
-@test "parse_items skips items without a content url (draft items)" {
-  json=$(items_response '
-    {"id":"i4","content":{},"fieldValues":{"nodes":[]}},
-    {"id":"i5","content":{"url":"https://github.com/o/r/issues/5"},
-     "fieldValues":{"nodes":[]}}')
-  run parse_items <<<"$json"
-  [[ $output == $'https://github.com/o/r/issues/5\t\t\ti5' ]]
+@test "my draft PR is In progress" {
+  run column_of "$PR" "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
+  [[ $output == "In progress" ]]
 }
 
-@test "parse_items ignores field values from other fields" {
-  json=$(items_response '
-    {"id":"i6","content":{"url":"https://github.com/o/r/pull/6"},
-     "fieldValues":{"nodes":[
-       {"text":"Some Title","field":{"name":"Title"}},
-       {"text":"alunduil","field":{"name":"Filed by"}},
-       {"name":"Review","field":{"name":"Status"}}]}}')
-  run parse_items <<<"$json"
-  [[ $output == $'https://github.com/o/r/pull/6\talunduil\tReview\ti6' ]]
+@test "my PR with changes requested, failing CI, or a conflict is In progress" {
+  [[ $(column_of "$PR" "$(pr '{"author": {"login": "me"}, "reviewDecision": "CHANGES_REQUESTED"}')") == "In progress" ]]
+  [[ $(column_of "$PR" "$(pr '{"author": {"login": "me"}, "statusCheckRollup": {"state": "FAILURE"}}')") == "In progress" ]]
+  [[ $(column_of "$PR" "$(pr '{"author": {"login": "me"}, "mergeable": "CONFLICTING"}')") == "In progress" ]]
+}
+
+@test "my green PR in a repo I don't own is Waiting on others" {
+  run column_of "$PR" "$(pr '{"author": {"login": "me"}, "repository": {"isArchived": false, "owner": {"login": "upstream"}}}')"
+  [[ $output == "Waiting on others" ]]
+}
+
+@test "my green PR in an owned repo Needs me" {
+  run column_of "$PR" "$(pr '{"author": {"login": "me"}, "statusCheckRollup": {"state": "SUCCESS"}, "mergeable": "MERGEABLE"}')"
+  [[ $output == "Needs me" ]]
+}
+
+@test "a PR I requested changes on waits until it re-requests me" {
+  local reviewed='"latestOpinionatedReviews": {"nodes": [{"state": "CHANGES_REQUESTED", "author": {"login": "me"}}]}'
+  [[ $(column_of "$PR" "$(pr "{${reviewed}}")") == "Waiting on others" ]]
+  [[ $(column_of "$PR" "$(pr "{${reviewed}, \"reviewRequests\": {\"nodes\": [{\"requestedReviewer\": {\"login\": \"me\"}}]}}")") == "Needs me" ]]
+}
+
+@test "someone else's open PR Needs me" {
+  run column_of "$PR" "$(pr)"
+  [[ $output == "Needs me" ]]
+}
+
+@test "classify reads current field values and keeps empty ones in place" {
+  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
+    printf "%s\n" "$2" | jq -s . | classify me "[\"me\"]"' _ \
+    "${BATS_TEST_DIRNAME}/sync-project.sh" \
+    "$(issue '{}' '[{"name": "Needs me", "field": {"name": "Status"}}, {"text": "x", "field": {"name": "Title"}}]')"
+  IFS=$'\x1f' read -r id url filed want_filed status want_status <<<"$output"
+  [[ $id == i1 && $url == "$ISSUE" && -z $filed && $want_filed == someone ]]
+  [[ $status == "Needs me" && $want_status == Backlog ]]
+}
+
+@test "classify keeps the search spelling of bot logins in filed by" {
+  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
+    printf "%s\n" "$2" | jq -s . | classify me "[\"me\"]"' _ \
+    "${BATS_TEST_DIRNAME}/sync-project.sh" \
+    "$(pr '{"author": {"__typename": "Bot", "login": "renovate"}}')"
+  IFS=$'\x1f' read -r _ _ _ want_filed _ _ <<<"$output"
+  [[ $want_filed == 'renovate[bot]' ]]
+}
+
+@test "classify skips items without a content url (draft items)" {
+  run bash -c 'source "$1"; FILED_BY_FIELD_NAME="Filed by"; STATUS_FIELD_NAME=Status
+    echo "[{\"id\": \"d1\", \"content\": {}, \"fieldValues\": {\"nodes\": []}}]" | classify me "[\"me\"]"' _ \
+    "${BATS_TEST_DIRNAME}/sync-project.sh"
+  [[ -z $output ]]
 }

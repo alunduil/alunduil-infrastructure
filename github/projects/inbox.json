@@ -1,6 +1,7 @@
 {
   "owner": "alunduil",
   "title": "Inbox",
+  "login": "alunduil",
   "fields": [
     {
       "name": "Status",
@@ -48,8 +49,6 @@
   ],
   "filed_by_field": "Filed by",
   "status_field": "Status",
-  "pr_status": "Needs me",
-  "issue_status": "Backlog",
   "sources": [
     { "type": "owner", "logins": ["alunduil", "dungeon-studio", "qua-world"] },
     { "type": "author", "login": "alunduil" },

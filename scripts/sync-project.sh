@@ -4,16 +4,15 @@
 
 # Mirror open issues/PRs from a set of GitHub search queries onto a
 # Projects v2 board, populating a configured text field with the author
-# login and a single-select Status by item type. Reads a JSON spec from
-# github/projects/<board>.json:
+# login and a single-select Status by whose move it is. Reads a JSON spec
+# from github/projects/<board>.json:
 #
 #   {
 #     "owner": "alunduil",
 #     "title": "Inbox",
+#     "login": "alunduil",
 #     "filed_by_field": "Filed by",
 #     "status_field": "Status",
-#     "pr_status": "Needs me",
-#     "issue_status": "Backlog",
 #     "sources": [
 #       { "type": "owner", "logins": [...] },
 #       { "type": "author", "login": "..." },
@@ -21,11 +20,12 @@
 #     ]
 #   }
 #
-# Status handling is opt-in: omit status_field to leave Status untouched.
-# When set, the script is authoritative — open PRs are forced to pr_status
-# and open issues to issue_status on every run, so it self-heals drift
-# rather than deferring to GitHub's built-in "item added" workflow (which
-# can't tell a PR from an issue and so lands everything in one column).
+# `login` is the person the board answers "whose move is it?" for; the
+# owner-source logins are the repos they merge in. The rules live in
+# classify below and route to the option names in STATUSES, which the
+# status field must declare. The script is authoritative: every run
+# recomputes Status for every board item, so hand moves don't stick.
+# Items from archived repos are removed from the board.
 #
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
 # `gh` auth when GH_PROJECT_SYNC_TOKEN is unset. The scheduled job can't be
@@ -34,80 +34,154 @@
 # verbosity block past the source guard. Local runs stay quiet unless
 # SYNC_DEBUG is set.
 #
-# Steady-state cost: a paginated read of the board node plus one search
-# per source-leg. Mutations (item-add, item-edit) fire only for new URLs,
-# stale filed-by values, or items whose Status doesn't match their type.
+# Steady-state cost: two paginated reads of the board node (a lean URL read
+# to find additions, then an enriched read the rules run over) plus one
+# search per source-leg. Mutations fire only for new URLs, stale field
+# values, and archived-repo items.
 #
 # Reads go through hand-written GraphQL rather than `gh project
 # field-list`/`item-list`: the porcelain over-fetches every field of every
 # item (~100 GraphQL points per field-list, ~1 per item), and there is no
-# flag to trim it. The lean queries below cost ~1 point per 100-item page.
+# flag to trim it. The lean queries below cost 1–2 points per 100-item page.
 
 # -E (errtrace) propagates the ERR trap set in the executable body into the
 # helper functions and the search subshells so a failure anywhere is located.
 set -Eeuo pipefail
 
-# Desired Status option id + name for a URL: PRs (/pull/) take pr_status,
-# everything else issue_status. Tab-separated, newline-terminated so the
-# consuming `read` returns 0 (a line without a trailing newline makes `read`
-# hit EOF and exit 1, which aborts the loop under `set -e`).
-desired_status() {
-  if [[ $1 == */pull/* ]]; then
-    printf '%s\t%s\n' "${PR_STATUS_OPTION_ID}" "${PR_STATUS_NAME}"
-  else
-    printf '%s\t%s\n' "${ISSUE_STATUS_OPTION_ID}" "${ISSUE_STATUS_NAME}"
-  fi
+STATUSES=("Blocked" "In progress" "Needs me" "Waiting on others" "Backlog" "Closed")
+
+# Read a JSON array of board items (enriched query shape) on stdin and emit
+# one row per item with a content URL, fields separated by the ASCII unit
+# separator (0x1f). A tab separator would break the consuming `read`, which
+# collapses runs of whitespace separators and so drops empty fields:
+#
+#   item-id  url  filed  want-filed  status  want-status
+#
+# want-status is REMOVE for an item whose repo is archived. Rules, first
+# match wins ("me" is $me, "owned" means an owner in $owned):
+#
+#   1. Closed: the issue is closed, or the PR is closed or merged.
+#   2. Blocked: an issue with an open blocked-by dependency. GitHub has no
+#      dependencies on PRs.
+#   3. An issue with an open linked PR I authored takes that PR's column.
+#   4. In progress: my draft PR, or my PR with changes requested, failing
+#      CI, or a merge conflict.
+#   5. Waiting on others: my PR in a repo I don't own, or a PR whose latest
+#      review from me requests changes and that hasn't re-requested me.
+#   6. Needs me: any other open PR.
+#   7. Backlog: any other open issue.
+#
+# An issue's linked PR is looked up among the board's PRs, so a linked PR
+# that isn't on the board leaves the issue on the rules below rule 3.
+classify() {
+  jq -r --arg me "$1" --argjson owned "$2" \
+    --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
+    def mine: .author.login == $me;
+    def owned: .repository.owner.login as $o | $owned | index($o) != null;
+    def my_review: [.latestOpinionatedReviews.nodes[]? | select(.author.login == $me) | .state] | first;
+    def rerequested: [.reviewRequests.nodes[]?.requestedReviewer.login] | index($me) != null;
+    def pr_column:
+      if mine and (.isDraft
+                   or .reviewDecision == "CHANGES_REQUESTED"
+                   or (.statusCheckRollup.state | IN("FAILURE", "ERROR"))
+                   or .mergeable == "CONFLICTING")
+      then "In progress"
+      elif mine and (owned | not) then "Waiting on others"
+      elif my_review == "CHANGES_REQUESTED" and (rerequested | not) then "Waiting on others"
+      else "Needs me"
+      end;
+    def column($prs):
+      if .repository.isArchived then "REMOVE"
+      elif .state != "OPEN" then "Closed"
+      elif .__typename == "PullRequest" then pr_column
+      elif .issueDependenciesSummary.blockedBy > 0 then "Blocked"
+      else [.closedByPullRequestsReferences.nodes[]? | select(mine) | $prs[.url] // empty] | first // "Backlog"
+      end;
+    # Search spells bot logins "name[bot]"; GraphQL drops the suffix. Keep
+    # the search spelling the board already holds.
+    def filed_by: if .author.__typename == "Bot" then .author.login + "[bot]" else .author.login // "unknown" end;
+    def value($field; $key): [.fieldValues.nodes[]? | select(.field.name == $field) | .[$key]] | first // "";
+
+    map(select(.content.url)) as $items
+    | ($items
+       | map(.content | select(.__typename == "PullRequest" and .state == "OPEN") | {key: .url, value: pr_column})
+       | from_entries) as $prs
+    | $items[]
+    | [ .id,
+        .content.url,
+        value($filed; "text"),
+        (.content | filed_by),
+        value($status; "name"),
+        (.content | column($prs)) ]
+    | join("\u001f")'
 }
 
-# Read a project-items GraphQL response on stdin and emit one
-# url<TAB>filed<TAB>status<TAB>item-id row per item that has a content URL.
-# An item with no value for a field omits it from fieldValues, hence the
-# empty-string defaults (which match the "" used in the comparisons below).
-parse_items() {
-  jq -r --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
-    .data.node.items.nodes[]
-    | select(.content.url)
-    | [ .content.url,
-        ([.fieldValues.nodes[]? | select(.field.name == $filed) | .text] | first // ""),
-        ([.fieldValues.nodes[]? | select(.field.name == $status) | .name] | first // ""),
-        .id ]
-    | @tsv'
-}
-
-# Mirror the board, paginating the project node and pulling only the two
-# field values the sync acts on; see the header for why this beats
-# `gh project item-list`.
-board_items() {
-  local cursor="" resp
+# Page through the board node, running the query in $1 with the cursor, and
+# emit each item node as one compact JSON line.
+board_pages() {
+  local query=$1 cursor="" resp
   while :; do
-    # shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
-    resp=$(
-      gh api graphql -F id="${PROJECT_ID}" -F cursor="${cursor}" -f query='
-        query($id: ID!, $cursor: String) {
-          node(id: $id) {
-            ... on ProjectV2 {
-              items(first: 100, after: $cursor) {
-                pageInfo { hasNextPage endCursor }
-                nodes {
-                  id
-                  content { ... on Issue { url } ... on PullRequest { url } }
-                  fieldValues(first: 8) {
-                    nodes {
-                      ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
-                      ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name } } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }'
-    )
-    parse_items <<<"${resp}"
+    resp=$(gh api graphql -F id="${PROJECT_ID}" -F cursor="${cursor}" -f query="${query}")
+    jq -c '.data.node.items.nodes[]' <<<"${resp}"
     [[ $(jq -r '.data.node.items.pageInfo.hasNextPage' <<<"${resp}") == true ]] || break
     cursor=$(jq -r '.data.node.items.pageInfo.endCursor' <<<"${resp}")
   done
 }
+
+# shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
+BOARD_URLS_QUERY='
+  query($id: ID!, $cursor: String) {
+    node(id: $id) {
+      ... on ProjectV2 {
+        items(first: 100, after: $cursor) {
+          pageInfo { hasNextPage endCursor }
+          nodes { content { ... on Issue { url } ... on PullRequest { url } } }
+        }
+      }
+    }
+  }'
+
+# Everything classify reads. latestOpinionatedReviews holds one review per
+# reviewer, so first: 20 covers any realistic reviewer count.
+# shellcheck disable=SC2016 # $id/$cursor are GraphQL variables, not shell
+BOARD_ITEMS_QUERY='
+  query($id: ID!, $cursor: String) {
+    node(id: $id) {
+      ... on ProjectV2 {
+        items(first: 100, after: $cursor) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            id
+            content {
+              __typename
+              ... on Issue {
+                url state author { __typename login }
+                repository { isArchived owner { login } }
+                issueDependenciesSummary { blockedBy }
+                closedByPullRequestsReferences(first: 5, includeClosedPrs: false) {
+                  nodes { url author { login } }
+                }
+              }
+              ... on PullRequest {
+                url state isDraft author { __typename login }
+                repository { isArchived owner { login } }
+                reviewDecision mergeable
+                statusCheckRollup { state }
+                reviewRequests(first: 20) { nodes { requestedReviewer { ... on User { login } } } }
+                latestOpinionatedReviews(first: 20) { nodes { state author { login } } }
+              }
+            }
+            fieldValues(first: 8) {
+              nodes {
+                ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
+                ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2FieldCommon { name } } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }'
 
 # Emit one gh-search argument string per source-leg. Two legs per source
 # (issues + prs). The trailing word-split on $leg in the consumer is
@@ -164,9 +238,16 @@ SPEC=$1
 
 PROJECT_OWNER=$(jq -r '.owner' "${SPEC}")
 PROJECT_TITLE=$(jq -r '.title' "${SPEC}")
+LOGIN=$(jq -r '.login // empty' "${SPEC}")
+OWNED_LOGINS=$(jq -c '[.sources[] | select(.type == "owner") | .logins[]]' "${SPEC}")
 FILED_BY_FIELD_NAME=$(jq -r '.filed_by_field' "${SPEC}")
 STATUS_FIELD_NAME=$(jq -r '.status_field // empty' "${SPEC}")
 SEARCH_LIMIT=1000
+
+if [[ -z ${LOGIN} || -z ${STATUS_FIELD_NAME} ]]; then
+  echo "spec '${SPEC}' needs both login and status_field" >&2
+  exit 1
+fi
 
 if [[ -n ${GH_PROJECT_SYNC_TOKEN:-} ]]; then
   # Assign with xtrace off so the token never lands in the trace stream.
@@ -217,92 +298,75 @@ if [[ -z ${FILED_BY_FIELD_ID} ]]; then
   exit 1
 fi
 
-# Status sync is opt-in. When status_field is set, resolve the field and
-# the per-type option IDs up front so the item loop is a pure ID lookup.
-if [[ -n ${STATUS_FIELD_NAME} ]]; then
-  PR_STATUS_NAME=$(jq -r '.pr_status // empty' "${SPEC}")
-  ISSUE_STATUS_NAME=$(jq -r '.issue_status // empty' "${SPEC}")
-  if [[ -z ${PR_STATUS_NAME} || -z ${ISSUE_STATUS_NAME} ]]; then
-    echo "status_field '${STATUS_FIELD_NAME}' requires both pr_status and issue_status" >&2
-    exit 1
-  fi
-
-  status_field_json=$(jq --arg n "${STATUS_FIELD_NAME}" \
-    'map(select(.name == $n))[0]' <<<"${fields_json}")
-  STATUS_FIELD_ID=$(jq -r '.id // empty' <<<"${status_field_json}")
-  if [[ -z ${STATUS_FIELD_ID} ]]; then
-    echo "no field named '${STATUS_FIELD_NAME}' on project '${PROJECT_TITLE}'" >&2
-    exit 1
-  fi
-  PR_STATUS_OPTION_ID=$(jq -r --arg n "${PR_STATUS_NAME}" '.options[] | select(.name == $n) | .id' <<<"${status_field_json}")
-  ISSUE_STATUS_OPTION_ID=$(jq -r --arg n "${ISSUE_STATUS_NAME}" '.options[] | select(.name == $n) | .id' <<<"${status_field_json}")
-  if [[ -z ${PR_STATUS_OPTION_ID} || -z ${ISSUE_STATUS_OPTION_ID} ]]; then
-    echo "field '${STATUS_FIELD_NAME}' is missing option '${PR_STATUS_NAME}' or '${ISSUE_STATUS_NAME}'" >&2
-    exit 1
-  fi
+status_field_json=$(jq --arg n "${STATUS_FIELD_NAME}" \
+  'map(select(.name == $n))[0]' <<<"${fields_json}")
+STATUS_FIELD_ID=$(jq -r '.id // empty' <<<"${status_field_json}")
+if [[ -z ${STATUS_FIELD_ID} ]]; then
+  echo "no field named '${STATUS_FIELD_NAME}' on project '${PROJECT_TITLE}'" >&2
+  exit 1
 fi
+declare -A status_option_id
+for name in "${STATUSES[@]}"; do
+  status_option_id[$name]=$(jq -r --arg n "${name}" \
+    '.options[] | select(.name == $n) | .id' <<<"${status_field_json}")
+  if [[ -z ${status_option_id[$name]} ]]; then
+    echo "field '${STATUS_FIELD_NAME}' is missing option '${name}'" >&2
+    exit 1
+  fi
+done
 
-declare -A existing_id existing_filed existing_status
-while IFS=$'\t' read -r url filed status item_id; do
-  [[ -z $url ]] && continue
-  existing_id[$url]=$item_id
-  existing_filed[$url]=$filed
-  existing_status[$url]=$status
-done < <(board_items)
-
-jq_pair='.[] | "\(.url)\t\(.author.login // "unknown")"'
+declare -A on_board
+while IFS= read -r url; do
+  [[ -n $url ]] && on_board[$url]=1
+done < <(board_pages "${BOARD_URLS_QUERY}" | jq -r '.content.url // empty')
 
 added=0
 updated=0
+removed=0
 skipped=0
 
-while IFS=$'\t' read -r url author; do
-  if [[ -n ${STATUS_FIELD_NAME} ]]; then
-    IFS=$'\t' read -r want_status_id want_status_name < <(desired_status "$url")
-  fi
+while IFS= read -r url; do
+  [[ -n ${on_board[$url]:-} ]] && continue
+  printf 'adding %s\n' "$url"
+  gh project item-add "${PROJECT_NUMBER}" \
+    --owner "${PROJECT_OWNER}" --url "$url" >/dev/null
+  added=$((added + 1))
+done < <(
+  while IFS= read -r leg; do
+    # shellcheck disable=SC2086 # $leg holds jq-controlled gh-search arguments
+    gh search ${leg} --state=open --archived=false \
+      --limit "${SEARCH_LIMIT}" --json url --jq '.[].url'
+  done < <(search_legs) | sort -u
+)
 
-  if [[ -z ${existing_id[$url]:-} ]]; then
-    printf 'adding %s (filed by %s)\n' "$url" "$author"
-    item_id=$(
-      gh project item-add "${PROJECT_NUMBER}" \
-        --owner "${PROJECT_OWNER}" --url "$url" \
-        --format json --jq '.id'
-    )
-    gh project item-edit \
-      --project-id "${PROJECT_ID}" \
-      --id "$item_id" \
-      --field-id "${FILED_BY_FIELD_ID}" \
-      --text "$author" >/dev/null
-    if [[ -n ${STATUS_FIELD_NAME} ]]; then
-      gh project item-edit \
-        --project-id "${PROJECT_ID}" \
-        --id "$item_id" \
-        --field-id "${STATUS_FIELD_ID}" \
-        --single-select-option-id "${want_status_id}" >/dev/null
-    fi
-    added=$((added + 1))
+while IFS=$'\x1f' read -r item_id url filed want_filed status want_status; do
+  if [[ $want_status == REMOVE ]]; then
+    printf 'removing %s (archived repo)\n' "$url"
+    gh project item-delete "${PROJECT_NUMBER}" \
+      --owner "${PROJECT_OWNER}" --id "$item_id" >/dev/null
+    removed=$((removed + 1))
     continue
   fi
 
   changed=0
-  if [[ ${existing_filed[$url]} != "$author" ]]; then
+  if [[ $filed != "$want_filed" ]]; then
     printf 'updating filed by on %s (%s -> %s)\n' \
-      "$url" "${existing_filed[$url]}" "$author"
+      "$url" "${filed:-<none>}" "$want_filed"
     gh project item-edit \
       --project-id "${PROJECT_ID}" \
-      --id "${existing_id[$url]}" \
+      --id "$item_id" \
       --field-id "${FILED_BY_FIELD_ID}" \
-      --text "$author" >/dev/null
+      --text "$want_filed" >/dev/null
     changed=1
   fi
-  if [[ -n ${STATUS_FIELD_NAME} && ${existing_status[$url]} != "$want_status_name" ]]; then
+  if [[ $status != "$want_status" ]]; then
     printf 'updating status on %s (%s -> %s)\n' \
-      "$url" "${existing_status[$url]:-<none>}" "$want_status_name"
+      "$url" "${status:-<none>}" "$want_status"
     gh project item-edit \
       --project-id "${PROJECT_ID}" \
-      --id "${existing_id[$url]}" \
+      --id "$item_id" \
       --field-id "${STATUS_FIELD_ID}" \
-      --single-select-option-id "${want_status_id}" >/dev/null
+      --single-select-option-id "${status_option_id[$want_status]}" >/dev/null
     changed=1
   fi
   if [[ $changed -eq 1 ]]; then
@@ -310,12 +374,7 @@ while IFS=$'\t' read -r url author; do
   else
     skipped=$((skipped + 1))
   fi
-done < <(
-  while IFS= read -r leg; do
-    # shellcheck disable=SC2086 # $leg holds jq-controlled gh-search arguments
-    gh search ${leg} --state=open --archived=false \
-      --limit "${SEARCH_LIMIT}" --json url,author --jq "${jq_pair}"
-  done < <(search_legs) | sort -u
-)
+done < <(board_pages "${BOARD_ITEMS_QUERY}" | jq -s . | classify "${LOGIN}" "${OWNED_LOGINS}")
 
-printf 'done: added=%d updated=%d skipped=%d\n' "$added" "$updated" "$skipped"
+printf 'done: added=%d updated=%d removed=%d skipped=%d\n' \
+  "$added" "$updated" "$removed" "$skipped"
