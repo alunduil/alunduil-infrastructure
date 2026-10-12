@@ -2,11 +2,12 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-name: sync-project
+name: Hourly
 
 on:
   schedule:
     - cron: '0 * * * *'
+      timezone: Europe/London
   workflow_dispatch:
 
 permissions:
