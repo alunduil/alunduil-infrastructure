@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # Two different plugins, one credential shape: both read @grafana/google-sdk.
-  # The private key is absent because this layer's state is bucket-readable;
+  # Both plugins read credentials through @grafana/google-sdk. The private key
+  # is absent because this layer's state is bucket-readable;
   # scripts/set-grafana-gcp-credentials.sh sets it as the operator.
   grafana_gcp_reader_auth = jsonencode({
     authenticationType = "jwt"
@@ -31,11 +31,9 @@ resource "grafana_data_source" "gcp_cloud_monitoring" {
 }
 
 # Cloud Monitoring counts audit entries but discards their content, so reading a
-# log line means querying Cloud Logging directly. The plugin asks for
-# logging.viewer and logging.viewAccessor, which grafana-gcp-reader already
-# holds.
-#
-# terraform/bootstrap/ installs the plugin this configures.
+# log line means querying Cloud Logging directly. terraform/bootstrap/ installs
+# the plugin and grants grafana-gcp-reader the logging.viewer and
+# logging.viewAccessor roles it needs.
 resource "grafana_data_source" "gcp_cloud_logging" {
   type = "googlecloud-logging-datasource"
   name = "GCP Cloud Logging"

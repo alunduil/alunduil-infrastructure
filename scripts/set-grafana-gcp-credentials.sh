@@ -8,8 +8,8 @@ set -euo pipefail
 # in state, and the alunduil state is bucket-readable. The key never touches
 # disk.
 #
-# Without arguments, the targets are every data source whose clientEmail names
-# the key's service account, so a new GCP data source needs no edit here.
+# Without arguments, targets every data source whose clientEmail is the key's
+# service account.
 #
 # Usage: scripts/set-grafana-gcp-credentials.sh [datasource-uid ...]
 

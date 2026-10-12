@@ -45,8 +45,8 @@ Monitoring` data source in Explore to confirm.
 
 ## Read the audit line behind the count
 
-The metric counts entries; the entries themselves stay in Cloud Logging. In
-Explore, pick `GCP Cloud Logging` and query:
+The metric holds only counts; the entries stay in Cloud Logging. In Explore,
+pick `GCP Cloud Logging` and query:
 
 ```text
 logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"

@@ -6,9 +6,8 @@
 # Cloud API operation, and only this layer's cloud_access_policy_token reaches
 # that API.
 #
-# The version is pinned rather than tracking the provider's "latest" default: on
-# "latest" a newly published release reads as drift, putting a plugin upgrade
-# into an unrelated PR's plan that merging would apply.
+# Pinned because, on the provider's "latest" default, a new release reads as
+# drift and puts a plugin upgrade into an unrelated PR's plan.
 resource "grafana_cloud_plugin_installation" "gcp_cloud_logging" {
   stack_slug = data.grafana_cloud_stack.this.slug
   slug       = "googlecloud-logging-datasource"
