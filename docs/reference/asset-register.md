@@ -474,6 +474,16 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-4
 - Source: `None`
 
+#### C-24: Generative Language API Key
+
+- Kind: Google Cloud API key, in A-07
+- Scope: restricted to the Generative Language API
+- Consumer: A-02's Google Gemini integration, inferred from traffic
+  rather than read from A-02. The key is the only caller of that API,
+  with one or two `GetModel` calls a week
+- Grants: P-4
+- Source: `None`
+
 ## Maintenance
 
 Adding or removing an asset, entry point, dependency, or credential
