@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Configures the GitHub Actions secrets the CI workflows consume, here and
-# in blog.alunduil.com. Re-running is a no-op.
+# Configures the GitHub Actions secrets the CI workflows consume, here, in
+# blog.alunduil.com, and in every repo with a renovate ruleset. Re-running is a
+# no-op.
 
 set -euo pipefail
 
@@ -72,6 +73,16 @@ resolve_gh_app_id() {
   fi
 }
 
+# read hands back the tilde the shell would have expanded.
+read_key_file() {
+  local path="${1/#\~/${HOME}}"
+  [[ -r "${path}" ]] || {
+    echo "error: cannot read '${path}'" >&2
+    exit 1
+  }
+  cat "${path}"
+}
+
 resolve_gh_app_private_key() {
   local path
   if [[ -n "${GH_APP_PRIVATE_KEY_FILE:-}" ]]; then
@@ -83,12 +94,7 @@ resolve_gh_app_private_key() {
   else
     read -r -p "Path to GitHub App private key (.pem): " path
   fi
-  path="${path/#\~/${HOME}}"
-  [[ -r "${path}" ]] || {
-    echo "error: cannot read '${path}'" >&2
-    exit 1
-  }
-  cat "${path}"
+  read_key_file "${path}"
 }
 
 resolve_project_sync_token() {
@@ -103,6 +109,70 @@ resolve_project_sync_token() {
     echo >&2
     printf '%s' "${value}"
   fi
+}
+
+print_hook_fix_app_pointer() {
+  cat >&2 <<'EOF'
+
+The hook-fix GitHub App pushes formatter fixes to Renovate branches. If you
+haven't created one yet, see docs/how-to/create-hook-fix-github-app.md.
+
+EOF
+}
+
+# A secret is written to a repo when the operator supplied its value, which is
+# how a rotated key reaches every repo, or when the repo lacks it.
+needs_hook_fix_write() {
+  local name="$1" supplied="$2" repo_secrets="$3"
+  [[ -n ${supplied} ]] || ! grep -Fxq "${name}" <<<"${repo_secrets}"
+}
+
+resolve_hook_fix_app_id() {
+  if [[ -n "${HOOK_FIX_APP_ID:-}" ]]; then
+    printf '%s' "${HOOK_FIX_APP_ID}"
+  else
+    local value
+    read -r -p "Enter HOOK_FIX_APP_ID (numeric, visible on App settings page): " value
+    printf '%s' "${value}"
+  fi
+}
+
+resolve_hook_fix_app_private_key() {
+  local path="${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}"
+  [[ -n ${path} ]] || read -r -p "Path to the hook-fix App private key (.pem): " path
+  read_key_file "${path}"
+}
+
+# Resolves the value once, and only when some repo receives it, so the
+# operator never answers a prompt whose answer goes nowhere.
+set_secret_on_repos() {
+  local name="$1" resolve="$2"
+  shift 2
+  (($#)) || return 0
+
+  local value repo
+  value="$("${resolve}")"
+  for repo in "$@"; do
+    set_secret "${name}" "${value}" "${repo}"
+  done
+}
+
+# The renovate ruleset is what grants the App its bypass, so its presence, not
+# allow_auto_merge, decides which repos hold the key: auto-merge can be on in a
+# repo Terraform doesn't manage.
+hook_fix_repos() {
+  # shellcheck disable=SC2016 # $endCursor is a GraphQL variable, not a shell one
+  gh api graphql --paginate -f query='
+    query($endCursor: String) {
+      viewer {
+        repositories(ownerAffiliations: OWNER, isArchived: false, first: 100, after: $endCursor) {
+          pageInfo { hasNextPage endCursor }
+          nodes { nameWithOwner rulesets(first: 20) { nodes { name } } }
+        }
+      }
+    }' --jq '.data.viewer.repositories.nodes[]
+      | select(any(.rulesets.nodes[]; .name == "renovate"))
+      | .nameWithOwner'
 }
 
 tf_output() {
@@ -225,6 +295,27 @@ declare -A BLOG_SECRETS=(
 for name in "${!BLOG_SECRETS[@]}"; do
   set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
 done
+
+mapfile -t HOOK_FIX_REPOS < <(hook_fix_repos)
+hook_fix_id_repos=()
+hook_fix_key_repos=()
+for repo in "${HOOK_FIX_REPOS[@]}"; do
+  repo_secrets="$(gh secret list --repo "${repo}" --json name --jq '.[].name')"
+  if needs_hook_fix_write HOOK_FIX_APP_ID "${HOOK_FIX_APP_ID:-}" "${repo_secrets}"; then
+    hook_fix_id_repos+=("${repo}")
+  fi
+  if needs_hook_fix_write HOOK_FIX_APP_PRIVATE_KEY "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" "${repo_secrets}"; then
+    hook_fix_key_repos+=("${repo}")
+  fi
+done
+
+if [[ ${#hook_fix_id_repos[@]} -gt 0 && -z "${HOOK_FIX_APP_ID:-}" ]] \
+  || [[ ${#hook_fix_key_repos[@]} -gt 0 && -z "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" ]]; then
+  print_hook_fix_app_pointer
+fi
+
+set_secret_on_repos HOOK_FIX_APP_ID resolve_hook_fix_app_id "${hook_fix_id_repos[@]}"
+set_secret_on_repos HOOK_FIX_APP_PRIVATE_KEY resolve_hook_fix_app_private_key "${hook_fix_key_repos[@]}"
 
 ensure_environment
 if [[ "${GH_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
