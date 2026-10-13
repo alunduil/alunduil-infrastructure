@@ -14,8 +14,6 @@
 resource "google_project_service" "legacy" {
   for_each = toset([
     # User-facing — review before disabling
-    "calendar-json.googleapis.com",         # Google Calendar
-    "generativelanguage.googleapis.com",    # Gemini / AI Studio
     "smartdevicemanagement.googleapis.com", # Nest / Google Home
 
     # Compute Engine and related
