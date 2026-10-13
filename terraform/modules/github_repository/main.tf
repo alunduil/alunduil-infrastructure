@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # Merge commits are the only merge method that breaks linear history.
+  merge_commits = var.merge_method == "merge"
+}
+
 resource "github_repository" "this" {
   name         = var.name
   description  = var.description
@@ -12,7 +17,7 @@ resource "github_repository" "this" {
   has_projects                = false
   has_wiki                    = false
   has_discussions             = var.has_discussions
-  allow_merge_commit          = var.merge_method == "merge"
+  allow_merge_commit          = local.merge_commits
   allow_squash_merge          = var.merge_method == "squash"
   allow_rebase_merge          = false
   allow_auto_merge            = var.renovate_automerge
@@ -96,12 +101,13 @@ resource "github_repository_ruleset" "default" {
     }
   }
 
-  # No required_signatures: GitHub already signs squash merges, so it would be
-  # redundant on the default branch while adding friction to direct pushes.
+  # No required_signatures: GitHub already signs the merges it makes, so it
+  # would be redundant on the default branch while adding friction to direct
+  # pushes.
   rules {
     deletion                = true
     non_fast_forward        = true
-    required_linear_history = var.merge_method != "merge"
+    required_linear_history = !local.merge_commits
   }
 }
 
