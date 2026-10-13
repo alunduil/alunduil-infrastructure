@@ -7,7 +7,7 @@ The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
 principals.
 
-Verified 2026-10-12.
+Verified 2026-10-13.
 
 ## Scope
 
@@ -71,6 +71,7 @@ from.
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
+| P-5 | Hook fix | C-23's App token in Actions | A repo holding C-23 |
 
 ## Trust boundaries
 
@@ -462,6 +463,17 @@ Each needs an operator in a console, because no apply rotates them.
 - Consumer: the Deco app, through D-06
 - Grants: P-1
 - Source: `None`
+
+#### C-23: Hook-fix GitHub App
+
+- Kind: GitHub App ID and private key
+- Scope: `Contents` write wherever it's installed, without `Workflows`.
+  Of the protected branches, only `renovate/**` admits its pushes
+- Consumer: Actions secrets `HOOK_FIX_APP_ID` and
+  `HOOK_FIX_APP_PRIVATE_KEY` in every repo with a `renovate` ruleset,
+  written by `scripts/configure-github-secrets.sh`
+- Grants: P-5
+- Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
 ## Maintenance
 

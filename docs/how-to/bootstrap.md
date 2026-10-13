@@ -5,7 +5,8 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets, both here and in `blog.alunduil.com`. Run when starting
+Actions secrets here, in `blog.alunduil.com`, and in every repo with a
+`renovate` ruleset. Run when starting
 from scratch or rotating the core credentials.
 
 ## Prerequisites
@@ -18,6 +19,8 @@ from scratch or rotating the core credentials.
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed—see
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
+- The hook-fix GitHub App created and installed—see
+  [create-hook-fix-github-app.md](create-hook-fix-github-app.md).
 - Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
 - `gh` authenticated with the `project` scope: `gh auth refresh -s project`.

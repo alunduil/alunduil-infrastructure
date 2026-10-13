@@ -4,7 +4,7 @@
 # Every step is idempotent; safe to re-run after partial failure. The Grafana and
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
-[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here and in blog.alunduil.com) → Projects v2 board fields.")]
+[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here, blog.alunduil.com, Renovate repos) → Projects v2 board fields.")]
 bootstrap: && projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
