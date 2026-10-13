@@ -6,8 +6,8 @@
 Pushes pre-commit hook fixes to Renovate branches in the managed
 repositories. A push made with `GITHUB_TOKEN` doesn't trigger workflows,
 so the required checks wouldn't re-run on the fixed commit. A push made
-with an App token does. The `renovate` ruleset lets this App and Renovate
-push to `renovate/**` branches, and no one else.
+with an App token does. The `renovate` ruleset lets this App push to
+`renovate/**` branches.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: any name unique across GitHub, for example
@@ -50,6 +50,5 @@ export HOOK_FIX_APP_PRIVATE_KEY_FILE=<path-to-key.pem>
 scripts/configure-github-secrets.sh
 ```
 
-Without the variables the script prompts for each value. With them, it
-also overwrites repos that already hold the secrets, which is how a new
-key reaches every repo.
+To roll out a new key, set both variables: the script then overwrites
+every repo's copy. Without them, it prompts for any value a repo lacks.

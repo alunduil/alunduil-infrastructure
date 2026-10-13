@@ -6,8 +6,8 @@
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
 Actions secrets here, in `blog.alunduil.com`, and in every repo with a
-`renovate` ruleset. Run when starting
-from scratch or rotating the core credentials.
+`renovate` ruleset. Run when starting from scratch or rotating the core
+credentials.
 
 ## Prerequisites
 

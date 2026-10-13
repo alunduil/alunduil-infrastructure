@@ -114,14 +114,13 @@ resolve_project_sync_token() {
 print_hook_fix_app_pointer() {
   cat >&2 <<'EOF'
 
-The hook-fix GitHub App pushes formatter fixes to Renovate branches. If you
+The hook-fix GitHub App pushes hook fixes to Renovate branches. If you
 haven't created one yet, see docs/how-to/create-hook-fix-github-app.md.
 
 EOF
 }
 
-# A secret is written to a repo when the operator supplied its value, which is
-# how a rotated key reaches every repo, or when the repo lacks it.
+# A supplied value overwrites, which is how a rotated key reaches every repo.
 needs_hook_fix_write() {
   local name="$1" supplied="$2" repo_secrets="$3"
   [[ -n ${supplied} ]] || ! grep -Fxq "${name}" <<<"${repo_secrets}"
@@ -143,8 +142,8 @@ resolve_hook_fix_app_private_key() {
   read_key_file "${path}"
 }
 
-# Resolves the value once, and only when some repo receives it, so the
-# operator never answers a prompt whose answer goes nowhere.
+# The operator answers each prompt at most once, and never for a value no repo
+# receives.
 set_secret_on_repos() {
   local name="$1" resolve="$2"
   shift 2
@@ -157,9 +156,8 @@ set_secret_on_repos() {
   done
 }
 
-# The renovate ruleset is what grants the App its bypass, so its presence, not
-# allow_auto_merge, decides which repos hold the key: auto-merge can be on in a
-# repo Terraform doesn't manage.
+# The renovate ruleset grants the App its bypass, so only repos carrying it get
+# the key. allow_auto_merge is also on in repos Terraform doesn't manage.
 hook_fix_repos() {
   # shellcheck disable=SC2016 # $endCursor is a GraphQL variable, not a shell one
   gh api graphql --paginate -f query='

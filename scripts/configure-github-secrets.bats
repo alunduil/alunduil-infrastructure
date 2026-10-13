@@ -175,7 +175,6 @@ gh() { echo "gh $*"; }
   [[ ${status} -eq 1 ]]
 }
 
-# A supplied value is how a rotated key reaches repos that already hold one.
 @test "needs_hook_fix_write is true for a supplied value the repo already holds" {
   run needs_hook_fix_write HOOK_FIX_APP_ID "12345" $'HOOK_FIX_APP_ID'
   [[ ${status} -eq 0 ]]

@@ -469,9 +469,8 @@ Each needs an operator in a console, because no apply rotates them.
 - Kind: GitHub App ID and private key
 - Scope: `Contents` write wherever it's installed, without `Workflows`.
   Of the protected branches, only `renovate/**` admits its pushes
-- Consumer: Actions secrets `HOOK_FIX_APP_ID` and
-  `HOOK_FIX_APP_PRIVATE_KEY` in every repo with a `renovate` ruleset,
-  written by `scripts/configure-github-secrets.sh`
+- Consumer: workflows in every repo with a `renovate` ruleset, as the
+  Actions secrets `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY`
 - Grants: P-5
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
