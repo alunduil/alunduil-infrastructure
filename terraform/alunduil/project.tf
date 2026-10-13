@@ -4,6 +4,10 @@
 # APIs something in this layer depends on. services_to_disable.tf holds the rest.
 resource "google_project_service" "kept" {
   for_each = toset([
+    # Home Assistant's Google Calendar and Google Gemini integrations.
+    "calendar-json.googleapis.com",
+    "generativelanguage.googleapis.com",
+
     # The audit log-based metric is defined against logging; the Grafana data
     # source reads it back through monitoring.
     "logging.googleapis.com",
@@ -37,4 +41,14 @@ moved {
 moved {
   from = google_project_service.legacy["monitoring.googleapis.com"]
   to   = google_project_service.kept["monitoring.googleapis.com"]
+}
+
+moved {
+  from = google_project_service.legacy["calendar-json.googleapis.com"]
+  to   = google_project_service.kept["calendar-json.googleapis.com"]
+}
+
+moved {
+  from = google_project_service.legacy["generativelanguage.googleapis.com"]
+  to   = google_project_service.kept["generativelanguage.googleapis.com"]
 }
