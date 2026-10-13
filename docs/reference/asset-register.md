@@ -267,7 +267,7 @@ creates it.
 
 A credential live in a provider console with no entry below is an
 orphan. Two inventories are complete at the verification date:
-Grafana Cloud, which held C-18, and Google Cloud's OAuth clients, which
+Grafana Cloud's, which held C-18, and Google Cloud's OAuth clients, which
 held C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or
 Google Cloud's other credentials.
 
@@ -468,8 +468,8 @@ Each needs an operator in a console, because no apply rotates them.
 
 - Kind: Google OAuth client, TV and limited input, in A-07
 - Scope: the Google Calendar API. Its granted scopes are `Unverified`.
-  Not agentic, so it can't call Workspace MCP servers. The agentic
-  setting is permanent
+  Not agentic, so it can't call Google Workspace Model Context
+  Protocol (MCP) servers. The agentic setting is permanent
 - Consumer: A-02's Google Calendar integration
 - Grants: P-4
 - Source: `None`
