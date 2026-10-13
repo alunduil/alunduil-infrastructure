@@ -266,10 +266,10 @@ the Terraform file that declares a credential, or the how-to that
 creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. Grafana Cloud and Google Cloud's OAuth clients are the only
-consoles enumerated at the verification date, and they held C-18 and
-C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or Google
-Cloud's other credentials.
+orphan. Two inventories are complete at the verification date:
+Grafana Cloud, which held C-18, and Google Cloud's OAuth clients, which
+held C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or
+Google Cloud's other credentials.
 
 ### Provisioned by Terraform
 
@@ -466,11 +466,10 @@ Each needs an operator in a console, because no apply rotates them.
 
 #### C-23: Home Assistant Credentials
 
-- Kind: Google OAuth client, TV and limited input, in A-07. Not
-  agentic, so it can't call Workspace MCP servers. The setting is
-  fixed, so an agent needs its own client
-- Scope: the Google Calendar API, at the scopes granted on consent.
-  The granted scopes are `Unverified`
+- Kind: Google OAuth client, TV and limited input, in A-07
+- Scope: the Google Calendar API. Its granted scopes are `Unverified`.
+  Not agentic, so it can't call Workspace MCP servers. The agentic
+  setting is permanent
 - Consumer: A-02's Google Calendar integration
 - Grants: P-4
 - Source: `None`
