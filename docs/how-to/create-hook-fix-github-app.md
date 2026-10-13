@@ -6,8 +6,7 @@
 Pushes pre-commit hook fixes to Renovate branches in the managed
 repositories. A push made with `GITHUB_TOKEN` doesn't trigger workflows,
 so the required checks wouldn't re-run on the fixed commit. A push made
-with an App token does. The `renovate` ruleset lets this App push to
-`renovate/**` branches.
+with an App token does.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: `alunduil-hook-fix`. A pull request's

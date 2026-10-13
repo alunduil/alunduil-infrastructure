@@ -40,8 +40,8 @@ resolve_app_id() {
   [[ -n ${value} ]] || read -r -p "${APP_NAME} App ID (Enter to skip): " value
   [[ -n ${value} ]] || return 0
 
-  # An ID from another App passes every check here and only surfaces when the
-  # first fix push is refused, so reject what can't be an ID while it's in hand.
+  # A wrong ID surfaces only when the first fix push is refused, so catch a
+  # mistyped one here.
   [[ ${value} =~ ^[0-9]+$ ]] || die "App ID must be digits, got '${value}'"
   printf '%s' "${value}"
 }
