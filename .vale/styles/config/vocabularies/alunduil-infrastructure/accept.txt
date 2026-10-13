@@ -82,6 +82,7 @@ Nygard's
 # Terms the en_US dictionary lacks
 (?i)ADR
 (?i)ADRs
+(?i)agentic
 (?i)APIs
 (?i)config
 (?i)deployer
