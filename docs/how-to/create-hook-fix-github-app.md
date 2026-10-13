@@ -10,8 +10,11 @@ with an App token does. The `renovate` ruleset lets this App push to
 `renovate/**` branches.
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: any name unique across GitHub, for example
-     `alunduil-hook-fix`. Display only.
+   - **GitHub App name**: `alunduil-hook-fix`. A pull request's
+     timeline credits its pushes to `alunduil-hook-fix[bot]`, which tells
+     a reviewer they aren't Renovate's.
+   - **Description**: `Pushes pre-commit hook fixes to Renovate
+     branches, so the required checks run on the fixed commit.`
    - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck **Active**.
