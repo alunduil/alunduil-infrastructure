@@ -24,26 +24,6 @@ resource "google_project_service" "kept" {
 }
 
 moved {
-  from = google_project_service.storage_api
-  to   = google_project_service.kept["storage-api.googleapis.com"]
-}
-
-moved {
-  from = google_project_service.storage_component
-  to   = google_project_service.kept["storage-component.googleapis.com"]
-}
-
-moved {
-  from = google_project_service.legacy["logging.googleapis.com"]
-  to   = google_project_service.kept["logging.googleapis.com"]
-}
-
-moved {
-  from = google_project_service.legacy["monitoring.googleapis.com"]
-  to   = google_project_service.kept["monitoring.googleapis.com"]
-}
-
-moved {
   from = google_project_service.legacy["calendar-json.googleapis.com"]
   to   = google_project_service.kept["calendar-json.googleapis.com"]
 }
