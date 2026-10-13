@@ -40,7 +40,7 @@ jobs:
       # sha_pinning_required rejects tag refs transitively, so whichever
       # action runs pre-commit must SHA-pin its own nested actions.
       - name: Run pre-commit hooks
-        uses: tox-dev/action-pre-commit-uv@e09b8958484dfe71f4ac3bc7afb230ba506402ec # v1.0.5
+        uses: tox-dev/action-pre-commit-uv@4de52c139ed1a6963bcc4c30042c4ef9d75d8b11 # v1.1.0
         env:
           # no-commit-to-branch is a local guard and would always fail on
           # push to main — skip it in CI.
