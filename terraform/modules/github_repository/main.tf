@@ -60,6 +60,12 @@ locals {
     actor_type = "Integration"
   }
 
+  hook_fix_actor = {
+    actor_id    = 5305353 # docs/how-to/create-hook-fix-github-app.md
+    actor_type  = "Integration"
+    bypass_mode = "always"
+  }
+
   # Mode "pull_request" lets Renovate merge its pull requests without letting
   # it push to the default branch.
   merge_bypass_actors = concat(
@@ -239,10 +245,13 @@ resource "github_repository_ruleset" "renovate" {
   }
 
   # Renovate pushes to its branches directly, so it needs mode "always" here.
+  # The hook-fix App is the one other actor trusted to add commits that
+  # Renovate then merges past review.
   dynamic "bypass_actors" {
     for_each = [
       local.admin_bypass_actor,
       merge(local.renovate_actor, { bypass_mode = "always" }),
+      local.hook_fix_actor,
     ]
     content {
       actor_id    = bypass_actors.value.actor_id
