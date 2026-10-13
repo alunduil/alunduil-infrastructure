@@ -94,9 +94,8 @@ variable "merge_method" {
   type        = string
   default     = "squash"
   description = <<-EOT
-    The one way pull requests merge into the default branch: "squash" or
-    "merge". "merge" also drops the linear-history rule, which would
-    otherwise reject every merge commit.
+    How pull requests merge into the default branch: "squash" or "merge".
+    "merge" also lifts the linear-history requirement.
   EOT
 
   validation {
