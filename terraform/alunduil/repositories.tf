@@ -53,6 +53,10 @@ module "blog_alunduil_com" {
       "Build the site",
     ]
   }
+  # Deviates from the baseline (squash only). The theme is vendored AstroPaper
+  # source synced by merging upstream; a squash drops the upstream parent, so
+  # every later sync would repeat the first, unrelated-histories merge.
+  merge_method = "merge"
 }
 
 module "collection_json_hs" {

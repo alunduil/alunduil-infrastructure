@@ -12,8 +12,8 @@ resource "github_repository" "this" {
   has_projects                = false
   has_wiki                    = false
   has_discussions             = var.has_discussions
-  allow_merge_commit          = false
-  allow_squash_merge          = true
+  allow_merge_commit          = var.merge_method == "merge"
+  allow_squash_merge          = var.merge_method == "squash"
   allow_rebase_merge          = false
   allow_auto_merge            = var.renovate_automerge
   squash_merge_commit_title   = "PR_TITLE"
@@ -101,7 +101,7 @@ resource "github_repository_ruleset" "default" {
   rules {
     deletion                = true
     non_fast_forward        = true
-    required_linear_history = true
+    required_linear_history = var.merge_method != "merge"
   }
 }
 
