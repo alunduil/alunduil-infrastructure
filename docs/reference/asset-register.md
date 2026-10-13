@@ -7,7 +7,7 @@ The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
 principals.
 
-Verified 2026-10-12.
+Verified 2026-10-13.
 
 ## Scope
 
@@ -266,9 +266,10 @@ the Terraform file that declares a credential, or the how-to that
 creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. Grafana Cloud is the only console enumerated at the
-verification date, and it held C-18. Nobody has enumerated Cloudflare,
-Google Cloud, GitHub, or Tailscale.
+orphan. Two inventories are complete at the verification date:
+Grafana Cloud's, which held C-18, and Google Cloud's OAuth clients, which
+held C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or
+Google Cloud's other credentials.
 
 ### Provisioned by Terraform
 
@@ -461,6 +462,16 @@ Each needs an operator in a console, because no apply rotates them.
   that define T-2
 - Consumer: the Deco app, through D-06
 - Grants: P-1
+- Source: `None`
+
+#### C-23: Home Assistant Credentials
+
+- Kind: Google OAuth client, TV and limited input, in A-07
+- Scope: the Google Calendar API. Its granted scopes are `Unverified`.
+  Not agentic, so it can't call Google Workspace Model Context
+  Protocol (MCP) servers. The agentic setting is permanent
+- Consumer: A-02's Google Calendar integration
+- Grants: P-4
 - Source: `None`
 
 ## Maintenance
