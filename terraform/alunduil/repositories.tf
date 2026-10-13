@@ -53,6 +53,10 @@ module "blog_alunduil_com" {
       "Build the site",
     ]
   }
+  # Deviates from the baseline (squash only). The AstroPaper theme syncs by
+  # merging upstream, and each sync diffs against the upstream parent that only
+  # a merge commit keeps.
+  merge_method = "merge"
 }
 
 module "collection_json_hs" {

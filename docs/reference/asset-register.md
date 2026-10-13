@@ -71,7 +71,7 @@ from.
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
-| P-5 | Hook fix | C-23's App token in Actions | A repo holding C-23 |
+| P-5 | Hook fix | C-25's App token in Actions | A repo holding C-25 |
 
 ## Trust boundaries
 
@@ -267,9 +267,10 @@ the Terraform file that declares a credential, or the how-to that
 creates it.
 
 A credential live in a provider console with no entry below is an
-orphan. Grafana Cloud is the only console enumerated at the
-verification date, and it held C-18. Nobody has enumerated Cloudflare,
-Google Cloud, GitHub, or Tailscale.
+orphan. Two inventories are complete at the verification date:
+Grafana Cloud's, which held C-18, and Google Cloud's OAuth clients, which
+held C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or
+Google Cloud's other credentials.
 
 ### Provisioned by Terraform
 
@@ -464,7 +465,26 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-1
 - Source: `None`
 
-#### C-23: Hook-fix GitHub App
+#### C-23: Home Assistant Credentials
+
+- Kind: Google OAuth client, TV and limited input, in A-07
+- Scope: the Google Calendar API. Its granted scopes are `Unverified`.
+  Not agentic, so it can't call Google Workspace Model Context
+  Protocol (MCP) servers. The agentic setting is permanent
+- Consumer: A-02's Google Calendar integration
+- Grants: P-4
+- Source: `None`
+
+#### C-24: Generative Language API Key
+
+- Kind: Google Cloud API key, in A-07
+- Scope: restricted to the Generative Language API
+- Consumer: A-02's Google Gemini integration, inferred from the key's
+  request traffic
+- Grants: P-4
+- Source: `None`
+
+#### C-25: Hook-fix GitHub App
 
 - Kind: GitHub App ID and private key
 - Scope: `Contents` write wherever it's installed, without `Workflows`.
