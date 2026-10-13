@@ -41,17 +41,20 @@ with an App token does. The `renovate` ruleset lets this App push to
 
 ## Set the Actions secrets
 
-`scripts/configure-github-secrets.sh` writes `HOOK_FIX_APP_ID` and
-`HOOK_FIX_APP_PRIVATE_KEY` to every repo with a `renovate` ruleset that
-lacks them. Run it after each apply that sets `renovate_automerge = true`
-on a repo:
+Run this after each apply that sets `renovate_automerge = true` on a
+repo. It writes `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY` to every
+repo with a `renovate` ruleset that lacks them, prompting for each value:
+
+```sh
+just configure-hook-fix
+```
+
+To roll out a new key, set both variables first. Every repo's copy is
+then overwritten:
 
 ```sh
 export HOOK_FIX_APP_ID=<app-id>
 export HOOK_FIX_APP_PRIVATE_KEY_FILE=<path-to-key.pem>
 
-scripts/configure-github-secrets.sh
+just configure-hook-fix
 ```
-
-To roll out a new key, set both variables: the script then overwrites
-every repo's copy. Without them, it prompts for any value a repo lacks.

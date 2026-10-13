@@ -51,5 +51,10 @@ IDs, read-only for plan and read-write for apply. Set
 `TAILSCALE_CLIENT_ID_RO` and `TAILSCALE_CLIENT_ID_RW` to answer without the
 prompts, or press Enter at each to defer until the credentials exist.
 
+It also prompts for the hook-fix App's ID and private key, and writes
+them to each repo with a `renovate` ruleset that lacks them. Set
+`HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY_FILE` to answer without
+the prompts, or press Enter at each to defer until the App exists.
+
 The blog's Pages build needs wiring to the federation once, in
 `blog.alunduil.com`.

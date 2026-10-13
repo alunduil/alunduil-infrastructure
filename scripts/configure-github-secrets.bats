@@ -15,8 +15,7 @@ setup() {
   # read the env inputs; reset both so each test starts from a clean state.
   existing_secrets=""
   existing_env_secrets=""
-  unset GH_APP_ID GH_APP_PRIVATE_KEY_FILE GH_PROJECT_SYNC_TOKEN \
-    HOOK_FIX_APP_ID HOOK_FIX_APP_PRIVATE_KEY_FILE
+  unset GH_APP_ID GH_APP_PRIVATE_KEY_FILE GH_PROJECT_SYNC_TOKEN
   # shellcheck source=configure-github-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-github-secrets.sh"
 }
@@ -161,67 +160,4 @@ gh() { echo "gh $*"; }
 @test "set_secret writes a derived value through to another repo" {
   run set_secret "CLOUDFLARE_ANALYTICS_SECRET_NAME" "a-secret-name" "owner/other"
   [[ ${output} == *"gh secret set CLOUDFLARE_ANALYTICS_SECRET_NAME"* ]]
-}
-
-# --- needs_hook_fix_write -------------------------------------------------
-
-@test "needs_hook_fix_write is true when the repo lacks the secret" {
-  run needs_hook_fix_write HOOK_FIX_APP_ID "" $'OTHER\nHOOK_FIX_APP_ID_EXTRA'
-  [[ ${status} -eq 0 ]]
-}
-
-@test "needs_hook_fix_write is false when the repo holds the secret" {
-  run needs_hook_fix_write HOOK_FIX_APP_ID "" $'OTHER\nHOOK_FIX_APP_ID'
-  [[ ${status} -eq 1 ]]
-}
-
-@test "needs_hook_fix_write is true for a supplied value the repo already holds" {
-  run needs_hook_fix_write HOOK_FIX_APP_ID "12345" $'HOOK_FIX_APP_ID'
-  [[ ${status} -eq 0 ]]
-}
-
-# --- resolve_hook_fix_* ---------------------------------------------------
-
-@test "resolve_hook_fix_app_id returns the environment value when set" {
-  HOOK_FIX_APP_ID=12345
-  result="$(resolve_hook_fix_app_id 2>/dev/null)"
-  [[ ${result} == "12345" ]]
-}
-
-@test "resolve_hook_fix_app_private_key emits the contents of HOOK_FIX_APP_PRIVATE_KEY_FILE" {
-  keyfile="${BATS_TEST_TMPDIR}/hook-fix.pem"
-  printf 'HOOK-FIX-KEY' >"${keyfile}"
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${keyfile}"
-  result="$(resolve_hook_fix_app_private_key 2>/dev/null)"
-  [[ ${result} == "HOOK-FIX-KEY" ]]
-}
-
-@test "resolve_hook_fix_app_private_key errors on an unreadable path" {
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/does-not-exist.pem"
-  run resolve_hook_fix_app_private_key
-  [[ ${status} -eq 1 ]]
-  [[ ${output} == *"cannot read"* ]]
-}
-
-# --- set_secret_on_repos --------------------------------------------------
-
-# Counts calls in a file: the resolver runs in a command substitution, whose
-# variables don't survive it.
-# shellcheck disable=SC2329 # called indirectly by set_secret_on_repos
-count_resolve() {
-  echo x >>"${BATS_TEST_TMPDIR}/resolved"
-  printf 'VALUE'
-}
-
-@test "set_secret_on_repos resolves once for every repo" {
-  run set_secret_on_repos HOOK_FIX_APP_ID count_resolve owner/a owner/b
-  [[ ${output} == *"--repo owner/a --body VALUE"* ]]
-  [[ ${output} == *"--repo owner/b --body VALUE"* ]]
-  [[ $(wc -l <"${BATS_TEST_TMPDIR}/resolved") -eq 1 ]]
-}
-
-@test "set_secret_on_repos neither resolves nor writes without a repo" {
-  run set_secret_on_repos HOOK_FIX_APP_ID count_resolve
-  [[ ${output} != *"gh secret set"* ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/resolved" ]]
 }
