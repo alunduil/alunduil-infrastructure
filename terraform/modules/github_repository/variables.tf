@@ -90,6 +90,20 @@ variable "renovate_automerge" {
   }
 }
 
+variable "merge_method" {
+  type        = string
+  default     = "squash"
+  description = <<-EOT
+    How pull requests merge into the default branch: "squash" or "merge".
+    "merge" also lifts the linear-history requirement.
+  EOT
+
+  validation {
+    condition     = contains(["squash", "merge"], var.merge_method)
+    error_message = "merge_method must be \"squash\" or \"merge\"."
+  }
+}
+
 variable "has_discussions" {
   type        = bool
   default     = false
