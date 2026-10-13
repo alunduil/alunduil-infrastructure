@@ -7,6 +7,7 @@
 
 set -euo pipefail
 
+APP_NAME="alunduil-hook-fix"
 SETUP_DOC="docs/how-to/create-hook-fix-github-app.md"
 
 die() {
@@ -17,10 +18,15 @@ die() {
 print_app_pointer() {
   cat >&2 <<EOF
 
-The next values belong to the GitHub App named alunduil-hook-fix. If it does
+The next values belong to the GitHub App named ${APP_NAME}. If it does
 not exist yet, see ${SETUP_DOC}.
 
 EOF
+}
+
+will_prompt() {
+  local repo_count="$1" supplied="$2"
+  [[ ${repo_count} -gt 0 && -z ${supplied} ]]
 }
 
 # A supplied value overwrites, which is how a rotated key reaches every repo.
@@ -31,7 +37,7 @@ needs_write() {
 
 resolve_app_id() {
   local value="${HOOK_FIX_APP_ID:-}"
-  [[ -n ${value} ]] || read -r -p "alunduil-hook-fix App ID (Enter to skip): " value
+  [[ -n ${value} ]] || read -r -p "${APP_NAME} App ID (Enter to skip): " value
   [[ -n ${value} ]] || return 0
 
   # An ID from another App passes every check here and only surfaces when the
@@ -42,7 +48,7 @@ resolve_app_id() {
 
 resolve_app_private_key() {
   local path="${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}"
-  [[ -n ${path} ]] || read -r -p "Path to the alunduil-hook-fix private key .pem (Enter to skip): " path
+  [[ -n ${path} ]] || read -r -p "Path to the ${APP_NAME} private key .pem (Enter to skip): " path
   [[ -n ${path} ]] || return 0
 
   # read hands back the tilde the shell would have expanded.
@@ -119,8 +125,8 @@ if [[ ${#id_repos[@]} -eq 0 && ${#key_repos[@]} -eq 0 ]]; then
   exit 0
 fi
 
-if [[ ${#id_repos[@]} -gt 0 && -z "${HOOK_FIX_APP_ID:-}" ]] \
-  || [[ ${#key_repos[@]} -gt 0 && -z "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" ]]; then
+if will_prompt "${#id_repos[@]}" "${HOOK_FIX_APP_ID:-}" \
+  || will_prompt "${#key_repos[@]}" "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}"; then
   print_app_pointer
 fi
 

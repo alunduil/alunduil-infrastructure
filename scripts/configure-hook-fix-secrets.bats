@@ -45,6 +45,20 @@ count_resolve() {
   [[ ${status} -eq 0 ]]
 }
 
+# --- will_prompt ----------------------------------------------------------
+
+@test "will_prompt is true when a repo needs a value nobody supplied" {
+  run will_prompt 1 ""
+  [[ ${status} -eq 0 ]]
+}
+
+@test "will_prompt is false when the value is supplied or no repo needs it" {
+  run will_prompt 1 "12345"
+  [[ ${status} -eq 1 ]]
+  run will_prompt 0 ""
+  [[ ${status} -eq 1 ]]
+}
+
 # --- resolve_app_id -------------------------------------------------------
 
 @test "resolve_app_id returns the environment value when set" {
