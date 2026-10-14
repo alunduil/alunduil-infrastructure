@@ -5,8 +5,9 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets, both here and in `blog.alunduil.com`. Run when starting
-from scratch or rotating the core credentials.
+Actions secrets here, in `blog.alunduil.com`, and in every repo with a
+`renovate` ruleset. Run when starting from scratch or rotating the core
+credentials.
 
 ## Prerequisites
 
@@ -18,6 +19,8 @@ from scratch or rotating the core credentials.
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed—see
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
+- The hook-fix GitHub App created and installed—see
+  [create-hook-fix-github-app.md](create-hook-fix-github-app.md).
 - Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
 - `gh` authenticated with the `project` scope: `gh auth refresh -s project`.
@@ -47,6 +50,11 @@ It then prompts the same way for the two Tailscale trust credential client
 IDs, read-only for plan and read-write for apply. Set
 `TAILSCALE_CLIENT_ID_RO` and `TAILSCALE_CLIENT_ID_RW` to answer without the
 prompts, or press Enter at each to defer until the credentials exist.
+
+It also prompts for the hook-fix App's ID and private key, and writes
+them to each repo with a `renovate` ruleset that lacks them. Set
+`HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY_FILE` to answer without
+the prompts, or press Enter at each to defer until the App exists.
 
 The blog's Pages build needs wiring to the federation once, in
 `blog.alunduil.com`.

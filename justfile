@@ -4,14 +4,18 @@
 # Every step is idempotent; safe to re-run after partial failure. The Grafana and
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
-[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here and in blog.alunduil.com) → Projects v2 board fields.")]
-bootstrap: && projects
+[doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here, blog.alunduil.com, Renovate repos) → Projects v2 board fields.")]
+bootstrap: && configure-hook-fix projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-git-sync-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-github-secrets.sh
+
+[doc("Write the hook-fix App's Actions secrets to each repo with a renovate ruleset that lacks them.")]
+configure-hook-fix:
+    scripts/configure-hook-fix-secrets.sh
 
 [doc("Apply the Projects v2 board fields declared in github/projects/*.json.")]
 projects:

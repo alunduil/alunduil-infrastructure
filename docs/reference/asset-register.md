@@ -71,6 +71,7 @@ from.
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
+| P-5 | Hook fix | C-25's App token in Actions | A repo holding C-25 |
 
 ## Trust boundaries
 
@@ -482,6 +483,16 @@ Each needs an operator in a console, because no apply rotates them.
   request traffic
 - Grants: P-4
 - Source: `None`
+
+#### C-25: Hook-fix GitHub App
+
+- Kind: GitHub App ID and private key
+- Scope: `Contents` write wherever it's installed, without `Workflows`.
+  Of the protected branches, only `renovate/**` admits its pushes
+- Consumer: workflows in every repo with a `renovate` ruleset, as the
+  Actions secrets `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY`
+- Grants: P-5
+- Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
 ## Maintenance
 
