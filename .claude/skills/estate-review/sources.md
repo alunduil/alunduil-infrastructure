@@ -34,6 +34,9 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
     weekly restart.
   - Cause `100001`: DNS resolution.
   - Anything else: unclassified.
+- An unclassified overnight drop or failover goes in as a question for
+  alunduil: did planned work by g.network, the fibre ISP, cover it? Its
+  notices typically run 22:00–06:00 local.
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
@@ -51,14 +54,14 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 - `query_snapshots` stays off the list: it never finishes on this box's
   CPU.
 - The middleware keeps only its latest 1,000 jobs, a few days at the
-  15-minute cloud-sync cadence. Say where coverage starts.
+  15-minute cloud-sync cadence. Say where coverage starts. Results of
+  rsync and certificate jobs don't survive there; alerts and Loki carry them.
 - Report jobs RUNNING for more than a day.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
   with no reboot near it is the hang warning.
-- Certificates: report the `truenas-acme-cert` expiry and any
-  `certificate.renew_certs` failure.
+- Certificates: report the `truenas-acme-cert` expiry from its alerts.
 
 ## Grafana Cloud
 
@@ -95,13 +98,23 @@ Report:
 - DNS failures: `|~ "(?i)i/o timeout|SERVFAIL|no such host"`, and the
   resolver each one names.
 - TrueNAS: reboot and shutdown audit events, OOM kills, `zed`, `cloudsync`
-  errors including `rateLimitExceeded`, container restarts.
+  errors including `rateLimitExceeded`, rsync and `certificate.renew_certs`
+  failures, container restarts.
 - Home Assistant: automation errors by entity and reason, integrations
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
 - Alert rules: what fired, and anything in an error or no-data state.
 
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
 series. A `<aggregated>` label is a known gap, not an empty result.
+
+A drop seen as DNS failures on every host at once is the home link. A local
+connection resetting in the same minute, such as Zigbee2MQTT to the
+coordinator, points inside the house rather than at the ISP.
+
+`GRAFANA_ALERTS` keeps only `alertname` and state, and the rule state
+history is empty, so a firing alert doesn't say what fired it. Report each
+firing with its rule's query and the firing window; when the query reads
+data `gcx` can reach, run it for that window.
 
 ## GitHub
 
@@ -112,7 +125,9 @@ GraphQL budget free.
 - Failed, cancelled and timed-out Actions runs per repository in the window
   (`/repos/{r}/actions/runs?created=>=YYYY-MM-DD`). Fetch the failing job's
   log tail for each recurring failure (`gh api --allow-escape-sequences
-  .../actions/jobs/{id}/logs`).
+  .../actions/jobs/{id}/logs`). For a failure on one platform across
+  repositories, record the runner image from the log and the last passing
+  run on `main`.
 - This repository: every Terraform Apply on `main`. A failed apply is drift
   until a later apply succeeds.
 - Scheduled workflows that didn't run, and workflows not in the `active`
@@ -139,10 +154,21 @@ Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
 
 Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
---project=alunduil`.
+--project=alunduil`. Then the Data Access audit log, the source of
+Grafana's "Unexpected Data Access" alert:
+
+```bash
+gcloud logging read --freshness=7d --project=alunduil \
+  'logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"
+   AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
+```
+
+alunduil's own bootstrap and break-glass runs from the home IP go under
+working.
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online. Offline phones, tablets and
-Chromebooks with expired keys renew them at their next sign-in, so list
-them under working.
+exit nodes and `homeassistant` are online. List these expired or expiring
+keys under working: offline phones, tablets and Chromebooks, which renew at
+their next sign-in, and `penguin`, the workstation, which alunduil renews
+from the CLI.
