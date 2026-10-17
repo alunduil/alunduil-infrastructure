@@ -34,9 +34,9 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
     weekly restart.
   - Cause `100001`: DNS resolution.
   - Anything else: unclassified.
-- An unclassified overnight drop or failover: report it as a question, not
-  a breakage. The fibre ISP, g.network, announces planned work, typically
-  22:00–06:00 local, and alunduil knows whether a notice covers it.
+- An unclassified overnight drop or failover goes in as a question for
+  alunduil: did planned work by g.network, the fibre ISP, cover it? Its
+  notices typically run 22:00–06:00 local.
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
@@ -154,9 +154,8 @@ Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
 
 Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
---project=alunduil`. Then the Data Access audit log, which Grafana's
-"Unexpected Data Access" alert counts, for principals other than the
-deployer service accounts:
+--project=alunduil`. Then the Data Access audit log, the source of
+Grafana's "Unexpected Data Access" alert:
 
 ```bash
 gcloud logging read --freshness=7d --project=alunduil \
@@ -164,8 +163,8 @@ gcloud logging read --freshness=7d --project=alunduil \
    AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
 ```
 
-alunduil's own bootstrap and break-glass runs from the home IP appear here
-by design. Report those under working.
+alunduil's own bootstrap and break-glass runs from the home IP go under
+working.
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both

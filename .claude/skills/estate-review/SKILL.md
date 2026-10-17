@@ -60,7 +60,7 @@ network is back; it keeps its context.
   sources saw in the same minute is one finding.
 - Search both repos (open and closed) for each finding before calling it
   untracked. Match on the error string and the component, then read the
-  candidate issue's body and comments. Titles miss the details.
+  candidate issue's body and comments.
 
 ## 4. Report
 
