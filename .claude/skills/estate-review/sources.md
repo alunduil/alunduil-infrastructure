@@ -34,6 +34,9 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
     weekly restart.
   - Cause `100001`: DNS resolution.
   - Anything else: unclassified.
+- The fibre ISP, g.network, announces planned work, typically 22:00–06:00
+  local. Ask alunduil whether a notice covers an unclassified overnight
+  drop or failover before reporting it as broken.
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
@@ -51,7 +54,8 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 - `query_snapshots` stays off the list: it never finishes on this box's
   CPU.
 - The middleware keeps only its latest 1,000 jobs, a few days at the
-  15-minute cloud-sync cadence. Say where coverage starts.
+  15-minute cloud-sync cadence. Say where coverage starts. Results of
+  rsync and certificate jobs don't survive there; alerts and Loki carry them.
 - Report jobs RUNNING for more than a day.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
@@ -103,6 +107,25 @@ Report:
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
 series. A `<aggregated>` label is a known gap, not an empty result.
 
+A drop seen as DNS failures on every host at once is the home link. A local
+connection resetting in the same minute, such as Zigbee2MQTT to the
+coordinator, points inside the house rather than at the ISP.
+
+`GRAFANA_ALERTS` keeps only `alertname` and state, and the rule state
+history is empty. For a firing alert, read the rule's query and run it
+against the underlying data for the firing window. "Unexpected Data
+Access" names its principal in the Data Access audit log:
+
+```bash
+gcloud logging read --project=alunduil \
+  'logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"
+   AND timestamp>="..." AND timestamp<="..."
+   AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
+```
+
+alunduil's own bootstrap and break-glass runs from the home IP fire it by
+design. Report those under working.
+
 ## GitHub
 
 Covers A-09 and every repository in `terraform/*/repositories.tf`. Call only
@@ -112,7 +135,9 @@ GraphQL budget free.
 - Failed, cancelled and timed-out Actions runs per repository in the window
   (`/repos/{r}/actions/runs?created=>=YYYY-MM-DD`). Fetch the failing job's
   log tail for each recurring failure (`gh api --allow-escape-sequences
-  .../actions/jobs/{id}/logs`).
+  .../actions/jobs/{id}/logs`). For a failure on one platform across
+  repositories, record the runner image from the log and the last passing
+  run on `main`.
 - This repository: every Terraform Apply on `main`. A failed apply is drift
   until a later apply succeeds.
 - Scheduled workflows that didn't run, and workflows not in the `active`
@@ -145,4 +170,6 @@ Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
 exit nodes and `homeassistant` are online. Offline phones, tablets and
 Chromebooks with expired keys renew them at their next sign-in, so list
-them under working.
+them under working. `penguin` is the workstation running the review;
+alunduil re-authenticates it from the CLI when its key expires, so list its
+expiry under working too.

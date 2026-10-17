@@ -40,7 +40,8 @@ and leave it out; never fill its gap from another source.
 
 Spawn one read-only background agent per source in `sources.md`, in a single
 message. Each prompt is that file's "Every brief" section followed by the
-source's section, both verbatim.
+source's section, both verbatim, then the three parameters and the open
+issues that touch the source, as context.
 
 If an agent dies on a transport error, resume it with `SendMessage` once the
 network is back; it keeps its context.
@@ -55,8 +56,11 @@ network is back; it keeps its context.
   renewal, a scheduled router restart — goes in as a question, not a
   finding. Settled answers live in the brief for their source in
   `sources.md`; add each new one there.
+- Correlate across sources by timestamp before classifying. An event two
+  sources saw in the same minute is one finding.
 - Search both repos (open and closed) for each finding before calling it
-  untracked.
+  untracked. Match on the error string and the component, then read the
+  candidate issue's body and comments. Titles miss the details.
 
 ## 4. Report
 
