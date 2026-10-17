@@ -40,8 +40,8 @@ and leave it out; never fill its gap from another source.
 
 Spawn one read-only background agent per source in `sources.md`, in a single
 message. Each prompt is that file's "Every brief" section followed by the
-source's section, both verbatim, then the three parameters and the open
-issues that touch the source, as context.
+source's section, both verbatim, then the open issues that touch the source,
+as context.
 
 If an agent dies on a transport error, resume it with `SendMessage` once the
 network is back; it keeps its context.

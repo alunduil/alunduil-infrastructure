@@ -34,9 +34,9 @@ Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
     weekly restart.
   - Cause `100001`: DNS resolution.
   - Anything else: unclassified.
-- The fibre ISP, g.network, announces planned work, typically 22:00–06:00
-  local. Ask alunduil whether a notice covers an unclassified overnight
-  drop or failover before reporting it as broken.
+- An unclassified overnight drop or failover: report it as a question, not
+  a breakage. The fibre ISP, g.network, announces planned work, typically
+  22:00–06:00 local, and alunduil knows whether a notice covers it.
 - A Plex outage and a Home Assistant heartbeat miss in the same minute mean
   the whole home link dropped.
 - Flag assets in the register with no monitor.
@@ -61,8 +61,7 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
   with no reboot near it is the hang warning.
-- Certificates: report the `truenas-acme-cert` expiry and any
-  `certificate.renew_certs` failure.
+- Certificates: report the `truenas-acme-cert` expiry from its alerts.
 
 ## Grafana Cloud
 
@@ -99,7 +98,8 @@ Report:
 - DNS failures: `|~ "(?i)i/o timeout|SERVFAIL|no such host"`, and the
   resolver each one names.
 - TrueNAS: reboot and shutdown audit events, OOM kills, `zed`, `cloudsync`
-  errors including `rateLimitExceeded`, container restarts.
+  errors including `rateLimitExceeded`, rsync and `certificate.renew_certs`
+  failures, container restarts.
 - Home Assistant: automation errors by entity and reason, integrations
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
 - Alert rules: what fired, and anything in an error or no-data state.
@@ -112,19 +112,9 @@ connection resetting in the same minute, such as Zigbee2MQTT to the
 coordinator, points inside the house rather than at the ISP.
 
 `GRAFANA_ALERTS` keeps only `alertname` and state, and the rule state
-history is empty. For a firing alert, read the rule's query and run it
-against the underlying data for the firing window. "Unexpected Data
-Access" names its principal in the Data Access audit log:
-
-```bash
-gcloud logging read --project=alunduil \
-  'logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"
-   AND timestamp>="..." AND timestamp<="..."
-   AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
-```
-
-alunduil's own bootstrap and break-glass runs from the home IP fire it by
-design. Report those under working.
+history is empty, so a firing alert doesn't say what fired it. Report each
+firing with its rule's query and the firing window; when the query reads
+data `gcx` can reach, run it for that window.
 
 ## GitHub
 
@@ -164,12 +154,22 @@ Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
 
 Google Cloud (A-07): `gcloud logging read 'severity>=ERROR' --freshness=7d
---project=alunduil`.
+--project=alunduil`. Then the Data Access audit log, which Grafana's
+"Unexpected Data Access" alert counts, for principals other than the
+deployer service accounts:
+
+```bash
+gcloud logging read --freshness=7d --project=alunduil \
+  'logName="projects/alunduil/logs/cloudaudit.googleapis.com%2Fdata_access"
+   AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
+```
+
+alunduil's own bootstrap and break-glass runs from the home IP appear here
+by design. Report those under working.
 
 Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
 expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online. Offline phones, tablets and
-Chromebooks with expired keys renew them at their next sign-in, so list
-them under working. `penguin` is the workstation running the review;
-alunduil re-authenticates it from the CLI when its key expires, so list its
-expiry under working too.
+exit nodes and `homeassistant` are online. List these expired or expiring
+keys under working: offline phones, tablets and Chromebooks, which renew at
+their next sign-in, and `penguin`, the workstation, which alunduil renews
+from the CLI.
