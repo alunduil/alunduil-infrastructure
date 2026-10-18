@@ -147,7 +147,7 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
-  # Codecov's upload legs and commit statuses stay advisory.
+  # Codecov's upload legs and commit statuses aren't required.
   required_status_checks = {
     ci_results_check = true
     contexts = [
