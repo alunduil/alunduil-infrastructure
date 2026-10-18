@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # Matrix leg names change with the versions they test, so rulesets require
+  # this aggregator instead. It's the ci.yml job that needs every gating job.
+  ci_results_check = "Check CI results"
+}
+
 module "alunduil_chezmoi" {
   source      = "../modules/github_repository"
   name        = "alunduil-chezmoi"
@@ -66,10 +72,8 @@ module "collection_json_hs" {
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
   environments = { hackage = {} }
-  # Check CI results stands in for the GHC matrix legs, whose names change
-  # as GHC versions age out.
   required_status_checks = {
-    contexts = ["Check CI results", "Hooks", "Check links"]
+    contexts = [local.ci_results_check, "Hooks", "Check links"]
   }
 }
 
@@ -125,6 +129,9 @@ module "siren_json_hs" {
   description  = "Siren+JSON Tools for Haskell"
   topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
   environments = { hackage = {} }
+  required_status_checks = {
+    contexts = [local.ci_results_check]
+  }
 }
 
 module "woodland_generators" {
@@ -188,9 +195,7 @@ module "zfs_replicate" {
   require_code_owner_review = true
   admin_only_updates        = false
   required_status_checks = {
-    # Check CI results aggregates every gating job, so its name survives
-    # Python matrix changes.
-    contexts = ["Validate PR title", "Check CI results"]
+    contexts = ["Validate PR title", local.ci_results_check]
   }
   renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
