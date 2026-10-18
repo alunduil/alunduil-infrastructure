@@ -125,6 +125,11 @@ module "siren_json_hs" {
   description  = "Siren+JSON Tools for Haskell"
   topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
   environments = { hackage = {} }
+  # Check CI results stands in for the GHC matrix legs, whose names change
+  # as GHC versions age out.
+  required_status_checks = {
+    contexts = ["Check CI results"]
+  }
 }
 
 module "woodland_generators" {
