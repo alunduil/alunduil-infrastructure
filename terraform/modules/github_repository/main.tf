@@ -191,17 +191,10 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-locals {
-  required_checks = concat(
-    var.ci_results_check ? ["Check CI results"] : [],
-    try(var.required_status_checks.contexts, []),
-  )
-}
-
 # Renovate never bypasses this: these checks are all that gate its unreviewed
 # merges.
 resource "github_repository_ruleset" "checks" {
-  count = length(local.required_checks) > 0 ? 1 : 0
+  count = var.required_status_checks != null ? 1 : 0
 
   name        = "checks"
   repository  = github_repository.this.name
@@ -228,10 +221,13 @@ resource "github_repository_ruleset" "checks" {
 
   rules {
     required_status_checks {
-      strict_required_status_checks_policy = try(var.required_status_checks.strict, true)
+      strict_required_status_checks_policy = var.required_status_checks.strict
 
       dynamic "required_check" {
-        for_each = local.required_checks
+        for_each = concat(
+          var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
+          var.required_status_checks.contexts,
+        )
         content {
           context = required_check.value
         }

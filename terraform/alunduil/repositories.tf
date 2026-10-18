@@ -65,10 +65,10 @@ module "collection_json_hs" {
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
-  environments     = { hackage = {} }
-  ci_results_check = true
+  environments = { hackage = {} }
   required_status_checks = {
-    contexts = ["Hooks", "Check links"]
+    ci_results_check = true
+    contexts         = ["Hooks", "Check links"]
   }
 }
 
@@ -119,12 +119,14 @@ import {
 }
 
 module "siren_json_hs" {
-  source           = "../modules/github_repository"
-  name             = "siren-json.hs"
-  description      = "Siren+JSON Tools for Haskell"
-  topics           = ["haskell-library", "haskell", "siren-json", "hypermedia"]
-  environments     = { hackage = {} }
-  ci_results_check = true
+  source       = "../modules/github_repository"
+  name         = "siren-json.hs"
+  description  = "Siren+JSON Tools for Haskell"
+  topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  environments = { hackage = {} }
+  required_status_checks = {
+    ci_results_check = true
+  }
 }
 
 module "woodland_generators" {
@@ -145,12 +147,9 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
-  # A matrix edit renames the per-cell Test contexts, and a pinned name that
-  # stops reporting blocks merge indefinitely, so this pins ci.yml's
-  # aggregator instead. Codecov's upload legs and commit statuses stay
-  # advisory.
-  ci_results_check = true
+  # Codecov's upload legs and commit statuses stay advisory.
   required_status_checks = {
+    ci_results_check = true
     contexts = [
       "Build every package",
       "Enforce Conventional Commits",
@@ -187,9 +186,9 @@ module "zfs_replicate" {
   # non-owner pull request but Renovate's.
   require_code_owner_review = true
   admin_only_updates        = false
-  ci_results_check          = true
   required_status_checks = {
-    contexts = ["Validate PR title"]
+    ci_results_check = true
+    contexts         = ["Validate PR title"]
   }
   renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +

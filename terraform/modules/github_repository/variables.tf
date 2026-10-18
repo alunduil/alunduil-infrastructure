@@ -39,8 +39,9 @@ variable "default_branch" {
 
 variable "required_status_checks" {
   type = object({
-    contexts = list(string)
-    strict   = optional(bool, true)
+    ci_results_check = optional(bool, false)
+    contexts         = optional(list(string), [])
+    strict           = optional(bool, true)
   })
   default     = null
   description = <<-EOT
@@ -49,18 +50,12 @@ variable "required_status_checks" {
     be up to date first. Omit to leave the branch ungated (the baseline
     for most repos). Only require check names that are unique on a PR —
     a name shared by several workflows can't be pinned to one of them.
-  EOT
-}
 
-variable "ci_results_check" {
-  type        = bool
-  default     = false
-  description = <<-EOT
-    Require the repo's CI aggregator, the job named "Check CI results",
-    alongside any required_status_checks. Matrix leg names change with the
-    versions they test, so a matrix repo requires this one stable name
-    instead. The job must needs: every gating job and also run on pushes
-    to the default branch.
+    ci_results_check also requires the repo's CI aggregator, the job named
+    "Check CI results". Matrix leg names change with the versions they
+    test, so a matrix repo requires this one stable name instead. The job
+    must needs: every gating job and also run on pushes to the default
+    branch.
   EOT
 }
 
@@ -97,8 +92,8 @@ variable "renovate_automerge" {
   EOT
 
   validation {
-    condition     = !var.renovate_automerge || var.required_status_checks != null || var.ci_results_check
-    error_message = "renovate_automerge needs required_status_checks or ci_results_check; without them Renovate would merge on nothing."
+    condition     = !var.renovate_automerge || var.required_status_checks != null
+    error_message = "renovate_automerge needs required_status_checks; without them Renovate would merge on nothing."
   }
 }
 
