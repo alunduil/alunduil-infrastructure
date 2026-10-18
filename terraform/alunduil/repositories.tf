@@ -149,9 +149,9 @@ module "woodland_generators" {
   # stops reporting blocks merge indefinitely, so this pins ci.yml's
   # aggregator instead. Codecov's upload legs and commit statuses stay
   # advisory.
+  ci_results_check = true
   required_status_checks = {
     contexts = [
-      "Confirm every test leg passed",
       "Build every package",
       "Enforce Conventional Commits",
     ]
