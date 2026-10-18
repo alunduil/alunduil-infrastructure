@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # A ci.yml job that needs every gating job reports under this one name, so a
-  # ruleset can require it while matrix leg names change with the versions
-  # they test.
+  # Matrix leg names change with the versions they test, so rulesets require
+  # this aggregator instead. It's the ci.yml job that needs every gating job.
   ci_results_check = "Check CI results"
 }
 
