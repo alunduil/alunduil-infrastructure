@@ -39,8 +39,9 @@ variable "default_branch" {
 
 variable "required_status_checks" {
   type = object({
-    contexts = list(string)
-    strict   = optional(bool, true)
+    ci_results_check = optional(bool, false)
+    contexts         = optional(list(string), [])
+    strict           = optional(bool, true)
   })
   default     = null
   description = <<-EOT
@@ -49,6 +50,13 @@ variable "required_status_checks" {
     be up to date first. Omit to leave the branch ungated (the baseline
     for most repos). Only require check names that are unique on a PR —
     a name shared by several workflows can't be pinned to one of them.
+
+    ci_results_check also requires the aggregator job "Check CI results".
+    A required check that stops reporting blocks merges indefinitely.
+    Matrix leg names change with the versions they test, so a matrix repo
+    requires the aggregator instead of its legs. The job must list every
+    job it stands in for under needs: and run on pushes to the default
+    branch.
   EOT
 }
 

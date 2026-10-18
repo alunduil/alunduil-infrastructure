@@ -1,12 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-locals {
-  # Matrix leg names change with the versions they test, so rulesets require
-  # this aggregator instead. It's the ci.yml job that needs every gating job.
-  ci_results_check = "Check CI results"
-}
-
 module "alunduil_chezmoi" {
   source      = "../modules/github_repository"
   name        = "alunduil-chezmoi"
@@ -73,7 +67,8 @@ module "collection_json_hs" {
   # Deployment environment for Hackage releases.
   environments = { hackage = {} }
   required_status_checks = {
-    contexts = [local.ci_results_check, "Hooks", "Check links"]
+    ci_results_check = true
+    contexts         = ["Hooks", "Check links"]
   }
 }
 
@@ -130,7 +125,7 @@ module "siren_json_hs" {
   topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
   environments = { hackage = {} }
   required_status_checks = {
-    contexts = [local.ci_results_check]
+    ci_results_check = true
   }
 }
 
@@ -152,13 +147,10 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
-  # A matrix edit renames the per-cell Test contexts, and a pinned name that
-  # stops reporting blocks merge indefinitely, so this pins ci.yml's
-  # aggregator instead. Codecov's upload legs and commit statuses stay
-  # advisory.
+  # Codecov's upload legs and commit statuses aren't required.
   required_status_checks = {
+    ci_results_check = true
     contexts = [
-      "Confirm every test leg passed",
       "Build every package",
       "Enforce Conventional Commits",
     ]
@@ -195,7 +187,8 @@ module "zfs_replicate" {
   require_code_owner_review = true
   admin_only_updates        = false
   required_status_checks = {
-    contexts = ["Validate PR title", local.ci_results_check]
+    ci_results_check = true
+    contexts         = ["Validate PR title"]
   }
   renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +

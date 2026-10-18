@@ -224,7 +224,10 @@ resource "github_repository_ruleset" "checks" {
       strict_required_status_checks_policy = var.required_status_checks.strict
 
       dynamic "required_check" {
-        for_each = var.required_status_checks.contexts
+        for_each = concat(
+          var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
+          var.required_status_checks.contexts,
+        )
         content {
           context = required_check.value
         }
