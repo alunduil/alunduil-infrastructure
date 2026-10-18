@@ -1,12 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-locals {
-  # Matrix leg names change with the versions they test, so rulesets require
-  # this aggregator instead. It's the ci.yml job that needs every gating job.
-  ci_results_check = "Check CI results"
-}
-
 module "alunduil_chezmoi" {
   source      = "../modules/github_repository"
   name        = "alunduil-chezmoi"
@@ -71,9 +65,10 @@ module "collection_json_hs" {
   description = "Collection+JSON Tools for Haskell"
   topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
   # Deployment environment for Hackage releases.
-  environments = { hackage = {} }
+  environments     = { hackage = {} }
+  ci_results_check = true
   required_status_checks = {
-    contexts = [local.ci_results_check, "Hooks", "Check links"]
+    contexts = ["Hooks", "Check links"]
   }
 }
 
@@ -124,14 +119,12 @@ import {
 }
 
 module "siren_json_hs" {
-  source       = "../modules/github_repository"
-  name         = "siren-json.hs"
-  description  = "Siren+JSON Tools for Haskell"
-  topics       = ["haskell-library", "haskell", "siren-json", "hypermedia"]
-  environments = { hackage = {} }
-  required_status_checks = {
-    contexts = [local.ci_results_check]
-  }
+  source           = "../modules/github_repository"
+  name             = "siren-json.hs"
+  description      = "Siren+JSON Tools for Haskell"
+  topics           = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+  environments     = { hackage = {} }
+  ci_results_check = true
 }
 
 module "woodland_generators" {
@@ -194,8 +187,9 @@ module "zfs_replicate" {
   # non-owner pull request but Renovate's.
   require_code_owner_review = true
   admin_only_updates        = false
+  ci_results_check          = true
   required_status_checks = {
-    contexts = ["Validate PR title", local.ci_results_check]
+    contexts = ["Validate PR title"]
   }
   renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
