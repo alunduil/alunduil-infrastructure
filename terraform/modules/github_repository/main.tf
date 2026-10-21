@@ -191,8 +191,9 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-# Renovate never bypasses this: these checks are all that gate its unreviewed
-# merges.
+# No bypass actors: these checks are all that gate Renovate's unreviewed merges,
+# and merging past another ruleset's rule bypasses every rule the merger can
+# bypass, so an admin bypass here would let every admin merge skip them.
 resource "github_repository_ruleset" "checks" {
   count = var.required_status_checks != null ? 1 : 0
 
@@ -207,15 +208,6 @@ resource "github_repository_ruleset" "checks" {
     ref_name {
       include = ["~DEFAULT_BRANCH"]
       exclude = []
-    }
-  }
-
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
     }
   }
 
