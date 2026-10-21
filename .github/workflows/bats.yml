@@ -20,7 +20,7 @@ concurrency:
 jobs:
   run:
     name: Run bats suites
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
       # A job-level block replaces the workflow-level one rather than merging,
