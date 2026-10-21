@@ -52,7 +52,8 @@ variable "required_status_checks" {
     a name shared by several workflows can't be pinned to one of them.
 
     ci_results_check also requires the aggregator job "Check CI results".
-    A required check that stops reporting blocks merges indefinitely.
+    A required check that stops reporting blocks merges indefinitely, the
+    admin's included.
     Matrix leg names change with the versions they test, so a matrix repo
     requires the aggregator instead of its legs. The job must list every
     job it stands in for under needs: and run on pushes to the default

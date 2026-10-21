@@ -53,7 +53,7 @@ resource "github_branch_default" "this" {
 }
 
 locals {
-  # Mode "always" keeps direct pushes to the default branch possible.
+  # Mode "always" lets the admin push directly, not only merge.
   admin_bypass_actor = {
     actor_id    = 5 # built-in repository "admin" role
     actor_type  = "RepositoryRole"
@@ -98,13 +98,10 @@ resource "github_repository_ruleset" "default" {
     }
   }
 
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
-    }
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
   }
 
   # No required_signatures: GitHub already signs the merges it makes, so it
@@ -191,8 +188,8 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-# Renovate never bypasses this: these checks are all that gate its unreviewed
-# merges.
+# No bypass actors: a merge that bypasses any ruleset skips every rule its
+# merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
   count = var.required_status_checks != null ? 1 : 0
 
@@ -207,15 +204,6 @@ resource "github_repository_ruleset" "checks" {
     ref_name {
       include = ["~DEFAULT_BRANCH"]
       exclude = []
-    }
-  }
-
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
     }
   }
 
@@ -290,13 +278,10 @@ resource "github_repository_ruleset" "immutable_tags" {
     }
   }
 
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
-    }
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
   }
 
   # No non_fast_forward: update already blocks fast-forwards.
