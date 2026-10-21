@@ -53,8 +53,7 @@ resource "github_branch_default" "this" {
 }
 
 locals {
-  # Mode "always" lets direct pushes to the default branch past every ruleset
-  # except checks, which has no bypass actors.
+  # Mode "always" lets the admin push directly, not only merge.
   admin_bypass_actor = {
     actor_id    = 5 # built-in repository "admin" role
     actor_type  = "RepositoryRole"
@@ -189,9 +188,8 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-# No bypass actors: these checks are all that gate Renovate's unreviewed merges.
-# A merge that bypasses one ruleset bypasses every rule the merger can, so an
-# admin bypass here would let each admin-only merge skip the checks.
+# No bypass actors: a merge that bypasses any ruleset skips every rule its
+# merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
   count = var.required_status_checks != null ? 1 : 0
 
