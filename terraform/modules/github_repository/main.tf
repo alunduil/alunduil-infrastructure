@@ -99,13 +99,10 @@ resource "github_repository_ruleset" "default" {
     }
   }
 
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
-    }
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
   }
 
   # No required_signatures: GitHub already signs the merges it makes, so it
@@ -283,13 +280,10 @@ resource "github_repository_ruleset" "immutable_tags" {
     }
   }
 
-  dynamic "bypass_actors" {
-    for_each = [local.admin_bypass_actor]
-    content {
-      actor_id    = bypass_actors.value.actor_id
-      actor_type  = bypass_actors.value.actor_type
-      bypass_mode = bypass_actors.value.bypass_mode
-    }
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
   }
 
   # No non_fast_forward: update already blocks fast-forwards.
