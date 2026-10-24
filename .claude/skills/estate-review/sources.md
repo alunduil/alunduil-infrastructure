@@ -15,6 +15,7 @@ Agent briefs for the estate-review skill.
 ## UptimeRobot
 
 Covers E-01 (Plex) and the Home Assistant and NanoPi-NEO3 heartbeats (D-04).
+Probe: `list-monitors`.
 
 - Call only: `list-monitors`, `list-incidents` (page by cursor),
   `get-incident-details` for every incident, `get-monitor-details`,
@@ -49,7 +50,7 @@ Covers A-01, A-12 and D-02's backups. Call only these MCP tools: `system_info`,
 `list_alerts`, `query_jobs` (filter by state FAILED and ABORTED, then by
 RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 `update_status`, `query_boot_environments`, `get_system_metrics`,
-`get_disk_metrics`.
+`get_disk_metrics`. Probe: `system_info`.
 
 - `query_snapshots` stays off the list: it never finishes on this box's
   CPU.
@@ -78,6 +79,9 @@ GRAFANA_ORG_ID=1 gcx api -o json \
 
 URL-encode queries. Keep `2>/dev/null`, so the `gcx` hint line stays out of
 the JSON. Loki caps a query at 30 days.
+
+Probe: an instant query for `up{job="truenas-scale"}` through
+`grafanacloud-prom`, which returns a result.
 
 What ships where:
 
@@ -120,7 +124,7 @@ data `gcx` can reach, run it for that window.
 
 Covers A-09 and every repository in `terraform/*/repositories.tf`. Call only
 `gh api` GET requests and `gh search`. Both use REST, which keeps the shared
-GraphQL budget free.
+GraphQL budget free. Probe: `gh api rate_limit`.
 
 - Failed, cancelled and timed-out Actions runs per repository in the window
   (`/repos/{r}/actions/runs?created=>=YYYY-MM-DD`). Fetch the failing job's
@@ -166,9 +170,11 @@ gcloud logging read --freshness=7d --project=alunduil \
 alunduil's own bootstrap and break-glass runs from the home IP go under
 working.
 
-Tailscale (A-10): `tailscale status --json`. Report offline devices, node keys
-expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online. List these expired or expiring
+Tailscale (A-10): `tailscale status --json`. Probe: the same call, with
+`BackendState` `Running`; any other state means the workstation is signed
+out, so ask alunduil to sign in before fanning out. Report offline devices,
+node keys expiring within the due-soon horizon or already expired, and
+whether both exit nodes and `homeassistant` are online. List these expired or expiring
 keys under working: offline phones, tablets and Chromebooks, which renew at
 their next sign-in, and `penguin`, the workstation, which alunduil renews
 from the CLI.
