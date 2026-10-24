@@ -33,10 +33,9 @@ Three parameters, in UTC, set before step 2:
 
 ## 2. Probe, then fan out
 
-Before spawning agents, run the probe each source's brief in `sources.md`
-names, and read the answer, not the exit code. Name any unreachable source in
-the report's first lines and leave it out; never fill its gap from another
-source.
+Before spawning agents, run each brief's probe and check its answer. Name any
+unreachable source in the report's first lines and leave it out; never fill
+its gap from another source.
 
 Spawn one read-only background agent per source in `sources.md`, in a single
 message. Each prompt is that file's "Every brief" section followed by the

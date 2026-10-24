@@ -81,7 +81,7 @@ URL-encode queries. Keep `2>/dev/null`, so the `gcx` hint line stays out of
 the JSON. Loki caps a query at 30 days.
 
 Probe: an instant query for `up{job="truenas-scale"}` through
-`grafanacloud-prom`, which returns a result.
+`grafanacloud-prom`. It passes when it returns a series.
 
 What ships where:
 
@@ -170,11 +170,11 @@ gcloud logging read --freshness=7d --project=alunduil \
 alunduil's own bootstrap and break-glass runs from the home IP go under
 working.
 
-Tailscale (A-10): `tailscale status --json`. Probe: the same call, with
-`BackendState` `Running`; any other state means the workstation is signed
-out, so ask alunduil to sign in before fanning out. Report offline devices,
-node keys expiring within the due-soon horizon or already expired, and
-whether both exit nodes and `homeassistant` are online. List these expired or expiring
+Tailscale (A-10): `tailscale status --json`. Probe: the same call. It passes
+when `BackendState` is `Running`. Any other state means the workstation is
+signed out: ask alunduil to sign in. Report offline devices, node keys
+expiring within the due-soon horizon or already expired, and whether both
+exit nodes and `homeassistant` are online. List these expired or expiring
 keys under working: offline phones, tablets and Chromebooks, which renew at
 their next sign-in, and `penguin`, the workstation, which alunduil renews
 from the CLI.
