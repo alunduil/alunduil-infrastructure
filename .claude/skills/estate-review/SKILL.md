@@ -33,10 +33,20 @@ Three parameters, in UTC, set before step 2:
 
 ## 2. Probe, then fan out
 
-Probe each source with one cheap call before spawning agents: a TrueNAS
-`system_info`, an UptimeRobot `list-monitors`, a `gcx api /api/health`, a
-`gh api rate_limit`. Name any unreachable source in the report's first lines
-and leave it out; never fill its gap from another source.
+Probe each source with one cheap call before spawning agents, and read the
+answer, not the exit code:
+
+- TrueNAS: `system_info`.
+- UptimeRobot: `list-monitors`.
+- Grafana Cloud: an instant Prometheus query for `up{job="truenas-scale"}`
+  through the `grafanacloud-prom` proxy, returning a result.
+- GitHub: `gh api rate_limit`.
+- Tailscale: `tailscale status --json`, with `BackendState` `Running`. Any
+  other state means the workstation is signed out: ask alunduil to sign in
+  before fanning out.
+
+Name any unreachable source in the report's first lines and leave it out;
+never fill its gap from another source.
 
 Spawn one read-only background agent per source in `sources.md`, in a single
 message. Each prompt is that file's "Every brief" section followed by the
