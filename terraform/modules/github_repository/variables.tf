@@ -41,14 +41,16 @@ variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
     contexts         = optional(list(string), [])
-    strict           = optional(bool, true)
+    strict           = optional(bool, false)
   })
   default     = null
   description = <<-EOT
     Status checks that must pass before merging into the default branch.
     contexts are matched by check-run name; strict requires the branch to
-    be up to date first. Omit to leave the branch ungated (the baseline
-    for most repos). Only require check names that are unique on a PR —
+    be up to date first. strict is off by default: it reruns every open
+    pull request's CI after each merge, and pays off only where merging
+    to the default branch is itself the release. Omit to leave the branch
+    ungated (the baseline for most repos). Only require check names that are unique on a PR —
     a name shared by several workflows can't be pinned to one of them.
 
     ci_results_check also requires the aggregator job "Check CI results".
