@@ -51,10 +51,9 @@ variable "required_status_checks" {
     are unique on a PR — a name shared by several workflows can't be
     pinned to one of them.
 
-    require_up_to_date also requires the branch to contain the default
-    branch's head before merging. It reruns every open pull request's CI
+    require_up_to_date makes every open pull request update and rerun CI
     after each merge, so it pays off only where merging to the default
-    branch is itself the release.
+    branch is the release.
 
     ci_results_check also requires the aggregator job "Check CI results".
     A required check that stops reporting blocks merges indefinitely, the
