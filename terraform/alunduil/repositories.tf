@@ -147,14 +147,20 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
+  # .github/CODEOWNERS assigns every path to @alunduil.
+  require_code_owner_review = true
   # Codecov's upload legs and commit statuses aren't required.
   required_status_checks = {
     ci_results_check = true
     contexts = [
       "Build every package",
       "Enforce Conventional Commits",
+      "Run every pre-commit hook",
+      "Audit production dependencies",
+      "Scan for live secrets",
     ]
   }
+  renovate_automerge = true
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
