@@ -209,7 +209,7 @@ resource "github_repository_ruleset" "checks" {
 
   rules {
     required_status_checks {
-      strict_required_status_checks_policy = var.required_status_checks.strict
+      strict_required_status_checks_policy = var.required_status_checks.require_up_to_date
 
       dynamic "required_check" {
         for_each = concat(
