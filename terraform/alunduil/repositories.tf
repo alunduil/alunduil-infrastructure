@@ -147,8 +147,7 @@ module "woodland_generators" {
     "generator",
     "typescript",
   ]
-  # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request but Renovate's.
+  # .github/CODEOWNERS assigns every path to @alunduil.
   require_code_owner_review = true
   # Codecov's upload legs and commit statuses aren't required.
   required_status_checks = {
