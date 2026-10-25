@@ -40,9 +40,10 @@ with an App token does.
 
 ## Set the Actions secrets
 
-Run this after each apply that sets `renovate_automerge = true` on a
-repo. It writes `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY` to every
-repo with a `renovate` ruleset that lacks them, prompting for each value:
+Run this after each apply that sets
+`required_status_checks.renovate_automerge = true` on a repo. It
+writes `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY` to every repo
+with a `renovate` ruleset that lacks them, prompting for each value:
 
 ```sh
 just configure-hook-fix

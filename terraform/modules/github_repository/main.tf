@@ -4,6 +4,8 @@
 locals {
   # Merge commits are the only merge method that breaks linear history.
   merge_commits = var.merge_method == "merge"
+
+  renovate_automerge = var.required_status_checks != null ? var.required_status_checks.renovate_automerge : false
 }
 
 resource "github_repository" "this" {
@@ -20,7 +22,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = local.merge_commits
   allow_squash_merge          = var.merge_method == "squash"
   allow_rebase_merge          = false
-  allow_auto_merge            = var.renovate_automerge
+  allow_auto_merge            = local.renovate_automerge
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
@@ -75,7 +77,7 @@ locals {
   # it push to the default branch.
   merge_bypass_actors = concat(
     [local.admin_bypass_actor],
-    var.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
+    local.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
   )
 }
 
@@ -227,7 +229,7 @@ resource "github_repository_ruleset" "checks" {
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
-  count = var.renovate_automerge ? 1 : 0
+  count = local.renovate_automerge ? 1 : 0
 
   name        = "renovate"
   repository  = github_repository.this.name
