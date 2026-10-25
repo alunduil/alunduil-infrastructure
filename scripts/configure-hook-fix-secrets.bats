@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Unit tests for the sourceable helpers in configure-hook-fix-secrets.sh. The
-# GraphQL listing and the interactive prompts are exercised by running the
-# script against the live account.
+# Secret Manager calls and the interactive prompts are exercised by running the
+# script against the live project.
 
 # Fixtures below are inputs to the sourced script rather than to this file, so
 # every assignment reads as a dead store from here.
@@ -14,49 +14,44 @@ setup() {
   unset HOOK_FIX_APP_ID HOOK_FIX_APP_PRIVATE_KEY_FILE
   # shellcheck source=configure-hook-fix-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-hook-fix-secrets.sh"
-}
 
-# Lets a test assert the command that was built rather than reaching GitHub.
-# shellcheck disable=SC2329 # called indirectly by set_secret_on_repos
-gh() { echo "gh $*"; }
+  # Stand-ins for Secret Manager, defined after the source so they replace the
+  # script's: a secret is populated when its marker file exists, and each write
+  # is logged with the bytes it would store.
+  # shellcheck disable=SC2329 # called indirectly by needs_write
+  secret_is_populated() { [[ -e "${BATS_TEST_TMPDIR}/populated-${1}" ]]; }
+  # shellcheck disable=SC2329 # called indirectly by ensure_secret
+  add_secret_version() { echo "add ${1} $(cat)" >>"${BATS_TEST_TMPDIR}/writes"; }
+}
 
 # Counts calls in a file: the resolver runs in a command substitution, whose
 # variables don't survive it.
-# shellcheck disable=SC2329 # called indirectly by set_secret_on_repos
+# shellcheck disable=SC2329 # called indirectly by ensure_secret
 count_resolve() {
   echo x >>"${BATS_TEST_TMPDIR}/resolved"
   printf 'VALUE'
 }
 
+# shellcheck disable=SC2329 # called indirectly by ensure_secret
+skip_resolve() { :; }
+
 # --- needs_write ----------------------------------------------------------
 
-@test "needs_write is true when the repo lacks the secret" {
-  run needs_write HOOK_FIX_APP_ID "" $'OTHER\nHOOK_FIX_APP_ID_EXTRA'
+@test "needs_write is true when the secret is empty" {
+  run needs_write hook-fix-app-id ""
   [[ ${status} -eq 0 ]]
 }
 
-@test "needs_write is false when the repo holds the secret" {
-  run needs_write HOOK_FIX_APP_ID "" $'OTHER\nHOOK_FIX_APP_ID'
+@test "needs_write is false when the secret holds a value" {
+  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
+  run needs_write hook-fix-app-id ""
   [[ ${status} -eq 1 ]]
 }
 
-@test "needs_write is true for a supplied value the repo already holds" {
-  run needs_write HOOK_FIX_APP_ID "12345" $'HOOK_FIX_APP_ID'
+@test "needs_write is true for a supplied value over a populated secret" {
+  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
+  run needs_write hook-fix-app-id "12345"
   [[ ${status} -eq 0 ]]
-}
-
-# --- will_prompt ----------------------------------------------------------
-
-@test "will_prompt is true when a repo needs a value nobody supplied" {
-  run will_prompt 1 ""
-  [[ ${status} -eq 0 ]]
-}
-
-@test "will_prompt is false when the value is supplied or no repo needs it" {
-  run will_prompt 1 "12345"
-  [[ ${status} -eq 1 ]]
-  run will_prompt 0 ""
-  [[ ${status} -eq 1 ]]
 }
 
 # --- resolve_app_id -------------------------------------------------------
@@ -110,27 +105,32 @@ count_resolve() {
   [[ ${output} == *"not a PEM private key"* ]]
 }
 
-# --- set_secret_on_repos --------------------------------------------------
+# --- ensure_secret --------------------------------------------------------
 
-# shellcheck disable=SC2329 # called indirectly by set_secret_on_repos
-skip_resolve() { :; }
-
-@test "set_secret_on_repos writes nothing when the operator skips the prompt" {
-  run set_secret_on_repos HOOK_FIX_APP_ID skip_resolve owner/a
+@test "ensure_secret neither resolves nor writes a populated secret" {
+  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
+  run ensure_secret hook-fix-app-id "" count_resolve
   [[ ${status} -eq 0 ]]
-  [[ ${output} != *"gh secret set"* ]]
-  [[ ${output} == *"Leaving HOOK_FIX_APP_ID unset"* ]]
-}
-
-@test "set_secret_on_repos resolves once for every repo" {
-  run set_secret_on_repos HOOK_FIX_APP_ID count_resolve owner/a owner/b
-  [[ ${output} == *"gh secret set HOOK_FIX_APP_ID --repo owner/a --body VALUE"* ]]
-  [[ ${output} == *"gh secret set HOOK_FIX_APP_ID --repo owner/b --body VALUE"* ]]
-  [[ $(wc -l <"${BATS_TEST_TMPDIR}/resolved") -eq 1 ]]
-}
-
-@test "set_secret_on_repos neither resolves nor writes without a repo" {
-  run set_secret_on_repos HOOK_FIX_APP_ID count_resolve
-  [[ ${output} != *"gh secret set"* ]]
+  [[ ${output} == *"already set"* ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/resolved" ]]
+  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
+}
+
+@test "ensure_secret writes the resolved value to an empty secret" {
+  run ensure_secret hook-fix-app-id "" count_resolve
+  [[ ${status} -eq 0 ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id VALUE" ]]
+}
+
+@test "ensure_secret overwrites a populated secret with a supplied value" {
+  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
+  run ensure_secret hook-fix-app-id "12345" count_resolve
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id VALUE" ]]
+}
+
+@test "ensure_secret writes nothing when the operator skips the prompt" {
+  run ensure_secret hook-fix-app-id "" skip_resolve
+  [[ ${status} -eq 0 ]]
+  [[ ${output} == *"Leaving hook-fix-app-id empty"* ]]
+  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
 }

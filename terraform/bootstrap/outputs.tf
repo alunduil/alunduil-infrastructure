@@ -57,6 +57,25 @@ output "cloudflare_api_token_blog_analytics_ro_secret" {
   sensitive   = false
 }
 
+# renovate-config's fix-renovate-hooks.yml hard-codes these; none is secret.
+output "hook_fix_workload_identity_provider" {
+  value       = google_iam_workload_identity_pool_provider.hook_fix.name
+  description = "Full resource name of the hook-fix WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix/providers/github-provider"
+  sensitive   = false
+}
+
+output "hook_fix_reader_email" {
+  value       = google_service_account.hook_fix_reader.email
+  description = "Email of the service account the reusable hook-fix workflow impersonates"
+  sensitive   = false
+}
+
+output "hook_fix_app_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.hook_fix_app : secret.secret_id])
+  description = "Secret Manager short names holding the hook-fix GitHub App ID and private key; populated by scripts/configure-hook-fix-secrets.sh and fetched by the reusable hook-fix workflow"
+  sensitive   = false
+}
+
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates reach
 # the alunduil layer through the published bootstrap-outputs.json object (see
 # published_outputs.tf); the App's three values are fetched from Secret Manager

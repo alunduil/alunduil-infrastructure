@@ -2,11 +2,14 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Writes the hook-fix GitHub App's ID and private key as Actions secrets to
-# every repo with a renovate ruleset. Re-running writes only what a repo lacks.
+# Populates the hook-fix GitHub App's ID and private key in the Secret Manager
+# shells terraform/bootstrap/hook_fix.tf declares. Re-running prompts only for
+# an empty secret; a supplied value overwrites, which is how a rotated key
+# reaches the reusable workflow.
 
 set -euo pipefail
 
+PROJECT_ID="${PROJECT_ID:-alunduil}"
 APP_NAME="alunduil-hook-fix"
 SETUP_DOC="docs/how-to/create-hook-fix-github-app.md"
 
@@ -15,24 +18,21 @@ die() {
   exit 1
 }
 
-print_app_pointer() {
-  cat >&2 <<EOF
+secret_is_populated() {
+  local state
+  state="$(gcloud secrets versions describe latest --secret "${1}" \
+    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
 
-The next values belong to the GitHub App named ${APP_NAME}. If it does
-not exist yet, see ${SETUP_DOC}.
-
-EOF
+  [[ ${state} == "ENABLED" ]]
 }
 
-will_prompt() {
-  local repo_count="$1" supplied="$2"
-  [[ ${repo_count} -gt 0 && -z ${supplied} ]]
+add_secret_version() {
+  gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
-# A supplied value overwrites, which is how a rotated key reaches every repo.
 needs_write() {
-  local name="$1" supplied="$2" repo_secrets="$3"
-  [[ -n ${supplied} ]] || ! grep -Fxq "${name}" <<<"${repo_secrets}"
+  local secret="$1" supplied="$2"
+  [[ -n ${supplied} ]] || ! secret_is_populated "${secret}"
 }
 
 resolve_app_id() {
@@ -60,41 +60,38 @@ resolve_app_private_key() {
   cat "${path}"
 }
 
-# The operator answers each prompt at most once, and never for a value no repo
-# receives.
-set_secret_on_repos() {
-  local name="$1" resolve="$2"
-  shift 2
-  (($#)) || return 0
+pointer_shown=""
 
-  local value repo
-  value="$("${resolve}")"
-  [[ -n ${value} ]] || {
-    echo "Leaving ${name} unset; see ${SETUP_DOC}" >&2
+announce_app_once() {
+  [[ -z ${pointer_shown} ]] || return 0
+
+  pointer_shown=yes
+  cat >&2 <<EOF
+
+The next values belong to the GitHub App named ${APP_NAME}. If it does
+not exist yet, see ${SETUP_DOC}.
+
+EOF
+}
+
+ensure_secret() {
+  local secret="$1" supplied="$2" resolve="$3"
+
+  needs_write "${secret}" "${supplied}" || {
+    echo "${secret} already set."
     return 0
   }
 
-  for repo in "$@"; do
-    echo "Setting secret: ${name} (repo: ${repo})"
-    gh secret set "${name}" --repo "${repo}" --body "${value}"
-  done
-}
+  [[ -n ${supplied} ]] || announce_app_once
 
-# The renovate ruleset grants the App its bypass, so only repos carrying it get
-# the key. allow_auto_merge is also on in repos Terraform doesn't manage.
-renovate_repos() {
-  # shellcheck disable=SC2016 # $endCursor is a GraphQL variable, not a shell one
-  gh api graphql --paginate -f query='
-    query($endCursor: String) {
-      viewer {
-        repositories(ownerAffiliations: OWNER, isArchived: false, first: 100, after: $endCursor) {
-          pageInfo { hasNextPage endCursor }
-          nodes { nameWithOwner rulesets(first: 20) { nodes { name } } }
-        }
-      }
-    }' --jq '.data.viewer.repositories.nodes[]
-      | select(any(.rulesets.nodes[]; .name == "renovate"))
-      | .nameWithOwner'
+  local value
+  value="$("${resolve}")"
+  [[ -n ${value} ]] || {
+    echo "Leaving ${secret} empty; see ${SETUP_DOC}" >&2
+    return 0
+  }
+
+  printf '%s' "${value}" | add_secret_version "${secret}"
 }
 
 # Skip the executable body when sourced (e.g. by
@@ -104,31 +101,7 @@ if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   return 0 2>/dev/null || true
 fi
 
-command -v gh >/dev/null || die "gh CLI not found in PATH"
-gh auth status >/dev/null 2>&1 || die "gh is not authenticated; run 'gh auth login'"
+command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
-mapfile -t repos < <(renovate_repos)
-id_repos=()
-key_repos=()
-for repo in "${repos[@]}"; do
-  repo_secrets="$(gh secret list --repo "${repo}" --json name --jq '.[].name')"
-  if needs_write HOOK_FIX_APP_ID "${HOOK_FIX_APP_ID:-}" "${repo_secrets}"; then
-    id_repos+=("${repo}")
-  fi
-  if needs_write HOOK_FIX_APP_PRIVATE_KEY "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" "${repo_secrets}"; then
-    key_repos+=("${repo}")
-  fi
-done
-
-if [[ ${#id_repos[@]} -eq 0 && ${#key_repos[@]} -eq 0 ]]; then
-  echo "Every repo with a renovate ruleset holds both secrets."
-  exit 0
-fi
-
-if will_prompt "${#id_repos[@]}" "${HOOK_FIX_APP_ID:-}" \
-  || will_prompt "${#key_repos[@]}" "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}"; then
-  print_app_pointer
-fi
-
-set_secret_on_repos HOOK_FIX_APP_ID resolve_app_id "${id_repos[@]}"
-set_secret_on_repos HOOK_FIX_APP_PRIVATE_KEY resolve_app_private_key "${key_repos[@]}"
+ensure_secret hook-fix-app-id "${HOOK_FIX_APP_ID:-}" resolve_app_id
+ensure_secret hook-fix-app-private-key "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" resolve_app_private_key
