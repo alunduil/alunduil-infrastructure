@@ -64,11 +64,10 @@ variable "required_status_checks" {
     job it stands in for under needs: and run on pushes to the default
     branch.
 
-    renovate_automerge lets Renovate merge its own pull requests past
-    admin-only and review. Renovate merges only once every check and
-    status on its branch passes, listed here or not. The checks listed
-    here are the ones no actor can bypass, so list every check a
-    dependency update can break.
+    renovate_automerge lets Renovate merge its own pull requests without
+    review. Renovate waits for every check on its branch, but only the
+    checks listed here block its merge, so list every check a dependency
+    update can break.
   EOT
 }
 
