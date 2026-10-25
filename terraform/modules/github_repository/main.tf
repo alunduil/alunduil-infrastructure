@@ -22,13 +22,17 @@ resource "github_repository" "this" {
   allow_merge_commit          = local.merge_commits
   allow_squash_merge          = var.merge_method == "squash"
   allow_rebase_merge          = false
-  allow_auto_merge            = local.renovate_automerge
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
   merge_commit_message        = "PR_TITLE"
   delete_branch_on_merge      = true
   archive_on_destroy          = true
+
+  # GitHub auto-merge doesn't apply Renovate's ruleset bypass, so it never
+  # merges Renovate's pull requests. Disallowing it leaves Renovate's own
+  # merge call, which does.
+  allow_auto_merge = false
 
   security_and_analysis {
     secret_scanning {

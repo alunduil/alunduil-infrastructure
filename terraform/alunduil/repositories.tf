@@ -201,7 +201,9 @@ module "zfs_replicate" {
   # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
   # non-owner pull request but Renovate's.
   require_code_owner_review = true
-  admin_only_updates        = false
+  # Deviates from the baseline (admin-only on): write collaborators merge
+  # pull requests here too.
+  admin_only_updates = false
   required_status_checks = {
     ci_results_check   = true
     contexts           = ["Validate PR title"]

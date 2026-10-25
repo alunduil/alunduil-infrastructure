@@ -65,8 +65,9 @@ variable "required_status_checks" {
     branch.
 
     renovate_automerge lets Renovate merge its own pull requests without
-    review once these checks pass. Auto-merge ignores any check not listed
-    here, so list every check a dependency update can break.
+    review. Renovate waits for every check on its branch, but only the
+    checks listed here block its merge, so list every check a dependency
+    update can break.
   EOT
 }
 
