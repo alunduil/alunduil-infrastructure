@@ -53,15 +53,12 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "Merging a change to Terraform, or to any path terraform-apply.yml triggers on, applies it to live infrastructure, so these wait for a human to read the plan. A branch automerges only when every upgrade in it does, so one matching file holds the whole pull request",
+      "description": "Provider and Terraform updates change what every later plan does, bootstrap's by-hand run included, so they wait for review",
       "matchManagers": ["terraform"],
       "automerge": false
     },
     {
-      "matchDepNames": ["hashicorp/terraform"],
-      "automerge": false
-    },
-    {
+      "description": "Merging any path terraform-apply.yml triggers on applies it to live infrastructure, so these wait for a human to read the plan. A branch automerges only when every upgrade in it does, so one matching file holds the whole pull request. Must list every terraform-apply.yml paths entry; the bats suite checks this",
       "matchFileNames": [
         "terraform/alunduil/**",
         "terraform/modules/**",
