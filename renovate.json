@@ -3,7 +3,9 @@
   "extends": [
     "config:best-practices",
     "security:openssf-scorecard",
-    "customManagers:githubActionsVersions"
+    "customManagers:githubActionsVersions",
+    ":automergeMinor",
+    ":automergeDigest"
   ],
   "timezone": "Europe/London",
   "reviewers": ["alunduil"],
@@ -49,6 +51,22 @@
         "replacement"
       ],
       "minimumReleaseAge": null
+    },
+    {
+      "description": "Provider and Terraform updates change every later plan, bootstrap's included, so they wait for review",
+      "matchManagers": ["terraform"],
+      "automerge": false
+    },
+    {
+      "description": "Merging any path terraform-apply.yml triggers on applies it, so these wait for review. Renovate automerges a branch only when every upgrade in it qualifies, so one matching file holds the whole pull request. Lists every terraform-apply.yml paths entry",
+      "matchFileNames": [
+        "terraform/alunduil/**",
+        "terraform/modules/**",
+        ".github/workflows/terraform-apply.yml",
+        ".github/actions/terraform-providers/**",
+        "scripts/export-terraform-credentials.sh"
+      ],
+      "automerge": false
     }
   ]
 }

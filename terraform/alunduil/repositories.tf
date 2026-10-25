@@ -32,6 +32,11 @@ module "alunduil_infrastructure" {
     "extractions/setup-crate@*",
     "extractions/setup-just@*",
   ]
+  required_status_checks = {
+    ci_results_check = true
+  }
+  # renovate.json holds back every update that would trigger an apply.
+  renovate_automerge = true
 }
 
 module "blog_alunduil_com" {
