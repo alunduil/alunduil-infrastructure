@@ -42,6 +42,7 @@ variable "required_status_checks" {
     ci_results_check   = optional(bool, false)
     contexts           = optional(list(string), [])
     require_up_to_date = optional(bool, false)
+    renovate_automerge = optional(bool, false)
   })
   default     = null
   description = <<-EOT
@@ -62,6 +63,12 @@ variable "required_status_checks" {
     requires the aggregator instead of its legs. The job must list every
     job it stands in for under needs: and run on pushes to the default
     branch.
+
+    renovate_automerge lets Renovate merge its own pull requests without
+    review, once these checks pass. Only Renovate can push to its
+    renovate/** branches, so its pull requests carry only its commits.
+    Enables GitHub auto-merge, which ignores any check that isn't
+    required.
   EOT
 }
 
@@ -80,27 +87,11 @@ variable "admin_only_updates" {
   type        = bool
   default     = true
   description = <<-EOT
-    Only the repository admin, and Renovate under renovate_automerge, can
-    update the default branch, whether by push or by merging a pull
-    request. Set false once others merge pull requests.
+    Only the repository admin, and Renovate under
+    required_status_checks.renovate_automerge, can update the default
+    branch, whether by push or by merging a pull request. Set false once
+    others merge pull requests.
   EOT
-}
-
-variable "renovate_automerge" {
-  type        = bool
-  default     = false
-  description = <<-EOT
-    Renovate merges its own pull requests without review, once the
-    required status checks pass. Only Renovate can push to its
-    renovate/** branches, so its pull requests carry only its commits.
-    Enables GitHub auto-merge, which ignores any check that isn't
-    required.
-  EOT
-
-  validation {
-    condition     = !var.renovate_automerge || var.required_status_checks != null
-    error_message = "renovate_automerge needs required_status_checks; without them Renovate would merge on nothing."
-  }
 }
 
 variable "merge_method" {

@@ -91,10 +91,10 @@ module "network_arbitrary" {
     "peter-evans/create-pull-request@*",
   ]
   required_status_checks = {
-    ci_results_check = true
-    contexts         = ["Prune stale pull requests", "Check GHC matrix drift"]
+    ci_results_check   = true
+    contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
+    renovate_automerge = true
   }
-  renovate_automerge = true
 }
 
 module "projects_v2_sync" {
@@ -164,8 +164,8 @@ module "woodland_generators" {
       "Audit production dependencies",
       "Scan for live secrets",
     ]
+    renovate_automerge = true
   }
-  renovate_automerge = true
   # Deviates from the baseline (discussions off). The repo sets
   # blank_issues_enabled: false and routes every non-bug, non-feature path to a
   # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
@@ -198,10 +198,10 @@ module "zfs_replicate" {
   require_code_owner_review = true
   admin_only_updates        = false
   required_status_checks = {
-    ci_results_check = true
-    contexts         = ["Validate PR title"]
+    ci_results_check   = true
+    contexts           = ["Validate PR title"]
+    renovate_automerge = true
   }
-  renovate_automerge = true
   # PyPI pins the Trusted Publisher it accepts to repo + workflow +
   # environment, so the publish job has to run in this one. No deployment
   # branch policy: the release workflow runs from a tag ref, which the
