@@ -71,7 +71,7 @@ from.
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
-| P-5 | Hook fix | C-25's App token in Actions | C-25's reader workflow |
+| P-5 | Hook fix | C-25's App token in Actions | A Renovate pull request |
 
 ## Trust boundaries
 

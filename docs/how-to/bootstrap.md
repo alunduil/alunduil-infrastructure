@@ -51,7 +51,7 @@ IDs, read-only for plan and read-write for apply. Set
 prompts, or press Enter at each to defer until the credentials exist.
 
 It also prompts for the hook-fix App's ID and private key, and stores
-them in Secret Manager. Later runs skip them. Set
+them in Secret Manager. Later runs prompt only for an empty one. Set
 `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY_FILE` to answer without
 the prompts, or press Enter at each to defer until the App exists.
 

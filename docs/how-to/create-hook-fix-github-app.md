@@ -41,16 +41,15 @@ with an App token does.
 ## Store the credentials
 
 The reusable hook-fix workflow reads the App ID and private key from
-Secret Manager at runtime, so a repo that turns on `renovate_automerge`
-needs no secrets of its own. `just bootstrap` prompts for both values
-once; to store them without a full bootstrap:
+Secret Manager. `just bootstrap` prompts for both. To store them without
+a full bootstrap:
 
 ```sh
 just configure-hook-fix
 ```
 
-To roll out a new key, set both variables first. The stored values are
-then overwritten:
+To roll out a new key, set both variables. Supplied values overwrite the
+stored ones:
 
 ```sh
 export HOOK_FIX_APP_ID=<app-id>

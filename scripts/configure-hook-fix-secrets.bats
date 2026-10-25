@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Unit tests for the sourceable helpers in configure-hook-fix-secrets.sh. The
-# Secret Manager calls and the interactive prompts are exercised by running the
-# script against the live project.
+# Secret Manager calls are exercised by running the script against the live
+# project.
 
 # Fixtures below are inputs to the sourced script rather than to this file, so
 # every assignment reads as a dead store from here.
@@ -15,17 +15,17 @@ setup() {
   # shellcheck source=configure-hook-fix-secrets.sh disable=SC1091
   source "${BATS_TEST_DIRNAME}/configure-hook-fix-secrets.sh"
 
-  # Stand-ins for Secret Manager, defined after the source so they replace the
-  # script's: a secret is populated when its marker file exists, and each write
-  # is logged with the bytes it would store.
+  # Secret Manager stand-ins, defined after the source so they replace the
+  # shared helpers. A marker file marks a secret populated, and each write is
+  # logged with its bytes.
   # shellcheck disable=SC2329 # called indirectly by needs_write
   secret_is_populated() { [[ -e "${BATS_TEST_TMPDIR}/populated-${1}" ]]; }
   # shellcheck disable=SC2329 # called indirectly by ensure_secret
   add_secret_version() { echo "add ${1} $(cat)" >>"${BATS_TEST_TMPDIR}/writes"; }
 }
 
-# Records each value it receives in a file: the transform runs in a command
-# substitution, whose variables don't survive it.
+# Logs to a file because the transform runs in a command substitution, whose
+# variables don't survive it.
 # shellcheck disable=SC2329 # called indirectly by ensure_secret
 record_transform() {
   echo "${1}" >>"${BATS_TEST_TMPDIR}/transformed"

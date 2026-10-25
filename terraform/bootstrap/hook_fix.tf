@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The hook-fix App's credentials, read at runtime by renovate-config's reusable
-# workflow, so a repo turning on renovate_automerge needs no per-repo secret.
+# The hook-fix App's credentials, read at runtime by renovate-config's
+# fix-renovate-hooks.yml.
 
 locals {
   hook_fix_app_secrets = toset([
@@ -30,8 +30,8 @@ resource "google_secret_manager_secret" "hook_fix_app" {
   depends_on = [google_project_service.secretmanager]
 }
 
-# Its own pool for the reason blog_analytics.tf gives: the `github` pool binds
-# the RW deployer on attribute.ref alone.
+# Its own pool. The `github` pool binds the RW deployer on attribute.ref alone,
+# so a repository admitted there would inherit the apply identity.
 resource "google_iam_workload_identity_pool" "hook_fix" {
   project                   = google_project.env.project_id
   workload_identity_pool_id = "hook-fix"
@@ -55,9 +55,9 @@ resource "google_iam_workload_identity_pool_provider" "hook_fix" {
     "attribute.repository_owner" = "assertion.repository_owner"
   }
 
-  # A reusable workflow's job_workflow_ref names the called file, not the
-  # caller's. Callers pin it by SHA, so the ref can only match by prefix, which
-  # admits every ref of the file in renovate-config, branches included.
+  # job_workflow_ref names the called workflow at the SHA its caller pins, so
+  # only a prefix can match. That admits every ref of the file in
+  # renovate-config, branches included.
   attribute_condition = join(" && ", [
     "assertion.repository_owner == '${local.hook_fix_owner}'",
     "assertion.job_workflow_ref.startsWith('${local.hook_fix_workflow}@')",

@@ -57,7 +57,7 @@ output "cloudflare_api_token_blog_analytics_ro_secret" {
   sensitive   = false
 }
 
-# renovate-config's fix-renovate-hooks.yml hard-codes these; none is secret.
+# renovate-config's fix-renovate-hooks.yml hard-codes these.
 output "hook_fix_workload_identity_provider" {
   value       = google_iam_workload_identity_pool_provider.hook_fix.name
   description = "Full resource name of the hook-fix WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix/providers/github-provider"

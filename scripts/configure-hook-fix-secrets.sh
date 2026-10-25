@@ -4,8 +4,8 @@
 #
 # Populates the hook-fix GitHub App's ID and private key in the Secret Manager
 # shells terraform/bootstrap/hook_fix.tf declares. Re-running prompts only for
-# an empty secret; a supplied value overwrites, which is how a rotated key
-# reaches the reusable workflow.
+# an empty secret. A supplied value overwrites the stored one, which is how a
+# key is rotated.
 
 set -euo pipefail
 
@@ -25,7 +25,6 @@ needs_write() {
   [[ -n ${supplied} ]] || ! secret_is_populated "${secret}"
 }
 
-# Precedence: the supplied value, else what the operator types, else nothing.
 # read prompts on stderr, so only the answer reaches stdout.
 answer_for() {
   local prompt="$1" value="$2"
@@ -41,7 +40,7 @@ check_app_id() {
 }
 
 read_private_key() {
-  # read hands back the tilde the shell would have expanded.
+  # A path typed at the prompt arrives with its tilde unexpanded.
   local path="${1/#\~/${HOME}}"
 
   [[ -r ${path} ]] || die "cannot read '${path}'"
@@ -64,8 +63,8 @@ not exist yet, see ${SETUP_DOC}.
 EOF
 }
 
-# transform checks the answer and emits the bytes to store. It runs to
-# completion before the write, so a failed check never stores an empty version.
+# transform validates the answer and prints the bytes to store. It runs before
+# the write rather than piping into it, so a rejected answer stores nothing.
 ensure_secret() {
   local secret="$1" prompt="$2" supplied="$3" transform="$4"
 
