@@ -92,6 +92,7 @@ module "network_arbitrary" {
   ]
   required_status_checks = {
     ci_results_check = true
+    contexts         = ["Prune stale pull requests", "Check GHC matrix drift"]
   }
 }
 
