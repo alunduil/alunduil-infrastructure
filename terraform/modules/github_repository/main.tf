@@ -14,15 +14,18 @@ resource "github_repository" "this" {
   homepage_url = var.homepage_url
   topics       = var.topics
 
-  visibility                  = "public"
-  has_issues                  = true
-  has_projects                = false
-  has_wiki                    = false
-  has_discussions             = var.has_discussions
-  allow_merge_commit          = local.merge_commits
-  allow_squash_merge          = var.merge_method == "squash"
-  allow_rebase_merge          = false
-  allow_auto_merge            = local.renovate_automerge
+  visibility         = "public"
+  has_issues         = true
+  has_projects       = false
+  has_wiki           = false
+  has_discussions    = var.has_discussions
+  allow_merge_commit = local.merge_commits
+  allow_squash_merge = var.merge_method == "squash"
+  allow_rebase_merge = false
+  # GitHub auto-merge doesn't apply Renovate's ruleset bypass, so it never
+  # merges past admin-only or review. With it off, Renovate skips platform
+  # automerge and merges through its own API call, which the bypass admits.
+  allow_auto_merge            = false
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
   merge_commit_title          = "MERGE_MESSAGE"
