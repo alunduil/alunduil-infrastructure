@@ -8,26 +8,14 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-alunduil}"
+# shellcheck source=scripts/lib/secret-manager.sh disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/lib/secret-manager.sh"
+
 SETUP_DOC="docs/how-to/create-tailscale-trust-credential.md"
 
 die() {
   echo "error: $*" >&2
   exit 1
-}
-
-# Every check reaches Secret Manager. A stale answer here would report a
-# populated secret as empty, and the next answer would overwrite it.
-secret_is_populated() {
-  local state
-  state="$(gcloud secrets versions describe latest --secret "${1}" \
-    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
-
-  [[ ${state} == "ENABLED" ]]
-}
-
-add_secret_version() {
-  gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
 }
 
 # True when the operator is about to be asked: nothing supplied, and a terminal
