@@ -94,6 +94,7 @@ module "network_arbitrary" {
     ci_results_check = true
     contexts         = ["Prune stale pull requests", "Check GHC matrix drift"]
   }
+  renovate_automerge = true
 }
 
 module "projects_v2_sync" {
