@@ -3,7 +3,9 @@
   "extends": [
     "config:best-practices",
     "security:openssf-scorecard",
-    "customManagers:githubActionsVersions"
+    "customManagers:githubActionsVersions",
+    ":automergeMinor",
+    ":automergeDigest"
   ],
   "timezone": "Europe/London",
   "reviewers": ["alunduil"],
@@ -49,6 +51,25 @@
         "replacement"
       ],
       "minimumReleaseAge": null
+    },
+    {
+      "description": "Merging a change to Terraform, or to any path terraform-apply.yml triggers on, applies it to live infrastructure, so these wait for a human to read the plan. A branch automerges only when every upgrade in it does, so one matching file holds the whole pull request",
+      "matchManagers": ["terraform"],
+      "automerge": false
+    },
+    {
+      "matchDepNames": ["hashicorp/terraform"],
+      "automerge": false
+    },
+    {
+      "matchFileNames": [
+        "terraform/alunduil/**",
+        "terraform/modules/**",
+        ".github/workflows/terraform-apply.yml",
+        ".github/actions/terraform-providers/**",
+        "scripts/export-terraform-credentials.sh"
+      ],
+      "automerge": false
     }
   ]
 }
