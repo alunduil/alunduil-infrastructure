@@ -15,6 +15,7 @@ module "alunduil_chezmoi" {
       "Validate telemetry config",
       "Check prose",
     ]
+    renovate_automerge = true
   }
 }
 
