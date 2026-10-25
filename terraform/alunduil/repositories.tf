@@ -16,6 +16,7 @@ module "alunduil_chezmoi" {
       "Validate zellij config",
       "Validate telemetry config",
       "Check prose",
+      "Run pinned tools",
     ]
     renovate_automerge = true
   }
