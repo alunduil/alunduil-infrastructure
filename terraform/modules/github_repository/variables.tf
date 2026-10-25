@@ -65,10 +65,8 @@ variable "required_status_checks" {
     branch.
 
     renovate_automerge lets Renovate merge its own pull requests without
-    review, once these checks pass. Only Renovate can push to its
-    renovate/** branches, so its pull requests carry only its commits.
-    Enables GitHub auto-merge, which ignores any check that isn't
-    required.
+    review once these checks pass. Auto-merge ignores any check not listed
+    here, so list every check a dependency update can break.
   EOT
 }
 
