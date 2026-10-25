@@ -5,9 +5,8 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets here, in `blog.alunduil.com`, and in every repo with a
-`renovate` ruleset. Run when starting from scratch or rotating the core
-credentials.
+Actions secrets here and in `blog.alunduil.com`. Run when starting from
+scratch or rotating the core credentials.
 
 ## Prerequisites
 
@@ -51,8 +50,8 @@ IDs, read-only for plan and read-write for apply. Set
 `TAILSCALE_CLIENT_ID_RO` and `TAILSCALE_CLIENT_ID_RW` to answer without the
 prompts, or press Enter at each to defer until the credentials exist.
 
-It also prompts for the hook-fix App's ID and private key, and writes
-them to each repo with a `renovate` ruleset that lacks them. Set
+It also prompts for the hook-fix App's ID and private key, and stores
+them in Secret Manager. Later runs prompt only for an empty one. Set
 `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY_FILE` to answer without
 the prompts, or press Enter at each to defer until the App exists.
 

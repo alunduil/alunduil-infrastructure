@@ -38,19 +38,18 @@ with an App token does.
    `terraform/modules/github_repository/main.tf`, so the `renovate`
    ruleset lists the App as a bypass actor.
 
-## Set the Actions secrets
+## Store the credentials
 
-Run this after each apply that sets
-`required_status_checks.renovate_automerge = true` on a repo. It
-writes `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY` to every repo
-with a `renovate` ruleset that lacks them, prompting for each value:
+The reusable hook-fix workflow reads the App ID and private key from
+Secret Manager. `just bootstrap` prompts for both. To store them without
+a full bootstrap:
 
 ```sh
 just configure-hook-fix
 ```
 
-To roll out a new key, set both variables first. Every repo's copy is
-then overwritten:
+To roll out a new key, set both variables. Supplied values overwrite the
+stored ones:
 
 ```sh
 export HOOK_FIX_APP_ID=<app-id>

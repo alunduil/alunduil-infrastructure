@@ -71,7 +71,7 @@ from.
 | P-2 | CI plan | `terraform plan` in Actions | T-1, by pull request |
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
-| P-5 | Hook fix | C-25's App token in Actions | A repo holding C-25 |
+| P-5 | Hook fix | C-25's App token in Actions | A Renovate pull request |
 
 ## Trust boundaries
 
@@ -159,7 +159,7 @@ beyond it.
 
 - Description: project `alunduil` in `europe-west1`, holding the
   Terraform state bucket, Secret Manager, the
-  workload identity federation pool, and the audit log configuration
+  workload identity federation pools, and the audit log configuration
 - Exposed to: T-1. Its API is public
 - Administered by: P-2, P-3
 
@@ -489,8 +489,10 @@ Each needs an operator in a console, because no apply rotates them.
 - Kind: GitHub App ID and private key
 - Scope: `Contents` write wherever it's installed, without `Workflows`.
   Of the protected branches, only `renovate/**` admits its pushes
-- Consumer: workflows in every repo with a `renovate` ruleset, as the
-  Actions secrets `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY`
+- Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
+  repos with a `renovate` ruleset. It reads `hook-fix-app-id` and
+  `hook-fix-app-private-key` from Secret Manager through the `hook-fix`
+  workload identity pool, whose provider admits only that workflow
 - Grants: P-5
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
