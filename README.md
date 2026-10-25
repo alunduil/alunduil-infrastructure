@@ -4,7 +4,7 @@
 # alunduil-infrastructure
 
 [![License](https://img.shields.io/github/license/alunduil/alunduil-infrastructure)](LICENSES/MIT.txt)
-[![pre-commit](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/pre-commit.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/pre-commit.yml)
+[![CI](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/ci.yml)
 [![Terraform Apply](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform-apply.yml/badge.svg?branch=main)](https://github.com/alunduil/alunduil-infrastructure/actions/workflows/terraform-apply.yml)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](renovate.json)
 
