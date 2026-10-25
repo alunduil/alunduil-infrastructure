@@ -90,6 +90,9 @@ module "network_arbitrary" {
     "nomeata/haskell-bounds-bump-action@*",
     "peter-evans/create-pull-request@*",
   ]
+  required_status_checks = {
+    ci_results_check = true
+  }
 }
 
 module "projects_v2_sync" {
