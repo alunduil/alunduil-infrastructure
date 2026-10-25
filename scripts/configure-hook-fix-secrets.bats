@@ -24,16 +24,13 @@ setup() {
   add_secret_version() { echo "add ${1} $(cat)" >>"${BATS_TEST_TMPDIR}/writes"; }
 }
 
-# Counts calls in a file: the resolver runs in a command substitution, whose
-# variables don't survive it.
+# Records each value it receives in a file: the transform runs in a command
+# substitution, whose variables don't survive it.
 # shellcheck disable=SC2329 # called indirectly by ensure_secret
-count_resolve() {
-  echo x >>"${BATS_TEST_TMPDIR}/resolved"
-  printf 'VALUE'
+record_transform() {
+  echo "${1}" >>"${BATS_TEST_TMPDIR}/transformed"
+  printf 'STORED'
 }
-
-# shellcheck disable=SC2329 # called indirectly by ensure_secret
-skip_resolve() { :; }
 
 # --- needs_write ----------------------------------------------------------
 
@@ -54,83 +51,98 @@ skip_resolve() { :; }
   [[ ${status} -eq 0 ]]
 }
 
-# --- resolve_app_id -------------------------------------------------------
+# --- answer_for -----------------------------------------------------------
 
-@test "resolve_app_id returns the environment value when set" {
-  HOOK_FIX_APP_ID=12345
-  result="$(resolve_app_id)"
+@test "answer_for returns a supplied value without prompting" {
+  result="$(answer_for "App ID" 12345 </dev/null)"
   [[ ${result} == "12345" ]]
 }
 
-@test "resolve_app_id rejects a value that isn't digits" {
-  HOOK_FIX_APP_ID=alunduil-hook-fix
-  run resolve_app_id
+@test "answer_for returns what the operator types" {
+  result="$(answer_for "App ID" "" <<<"67890" 2>/dev/null)"
+  [[ ${result} == "67890" ]]
+}
+
+# --- check_app_id ---------------------------------------------------------
+
+@test "check_app_id passes digits through" {
+  result="$(check_app_id 12345)"
+  [[ ${result} == "12345" ]]
+}
+
+@test "check_app_id rejects a value that isn't digits" {
+  run check_app_id alunduil-hook-fix
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"must be digits"* ]]
 }
 
-# --- resolve_app_private_key ----------------------------------------------
+# --- read_private_key -----------------------------------------------------
 
-@test "resolve_app_private_key emits a PEM file's contents" {
+@test "read_private_key emits a PEM file's contents" {
   keyfile="${BATS_TEST_TMPDIR}/key.pem"
   printf -- '-----BEGIN RSA PRIVATE KEY-----\nBODY\n' >"${keyfile}" # pragma: allowlist secret
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${keyfile}"
-  result="$(resolve_app_private_key)"
+  result="$(read_private_key "${keyfile}")"
   [[ ${result} == *"BODY"* ]]
 }
 
-@test "resolve_app_private_key expands a leading ~ to HOME" {
+@test "read_private_key expands a leading ~ to HOME" {
   HOME="${BATS_TEST_TMPDIR}"
   printf -- '-----BEGIN PRIVATE KEY-----\n' >"${BATS_TEST_TMPDIR}/id.pem" # pragma: allowlist secret
   # A literal quoted tilde here would trip shellcheck's SC2088.
   tilde='~'
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${tilde}/id.pem"
-  run resolve_app_private_key
+  run read_private_key "${tilde}/id.pem"
   [[ ${status} -eq 0 ]]
 }
 
-@test "resolve_app_private_key errors on an unreadable path" {
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${BATS_TEST_TMPDIR}/does-not-exist.pem"
-  run resolve_app_private_key
+@test "read_private_key errors on an unreadable path" {
+  run read_private_key "${BATS_TEST_TMPDIR}/does-not-exist.pem"
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"cannot read"* ]]
 }
 
-@test "resolve_app_private_key rejects a file that isn't a PEM private key" {
+@test "read_private_key rejects a file that isn't a PEM private key" {
   keyfile="${BATS_TEST_TMPDIR}/not-a-key.pem"
   printf 'hello' >"${keyfile}"
-  HOOK_FIX_APP_PRIVATE_KEY_FILE="${keyfile}"
-  run resolve_app_private_key
+  run read_private_key "${keyfile}"
   [[ ${status} -eq 1 ]]
   [[ ${output} == *"not a PEM private key"* ]]
 }
 
 # --- ensure_secret --------------------------------------------------------
 
-@test "ensure_secret neither resolves nor writes a populated secret" {
+@test "ensure_secret neither prompts nor writes a populated secret" {
   touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run ensure_secret hook-fix-app-id "" count_resolve
+  run ensure_secret hook-fix-app-id "App ID" "" record_transform </dev/null
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"already set"* ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/resolved" ]]
+  [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
 }
 
-@test "ensure_secret writes the resolved value to an empty secret" {
-  run ensure_secret hook-fix-app-id "" count_resolve
+@test "ensure_secret stores the transformed answer in an empty secret" {
+  run ensure_secret hook-fix-app-id "App ID" "" record_transform <<<"typed"
   [[ ${status} -eq 0 ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id VALUE" ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "typed" ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id STORED" ]]
 }
 
 @test "ensure_secret overwrites a populated secret with a supplied value" {
   touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run ensure_secret hook-fix-app-id "12345" count_resolve
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id VALUE" ]]
+  run ensure_secret hook-fix-app-id "App ID" "12345" record_transform </dev/null
+  [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "12345" ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id STORED" ]]
 }
 
 @test "ensure_secret writes nothing when the operator skips the prompt" {
-  run ensure_secret hook-fix-app-id "" skip_resolve
+  run ensure_secret hook-fix-app-id "App ID" "" record_transform <<<""
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"Leaving hook-fix-app-id empty"* ]]
+  [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
+  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
+}
+
+@test "ensure_secret writes nothing when the transform rejects the answer" {
+  run ensure_secret hook-fix-app-id "App ID" "not-digits" check_app_id </dev/null
+  [[ ${status} -ne 0 ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
 }

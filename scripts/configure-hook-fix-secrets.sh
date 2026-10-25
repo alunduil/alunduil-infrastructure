@@ -9,7 +9,9 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-alunduil}"
+# shellcheck source=scripts/lib/secret-manager.sh disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/lib/secret-manager.sh"
+
 APP_NAME="alunduil-hook-fix"
 SETUP_DOC="docs/how-to/create-hook-fix-github-app.md"
 
@@ -18,41 +20,29 @@ die() {
   exit 1
 }
 
-secret_is_populated() {
-  local state
-  state="$(gcloud secrets versions describe latest --secret "${1}" \
-    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
-
-  [[ ${state} == "ENABLED" ]]
-}
-
-add_secret_version() {
-  gcloud secrets versions add "${1}" --project "${PROJECT_ID}" --data-file=-
-}
-
 needs_write() {
   local secret="$1" supplied="$2"
   [[ -n ${supplied} ]] || ! secret_is_populated "${secret}"
 }
 
-resolve_app_id() {
-  local value="${HOOK_FIX_APP_ID:-}"
-  [[ -n ${value} ]] || read -r -p "${APP_NAME} App ID (Enter to skip): " value
-  [[ -n ${value} ]] || return 0
-
-  # A wrong ID surfaces only when the first fix push is refused, so catch a
-  # mistyped one here.
-  [[ ${value} =~ ^[0-9]+$ ]] || die "App ID must be digits, got '${value}'"
+# Precedence: the supplied value, else what the operator types, else nothing.
+# read prompts on stderr, so only the answer reaches stdout.
+answer_for() {
+  local prompt="$1" value="$2"
+  [[ -n ${value} ]] || read -r -p "${prompt} (Enter to skip): " value
   printf '%s' "${value}"
 }
 
-resolve_app_private_key() {
-  local path="${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}"
-  [[ -n ${path} ]] || read -r -p "Path to the ${APP_NAME} private key .pem (Enter to skip): " path
-  [[ -n ${path} ]] || return 0
+check_app_id() {
+  # A wrong ID surfaces only when the first fix push is refused, so catch a
+  # mistyped one here.
+  [[ ${1} =~ ^[0-9]+$ ]] || die "App ID must be digits, got '${1}'"
+  printf '%s' "${1}"
+}
 
+read_private_key() {
   # read hands back the tilde the shell would have expanded.
-  path="${path/#\~/${HOME}}"
+  local path="${1/#\~/${HOME}}"
 
   [[ -r ${path} ]] || die "cannot read '${path}'"
   grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" \
@@ -74,8 +64,10 @@ not exist yet, see ${SETUP_DOC}.
 EOF
 }
 
+# transform checks the answer and emits the bytes to store. It runs to
+# completion before the write, so a failed check never stores an empty version.
 ensure_secret() {
-  local secret="$1" supplied="$2" resolve="$3"
+  local secret="$1" prompt="$2" supplied="$3" transform="$4"
 
   needs_write "${secret}" "${supplied}" || {
     echo "${secret} already set."
@@ -85,12 +77,13 @@ ensure_secret() {
   [[ -n ${supplied} ]] || announce_app_once
 
   local value
-  value="$("${resolve}")"
+  value="$(answer_for "${prompt}" "${supplied}")"
   [[ -n ${value} ]] || {
     echo "Leaving ${secret} empty; see ${SETUP_DOC}" >&2
     return 0
   }
 
+  value="$("${transform}" "${value}")" || return
   printf '%s' "${value}" | add_secret_version "${secret}"
 }
 
@@ -103,5 +96,7 @@ fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
-ensure_secret hook-fix-app-id "${HOOK_FIX_APP_ID:-}" resolve_app_id
-ensure_secret hook-fix-app-private-key "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" resolve_app_private_key
+ensure_secret hook-fix-app-id "${APP_NAME} App ID" \
+  "${HOOK_FIX_APP_ID:-}" check_app_id
+ensure_secret hook-fix-app-private-key "Path to the ${APP_NAME} private key .pem" \
+  "${HOOK_FIX_APP_PRIVATE_KEY_FILE:-}" read_private_key

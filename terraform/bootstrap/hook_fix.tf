@@ -12,7 +12,7 @@ locals {
 
   hook_fix_owner         = "alunduil"
   hook_fix_workflow      = "${local.hook_fix_owner}/renovate-config/.github/workflows/fix-renovate-hooks.yml"
-  hook_fix_wif_principal = "${local.wif_pool_prefix}/hook-fix/attribute.repository_owner/${local.hook_fix_owner}"
+  hook_fix_wif_principal = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id}/attribute.repository_owner/${local.hook_fix_owner}"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
