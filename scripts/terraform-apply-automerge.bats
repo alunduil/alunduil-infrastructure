@@ -2,10 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Renovate automerges everything renovate.json doesn't hold back, and merging
-# a path terraform-apply.yml triggers on applies it with no one reading the
-# plan. The two lists live in files that can't reference each other, so this
-# keeps them in step.
+# A path terraform-apply.yml triggers on but renovate.json doesn't hold back
+# would automerge straight into an apply.
 
 setup() {
   repo_root="${BATS_TEST_DIRNAME}/.."

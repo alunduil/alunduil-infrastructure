@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs; never cancel main so each commit completes.
+  # Every commit on main keeps a complete CI result.
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -21,10 +21,8 @@ jobs:
     name: Run pre-commit hooks
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
-    # Terraform and just are installed below because some hooks shell
-    # out to those binaries rather than bringing their own.
-
+    # Some hooks shell out to terraform and just rather than bringing their
+    # own.
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -45,8 +43,7 @@ jobs:
       - name: Run pre-commit hooks
         uses: tox-dev/action-pre-commit-uv@4de52c139ed1a6963bcc4c30042c4ef9d75d8b11 # v1.1.0
         env:
-          # no-commit-to-branch is a local guard and would always fail on
-          # push to main — skip it in CI.
+          # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
 
   bats:
@@ -54,8 +51,8 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
-      # A job-level block replaces the workflow-level one rather than merging,
-      # so the checkout needs `contents` named again here.
+      # A job-level block replaces the workflow-level one, so the checkout
+      # needs `contents` again.
       contents: read
       # codecov-action authenticates by OIDC, so there is no upload token to
       # store or rotate.
@@ -68,8 +65,7 @@ jobs:
       - name: Set up bats
         uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
         with:
-          # The suites use plain [[ ]] assertions, so the support/assert
-          # libraries (and their BATS_LIB_PATH wiring) aren't needed.
+          # The suites use plain [[ ]] assertions.
           support-install: false
           assert-install: false
           detik-install: false
