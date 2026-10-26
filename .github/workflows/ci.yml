@@ -38,10 +38,10 @@ jobs:
       - name: Set up just
         uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
 
-      # sha_pinning_required rejects tag refs transitively, so whichever
-      # action runs pre-commit must SHA-pin its own nested actions.
       - name: Run pre-commit hooks
-        uses: tox-dev/action-pre-commit-uv@4de52c139ed1a6963bcc4c30042c4ef9d75d8b11 # v1.1.0
+        uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+        with:
+          prek-version: '0.5.7'
         env:
           # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
