@@ -111,8 +111,7 @@ module "projects_v2_sync" {
   name        = "projects-v2-sync"
   description = "Mirror issues and PRs onto a GitHub Projects v2 board from a declarative in/out spec"
   topics      = ["github-actions", "github-projects", "projects-v2", "typescript"]
-  # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request but Renovate's.
+  # .github/CODEOWNERS assigns every path to @alunduil.
   require_code_owner_review = true
   required_status_checks = {
     contexts = [
