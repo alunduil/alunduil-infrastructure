@@ -97,7 +97,7 @@ Two hard rules:
 
 ## Land it (both paths)
 
-1. pre-commit → commit → push → draft PR; the body notes the import(s)
+1. `prek run` → commit → push → draft PR; the body notes the import(s)
    adopt on first apply and are removed afterward.
 2. File a follow-up issue (`issue-create` skill) to remove the import(s) —
    they can't go until apply puts the resource in state, post-merge. Link
