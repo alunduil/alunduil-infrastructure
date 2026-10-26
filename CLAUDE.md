@@ -84,10 +84,9 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - `alunduil.com` DNS is on Cloudflare, not Cloud DNS. Run
   `dig NS alunduil.com` before treating a TF DNS resource as
   authoritative.
-- Hooks in `.pre-commit-config.yaml` (REUSE, terraform_fmt/validate,
-  markdownlint, yamllint, vale, detect-secrets) run under `prek`
-  (`prek install`, `prek run`) and must pass. New files need SPDX
-  headers — REUSE flags missing ones.
+- Hooks in `.pre-commit-config.yaml` run under `prek` and must pass.
+  Run `prek install` once per clone. New files need SPDX headers —
+  REUSE flags missing ones.
 - `vale` lints prose. Full style set on README and `docs/`; spelling,
   casing, and inclusive language everywhere else, plus wordiness and
   banned terms on `CLAUDE.md` and `.claude/**`. Errors block a commit,
