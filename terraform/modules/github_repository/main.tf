@@ -328,6 +328,7 @@ locals {
     "bats-core/bats-action@*",
     "haskell-actions/hlint-setup@*",
     "haskell-actions/setup@*",
+    "j178/prek-action@*",
     "JasonEtco/create-an-issue@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
