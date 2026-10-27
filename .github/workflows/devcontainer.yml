@@ -38,4 +38,4 @@ jobs:
           runCmd: >-
             test -z "$(mise ls --missing)"
             && prek run --all-files --show-diff-on-failure
-            && bats --recursive github/projects scripts
+            && just test
