@@ -31,8 +31,8 @@ answer_for() {
 }
 
 check_digits() {
-  # A wrong App or installation ID surfaces far from here, as a refused push or
-  # an opaque authentication failure, so catch a mistyped one now.
+  # A wrong ID fails only once the App is used, far from here, so catch a
+  # mistyped one now.
   [[ ${1} =~ ^[0-9]+$ ]] || die "expected digits, got '${1}'"
   printf '%s' "${1}"
 }

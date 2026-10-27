@@ -5,8 +5,6 @@ set -euo pipefail
 
 # Sets the read-only GitHub App's private key on the Grafana GitHub data source.
 # The key never touches disk.
-#
-# Usage: scripts/set-grafana-github-credentials.sh
 
 # shellcheck source=scripts/lib/grafana-datasource.sh disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/lib/grafana-datasource.sh"

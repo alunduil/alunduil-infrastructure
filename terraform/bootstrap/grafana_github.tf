@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The read-only GitHub App behind the Grafana GitHub data source. The two
-# identifiers reach terraform/alunduil/ through the deployers; the private key
-# reaches Grafana only through scripts/set-grafana-github-credentials.sh, since
-# a data source keeps its secure fields in bucket-readable state.
+# The read-only GitHub App behind the Grafana GitHub data source. The deployers
+# read only the two identifiers; scripts/set-grafana-github-credentials.sh
+# carries the private key to Grafana outside any Terraform state.
 locals {
   grafana_github_app_identifiers = toset([
     "grafana-github-app-id",
@@ -16,7 +15,7 @@ locals {
     ["grafana-github-app-private-key"],
   )
 
-  # Every deployer reads every identifier: plan and apply both need them.
+  # Plan and apply both need the identifiers.
   grafana_github_app_readers = {
     for pair in setproduct(local.grafana_github_app_identifiers, keys(local.deployers)) :
     "${pair[0]}-${pair[1]}" => { secret = pair[0], deployer = pair[1] }

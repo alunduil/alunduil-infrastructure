@@ -6,15 +6,14 @@
 A read-only GitHub App the Grafana GitHub data source authenticates as.
 The delivery-metrics dashboards in
 [delivery-metrics.md](../reference/delivery-metrics.md) query GitHub
-through it. The installation has its own GraphQL rate limit, so
-dashboard refreshes don't spend the account's shared budget.
+through it.
 
 ## Create the App
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: `alunduil-grafana-github`. The prompts in
-     `scripts/configure-grafana-github-secrets.sh` ask for it by this
-     name.
+   - **GitHub App name**: `alunduil-grafana-github`. Renaming it means
+     renaming `APP_NAME` in `scripts/configure-grafana-github-secrets.sh`
+     too.
    - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck **Active**.
@@ -56,10 +55,9 @@ Shred the `.pem` once the script has stored it.
 
 ## Set the key on the data source
 
-Terraform creates the data source with the two IDs. It can't set the
-private key without persisting it in bucket-readable state, so set it
-through the Grafana API once `terraform/alunduil` has applied. Run this
-again after a key rotation, or if the data source is recreated.
+Set the key once `terraform/alunduil` has applied, after each key
+rotation, and whenever the data source is recreated. Terraform leaves it
+unset because the key would persist in bucket-readable state.
 
 Prerequisites:
 
