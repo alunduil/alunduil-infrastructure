@@ -15,26 +15,26 @@ set -euo pipefail
 BOOTSTRAP_OUTPUTS="${BOOTSTRAP_OUTPUTS:-gs://alunduil-tfstate/bootstrap-outputs.json}"
 CONCURRENCY="${CONCURRENCY:-4}"
 
-# Reads `terraform show -json` output on stdin and prints one line per planned
-# recording rule: its name, a tab, and its /api/v1/eval request body.
+# Reads `terraform show -json` output on stdin and prints one compact JSON
+# object per planned recording rule: its name and its /api/v1/eval request
+# body.
 recording_rule_requests() {
-  jq -r '
+  jq -c '
     .resource_changes[]?
     | select(.type == "grafana_rule_group")
     | select(.change.actions | index("create") or index("update"))
     | .change.after.rule[]
     | select((.record // []) | length > 0)
-    | [
-        .name,
-        ({data: [.data[] | {
+    | {
+        name,
+        body: {data: [.data[] | {
           refId: .ref_id,
           queryType: .query_type,
           datasourceUid: .datasource_uid,
           relativeTimeRange: (.relative_time_range[0] | {from, to}),
           model: (.model | fromjson)
-        }]} | tojson)
-      ]
-    | @tsv
+        }]}
+      }
   '
 }
 
@@ -44,14 +44,18 @@ eval_errors() {
   jq -r '.results // {} | to_entries[] | select(.value.error) | "\(.key): \(.value.error)"'
 }
 
-# Prints nothing when the rule evaluates cleanly.
+# Evaluates one recording_rule_requests line. Prints nothing when the rule
+# evaluates cleanly.
 eval_rule() {
-  local name="$1" body="$2" response
+  local request="$1" name response
+  name="$(jq -r .name <<<"${request}")"
 
-  if ! response="$(curl --silent --show-error --fail-with-body \
-    --header "Authorization: Bearer ${token}" \
+  # The token travels by file descriptor, never argv: /proc/<pid>/cmdline is
+  # world-readable.
+  if ! response="$(jq -c .body <<<"${request}" | curl --silent --show-error --fail-with-body \
+    --header @<(printf 'Authorization: Bearer %s\n' "${token}") \
     --header 'Content-Type: application/json' \
-    --data @- "${grafana_url}/api/v1/eval" <<<"${body}" 2>&1)"; then
+    --data @- "${grafana_url}/api/v1/eval" 2>&1)"; then
     echo "${name}: ${response}"
     return
   fi
@@ -74,11 +78,11 @@ results="$(mktemp -d)"
 trap 'rm -rf "${results}"' EXIT
 
 count=0
-while IFS=$'\t' read -r name body; do
+while read -r request; do
   if (($(jobs -rp | wc -l) >= CONCURRENCY)); then
     wait -n
   fi
-  eval_rule "${name}" "${body}" >"${results}/${count}" &
+  eval_rule "${request}" >"${results}/${count}" &
   count=$((count + 1))
 done < <(recording_rule_requests <"${plan}")
 wait

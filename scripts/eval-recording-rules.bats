@@ -61,9 +61,9 @@ RECORD='[{"from": "OUT", "metric": "delivery_deploys"}]'
     "$(group '["delete", "create"]' "$(rule replaced "${RECORD}")")")"
   [[ ${status} -eq 0 ]]
   [[ ${#lines[@]} -eq 3 ]]
-  [[ ${lines[0]} == created$'\t'* ]]
-  [[ ${lines[1]} == updated$'\t'* ]]
-  [[ ${lines[2]} == replaced$'\t'* ]]
+  [[ $(jq -r .name <<<"${lines[0]}") == created ]]
+  [[ $(jq -r .name <<<"${lines[1]}") == updated ]]
+  [[ $(jq -r .name <<<"${lines[2]}") == replaced ]]
 }
 
 @test "recording_rule_requests skips alert rules and unchanged or deleted groups" {
@@ -79,11 +79,22 @@ RECORD='[{"from": "OUT", "metric": "delivery_deploys"}]'
 @test "recording_rule_requests shapes each data stage as an eval query" {
   run recording_rule_requests <<<"$(plan "$(group '["create"]' "$(rule created "${RECORD}")")")"
   [[ ${status} -eq 0 ]]
-  body="$(cut -f2 <<<"${output}")"
+  body="$(jq -c .body <<<"${output}")"
   run jq -c '.data[0]' <<<"${body}"
   [[ ${output} == '{"refId":"P","queryType":"Pull_Requests","datasourceUid":"github","relativeTimeRange":{"from":2678400,"to":0},"model":{"refId":"P","repository":"zfs-replicate"}}' ]]
   run jq -r '.data[1].model.type' <<<"${body}"
   [[ ${output} == sql ]]
+}
+
+@test "recording_rule_requests keeps quotes, backslashes and newlines in a model intact" {
+  sql='SELECT CONCAT('\''Revert "'\'', title) AS t, SUBSTRING_INDEX(message, '\''\n'\'', 1)'$'\n''FROM P'
+  model="$(jq -cn --arg sql "${sql}" '{refId: "OUT", type: "sql", expression: $sql}')"
+  rule_group="$(group '["create"]' "$(rule created "${RECORD}")" \
+    | jq --arg model "${model}" '.change.after.rule[0].data[1].model = $model')"
+  run recording_rule_requests <<<"$(plan "${rule_group}")"
+  [[ ${status} -eq 0 ]]
+  [[ ${#lines[@]} -eq 1 ]]
+  [[ $(jq -r '.body.data[1].model.expression' <<<"${output}") == "${sql}" ]]
 }
 
 @test "eval_errors reports each failing node" {
