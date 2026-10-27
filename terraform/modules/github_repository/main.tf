@@ -326,6 +326,7 @@ locals {
     "8c6794b6/hpc-codecov-action@*",
     "amannn/action-semantic-pull-request@*",
     "bats-core/bats-action@*",
+    "devcontainers/ci@*",
     "haskell-actions/hlint-setup@*",
     "haskell-actions/setup@*",
     "j178/prek-action@*",
