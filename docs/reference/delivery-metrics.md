@@ -20,14 +20,19 @@ Out of scope:
 ## Terms
 
 Window
-: The dashboard's time range, 30 days by default. A metric counts an
-  event when the event's end timestamp falls inside the window.
+: The span a metric covers. A metric counts an event when the event's
+  end timestamp falls inside the window. For a DORA metric, it's the 30
+  days before each hourly evaluation of the recording rules, and the
+  dashboard's time range picks which evaluations to show. For a SPACE
+  metric, it's the dashboard's time range, 30 days by default.
 
 Selection
 : The repositories the dashboard's repository variable selects, all by
   default. Counts sum across the selection. Medians, means and ratios
   pool the selection's events rather than combining per-repository
-  values.
+  values. The DORA medians pool through cumulative histogram buckets, so
+  they interpolate within a bucket; each repository's own median is
+  exact.
 
 Weekly rate
 : A count of events in the window, divided by the window length in
@@ -63,7 +68,9 @@ Failed deploy
 
 ## Deploy classes
 
-Each repository with a deploy belongs to one class.
+Each repository with a deploy belongs to one class. A deploy that
+ships every PR merged since the previous deploy looks back at most two
+years for that deploy and its PRs.
 
 ### Run class
 
@@ -160,6 +167,30 @@ The next successful deploy is the first later successful deploy in the
 same repository. For a deploy failed by a revert PR, it's the first
 successful deploy that ships the revert PR. A failed deploy with no
 later successful deploy is excluded until one exists.
+
+### Recorded metrics
+
+The recording rules write these series to the `grafanacloud-prom` data
+source, one set per repository with a deploy class. Each series carries
+a `repository` label.
+
+`dora_deploys`
+: Your deploys in the window. The `outcome` label is `succeeded` or
+  `failed`.
+
+`dora_lead_time_median_seconds`
+: Median lead time for changes.
+
+`dora_lead_time_seconds_bucket`
+: Your PRs with a lead time of at most `le` seconds.
+
+`dora_recovery_time_median_seconds`
+: Median failed deployment recovery time.
+
+`dora_recovery_time_seconds_bucket`
+: Your failed deploys recovered within `le` seconds.
+
+A median series is absent while the window has nothing to measure.
 
 ## SPACE metrics
 
