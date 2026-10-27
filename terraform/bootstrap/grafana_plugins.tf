@@ -13,3 +13,11 @@ resource "grafana_cloud_plugin_installation" "gcp_cloud_logging" {
   slug       = "googlecloud-logging-datasource"
   version    = "1.7.2"
 }
+
+# The delivery-metrics dashboards query GitHub through this plugin, for the data
+# source in terraform/alunduil/grafana_github.tf.
+resource "grafana_cloud_plugin_installation" "github" {
+  stack_slug = data.grafana_cloud_stack.this.slug
+  slug       = "grafana-github-datasource"
+  version    = "2.9.4"
+}
