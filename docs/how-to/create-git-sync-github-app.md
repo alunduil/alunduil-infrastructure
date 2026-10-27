@@ -17,6 +17,7 @@ Grafana Cloud can reach nothing else.
    - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck "Active" (otherwise it demands an address).
+     Git Sync's webhook comes from the `Webhooks` permission below.
    - Leave the user-authorization checkboxes under `Callback URL`
      (Expire user authorization tokens, Request user authorization on
      install, Enable Device Flow) at their defaults. This App
@@ -24,6 +25,7 @@ Grafana Cloud can reach nothing else.
    - Repository permissions (everything else "No access"):
      - `Contents: Read and write`—read dashboards, push the branch
      - `Pull requests: Read and write`—open the sync PR
+     - `Webhooks: Read and write`—register the sync webhook
      - `Metadata: Read-only` (granted automatically)
    - Where can this GitHub App be installed: **Only on this account**
 2. On the App's **General** page: note the **App ID**, then under
