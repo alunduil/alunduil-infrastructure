@@ -12,6 +12,7 @@ on:
       - '.github/workflows/terraform-plan.yml'
       - '.github/actions/terraform-providers/**'
       - 'scripts/export-terraform-credentials.sh'
+      - 'scripts/eval-recording-rules.sh'
       - 'mise.toml'
       - 'mise.lock'
 
@@ -121,3 +122,9 @@ jobs:
                 body,
               });
             }
+
+      - name: Evaluate planned recording rules
+        working-directory: terraform/alunduil
+        run: |
+          terraform show -json tfplan > plan.json
+          ../../scripts/eval-recording-rules.sh plan.json
