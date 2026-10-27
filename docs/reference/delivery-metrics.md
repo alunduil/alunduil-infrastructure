@@ -21,16 +21,21 @@ Out of scope:
 - Team benchmarks and comparisons against the performance clusters in
   the DORA reports.
 
-## Common terms
+## Terms
 
 Window
 : The dashboard's time range, 30 days by default. A metric counts an
   event when the event's end timestamp falls inside the window.
 
+Weekly rate
+: A count of events in the window, divided by the window length in
+  weeks.
+
 Your PR
 : A pull request whose `author_login` is `alunduil`. Agent-assisted
   PRs opened under that login count. PRs authored by `renovate[bot]`,
-  `dependabot[bot]`, or any other login don't count.
+  `dependabot[bot]`, or any other login don't count, and DORA metrics
+  don't count revert PRs.
 
 PR commit
 : The commit a merged PR leaves on the default branch. Its `message`
@@ -38,44 +43,62 @@ PR commit
   `Merge pull request #N` for a merge commit.
 
 Deploy
-: The event, defined per repository under
-  [Deployment classification](#deployment-classification), that puts a
-  change where its users get it.
+: The event that puts a change where its users get it. Each
+  repository's [deploy class](#deploy-classes) defines its deploys, the
+  time each one happens, and the PRs each one ships.
 
 Your deploy
 : A deploy that ships at least one of your PRs. A deploy that ships
   only bot PRs is excluded from every metric.
 
-## Deployment classification
+Revert PR
+: A merged PR whose title starts with `Revert`. The PR it reverts is
+  the one its title names, by number or by the quoted original title.
 
-Each repository with a deploy belongs to one of three classes. A class
-names the data source query that finds deploys, the field that dates
-them, and the signal that marks one as failed.
+Failed deploy
+: A deploy whose class failure signal fires, or the deploy that first
+  shipped a PR a revert PR reverts. A failed deploy still ships its
+  PRs, which ship again in the next successful deploy.
+
+## Deploy classes
+
+Each repository with a deploy belongs to one class.
 
 ### Run class
 
 - Deploy: a completed run of the repository's deploy workflow, filtered
-  as listed below. Workflow Runs query.
+  as listed under [Repositories](#repositories). Workflow Runs query.
 - Deploy time: the run's `updated_at`.
-- Failure signal: the run's `conclusion` is `failure`, or a revert PR.
+- Ships, for a `push` run: the PR whose PR commit is the run's
+  `head_sha`.
+- Ships, for a `release` or `workflow_dispatch` run: every PR merged
+  after the previous successful deploy and at or before the release
+  the run publishes.
+- Failure signal: the run's `conclusion` is `failure`.
 
 A run whose `conclusion` is neither `success` nor `failure`, such as
-`cancelled` or `skipped`, is neither a deploy nor a failure.
+`cancelled` or `skipped`, is neither a deploy nor a failure. A PR that
+merges without triggering a deploy run, such as an
+`alunduil-infrastructure` PR outside the `Terraform Apply` path filter,
+ships nothing.
 
 ### Release class
 
 - Deploy: a GitHub Release with `is_draft` and `is_prerelease` both
   false. Releases query.
 - Deploy time: the release's `published_at`.
-- Failure signal: a revert PR.
+- Ships: every PR merged after the previous release's `published_at`
+  and at or before this release's.
+- Failure signal: none beyond revert PRs.
 
 ### Merge class
 
 - Deploy: a PR merged to the default branch. Pull Requests query.
 - Deploy time: the PR's `merged_at`.
-- Failure signal: a revert PR.
+- Ships: the merged PR.
+- Failure signal: none beyond revert PRs.
 
-### Repositories
+## Repositories
 
 | Repository | Class | Workflow | Filter |
 | --- | --- | --- | --- |
@@ -104,41 +127,11 @@ Filter notes:
   publishes only when release-please cuts a release, so the release
   itself is the deploy.
 
-## Shipped PRs
-
-Lead time and attribution need the PRs each deploy ships:
-
-- Run class, `push` event: the PR whose PR commit is the run's
-  `head_sha`.
-- Run class, `release` or `workflow_dispatch` event: every PR merged
-  after the previous successful deploy and at or before the release
-  the run publishes.
-- Release class: every PR merged after the previous release's
-  `published_at` and at or before this release's.
-- Merge class: the merged PR.
-
-A failed deploy ships its PRs too. They count toward the failure and
-ship again in the next successful deploy.
-
-A PR that merges without triggering a deploy run, such as an
-`alunduil-infrastructure` PR outside the `Terraform Apply` path filter,
-ships nothing and appears in no DORA metric.
-
-## Revert PRs
-
-A revert PR is a merged PR whose title starts with `Revert`. The PR it
-reverts is the one its title names, by number or by the quoted
-original title. The deploy that first shipped the reverted PR counts
-as failed. A revert PR is never one of your PRs for DORA, so it
-doesn't count toward lead time.
-
 ## DORA metrics
 
 ### Deployment frequency
 
-Count of your deploys, successful or failed, with deploy time in the
-window, divided by the window length in weeks. Reported as deploys per
-week.
+Weekly rate of your deploys, successful or failed.
 
 ### Lead time for changes
 
@@ -149,16 +142,11 @@ window, of:
 first successful deploy time − PR created_at
 ```
 
-For the Merge class this equals `merged_at − created_at`.
-
 ### Change failure rate
 
 ```text
 your failed deploys in the window ÷ your deploys in the window
 ```
-
-A deploy that fails both by its run conclusion and by a revert PR
-counts once.
 
 ### Failed deployment recovery time
 
@@ -175,8 +163,8 @@ later successful deploy is excluded until one exists.
 
 ## SPACE metrics
 
-Each metric covers your PRs across every repository in scope, whether
-it has a deploy class or not.
+Each metric covers every repository in scope, whether it has a deploy
+class or not.
 
 ### Satisfaction and well-being: Weekly satisfaction
 
@@ -196,15 +184,14 @@ window, merged or not. Pull Requests query, fields `merged` and
 
 ### Activity: PRs merged
 
-Your PRs merged in the window, divided by the window length in weeks.
-Pull Requests query, field `merged_at`.
+Weekly rate of your PRs merged. Pull Requests query, field
+`merged_at`.
 
 ### Communication and collaboration: Reviews given
 
-Reviews submitted by `alunduil` in the window on PRs another login
-authored, divided by the window length in weeks. Pull Request Reviews
-query, fields `review_author_login`, `pull_request_author_login` and
-`review_created_at`.
+Weekly rate of reviews submitted by `alunduil` on PRs another login
+authored. Pull Request Reviews query, fields `review_author_login`,
+`pull_request_author_login` and `review_created_at`.
 
 ### Efficiency and flow: PR cycle time
 
