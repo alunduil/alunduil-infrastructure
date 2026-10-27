@@ -12,6 +12,8 @@ on:
       - '.github/workflows/terraform-plan.yml'
       - '.github/actions/terraform-providers/**'
       - 'scripts/export-terraform-credentials.sh'
+      - 'mise.toml'
+      - 'mise.lock'
 
 permissions:
   contents: read
@@ -40,9 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
-        with:
-          terraform_version: '1.17.0'
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
 
       - uses: ./.github/actions/terraform-providers
 

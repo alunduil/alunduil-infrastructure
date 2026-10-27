@@ -27,16 +27,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
-        with:
-          terraform_version: '1.17.0'
+      - name: Set up mise tools
+        uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
 
       - name: Set up Terraform providers
         uses: ./.github/actions/terraform-providers
-
-      - name: Set up just
-        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
 
       - name: Run pre-commit hooks
         uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
@@ -62,16 +57,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up bats
-        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # 4.0.0
-        with:
-          # The suites use plain [[ ]] assertions.
-          support-install: false
-          assert-install: false
-          detik-install: false
-          file-install: false
-          # bats-action curls api.github.com; auth raises the anonymous rate limit.
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up mise tools
+        uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
 
       - name: Install kcov
         run: |
