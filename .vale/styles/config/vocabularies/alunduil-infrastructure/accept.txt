@@ -102,6 +102,7 @@ Nygard's
 (?i)nameservers
 (?i)prefilled
 (?i)PRs
+(?i)PR's
 (?i)quadlets
 (?i)repo
 (?i)repos
