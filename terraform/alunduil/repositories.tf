@@ -7,7 +7,6 @@ module "alunduil_chezmoi" {
   description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
   topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
 
-  allowed_action_patterns = ["jdx/mise-action@*"]
   required_status_checks = {
     contexts = [
       "Run pre-commit hooks",
