@@ -27,7 +27,7 @@
       }
     ],
     "cursorSync": "Crosshair",
-    "description": "DORA metrics over a rolling 30 days, per docs/reference/delivery-metrics.md. Recording rules in terraform/alunduil/delivery_metrics.tf compute them hourly; each point is the 30 days before it.",
+    "description": "DORA metrics, recorded hourly. Each point covers the 30 days before it.",
     "editable": true,
     "elements": {
       "panel-1": {
@@ -130,7 +130,7 @@
               "transformations": []
             }
           },
-          "description": "Median time from opening a PR to its first successful deploy. Pooled across the selection from histogram buckets, so it interpolates; the table below has each repository's exact median.",
+          "description": "Median time from opening a PR to its first successful deploy, interpolated from histogram buckets. The table has exact medians per repository.",
           "id": 2,
           "links": [],
           "title": "Lead time for changes",
@@ -267,7 +267,7 @@
               "transformations": []
             }
           },
-          "description": "Median time from a failed deploy to the deploy that recovered it. Pooled across the selection from histogram buckets, so it interpolates; the table below has each repository's exact median.",
+          "description": "Median time from a failed deploy to the deploy that recovered it, interpolated from histogram buckets. The table has exact medians per repository.",
           "id": 4,
           "links": [],
           "title": "Failed deployment recovery time",
@@ -424,7 +424,7 @@
               ]
             }
           },
-          "description": "Each repository's metrics over the last 30 days. Medians are exact. A blank cell means the window had nothing to measure.",
+          "description": "Each repository's metrics over the last 30 days. A blank cell means the window had nothing to measure.",
           "id": 5,
           "links": [],
           "title": "Per repository",
@@ -637,7 +637,7 @@
             "value": "$__all"
           },
           "definition": "label_values(delivery_deploys, repository)",
-          "description": "Repositories to pool. Counts and the change failure rate pool exactly; the two medians interpolate from histogram buckets.",
+          "description": "Repositories to pool into the four stats.",
           "hide": "dontHide",
           "includeAll": true,
           "label": "Repository",

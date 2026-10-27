@@ -66,7 +66,9 @@ Failed deploy
 
 ## Deploy classes
 
-Each repository with a deploy belongs to one class.
+Each repository with a deploy belongs to one class. A deploy that
+ships every PR merged since the previous deploy looks back at most two
+years for that deploy and its PRs.
 
 ### Run class
 
@@ -187,9 +189,6 @@ a `repository` label.
 : Your failed deploys recovered within `le` seconds.
 
 A median series is absent while the window has nothing to measure.
-
-A release, `release` run or `workflow_dispatch` run looks back at most
-two years for the previous deploy and the PRs it ships.
 
 ## SPACE metrics
 
