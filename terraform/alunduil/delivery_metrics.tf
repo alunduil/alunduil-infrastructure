@@ -1,19 +1,17 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Recording rules compute the DORA metrics in docs/reference/delivery-metrics.md
-# and write them to Prometheus for grafana/delivery-metrics.json. A dashboard
-# panel can't look further back than its time range, but a release ships every
-# PR since the previous release, often months earlier; a rule sets each query's
-# range on its own. A rule runs its queries one after another, so each
-# repository gets its own rules to stay inside the evaluation timeout.
+# Records the DORA metrics in docs/reference/delivery-metrics.md. A release
+# ships PRs merged before a dashboard panel's time range can reach, and a
+# recording rule sets each query's range. A rule runs its queries one after
+# another, so each repository gets its own rules to stay inside the
+# evaluation timeout.
 
 locals {
   delivery_window_seconds = 30 * 86400
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
-  # the window covers them. A release ships everything since the previous
-  # deploy, which can be long before the window opens.
+  # the window covers them.
   delivery_short_lookback_seconds = local.delivery_window_seconds + 86400
   delivery_long_lookback_seconds  = 2 * 365 * 86400
 
@@ -31,7 +29,6 @@ locals {
     "alunduil-chezmoi"        = { class = "merge", workflow = "", branch = "", event = "" }
   }
 
-  # Recorded metric name suffix to the template's metric and statistic.
   delivery_metrics = {
     deploys                      = { metric = "deploys", statistic = "" }
     lead_time_seconds_bucket     = { metric = "lead_time", statistic = "bucket" }
@@ -40,15 +37,12 @@ locals {
     recovery_time_median_seconds = { metric = "recovery_time", statistic = "median" }
   }
 
-  # Five minutes to sixteen weeks. The dashboard's pooled medians interpolate
-  # within these.
+  # The dashboard's pooled medians interpolate within these.
   delivery_time_buckets_seconds = [
     300, 900, 1800, 3600, 7200, 14400, 28800,
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  # A push run ships the PR whose commit it ran on; every other deploy ships a
-  # range of merged PRs.
   delivery_targets = {
     for name, repo in local.delivery_repositories : name => merge(repo, {
       ships_by_commit = repo.class == "run" && contains(["", "push"], repo.event)

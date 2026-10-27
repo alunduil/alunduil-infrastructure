@@ -2,8 +2,7 @@
 -- SPDX-License-Identifier: MIT
 --
 -- One repository's DORA metric, as docs/reference/delivery-metrics.md defines
--- it: deploy counts by outcome, or a lead or recovery time's median or
--- cumulative histogram buckets. R holds the deploy workflow's runs or the releases, C the default
+-- it. R holds the deploy workflow's runs or the releases, C the default
 -- branch's commits, and P the repository's merged PRs by alunduil. Grafana
 -- refuses NOW(), so UNIX_TIMESTAMP() stands in for the evaluation time.
 WITH
