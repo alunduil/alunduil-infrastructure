@@ -15,18 +15,18 @@ locals {
   dora_short_lookback_seconds = local.dora_window_seconds + 86400
   dora_long_lookback_seconds  = 2 * 365 * 86400
 
-  # Workflow and filter per the doc's Repositories table. An empty event
-  # matches any event.
+  # Workflow and filter per the doc's Repositories table. A run without an
+  # event matches any event.
   dora_repositories = {
-    "alunduil-infrastructure" = { class = "run", workflow = "terraform-apply.yml", branch = "main", event = "" }
+    "alunduil-infrastructure" = { class = "run", workflow = "terraform-apply.yml", branch = "main" }
     "blog.alunduil.com"       = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
-    "collection-json.hs"      = { class = "run", workflow = "release.yml", branch = "", event = "workflow_dispatch" }
-    "network-arbitrary"       = { class = "run", workflow = "release.yml", branch = "", event = "release" }
-    "zfs-replicate"           = { class = "run", workflow = "release.yml", branch = "", event = "release" }
-    "woodland-generators"     = { class = "release", workflow = "", branch = "", event = "" }
-    "siren-json.hs"           = { class = "release", workflow = "", branch = "", event = "" }
-    "renovate-config"         = { class = "merge", workflow = "", branch = "", event = "" }
-    "alunduil-chezmoi"        = { class = "merge", workflow = "", branch = "", event = "" }
+    "collection-json.hs"      = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
+    "network-arbitrary"       = { class = "run", workflow = "release.yml", event = "release" }
+    "zfs-replicate"           = { class = "run", workflow = "release.yml", event = "release" }
+    "woodland-generators"     = { class = "release" }
+    "siren-json.hs"           = { class = "release" }
+    "renovate-config"         = { class = "merge" }
+    "alunduil-chezmoi"        = { class = "merge" }
   }
 
   dora_metrics = {
@@ -43,41 +43,45 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
+  dora_shapes = {
+    for name, repo in local.dora_repositories : name => merge(
+      { workflow = "", branch = "", event = "" },
+      repo,
+      { ships_by_commit = repo.class == "run" && contains(["", "push"], lookup(repo, "event", "")) },
+    )
+  }
+
   dora_targets = {
-    for name, repo in local.dora_repositories : name => merge(repo, {
-      ships_by_commit = repo.class == "run" && contains(["", "push"], repo.event)
+    for name, repo in local.dora_shapes : name => merge(repo, {
       lookback_seconds = (
-        repo.class == "merge" || (repo.class == "run" && contains(["", "push"], repo.event))
+        repo.class == "merge" || repo.ships_by_commit
         ? local.dora_short_lookback_seconds
         : local.dora_long_lookback_seconds
       )
+      queries = concat(
+        repo.class == "run" ? [{
+          ref_id     = "R"
+          query_type = "Workflow_Runs"
+          options    = { workflow = repo.workflow, branch = repo.branch }
+        }] : [],
+        repo.class == "release" ? [{
+          ref_id     = "R"
+          query_type = "Releases"
+          options    = {}
+        }] : [],
+        repo.ships_by_commit ? [{
+          ref_id     = "C"
+          query_type = "Commits"
+          options    = { gitRef = "main" }
+        }] : [],
+        [{
+          ref_id     = "P"
+          query_type = "Pull_Requests"
+          # timeField 2 searches by merged_at.
+          options = { timeField = 2, query = "is:merged author:alunduil" }
+        }],
+      )
     })
-  }
-
-  dora_queries = {
-    for name, repo in local.dora_targets : name => concat(
-      repo.class == "run" ? [{
-        ref_id     = "R"
-        query_type = "Workflow_Runs"
-        options    = { workflow = repo.workflow, branch = repo.branch }
-      }] : [],
-      repo.class == "release" ? [{
-        ref_id     = "R"
-        query_type = "Releases"
-        options    = {}
-      }] : [],
-      repo.ships_by_commit ? [{
-        ref_id     = "C"
-        query_type = "Commits"
-        options    = { gitRef = "main" }
-      }] : [],
-      [{
-        ref_id     = "P"
-        query_type = "Pull_Requests"
-        # timeField 2 searches by merged_at.
-        options = { timeField = 2, query = "is:merged author:alunduil" }
-      }],
-    )
   }
 }
 
@@ -106,7 +110,7 @@ resource "grafana_rule_group" "dora" {
       }
 
       dynamic "data" {
-        for_each = local.dora_queries[each.key]
+        for_each = each.value.queries
 
         content {
           ref_id         = data.value.ref_id
