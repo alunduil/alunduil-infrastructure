@@ -104,6 +104,12 @@ output "grafana_git_sync_app_secrets" {
   sensitive   = false
 }
 
+output "grafana_github_app_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.grafana_github_app : secret.secret_id])
+  description = "Secret Manager short names holding the Grafana GitHub data source App ID, installation ID, and private key; populated by scripts/configure-grafana-github-secrets.sh. Plan and apply read the two IDs; scripts/set-grafana-github-credentials.sh reads the key"
+  sensitive   = false
+}
+
 output "grafana_fleet_management_token_secrets" {
   value       = sort([for secret in google_secret_manager_secret.grafana_fleet_management_token : secret.secret_id])
   description = "Secret Manager short names holding the Fleet Management access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"

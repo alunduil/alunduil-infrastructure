@@ -54,7 +54,7 @@ export_secret() {
   export_var "${1}" "${value}"
 }
 
-# The Git Sync App identifiers are not secret. Masking them would redact a
+# GitHub App identifiers are not secret. Masking them would redact a
 # useful value from the log for nothing.
 export_identifier() {
   local value
@@ -98,6 +98,8 @@ export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
 export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
 export_identifier TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
 export_identifier TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
+export_identifier TF_VAR_grafana_github_app_id grafana-github-app-id
+export_identifier TF_VAR_grafana_github_app_installation_id grafana-github-app-installation-id
 
 # Fleet Management is a different Grafana API, out of the provisioner token's
 # reach, on a credential whose scopes split by role.

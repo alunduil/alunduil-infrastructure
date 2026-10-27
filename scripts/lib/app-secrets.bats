@@ -2,18 +2,18 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for the sourceable helpers in configure-hook-fix-secrets.sh. The
-# Secret Manager calls are exercised by running the script against the live
-# project.
+# Unit tests for app-secrets.sh. The Secret Manager calls are exercised by
+# running a configure-*-secrets.sh script against the live project.
 
-# Fixtures below are inputs to the sourced script rather than to this file, so
+# Fixtures below are inputs to the sourced library rather than to this file, so
 # every assignment reads as a dead store from here.
 # shellcheck disable=SC2034
 
 setup() {
-  unset HOOK_FIX_APP_ID HOOK_FIX_APP_PRIVATE_KEY_FILE
-  # shellcheck source=configure-hook-fix-secrets.sh disable=SC1091
-  source "${BATS_TEST_DIRNAME}/configure-hook-fix-secrets.sh"
+  APP_NAME="example-app"
+  SETUP_DOC="docs/how-to/create-example-app.md"
+  # shellcheck source=app-secrets.sh disable=SC1091
+  source "${BATS_TEST_DIRNAME}/app-secrets.sh"
 
   # Secret Manager stand-ins, defined after the source so they replace the
   # shared helpers. A marker file marks a secret populated, and each write is
@@ -35,19 +35,19 @@ record_transform() {
 # --- needs_write ----------------------------------------------------------
 
 @test "needs_write is true when the secret is empty" {
-  run needs_write hook-fix-app-id ""
+  run needs_write example-app-id ""
   [[ ${status} -eq 0 ]]
 }
 
 @test "needs_write is false when the secret holds a value" {
-  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run needs_write hook-fix-app-id ""
+  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
+  run needs_write example-app-id ""
   [[ ${status} -eq 1 ]]
 }
 
 @test "needs_write is true for a supplied value over a populated secret" {
-  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run needs_write hook-fix-app-id "12345"
+  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
+  run needs_write example-app-id "12345"
   [[ ${status} -eq 0 ]]
 }
 
@@ -63,17 +63,17 @@ record_transform() {
   [[ ${result} == "67890" ]]
 }
 
-# --- check_app_id ---------------------------------------------------------
+# --- check_digits ---------------------------------------------------------
 
-@test "check_app_id passes digits through" {
-  result="$(check_app_id 12345)"
+@test "check_digits passes digits through" {
+  result="$(check_digits 12345)"
   [[ ${result} == "12345" ]]
 }
 
-@test "check_app_id rejects a value that isn't digits" {
-  run check_app_id alunduil-hook-fix
+@test "check_digits rejects a value that isn't digits" {
+  run check_digits example-app
   [[ ${status} -eq 1 ]]
-  [[ ${output} == *"must be digits"* ]]
+  [[ ${output} == *"expected digits"* ]]
 }
 
 # --- read_private_key -----------------------------------------------------
@@ -111,8 +111,8 @@ record_transform() {
 # --- ensure_secret --------------------------------------------------------
 
 @test "ensure_secret neither prompts nor writes a populated secret" {
-  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run ensure_secret hook-fix-app-id "App ID" "" record_transform </dev/null
+  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
+  run ensure_secret example-app-id "App ID" "" record_transform </dev/null
   [[ ${status} -eq 0 ]]
   [[ ${output} == *"already set"* ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
@@ -120,29 +120,35 @@ record_transform() {
 }
 
 @test "ensure_secret stores the transformed answer in an empty secret" {
-  run ensure_secret hook-fix-app-id "App ID" "" record_transform <<<"typed"
+  run ensure_secret example-app-id "App ID" "" record_transform <<<"typed"
   [[ ${status} -eq 0 ]]
   [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "typed" ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id STORED" ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add example-app-id STORED" ]]
 }
 
 @test "ensure_secret overwrites a populated secret with a supplied value" {
-  touch "${BATS_TEST_TMPDIR}/populated-hook-fix-app-id"
-  run ensure_secret hook-fix-app-id "App ID" "12345" record_transform </dev/null
+  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
+  run ensure_secret example-app-id "App ID" "12345" record_transform </dev/null
   [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "12345" ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add hook-fix-app-id STORED" ]]
+  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add example-app-id STORED" ]]
 }
 
 @test "ensure_secret writes nothing when the operator skips the prompt" {
-  run ensure_secret hook-fix-app-id "App ID" "" record_transform <<<""
+  run ensure_secret example-app-id "App ID" "" record_transform <<<""
   [[ ${status} -eq 0 ]]
-  [[ ${output} == *"Leaving hook-fix-app-id empty"* ]]
+  [[ ${output} == *"Leaving example-app-id empty"* ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
 }
 
 @test "ensure_secret writes nothing when the transform rejects the answer" {
-  run ensure_secret hook-fix-app-id "App ID" "not-digits" check_app_id </dev/null
+  run ensure_secret example-app-id "App ID" "not-digits" check_digits </dev/null
   [[ ${status} -ne 0 ]]
   [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
+}
+
+@test "ensure_secret names the caller's App and setup doc before prompting" {
+  run ensure_secret example-app-id "App ID" "" record_transform <<<""
+  [[ ${output} == *"named example-app"* ]]
+  [[ ${output} == *"see docs/how-to/create-example-app.md"* ]]
 }

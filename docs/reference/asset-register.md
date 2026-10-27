@@ -7,7 +7,7 @@ The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
 principals.
 
-Verified 2026-10-13.
+Verified 2026-10-27.
 
 ## Scope
 
@@ -495,6 +495,17 @@ Each needs an operator in a console, because no apply rotates them.
   workload identity pool, whose provider admits only that workflow
 - Grants: P-5
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
+
+#### C-26: Grafana GitHub data source App
+
+- Kind: GitHub App ID, installation ID, and private key
+- Scope: read-only `Actions`, `Contents`, `Issues`, `Metadata`, and
+  `Pull requests`, installed on every `alunduil` repository
+- Consumer: A-11's GitHub data source, for the delivery-metrics
+  dashboards. Plan and apply read only the two IDs; the operator sets
+  the key through the Grafana API
+- Grants: P-1
+- Source: [`create-grafana-github-app.md`](../how-to/create-grafana-github-app.md)
 
 ## Maintenance
 
