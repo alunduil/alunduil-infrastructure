@@ -45,6 +45,10 @@ Estate assets, trust levels, entry points, and credentials:
 
 - [docs/reference/asset-register.md](docs/reference/asset-register.md)
 
+DORA and SPACE metric definitions against GitHub data:
+
+- [docs/reference/delivery-metrics.md](docs/reference/delivery-metrics.md)
+
 ## Support and contributions
 
 This is personal infrastructure maintained for the author's own use.
