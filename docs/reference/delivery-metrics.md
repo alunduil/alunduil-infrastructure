@@ -23,6 +23,12 @@ Window
 : The dashboard's time range, 30 days by default. A metric counts an
   event when the event's end timestamp falls inside the window.
 
+Selection
+: The repositories the dashboard's repository variable selects, all by
+  default. Counts sum across the selection. Medians, means and ratios
+  pool the selection's events rather than combining per-repository
+  values.
+
 Weekly rate
 : A count of events in the window, divided by the window length in
   weeks.
