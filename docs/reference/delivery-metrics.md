@@ -20,17 +20,19 @@ Out of scope:
 ## Terms
 
 Window
-: The 30 days before each hourly evaluation of the DORA recording
-  rules. A metric counts an event when the event's end timestamp falls
-  inside the window. The dashboard plots one window per evaluation, so
-  its time range picks which windows to show.
+: The span a metric covers. A metric counts an event when the event's
+  end timestamp falls inside the window. For a DORA metric, it's the 30
+  days before each hourly evaluation of the recording rules, and the
+  dashboard's time range picks which evaluations to show. For a SPACE
+  metric, it's the dashboard's time range, 30 days by default.
 
 Selection
 : The repositories the dashboard's repository variable selects, all by
-  default. Counts sum across the selection, and the change failure rate
-  divides the summed counts. The DORA medians pool the selection's
-  events through cumulative histogram buckets, so they interpolate
-  within a bucket; each repository's own median is exact.
+  default. Counts sum across the selection. Medians, means and ratios
+  pool the selection's events rather than combining per-repository
+  values. The DORA medians pool through cumulative histogram buckets, so
+  they interpolate within a bucket; each repository's own median is
+  exact.
 
 Weekly rate
 : A count of events in the window, divided by the window length in
