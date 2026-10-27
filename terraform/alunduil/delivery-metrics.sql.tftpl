@@ -1,0 +1,169 @@
+-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+-- SPDX-License-Identifier: MIT
+--
+-- One repository's DORA metric, as docs/reference/delivery-metrics.md defines
+-- it: deploy counts by outcome, or a lead or recovery time's median or
+-- cumulative histogram buckets. R holds the deploy workflow's runs or the releases, C the default
+-- branch's commits, and P the repository's merged PRs by alunduil. Grafana
+-- refuses NOW(), so UNIX_TIMESTAMP() stands in for the evaluation time.
+WITH
+%{ if class == "run" ~}
+deploys AS (
+  SELECT ROW_NUMBER() OVER (ORDER BY updated_at) AS id, event, head_sha, updated_at AS t,
+    conclusion = 'failure' AS signal_failed
+  FROM R
+  WHERE conclusion IN ('success', 'failure')%{ if event != "" } AND event = '${event}'%{ endif }
+),
+%{ endif ~}
+%{ if class == "release" ~}
+deploys AS (
+  SELECT ROW_NUMBER() OVER (ORDER BY published_at) AS id, 'release' AS event, '' AS head_sha,
+    published_at AS t, FALSE AS signal_failed
+  FROM R
+  WHERE NOT is_draft AND NOT is_prerelease
+),
+%{ endif ~}
+%{ if class == "merge" ~}
+deploys AS (
+  SELECT number AS id, 'merge' AS event, '' AS head_sha, merged_at AS t, FALSE AS signal_failed
+  FROM P
+),
+%{ endif ~}
+prs AS (
+  SELECT number, title, created_at, merged_at, title LIKE 'Revert%' AS is_revert
+  FROM P
+),
+%{ if class == "merge" ~}
+ships AS (
+  SELECT id, id AS number FROM deploys
+),
+%{ else ~}
+%{ if commits ~}
+-- A squash merge ends its subject with (#N); a merge commit starts with
+-- "Merge pull request #N".
+pr_commits AS (
+  SELECT id AS sha, CAST(COALESCE(
+      REGEXP_SUBSTR(REGEXP_SUBSTR(subject, '[(]#[0-9]+[)]$'), '[0-9]+'),
+      REGEXP_SUBSTR(REGEXP_SUBSTR(subject, '^Merge pull request #[0-9]+'), '[0-9]+')
+    ) AS SIGNED) AS number
+  FROM (SELECT id, SUBSTRING_INDEX(message, '\n', 1) AS subject FROM C) c
+),
+%{ endif ~}
+previous AS (
+  SELECT d.id,
+    (SELECT MAX(e.t) FROM deploys e WHERE e.t < d.t AND NOT e.signal_failed) AS t
+  FROM deploys d
+),
+ships AS (
+%{ if commits ~}
+  SELECT d.id, c.number
+  FROM deploys d JOIN pr_commits c ON c.sha = d.head_sha
+  WHERE d.event = 'push'
+  UNION ALL
+%{ endif ~}
+  SELECT d.id, p.number
+  FROM deploys d
+  JOIN previous v ON v.id = d.id
+  JOIN prs p ON p.merged_at <= d.t AND (v.t IS NULL OR p.merged_at > v.t)
+  WHERE d.event <> 'push'
+),
+%{ endif ~}
+reverts AS (
+  SELECT r.number AS revert_number, p.number AS reverted_number
+  FROM prs r
+  JOIN prs p ON p.number <> r.number
+    AND (r.title = CONCAT('Revert "', p.title, '"')
+      OR REGEXP_LIKE(r.title, CONCAT('#', p.number, '([^0-9]|$)')))
+  WHERE r.is_revert
+),
+ship_order AS (
+  SELECT s.id, s.number, d.t,
+    ROW_NUMBER() OVER (PARTITION BY s.number ORDER BY d.t) AS rn
+  FROM ships s JOIN deploys d ON d.id = s.id
+),
+first_ship AS (
+  SELECT id, number, t FROM ship_order WHERE rn = 1
+),
+status AS (
+  SELECT d.id, d.t, d.signal_failed,
+    d.signal_failed OR d.id IN (
+      SELECT f.id FROM reverts v JOIN first_ship f ON f.number = v.reverted_number
+    ) AS failed,
+    d.id IN (
+      SELECT s.id FROM ships s JOIN prs p ON p.number = s.number WHERE NOT p.is_revert
+    ) AS yours,
+    UNIX_TIMESTAMP(d.t) > UNIX_TIMESTAMP() - ${window_seconds} AS in_window
+  FROM deploys d
+),
+-- A failed deploy's PRs ship again in the next successful deploy.
+first_success AS (
+  SELECT f.number, MIN(s.t) AS t
+  FROM first_ship f LEFT JOIN status s ON s.t >= f.t AND NOT s.failed
+  GROUP BY f.number
+),
+%{ if metric == "lead_time" ~}
+samples AS (
+  SELECT TIMESTAMPDIFF(SECOND, p.created_at, fs.t) AS v
+  FROM first_success fs JOIN prs p ON p.number = fs.number
+  WHERE NOT p.is_revert AND fs.t IS NOT NULL
+    AND UNIX_TIMESTAMP(fs.t) > UNIX_TIMESTAMP() - ${window_seconds}
+),
+%{ endif ~}
+%{ if metric == "recovery_time" ~}
+failures AS (
+  SELECT id, t, signal_failed FROM status WHERE failed AND yours AND in_window
+),
+-- A run that fails recovers at the next successful deploy; a deploy failed
+-- by a revert recovers at the first successful deploy shipping the revert.
+recoveries AS (
+  SELECT x.id, x.t, MIN(n.t) AS recovered_at
+  FROM failures x JOIN status n ON n.t > x.t AND NOT n.failed
+  WHERE x.signal_failed
+  GROUP BY x.id, x.t
+  UNION ALL
+  SELECT x.id, x.t, MIN(fs.t)
+  FROM failures x
+  JOIN first_ship f ON f.id = x.id
+  JOIN reverts v ON v.reverted_number = f.number
+  JOIN first_success fs ON fs.number = v.revert_number
+  WHERE NOT x.signal_failed
+  GROUP BY x.id, x.t
+),
+samples AS (
+  SELECT TIMESTAMPDIFF(SECOND, t, recovered_at) AS v
+  FROM recoveries
+  WHERE recovered_at IS NOT NULL
+),
+%{ endif ~}
+%{ if statistic == "bucket" ~}
+buckets AS (
+%{ for bound in buckets ~}
+  SELECT '${bound}' AS le, ${bound} AS bound UNION ALL
+%{ endfor ~}
+  SELECT '+Inf', NULL
+)
+SELECT b.le, COUNT(s.v) AS value
+FROM buckets b LEFT JOIN samples s ON b.bound IS NULL OR s.v <= b.bound
+GROUP BY b.le
+%{ endif ~}
+%{ if statistic == "median" ~}
+ranked AS (
+  SELECT v, ROW_NUMBER() OVER (ORDER BY v) AS rn, COUNT(*) OVER () AS n FROM samples
+)
+SELECT AVG(v) AS value FROM ranked
+WHERE rn IN (FLOOR((n + 1) / 2), CEIL((n + 1) / 2))
+HAVING COUNT(*) > 0
+%{ endif ~}
+%{ if metric == "deploys" ~}
+-- Grafana resolves a table named in a top-level UNION branch as a query, not
+-- a CTE, so the union lives inside one. The zero rows keep both outcomes
+-- reporting when the window has no deploys.
+outcomes AS (
+  SELECT CASE WHEN failed THEN 'failed' ELSE 'succeeded' END AS outcome,
+    CASE WHEN yours AND in_window THEN 1 ELSE 0 END AS counted
+  FROM status
+  UNION ALL SELECT 'failed', 0
+  UNION ALL SELECT 'succeeded', 0
+)
+SELECT outcome, SUM(counted) AS value FROM outcomes GROUP BY outcome
+%{ endif ~}
