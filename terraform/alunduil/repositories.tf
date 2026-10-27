@@ -30,6 +30,7 @@ module "alunduil_infrastructure" {
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
+  allowed_action_patterns = ["devcontainers/ci@*"]
   required_status_checks = {
     ci_results_check = true
     # renovate.json holds back every update that would trigger an apply.
