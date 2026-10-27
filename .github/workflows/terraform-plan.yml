@@ -89,6 +89,14 @@ jobs:
             const plan = fs.readFileSync('terraform/alunduil/plan.txt', 'utf8');
             const m = plan.match(/^(No changes\..+|Plan: .+)$/m);
             const summary = m ? m[0] : 'Plan generated';
+            // GitHub rejects a comment over 65,536 characters; the plan step's
+            // log keeps the whole plan.
+            const limit = 60000;
+            const { owner, repo } = context.repo;
+            const run = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const shown = plan.length > limit
+              ? `${plan.slice(0, limit)}\n… truncated; the full plan is in ${run}`
+              : plan;
             const marker = '<!-- terraform-plan:alunduil -->';
             const body = [
               marker,
@@ -100,7 +108,7 @@ jobs:
               '<summary>Show full plan output</summary>',
               '',
               '```',
-              plan,
+              shown,
               '```',
               '</details>',
             ].join('\n');
