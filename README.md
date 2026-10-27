@@ -20,6 +20,10 @@ Changes reach the `alunduil` environment through CI. Opening a PR runs
 `main` applies it automatically. Review the plan comment before
 approving a merge.
 
+Install the tools CI uses with `mise install`, or open the repository
+in its devcontainer, which runs it for you. Then run `prek install`
+to enable the commit hooks.
+
 The three operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
