@@ -2,7 +2,7 @@
   "apiVersion": "dashboard.grafana.app/v2",
   "kind": "Dashboard",
   "metadata": {
-    "name": "delivery-metrics"
+    "name": "dora"
   },
   "spec": {
     "annotations": [
@@ -48,7 +48,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum(delivery_deploys{repository=~\"$repository\"}) * 7 / 30",
+                        "expr": "sum(dora_deploys{repository=~\"$repository\"}) * 7 / 30",
                         "legendFormat": "Deployment frequency",
                         "range": true
                       },
@@ -116,7 +116,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "histogram_quantile(0.5, sum by (le) (delivery_lead_time_seconds_bucket{repository=~\"$repository\"}))",
+                        "expr": "histogram_quantile(0.5, sum by (le) (dora_lead_time_seconds_bucket{repository=~\"$repository\"}))",
                         "legendFormat": "Lead time for changes",
                         "range": true
                       },
@@ -183,7 +183,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum(delivery_deploys{repository=~\"$repository\", outcome=\"failed\"}) / (sum(delivery_deploys{repository=~\"$repository\"}) > 0)",
+                        "expr": "sum(dora_deploys{repository=~\"$repository\", outcome=\"failed\"}) / (sum(dora_deploys{repository=~\"$repository\"}) > 0)",
                         "legendFormat": "Change failure rate",
                         "range": true
                       },
@@ -253,7 +253,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "histogram_quantile(0.5, sum by (le) (delivery_recovery_time_seconds_bucket{repository=~\"$repository\"}))",
+                        "expr": "histogram_quantile(0.5, sum by (le) (dora_recovery_time_seconds_bucket{repository=~\"$repository\"}))",
                         "legendFormat": "Failed deployment recovery time",
                         "range": true
                       },
@@ -320,7 +320,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum by (repository) (delivery_deploys{repository=~\"$repository\"}) * 7 / 30",
+                        "expr": "sum by (repository) (dora_deploys{repository=~\"$repository\"}) * 7 / 30",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -341,7 +341,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (repository) (delivery_lead_time_median_seconds{repository=~\"$repository\"})",
+                        "expr": "max by (repository) (dora_lead_time_median_seconds{repository=~\"$repository\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -362,7 +362,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum by (repository) (delivery_deploys{repository=~\"$repository\", outcome=\"failed\"}) / (sum by (repository) (delivery_deploys{repository=~\"$repository\"}) > 0)",
+                        "expr": "sum by (repository) (dora_deploys{repository=~\"$repository\", outcome=\"failed\"}) / (sum by (repository) (dora_deploys{repository=~\"$repository\"}) > 0)",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -383,7 +383,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "max by (repository) (delivery_recovery_time_median_seconds{repository=~\"$repository\"})",
+                        "expr": "max by (repository) (dora_recovery_time_median_seconds{repository=~\"$repository\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -606,8 +606,7 @@
     },
     "preload": false,
     "tags": [
-      "dora",
-      "delivery"
+      "dora"
     ],
     "timeSettings": {
       "autoRefresh": "",
@@ -625,7 +624,7 @@
       "timezone": "browser",
       "to": "now"
     },
-    "title": "Delivery Metrics",
+    "title": "DORA metrics",
     "variables": [
       {
         "kind": "QueryVariable",
@@ -636,7 +635,7 @@
             "text": "All",
             "value": "$__all"
           },
-          "definition": "label_values(delivery_deploys, repository)",
+          "definition": "label_values(dora_deploys, repository)",
           "description": "Repositories to pool into the four stats.",
           "hide": "dontHide",
           "includeAll": true,
@@ -652,7 +651,7 @@
             "kind": "DataQuery",
             "spec": {
               "qryType": 1,
-              "query": "label_values(delivery_deploys, repository)",
+              "query": "label_values(dora_deploys, repository)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "version": "v0"

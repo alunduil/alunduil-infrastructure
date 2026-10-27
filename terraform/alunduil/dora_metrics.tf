@@ -8,16 +8,16 @@
 # evaluation timeout.
 
 locals {
-  delivery_window_seconds = 30 * 86400
+  dora_window_seconds = 30 * 86400
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
-  delivery_short_lookback_seconds = local.delivery_window_seconds + 86400
-  delivery_long_lookback_seconds  = 2 * 365 * 86400
+  dora_short_lookback_seconds = local.dora_window_seconds + 86400
+  dora_long_lookback_seconds  = 2 * 365 * 86400
 
   # Workflow and filter per the doc's Repositories table. An empty event
   # matches any event.
-  delivery_repositories = {
+  dora_repositories = {
     "alunduil-infrastructure" = { class = "run", workflow = "terraform-apply.yml", branch = "main", event = "" }
     "blog.alunduil.com"       = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
     "collection-json.hs"      = { class = "run", workflow = "release.yml", branch = "", event = "workflow_dispatch" }
@@ -29,7 +29,7 @@ locals {
     "alunduil-chezmoi"        = { class = "merge", workflow = "", branch = "", event = "" }
   }
 
-  delivery_metrics = {
+  dora_metrics = {
     deploys                      = { metric = "deploys", statistic = "" }
     lead_time_seconds_bucket     = { metric = "lead_time", statistic = "bucket" }
     lead_time_median_seconds     = { metric = "lead_time", statistic = "median" }
@@ -38,24 +38,24 @@ locals {
   }
 
   # The dashboard's pooled medians interpolate within these.
-  delivery_time_buckets_seconds = [
+  dora_time_buckets_seconds = [
     300, 900, 1800, 3600, 7200, 14400, 28800,
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  delivery_targets = {
-    for name, repo in local.delivery_repositories : name => merge(repo, {
+  dora_targets = {
+    for name, repo in local.dora_repositories : name => merge(repo, {
       ships_by_commit = repo.class == "run" && contains(["", "push"], repo.event)
       lookback_seconds = (
         repo.class == "merge" || contains(["", "push"], repo.event)
-        ? local.delivery_short_lookback_seconds
-        : local.delivery_long_lookback_seconds
+        ? local.dora_short_lookback_seconds
+        : local.dora_long_lookback_seconds
       )
     })
   }
 
-  delivery_queries = {
-    for name, repo in local.delivery_targets : name => concat(
+  dora_queries = {
+    for name, repo in local.dora_targets : name => concat(
       repo.class == "run" ? [{
         ref_id     = "R"
         query_type = "Workflow_Runs"
@@ -81,32 +81,32 @@ locals {
   }
 }
 
-resource "grafana_folder" "delivery" {
-  title = "Delivery metrics"
-  uid   = "delivery-metrics"
+resource "grafana_folder" "dora" {
+  title = "DORA metrics"
+  uid   = "dora-metrics"
 }
 
-resource "grafana_rule_group" "delivery" {
-  for_each = local.delivery_targets
+resource "grafana_rule_group" "dora" {
+  for_each = local.dora_targets
 
   name             = each.key
-  folder_uid       = grafana_folder.delivery.uid
+  folder_uid       = grafana_folder.dora.uid
   interval_seconds = 3600
 
   dynamic "rule" {
-    for_each = local.delivery_metrics
+    for_each = local.dora_metrics
 
     content {
       name   = "${each.key} ${rule.key}"
       labels = { repository = each.key }
 
       record {
-        metric = "delivery_${rule.key}"
+        metric = "dora_${rule.key}"
         from   = "OUT"
       }
 
       dynamic "data" {
-        for_each = local.delivery_queries[each.key]
+        for_each = local.dora_queries[each.key]
 
         content {
           ref_id         = data.value.ref_id
@@ -131,7 +131,7 @@ resource "grafana_rule_group" "delivery" {
         ref_id         = "OUT"
         datasource_uid = "__expr__"
         relative_time_range {
-          from = local.delivery_window_seconds
+          from = local.dora_window_seconds
           to   = 0
         }
         model = jsonencode({
@@ -141,14 +141,14 @@ resource "grafana_rule_group" "delivery" {
           # Each row becomes a series: the numeric column its value, the
           # string columns its labels.
           format = "alerting"
-          expression = templatefile("${path.module}/delivery-metrics.sql.tftpl", {
+          expression = templatefile("${path.module}/dora-metrics.sql.tftpl", {
             class           = each.value.class
             event           = each.value.event
             ships_by_commit = each.value.ships_by_commit
             metric          = rule.value.metric
             statistic       = rule.value.statistic
-            window_seconds  = local.delivery_window_seconds
-            buckets         = local.delivery_time_buckets_seconds
+            window_seconds  = local.dora_window_seconds
+            buckets         = local.dora_time_buckets_seconds
           })
         })
       }

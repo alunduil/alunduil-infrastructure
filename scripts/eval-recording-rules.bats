@@ -52,7 +52,7 @@ plan() {
   printf '%s\n' "$@" | jq -s '{resource_changes: .}'
 }
 
-RECORD='[{"from": "OUT", "metric": "delivery_deploys"}]'
+RECORD='[{"from": "OUT", "metric": "dora_deploys"}]'
 
 @test "recording_rule_requests emits each created or updated recording rule" {
   run recording_rule_requests <<<"$(plan \

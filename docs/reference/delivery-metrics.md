@@ -172,20 +172,20 @@ The recording rules write these series to the `grafanacloud-prom` data
 source, one set per repository with a deploy class. Each series carries
 a `repository` label.
 
-`delivery_deploys`
+`dora_deploys`
 : Your deploys in the window. The `outcome` label is `succeeded` or
   `failed`.
 
-`delivery_lead_time_median_seconds`
+`dora_lead_time_median_seconds`
 : Median lead time for changes.
 
-`delivery_lead_time_seconds_bucket`
+`dora_lead_time_seconds_bucket`
 : Your PRs with a lead time of at most `le` seconds.
 
-`delivery_recovery_time_median_seconds`
+`dora_recovery_time_median_seconds`
 : Median failed deployment recovery time.
 
-`delivery_recovery_time_seconds_bucket`
+`dora_recovery_time_seconds_bucket`
 : Your failed deploys recovered within `le` seconds.
 
 A median series is absent while the window has nothing to measure.
