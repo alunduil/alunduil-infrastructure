@@ -27,14 +27,6 @@
     {
       "customType": "regex",
       "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
-      "matchStrings": ["terraform_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
-      "depNameTemplate": "hashicorp/terraform",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
       "matchStrings": ["prek-version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
       "depNameTemplate": "j178/prek",
       "datasourceTemplate": "github-releases",
@@ -72,7 +64,9 @@
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
         ".github/actions/terraform-providers/**",
-        "scripts/export-terraform-credentials.sh"
+        "scripts/export-terraform-credentials.sh",
+        "mise.toml",
+        "mise.lock"
       ],
       "automerge": false
     }

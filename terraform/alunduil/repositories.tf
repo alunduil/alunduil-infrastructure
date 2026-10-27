@@ -30,11 +30,6 @@ module "alunduil_infrastructure" {
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
-  # setup-crate is nested in setup-just.
-  allowed_action_patterns = [
-    "extractions/setup-crate@*",
-    "extractions/setup-just@*",
-  ]
   required_status_checks = {
     ci_results_check = true
     # renovate.json holds back every update that would trigger an apply.
