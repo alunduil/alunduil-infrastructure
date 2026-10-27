@@ -20,14 +20,17 @@ Out of scope:
 ## Terms
 
 Window
-: The dashboard's time range, 30 days by default. A metric counts an
-  event when the event's end timestamp falls inside the window.
+: The 30 days before each hourly evaluation of the DORA recording
+  rules. A metric counts an event when the event's end timestamp falls
+  inside the window. The dashboard plots one window per evaluation, so
+  its time range picks which windows to show.
 
 Selection
 : The repositories the dashboard's repository variable selects, all by
-  default. Counts sum across the selection. Medians, means and ratios
-  pool the selection's events rather than combining per-repository
-  values.
+  default. Counts sum across the selection, and the change failure rate
+  divides the summed counts. The DORA medians pool the selection's
+  events through cumulative histogram buckets, so they interpolate
+  within a bucket; each repository's own median is exact.
 
 Weekly rate
 : A count of events in the window, divided by the window length in
@@ -160,6 +163,33 @@ The next successful deploy is the first later successful deploy in the
 same repository. For a deploy failed by a revert PR, it's the first
 successful deploy that ships the revert PR. A failed deploy with no
 later successful deploy is excluded until one exists.
+
+### Recorded metrics
+
+The recording rules write these series to the `grafanacloud-prom` data
+source, one set per repository with a deploy class. Each series carries
+a `repository` label.
+
+`delivery_deploys`
+: Your deploys in the window. The `outcome` label is `succeeded` or
+  `failed`.
+
+`delivery_lead_time_median_seconds`
+: Median lead time for changes.
+
+`delivery_lead_time_seconds_bucket`
+: Your PRs with a lead time of at most `le` seconds.
+
+`delivery_recovery_time_median_seconds`
+: Median failed deployment recovery time.
+
+`delivery_recovery_time_seconds_bucket`
+: Your failed deploys recovered within `le` seconds.
+
+A median series is absent while the window has nothing to measure.
+
+A release, `release` run or `workflow_dispatch` run looks back at most
+two years for the previous deploy and the PRs it ships.
 
 ## SPACE metrics
 
