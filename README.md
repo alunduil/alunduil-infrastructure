@@ -36,6 +36,7 @@ Supporting how-tos:
 - [docs/how-to/create-deployer-github-app.md](docs/how-to/create-deployer-github-app.md)
 - [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
+- [docs/how-to/create-grafana-github-app.md](docs/how-to/create-grafana-github-app.md)
 - [docs/how-to/connect-grafana-to-gcp.md](docs/how-to/connect-grafana-to-gcp.md)
 - [docs/how-to/create-tailscale-trust-credential.md](docs/how-to/create-tailscale-trust-credential.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)

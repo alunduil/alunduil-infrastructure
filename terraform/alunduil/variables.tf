@@ -39,6 +39,18 @@ variable "grafana_git_sync_app_installation_id" {
   description = "Installation ID of the Git Sync GitHub App on alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_installation_id."
 }
 
+# Not secret. The App's private key never reaches this layer; see
+# terraform/alunduil/grafana_github.tf.
+variable "grafana_github_app_id" {
+  type        = string
+  description = "App ID of the read-only GitHub App behind the Grafana GitHub data source. Export as TF_VAR_grafana_github_app_id."
+}
+
+variable "grafana_github_app_installation_id" {
+  type        = string
+  description = "Installation ID of the Grafana GitHub data source App on the alunduil account. Export as TF_VAR_grafana_github_app_installation_id."
+}
+
 # Left unmarked: a caller holding the id still needs an OIDC token matching the
 # credential's issuer, subject, and audience rules.
 variable "tailscale_client_id" {

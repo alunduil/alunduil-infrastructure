@@ -20,6 +20,8 @@ scratch or rotating the core credentials.
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
 - The hook-fix GitHub App created and installed—see
   [create-hook-fix-github-app.md](create-hook-fix-github-app.md).
+- The Grafana GitHub data source App created and installed—see
+  [create-grafana-github-app.md](create-grafana-github-app.md).
 - Two Tailscale trust credentials—see
   [create-tailscale-trust-credential.md](create-tailscale-trust-credential.md).
 - `gh` authenticated with the `project` scope: `gh auth refresh -s project`.
@@ -44,6 +46,12 @@ Set `GIT_SYNC_APP_ID`, `GIT_SYNC_APP_INSTALLATION_ID`, and
 `GIT_SYNC_APP_PRIVATE_KEY_FILE` to answer without the prompt, or press
 Enter at each to defer until the App exists. To replace a stored key, see
 [rotate-git-sync-app-key.md](rotate-git-sync-app-key.md).
+
+It then prompts for the Grafana GitHub data source App's ID, installation
+ID, and private key. Later runs prompt only for an empty one. Set
+`GRAFANA_GITHUB_APP_ID`, `GRAFANA_GITHUB_APP_INSTALLATION_ID`, and
+`GRAFANA_GITHUB_APP_PRIVATE_KEY_FILE` to answer without the prompts, or
+press Enter at each to defer until the App exists.
 
 It then prompts the same way for the two Tailscale trust credential client
 IDs, read-only for plan and read-write for apply. Set
