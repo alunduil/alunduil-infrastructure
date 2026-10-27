@@ -27,16 +27,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up prek, Terraform, and just
+      - name: Set up Terraform and just
         uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          install_args: prek terraform just
+          install_args: terraform just
 
       - name: Set up Terraform providers
         uses: ./.github/actions/terraform-providers
 
       - name: Run pre-commit hooks
-        run: prek run --all-files --show-diff-on-failure
+        uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+        with:
+          prek-version: '0.5.7'
         env:
           # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
