@@ -47,7 +47,7 @@ locals {
     for name, repo in local.dora_repositories : name => merge(repo, {
       ships_by_commit = repo.class == "run" && contains(["", "push"], repo.event)
       lookback_seconds = (
-        repo.class == "merge" || contains(["", "push"], repo.event)
+        repo.class == "merge" || (repo.class == "run" && contains(["", "push"], repo.event))
         ? local.dora_short_lookback_seconds
         : local.dora_long_lookback_seconds
       )
