@@ -8,4 +8,5 @@ lockfile_platforms = ["linux-x64"]
 [tools]
 bats = "1.14.0"
 just = "1.59.0"
+prek = "0.5.7"
 terraform = "1.17.0"
