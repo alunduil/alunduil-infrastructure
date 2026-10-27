@@ -330,6 +330,7 @@ locals {
     "haskell-actions/setup@*",
     "j178/prek-action@*",
     "JasonEtco/create-an-issue@*",
+    "jdx/mise-action@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
     "pnpm/action-setup@*",
