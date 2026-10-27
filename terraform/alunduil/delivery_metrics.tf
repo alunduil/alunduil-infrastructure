@@ -47,38 +47,43 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
+  # A push run ships the PR whose commit it ran on; every other deploy ships a
+  # range of merged PRs.
+  delivery_targets = {
+    for name, repo in local.delivery_repositories : name => merge(repo, {
+      ships_by_commit = repo.class == "run" && contains(["", "push"], repo.event)
+      lookback_seconds = (
+        repo.class == "merge" || contains(["", "push"], repo.event)
+        ? local.delivery_short_lookback_seconds
+        : local.delivery_long_lookback_seconds
+      )
+    })
+  }
+
   delivery_queries = {
-    for name, repo in local.delivery_repositories : name => [
-      for query in [
-        repo.class == "run" ? {
-          ref_id     = "R"
-          query_type = "Workflow_Runs"
-          options    = { workflow = repo.workflow, branch = repo.branch }
-        } : null,
-        repo.class == "release" ? {
-          ref_id     = "R"
-          query_type = "Releases"
-          options    = {}
-        } : null,
-        repo.class == "run" && contains(["", "push"], repo.event) ? {
-          ref_id     = "C"
-          query_type = "Commits"
-          options    = { gitRef = "main" }
-        } : null,
-        {
-          ref_id     = "P"
-          query_type = "Pull_Requests"
-          # timeField 2 searches by merged_at.
-          options = { timeField = 2, query = "is:merged author:alunduil" }
-        },
-        ] : merge(query, {
-          from = (
-            repo.class == "merge" || contains(["", "push"], repo.event)
-            ? local.delivery_short_lookback_seconds
-            : local.delivery_long_lookback_seconds
-          )
-      }) if query != null
-    ]
+    for name, repo in local.delivery_targets : name => concat(
+      repo.class == "run" ? [{
+        ref_id     = "R"
+        query_type = "Workflow_Runs"
+        options    = { workflow = repo.workflow, branch = repo.branch }
+      }] : [],
+      repo.class == "release" ? [{
+        ref_id     = "R"
+        query_type = "Releases"
+        options    = {}
+      }] : [],
+      repo.ships_by_commit ? [{
+        ref_id     = "C"
+        query_type = "Commits"
+        options    = { gitRef = "main" }
+      }] : [],
+      [{
+        ref_id     = "P"
+        query_type = "Pull_Requests"
+        # timeField 2 searches by merged_at.
+        options = { timeField = 2, query = "is:merged author:alunduil" }
+      }],
+    )
   }
 }
 
@@ -88,7 +93,7 @@ resource "grafana_folder" "delivery" {
 }
 
 resource "grafana_rule_group" "delivery" {
-  for_each = local.delivery_repositories
+  for_each = local.delivery_targets
 
   name             = each.key
   folder_uid       = grafana_folder.delivery.uid
@@ -114,7 +119,7 @@ resource "grafana_rule_group" "delivery" {
           query_type     = data.value.query_type
           datasource_uid = grafana_data_source.github.uid
           relative_time_range {
-            from = data.value.from
+            from = each.value.lookback_seconds
             to   = 0
           }
           model = jsonencode({
@@ -143,13 +148,13 @@ resource "grafana_rule_group" "delivery" {
           # string columns its labels.
           format = "alerting"
           expression = templatefile("${path.module}/delivery-metrics.sql.tftpl", {
-            class          = each.value.class
-            event          = each.value.event
-            commits        = each.value.class == "run" && contains(["", "push"], each.value.event)
-            metric         = rule.value.metric
-            statistic      = rule.value.statistic
-            window_seconds = local.delivery_window_seconds
-            buckets        = local.delivery_time_buckets_seconds
+            class           = each.value.class
+            event           = each.value.event
+            ships_by_commit = each.value.ships_by_commit
+            metric          = rule.value.metric
+            statistic       = rule.value.statistic
+            window_seconds  = local.delivery_window_seconds
+            buckets         = local.delivery_time_buckets_seconds
           })
         })
       }

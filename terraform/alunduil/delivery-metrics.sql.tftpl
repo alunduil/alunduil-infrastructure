@@ -38,7 +38,7 @@ ships AS (
   SELECT id, id AS number FROM deploys
 ),
 %{ else ~}
-%{ if commits ~}
+%{ if ships_by_commit ~}
 -- A squash merge ends its subject with (#N); a merge commit starts with
 -- "Merge pull request #N".
 pr_commits AS (
@@ -49,13 +49,13 @@ pr_commits AS (
   FROM (SELECT id, SUBSTRING_INDEX(message, '\n', 1) AS subject FROM C) c
 ),
 %{ endif ~}
-previous AS (
+previous_success AS (
   SELECT d.id,
     (SELECT MAX(e.t) FROM deploys e WHERE e.t < d.t AND NOT e.signal_failed) AS t
   FROM deploys d
 ),
 ships AS (
-%{ if commits ~}
+%{ if ships_by_commit ~}
   SELECT d.id, c.number
   FROM deploys d JOIN pr_commits c ON c.sha = d.head_sha
   WHERE d.event = 'push'
@@ -63,7 +63,7 @@ ships AS (
 %{ endif ~}
   SELECT d.id, p.number
   FROM deploys d
-  JOIN previous v ON v.id = d.id
+  JOIN previous_success v ON v.id = d.id
   JOIN prs p ON p.merged_at <= d.t AND (v.t IS NULL OR p.merged_at > v.t)
   WHERE d.event <> 'push'
 ),
