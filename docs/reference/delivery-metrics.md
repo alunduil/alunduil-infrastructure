@@ -4,16 +4,12 @@
 # Delivery metrics
 
 Definitions of the DORA and SPACE metrics the Grafana dashboards show,
-each stated as the GitHub events and fields it reads. The dashboards,
-and any hand count checking them, compute every metric the way this
-page defines it.
+each stated as the GitHub events and fields it reads.
 
 ## Scope
 
 Covers repositories owned by `alunduil` that aren't archived or forks.
-Each metric reads GitHub through the Grafana GitHub data source,
-authenticated as a GitHub App. An App installation has its own GraphQL
-rate limit, separate from the `alunduil` account's.
+Query names are the Grafana GitHub data source's query types.
 
 Out of scope:
 
@@ -43,9 +39,8 @@ PR commit
   `Merge pull request #N` for a merge commit.
 
 Deploy
-: The event that puts a change where its users get it. Each
-  repository's [deploy class](#deploy-classes) defines its deploys, the
-  time each one happens, and the PRs each one ships.
+: The event that puts a change where its users get it, defined per
+  repository by its [deploy class](#deploy-classes).
 
 Your deploy
 : A deploy that ships at least one of your PRs. A deploy that ships
@@ -119,13 +114,12 @@ Any other repository in scope has no deploy.
 
 Filter notes:
 
-- `blog.alunduil.com`: `CD` also runs on a schedule, rebuilding the
-  site without a change. The `push` filter excludes those runs.
-- `collection-json.hs`: a `release` event uploads a Hackage candidate.
-  The `workflow_dispatch` run publishes to Hackage.
-- `woodland-generators`: `Release` runs on every push to `main` and
-  publishes only when release-please cuts a release, so the release
-  itself is the deploy.
+- `blog.alunduil.com`: scheduled `CD` runs rebuild without a change and
+  aren't deploys.
+- `collection-json.hs`: `release` runs upload a Hackage candidate and
+  aren't deploys.
+- `woodland-generators`: count releases, not `Release` runs, which run
+  on every push.
 
 ## DORA metrics
 
@@ -172,9 +166,8 @@ Mean score of check-in issues closed in the window. Issues query,
 fields `labels` and `closed_at`.
 
 A check-in issue carries its score as exactly one label from
-`satisfaction-1` to `satisfaction-5`. The Issues query returns labels
-but not issue bodies. A check-in issue closed without a score label
-doesn't count.
+`satisfaction-1` to `satisfaction-5`. A check-in issue closed without
+a score label doesn't count.
 
 ### Performance: PR merge rate
 
@@ -210,15 +203,13 @@ one week. Replace the dates and repository name.
 - Your merged PRs:
 
   ```text
-  is:pr author:alunduil is:merged merged:2026-10-19..2026-10-25
-  repo:alunduil/alunduil-infrastructure
+  is:pr author:alunduil is:merged merged:2026-10-19..2026-10-25 repo:alunduil/alunduil-infrastructure
   ```
 
 - Your PRs closed without merging:
 
   ```text
-  is:pr author:alunduil is:unmerged closed:2026-10-19..2026-10-25
-  repo:alunduil/alunduil-infrastructure
+  is:pr author:alunduil is:unmerged closed:2026-10-19..2026-10-25 repo:alunduil/alunduil-infrastructure
   ```
 
 - Revert PRs:
@@ -230,8 +221,5 @@ one week. Replace the dates and repository name.
 - Reviews given, then each PR's conversation tab for review dates:
 
   ```text
-  is:pr reviewed-by:alunduil -author:alunduil user:alunduil
-  updated:2026-10-19..2026-10-25
+  is:pr reviewed-by:alunduil -author:alunduil user:alunduil updated:2026-10-19..2026-10-25
   ```
-
-Enter each search on one line; the line break above is for width.
