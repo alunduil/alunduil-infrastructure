@@ -20,6 +20,10 @@ Changes reach the `alunduil` environment through CI. Opening a PR runs
 `main` applies it automatically. Review the plan comment before
 approving a merge.
 
+Install the tools CI uses with `mise install`, or open the repository
+in its devcontainer, which runs it for you. Then run `prek install`
+to enable the commit hooks.
+
 The three operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
@@ -36,6 +40,7 @@ Supporting how-tos:
 - [docs/how-to/create-deployer-github-app.md](docs/how-to/create-deployer-github-app.md)
 - [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
+- [docs/how-to/create-grafana-github-app.md](docs/how-to/create-grafana-github-app.md)
 - [docs/how-to/connect-grafana-to-gcp.md](docs/how-to/connect-grafana-to-gcp.md)
 - [docs/how-to/create-tailscale-trust-credential.md](docs/how-to/create-tailscale-trust-credential.md)
 - [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
@@ -44,6 +49,10 @@ Supporting how-tos:
 Estate assets, trust levels, entry points, and credentials:
 
 - [docs/reference/asset-register.md](docs/reference/asset-register.md)
+
+DORA and SPACE metric definitions against GitHub data:
+
+- [docs/reference/delivery-metrics.md](docs/reference/delivery-metrics.md)
 
 ## Support and contributions
 

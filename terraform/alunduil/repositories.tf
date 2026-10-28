@@ -7,7 +7,6 @@ module "alunduil_chezmoi" {
   description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
   topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
 
-  allowed_action_patterns = ["jdx/mise-action@*"]
   required_status_checks = {
     contexts = [
       "Run pre-commit hooks",
@@ -31,11 +30,7 @@ module "alunduil_infrastructure" {
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }
-  # setup-crate is nested in setup-just.
-  allowed_action_patterns = [
-    "extractions/setup-crate@*",
-    "extractions/setup-just@*",
-  ]
+  allowed_action_patterns = ["devcontainers/ci@*"]
   required_status_checks = {
     ci_results_check = true
     # renovate.json holds back every update that would trigger an apply.

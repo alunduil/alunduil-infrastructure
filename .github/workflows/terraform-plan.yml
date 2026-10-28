@@ -12,6 +12,9 @@ on:
       - '.github/workflows/terraform-plan.yml'
       - '.github/actions/terraform-providers/**'
       - 'scripts/export-terraform-credentials.sh'
+      - 'scripts/eval-recording-rules.sh'
+      - 'mise.toml'
+      - 'mise.lock'
 
 permissions:
   contents: read
@@ -40,9 +43,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
         with:
-          terraform_version: '1.17.0'
+          install_args: terraform
 
       - uses: ./.github/actions/terraform-providers
 
@@ -86,6 +89,14 @@ jobs:
             const plan = fs.readFileSync('terraform/alunduil/plan.txt', 'utf8');
             const m = plan.match(/^(No changes\..+|Plan: .+)$/m);
             const summary = m ? m[0] : 'Plan generated';
+            // GitHub rejects a comment over 65,536 characters; the plan step's
+            // log keeps the whole plan.
+            const limit = 60000;
+            const { owner, repo } = context.repo;
+            const run = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const shown = plan.length > limit
+              ? `${plan.slice(0, limit)}\n… truncated; the full plan is in ${run}`
+              : plan;
             const marker = '<!-- terraform-plan:alunduil -->';
             const body = [
               marker,
@@ -97,7 +108,7 @@ jobs:
               '<summary>Show full plan output</summary>',
               '',
               '```',
-              plan,
+              shown,
               '```',
               '</details>',
             ].join('\n');
@@ -119,3 +130,9 @@ jobs:
                 body,
               });
             }
+
+      - name: Evaluate planned recording rules
+        working-directory: terraform/alunduil
+        run: |
+          terraform show -json tfplan > plan.json
+          ../../scripts/eval-recording-rules.sh plan.json

@@ -5,6 +5,7 @@
 *.json
 !*example*.json
 !renovate.json
+!.devcontainer/devcontainer.json
 !github/projects/*.json
 !grafana/*.json
 

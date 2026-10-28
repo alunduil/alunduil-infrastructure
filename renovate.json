@@ -23,28 +23,17 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
       ]
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
-      "matchStrings": ["terraform_version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
-      "depNameTemplate": "hashicorp/terraform",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/.*\\.ya?ml$/"],
-      "matchStrings": ["prek-version:\\s*['\"]?(?<currentValue>[\\d.]+)['\"]?"],
-      "depNameTemplate": "j178/prek",
-      "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
     {
       "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
       "groupName": "reuse"
+    },
+    {
+      "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
+      "matchDepNames": ["prek"],
+      "groupName": "prek"
     },
     {
       "description": "Update types with no release timestamp can never satisfy the bake, and internalChecksFilter defaults to strict, so without this they stall on a pending renovate/stability-days check forever",
@@ -72,7 +61,9 @@
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
         ".github/actions/terraform-providers/**",
-        "scripts/export-terraform-credentials.sh"
+        "scripts/export-terraform-credentials.sh",
+        "mise.toml",
+        "mise.lock"
       ],
       "automerge": false
     }

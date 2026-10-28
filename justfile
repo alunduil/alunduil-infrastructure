@@ -10,6 +10,7 @@ bootstrap: && configure-hook-fix projects
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
     scripts/configure-git-sync-secrets.sh
+    scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-github-secrets.sh
 
@@ -44,6 +45,8 @@ alunduil:
     export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
     export_secret TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
     export_secret TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id
+    export_secret TF_VAR_grafana_github_app_id grafana-github-app-id
+    export_secret TF_VAR_grafana_github_app_installation_id grafana-github-app-installation-id
     # No runner here to mint an OIDC token, so the operator supplies one.
     export_secret TF_VAR_tailscale_client_id tailscale-client-id-rw
     TF_VAR_tailscale_identity_token="${TAILSCALE_IDENTITY_TOKEN:?set to an OIDC token the tailnet trusts; see docs/how-to/create-tailscale-trust-credential.md}"
