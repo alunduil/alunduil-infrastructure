@@ -129,6 +129,9 @@ module "renovate_config" {
   name        = "renovate-config"
   description = "Extend this from any repo's renovate.json to inherit the shared Renovate policy."
   topics      = ["renovate", "renovate-config", "dependency-management"]
+  required_status_checks = {
+    contexts = ["Run pre-commit hooks"]
+  }
 }
 
 import {
