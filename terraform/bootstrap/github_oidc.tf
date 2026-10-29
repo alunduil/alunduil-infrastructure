@@ -44,10 +44,10 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository_owner" = "assertion.repository_owner"
     "attribute.environment"      = "assertion.environment"
     "attribute.ref"              = "assertion.ref"
-    "attribute.deployer"         = "assertion.job_workflow_ref in ${jsonencode(local.deployer_rw_workflow_refs)} ? 'rw' : 'none'"
+    "attribute.deployer"         = "assertion.job_workflow_ref in ${jsonencode(local.deployer_rw_workflow_refs)} ? '${local.deployer_rw}' : 'none'"
   }
 
-  attribute_condition = "assertion.repository == 'alunduil/alunduil-infrastructure'"
+  attribute_condition = "assertion.repository == '${local.repository}'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -57,13 +57,19 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 # Every job on main can request an OIDC token, so the RW deployer binds on the
 # workflow that requested it rather than the ref. job_workflow_ref carries the
 # repository, file, and ref.
+#
+# The provider's mapping and condition have to agree with the bindings below,
+# and a disagreement between them fails the exchange silently.
 locals {
   wif_pool_prefix = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools"
 
+  repository  = "alunduil/alunduil-infrastructure"
+  deployer_rw = "rw"
+
   deployer_rw_workflow_refs = [
-    "alunduil/alunduil-infrastructure/.github/workflows/terraform-apply.yml@refs/heads/main",
+    "${local.repository}/.github/workflows/terraform-apply.yml@refs/heads/main",
   ]
 
-  wif_principal             = "${local.wif_pool_prefix}/github/attribute.repository/alunduil/alunduil-infrastructure"
-  wif_principal_deployer_rw = "${local.wif_pool_prefix}/github/attribute.deployer/rw"
+  wif_principal             = "${local.wif_pool_prefix}/github/attribute.repository/${local.repository}"
+  wif_principal_deployer_rw = "${local.wif_pool_prefix}/github/attribute.deployer/${local.deployer_rw}"
 }
