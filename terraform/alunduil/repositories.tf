@@ -86,8 +86,6 @@ module "git_worktree_poi" {
   name        = "git-worktree-poi"
   description = "Prune git worktrees whose branch has merged or whose upstream is gone, and report what's left in a gh-poi-style summary. Reach for it when a worktree-per-branch workflow leaves stale checkouts behind; run it by hand or on a systemd timer."
   topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
-
-  allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
 module "network_arbitrary" {
@@ -200,8 +198,6 @@ module "zellij_claude_pair" {
   name        = "zellij-claude-pair"
   description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
-
-  allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
 module "zfs_replicate" {
