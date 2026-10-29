@@ -6,7 +6,7 @@
 # own App's ID and key and no other, so a pull request's plan, which runs the
 # workflow the pull request supplies, never reaches a write key.
 locals {
-  deployer_github_app_secrets = {
+  deployer_github_app_readers = {
     for pair in setproduct(["deployer-github-app-id", "deployer-github-app-private-key"], keys(local.deployers)) :
     "${pair[0]}-${pair[1]}" => pair[1]
   }
@@ -15,7 +15,7 @@ locals {
 # Empty shells. scripts/configure-deployer-github-secrets.sh adds the versions
 # after this layer applies, so the private keys never reach this layer's state.
 resource "google_secret_manager_secret" "deployer_github_app" {
-  for_each = local.deployer_github_app_secrets
+  for_each = local.deployer_github_app_readers
 
   project   = google_project.env.project_id
   secret_id = each.key
@@ -28,7 +28,7 @@ resource "google_secret_manager_secret" "deployer_github_app" {
 }
 
 resource "google_secret_manager_secret_iam_member" "deployer_github_app" {
-  for_each = local.deployer_github_app_secrets
+  for_each = local.deployer_github_app_readers
 
   project   = google_secret_manager_secret.deployer_github_app[each.key].project
   secret_id = google_secret_manager_secret.deployer_github_app[each.key].secret_id

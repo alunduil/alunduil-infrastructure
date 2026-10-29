@@ -17,16 +17,21 @@ command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
 # The two Apps differ only by their permissions, so each pair of prompts names
 # its App. Swapping them hands plan the write key.
-APP_NAME="alunduil-infra-deployer-ro"
-ensure_secret deployer-github-app-id-ro "${APP_NAME} App ID" \
-  "${DEPLOYER_GITHUB_APP_ID_RO:-}" check_digits
-ensure_secret deployer-github-app-private-key-ro "Path to the ${APP_NAME} private key .pem" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" read_private_key
+#
+# The locals shadow the globals lib/app-secrets.sh reads, so each App gets its
+# own name and its own once-only pointer.
+configure_app() {
+  local role="$1" id="$2" key_file="$3"
+  # shellcheck disable=SC2034 # read by lib/app-secrets.sh
+  local APP_NAME="$4" pointer_shown=""
 
-APP_NAME="alunduil-infra-deployer"
-# shellcheck disable=SC2034 # read by lib/app-secrets.sh
-pointer_shown=""
-ensure_secret deployer-github-app-id-rw "${APP_NAME} App ID" \
-  "${DEPLOYER_GITHUB_APP_ID_RW:-}" check_digits
-ensure_secret deployer-github-app-private-key-rw "Path to the ${APP_NAME} private key .pem" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" read_private_key
+  ensure_secret "deployer-github-app-id-${role}" "${APP_NAME} App ID" \
+    "${id}" check_digits
+  ensure_secret "deployer-github-app-private-key-${role}" \
+    "Path to the ${APP_NAME} private key .pem" "${key_file}" read_private_key
+}
+
+configure_app ro "${DEPLOYER_GITHUB_APP_ID_RO:-}" \
+  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-infra-deployer-ro
+configure_app rw "${DEPLOYER_GITHUB_APP_ID_RW:-}" \
+  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-infra-deployer

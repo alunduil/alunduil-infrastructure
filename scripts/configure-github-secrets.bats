@@ -4,10 +4,10 @@
 #
 # Unit tests for the sourceable helpers in configure-github-secrets.sh: the
 # needs_token_prompt precedence, the resolve_project_sync_token value/__KEEP__
-# handling, and the command set_secret builds against a stubbed gh. The paths that reach the
-# network or prompt (terraform, real gh, interactive read) are not
-# exercised — they're covered by running the script against the live repo,
-# which alunduil performs out-of-band.
+# handling, and the command set_secret builds against a stubbed gh. The paths
+# that reach the network or prompt (terraform, real gh, interactive read) are
+# not exercised — they're covered by running the script against the live
+# repo, which alunduil performs out-of-band.
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
