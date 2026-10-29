@@ -50,6 +50,9 @@ module "blog_alunduil_com" {
     https_enforced = true
   }
   allowed_action_patterns = ["withastro/action@*"]
+  # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
+  # non-owner pull request but Renovate's.
+  require_code_owner_review = true
   required_status_checks = {
     contexts = [
       "Test skill scripts",
@@ -58,6 +61,7 @@ module "blog_alunduil_com" {
       "Run pre-commit hooks",
       "Review dependencies",
     ]
+    renovate_automerge = true
   }
   # Deviates from the baseline (squash only). The AstroPaper theme syncs by
   # merging upstream, and each sync diffs against the upstream parent that only
