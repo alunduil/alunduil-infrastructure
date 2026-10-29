@@ -31,7 +31,7 @@ resource "google_secret_manager_secret" "hook_fix_app" {
 }
 
 # Its own pool. principalSet paths are pool-scoped, so no `github` binding can
-# match a token from a calling repository, whatever attribute it binds on.
+# match a calling repository's token.
 resource "google_iam_workload_identity_pool" "hook_fix" {
   project                   = google_project.env.project_id
   workload_identity_pool_id = "hook-fix"

@@ -53,12 +53,11 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 }
 
-# Every job on main can request an OIDC token, so the RW deployer binds on the
-# workflow that requested it rather than the ref. job_workflow_ref carries the
-# repository, file, and ref.
+# Any job in this repository can request an OIDC token, so the RW deployer
+# binds on job_workflow_ref, which names the repository, workflow file, and ref.
 #
-# The provider's mapping and condition have to agree with the bindings below,
-# and a disagreement between them fails the exchange silently.
+# The bindings must match the provider's mapping and condition. A mismatch
+# fails the exchange silently.
 locals {
   wif_pool_prefix = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools"
 

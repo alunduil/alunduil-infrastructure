@@ -54,8 +54,7 @@ locals {
 }
 
 # Its own pool, not another provider in `github`. principalSet paths are
-# pool-scoped, so no `github` binding can match a token from this repository,
-# whatever attribute it binds on.
+# pool-scoped, so no `github` binding can match a token from this repository.
 resource "google_iam_workload_identity_pool" "blog" {
   project                   = google_project.env.project_id
   workload_identity_pool_id = "blog"
