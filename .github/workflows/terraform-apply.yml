@@ -46,7 +46,8 @@ jobs:
 
       - uses: ./.github/actions/terraform-providers
 
-      # Read-write deployer SA: gated to refs/heads/main by the WIF binding.
+      # Read-write deployer SA: the WIF binding admits only this workflow on
+      # main, by job_workflow_ref.
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           workload_identity_provider: ${{ secrets.GCP_RW_WORKLOAD_IDENTITY_PROVIDER }}
