@@ -335,6 +335,7 @@ locals {
     "peter-evans/create-issue-from-file@*",
     "pnpm/action-setup@*",
     "reviewdog/action-setup@*",
+    "Swatinem/rust-cache@*",
     "tox-dev/action-pre-commit-uv@*",
   ]
 }

@@ -198,8 +198,6 @@ module "zellij_claude_pair" {
   name        = "zellij-claude-pair"
   description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
-
-  allowed_action_patterns = ["Swatinem/rust-cache@*"]
 }
 
 module "zfs_replicate" {
