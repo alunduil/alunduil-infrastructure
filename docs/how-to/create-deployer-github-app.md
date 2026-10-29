@@ -1,37 +1,61 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the deployer GitHub App
+# Create the deployer GitHub Apps
 
-Authenticates the `integrations/github` Terraform provider in CI. The
-workflow exchanges App ID + private key for short-lived installation
-tokens via OpenID Connect.
+Two GitHub Apps authenticate the `integrations/github` Terraform provider
+in CI. Plan runs on pull requests, whose branches supply the workflow
+that runs, so it authenticates as a read-only App. Apply authenticates
+as a read-write App whose key only the apply workflow on `main` can
+read.
 
-1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: any name unique across GitHub, for example
-     `alunduil-infra-deployer`. Display only.
-   - **`Homepage URL`** (required): the repo,
-     `https://github.com/alunduil/alunduil-infrastructure`.
-   - Webhook: uncheck "Active"
-   - Leave the user-authorization checkboxes under `Callback URL`
-     (Expire user authorization tokens, Request user authorization on
-     install, Enable Device Flow) at their defaults. The deployer
-     authenticates as an installation, not a user.
-   - Where can this GitHub App be installed: **Only on this account**.
-     The private key generates installation tokens for every account
-     that installs the App. Limiting installation to your own account
-     keeps the impact matched to what this repo manages.
-   - Repository permissions:
-     - `Administration: Read and write`
-     - `Contents: Read and write`
-     - `Metadata: Read` (granted automatically)
-     - `Pages: Read and write`
-2. After creation, on the App's settings page: note the App ID, then
-   generate and download a private key (`.pem`).
-3. Install the App on your personal account with "All repositories"
-   so new repos work without re-issuing credentials.
+## Create the Apps
 
-The App ID and the `.pem` file are inputs to
-`scripts/configure-github-secrets.sh`—pass them via `GH_APP_ID` and
-`GH_APP_PRIVATE_KEY_FILE` (path to the `.pem`) environment variables,
-or let the script prompt for them.
+Create each App at <https://github.com/settings/apps/new> with:
+
+- **GitHub App name**: `alunduil-infra-deployer-ro` for plan,
+  `alunduil-infra-deployer` for apply. Renaming either means renaming its
+  `APP_NAME` in `scripts/configure-deployer-github-secrets.sh` too.
+- **`Homepage URL`** (required): the repo,
+  `https://github.com/alunduil/alunduil-infrastructure`.
+- **Webhook**: uncheck **Active**.
+- Leave the user-authorization checkboxes under `Callback URL` at their
+  defaults. Both Apps authenticate as an installation, not a user.
+- Where can this GitHub App be installed: **Only on this account**. The
+  private key generates installation tokens for every account that
+  installs the App, so this keeps the impact matched to what this repo
+  manages.
+- Repository permissions (everything else **No access**):
+
+  | Permission | `alunduil-infra-deployer-ro` | `alunduil-infra-deployer` |
+  | --- | --- | --- |
+  | `Administration` | Read-only | Read and write |
+  | `Contents` | Read-only | Read and write |
+  | `Metadata` | Read-only | Read-only |
+  | `Pages` | Read-only | Read and write |
+
+Then, for each App:
+
+1. On the App's **General** page, note the **App ID**, then under
+   **Private keys** generate and download one (`.pem`). GitHub only
+   shows it once, so regenerate it if lost.
+2. **Install App** → **Install** on your account → **All repositories**,
+   so a new repository works without new credentials.
+
+## Store the credentials
+
+`just bootstrap` prompts for each App's ID and `.pem` path and stores
+them in Secret Manager. To store them without a full bootstrap, or to
+roll out a new key, set the variables and run the script. Supplied
+values overwrite the stored ones:
+
+```sh
+export DEPLOYER_GITHUB_APP_ID_RO=<read-only-app-id>
+export DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO=<path-to-read-only-key.pem>
+export DEPLOYER_GITHUB_APP_ID_RW=<read-write-app-id>
+export DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW=<path-to-read-write-key.pem>
+
+scripts/configure-deployer-github-secrets.sh
+```
+
+Shred each `.pem` once the script has stored it.
