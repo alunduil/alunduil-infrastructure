@@ -4,27 +4,25 @@
 # Create the deployer GitHub Apps
 
 Two GitHub Apps authenticate the `integrations/github` Terraform provider
-in CI. Plan runs on pull requests, whose branches supply the workflow
-that runs, so it authenticates as a read-only App. Apply authenticates
-as a read-write App whose key only the apply workflow on `main` can
-read.
+in CI. Plan runs whatever workflow a pull request supplies, so it uses a
+read-only App. Apply uses a read-write App whose key only
+`terraform-apply.yml` on `main` can read.
 
 ## Create the Apps
 
 Create each App at <https://github.com/settings/apps/new> with:
 
 - **GitHub App name**: `alunduil-infra-deployer-ro` for plan,
-  `alunduil-infra-deployer` for apply. Renaming either means renaming its
-  `APP_NAME` in `scripts/configure-deployer-github-secrets.sh` too.
+  `alunduil-infra-deployer` for apply. The bootstrap prompts name each
+  App, so a rename belongs in `scripts/configure-deployer-github-secrets.sh`
+  too.
 - **`Homepage URL`** (required): the repo,
   `https://github.com/alunduil/alunduil-infrastructure`.
 - **Webhook**: uncheck **Active**.
 - Leave the user-authorization checkboxes under `Callback URL` at their
   defaults. Both Apps authenticate as an installation, not a user.
-- Where can this GitHub App be installed: **Only on this account**. The
-  private key generates installation tokens for every account that
-  installs the App, so this keeps the impact matched to what this repo
-  manages.
+- Where can this GitHub App be installed: **Only on this account**. A
+  leaked key reaches every account that installs the App.
 - Repository permissions (everything else **No access**):
 
   | Permission | `alunduil-infra-deployer-ro` | `alunduil-infra-deployer` |

@@ -15,11 +15,11 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/app-secrets.sh"
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
-# The two Apps differ only by their permissions, so each pair of prompts names
-# its App. Swapping them hands plan the write key.
+# The Apps differ only by permissions, and swapping their answers hands plan
+# the write key, so every prompt names its App.
 #
-# The locals shadow the globals lib/app-secrets.sh reads, so each App gets its
-# own name and its own once-only pointer.
+# The locals shadow lib/app-secrets.sh's globals, giving each App its own name
+# and pointer.
 configure_app() {
   local role="$1" id="$2" key_file="$3"
   # shellcheck disable=SC2034 # read by lib/app-secrets.sh

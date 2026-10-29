@@ -4,9 +4,9 @@
 #
 # Exports the provider credentials the Terraform workflows consume as entries in
 # GITHUB_ENV, as TF_VAR_* where Terraform reads them directly. The role
-# argument, ro for the plan workflow and rw for the apply, selects the version
-# of each role-split credential that deployer's SA holds secretAccessor on.
-# Every secret read here is populated by the bootstrap layer.
+# argument, ro for the plan workflow and rw for the apply, picks the half of
+# each role-split credential that deployer's SA can read. Every secret read
+# here is populated by the bootstrap layer.
 
 set -euo pipefail
 

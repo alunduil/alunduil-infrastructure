@@ -61,8 +61,8 @@ jobs:
       - name: Export provider credentials
         run: scripts/export-terraform-credentials.sh ro
 
-      # Read-only deployer App: its token spans every repo the
-      # github_repository module manages but writes none of them.
+      # The read-only deployer App's token spans every managed repo and
+      # writes none of them.
       - id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:

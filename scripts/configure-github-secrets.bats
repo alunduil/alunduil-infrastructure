@@ -11,8 +11,7 @@
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
-  # has_env_secret reads existing_env_secrets and resolve_project_sync_token
-  # reads the env input; reset both so each test starts from a clean state.
+  # Reset what the sourced helpers read, so each test starts clean.
   existing_env_secrets=""
   unset GH_PROJECT_SYNC_TOKEN
   # shellcheck source=configure-github-secrets.sh disable=SC1091

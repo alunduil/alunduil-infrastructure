@@ -1,10 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The deployer GitHub Apps that authenticate the github provider in CI: a
-# read-only App for plan and a read-write App for apply. Each deployer reads its
-# own App's ID and key and no other, so a pull request's plan, which runs the
-# workflow the pull request supplies, never reaches a write key.
+# Plan runs whatever workflow a pull request supplies, so each deployer reads
+# only its own App's credentials: plan the read-only App, apply the read-write.
 locals {
   deployer_github_app_readers = {
     for pair in setproduct(["deployer-github-app-id", "deployer-github-app-private-key"], keys(local.deployers)) :
