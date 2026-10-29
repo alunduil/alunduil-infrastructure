@@ -50,8 +50,7 @@ module "blog_alunduil_com" {
     https_enforced = true
   }
   allowed_action_patterns = ["withastro/action@*"]
-  # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
-  # non-owner pull request but Renovate's.
+  # .github/CODEOWNERS assigns every path to @alunduil.
   require_code_owner_review = true
   required_status_checks = {
     contexts = [
