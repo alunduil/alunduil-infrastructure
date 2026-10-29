@@ -9,6 +9,7 @@ bootstrap: && configure-hook-fix projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
+    scripts/configure-deployer-github-secrets.sh
     scripts/configure-git-sync-secrets.sh
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
