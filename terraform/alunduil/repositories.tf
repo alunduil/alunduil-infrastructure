@@ -55,6 +55,8 @@ module "blog_alunduil_com" {
       "Test skill scripts",
       "Test TypeScript utilities",
       "Build the site",
+      "Run pre-commit hooks",
+      "Review dependencies",
     ]
   }
   # Deviates from the baseline (squash only). The AstroPaper theme syncs by
