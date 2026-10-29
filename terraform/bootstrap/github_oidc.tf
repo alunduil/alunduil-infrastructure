@@ -43,19 +43,31 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository"       = "assertion.repository"
     "attribute.repository_owner" = "assertion.repository_owner"
     "attribute.environment"      = "assertion.environment"
-    "attribute.ref"              = "assertion.ref"
+    "attribute.deployer"         = "assertion.job_workflow_ref in ${jsonencode(local.deployer_rw_workflow_refs)} ? '${local.deployer_rw}' : 'none'"
   }
 
-  attribute_condition = "assertion.repository == 'alunduil/alunduil-infrastructure'"
+  attribute_condition = "assertion.repository == '${local.repository}'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
 }
 
+# Any job in this repository can request an OIDC token, so the RW deployer
+# binds on job_workflow_ref, which names the repository, workflow file, and ref.
+#
+# The bindings must match the provider's mapping and condition. A mismatch
+# fails the exchange silently.
 locals {
   wif_pool_prefix = "principalSet://iam.googleapis.com/projects/${google_project.env.number}/locations/global/workloadIdentityPools"
 
-  wif_principal      = "${local.wif_pool_prefix}/github/attribute.repository/alunduil/alunduil-infrastructure"
-  wif_principal_main = "${local.wif_pool_prefix}/github/attribute.ref/refs/heads/main"
+  repository  = "alunduil/alunduil-infrastructure"
+  deployer_rw = "rw"
+
+  deployer_rw_workflow_refs = [
+    "${local.repository}/.github/workflows/terraform-apply.yml@refs/heads/main",
+  ]
+
+  wif_principal             = "${local.wif_pool_prefix}/github/attribute.repository/${local.repository}"
+  wif_principal_deployer_rw = "${local.wif_pool_prefix}/github/attribute.deployer/${local.deployer_rw}"
 }

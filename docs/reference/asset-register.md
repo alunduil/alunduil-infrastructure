@@ -308,7 +308,8 @@ Google Cloud's other credentials.
 - Kind: Google Cloud service account
 - Scope: the `githubDeployerApplier` custom role, and object admin on
   the state bucket
-- Consumer: `terraform apply` in CI, restricted to `refs/heads/main`
+- Consumer: `terraform apply` in CI, restricted to
+  `.github/workflows/terraform-apply.yml` on `refs/heads/main`
 - Grants: P-3
 - Source: `terraform/bootstrap/service_account_github_deployer_rw.tf`
 

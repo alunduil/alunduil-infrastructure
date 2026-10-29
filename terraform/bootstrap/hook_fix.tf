@@ -30,8 +30,8 @@ resource "google_secret_manager_secret" "hook_fix_app" {
   depends_on = [google_project_service.secretmanager]
 }
 
-# Its own pool. The `github` pool binds the RW deployer on attribute.ref alone,
-# so a repository admitted there would inherit the apply identity.
+# Its own pool. principalSet paths are pool-scoped, so no `github` binding can
+# match a calling repository's token.
 resource "google_iam_workload_identity_pool" "hook_fix" {
   project                   = google_project.env.project_id
   workload_identity_pool_id = "hook-fix"
