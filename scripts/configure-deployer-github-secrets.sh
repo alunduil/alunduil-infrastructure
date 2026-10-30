@@ -32,6 +32,6 @@ configure_app() {
 }
 
 configure_app ro "${DEPLOYER_GITHUB_APP_ID_RO:-}" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-infra-deployer-ro
+  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-terraform-plan
 configure_app rw "${DEPLOYER_GITHUB_APP_ID_RW:-}" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-infra-deployer
+  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-terraform-apply

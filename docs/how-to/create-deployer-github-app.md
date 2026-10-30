@@ -12,10 +12,16 @@ read-only App. Apply uses a read-write App whose key only
 
 Create each App at <https://github.com/settings/apps/new> with:
 
-- **GitHub App name**: `alunduil-infra-deployer-ro` for plan,
-  `alunduil-infra-deployer` for apply. The bootstrap prompts name each
-  App, so a rename belongs in `scripts/configure-deployer-github-secrets.sh`
-  too.
+- **GitHub App name**: `alunduil-terraform-plan` or
+  `alunduil-terraform-apply`. Each change the App makes shows its name as
+  the actor. The bootstrap prompts name each App, so a rename belongs in
+  `scripts/configure-deployer-github-secrets.sh` too.
+- **Description**:
+  - Plan: `Read-only access for terraform plan in
+    alunduil/alunduil-infrastructure. Only the plan deployer service
+    account can read its key.`
+  - Apply: `Write access for terraform apply in
+    alunduil/alunduil-infrastructure, from main only.`
 - **`Homepage URL`** (required): the repo,
   `https://github.com/alunduil/alunduil-infrastructure`.
 - **Webhook**: uncheck **Active**.
@@ -25,7 +31,7 @@ Create each App at <https://github.com/settings/apps/new> with:
   leaked key reaches every account that installs the App.
 - Repository permissions (everything else **No access**):
 
-  | Permission | `alunduil-infra-deployer-ro` | `alunduil-infra-deployer` |
+  | Permission | `alunduil-terraform-plan` | `alunduil-terraform-apply` |
   | --- | --- | --- |
   | `Administration` | Read-only | Read and write |
   | `Contents` | Read-only | Read and write |
