@@ -13,8 +13,8 @@ read-only App. Apply uses a read-write App whose key only
 Create each App at <https://github.com/settings/apps/new> with:
 
 - **GitHub App name**: `alunduil-terraform-plan` or
-  `alunduil-terraform-apply`. Each change the App makes shows its name as
-  the actor. The bootstrap prompts name each App, so a rename belongs in
+  `alunduil-terraform-apply`. GitHub credits each change the App makes to
+  this name. Renaming one means renaming it in
   `scripts/configure-deployer-github-secrets.sh` too.
 - **Description**:
   - Plan: `Read-only access for terraform plan in
