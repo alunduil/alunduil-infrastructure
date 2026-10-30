@@ -98,8 +98,8 @@ command -v gcloud >/dev/null || {
 export_role_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer
 
 # The workflow exchanges these for the github provider's installation token.
-export_role_identifier DEPLOYER_GITHUB_APP_ID deployer-github-app-id
-export_role_secret DEPLOYER_GITHUB_APP_PRIVATE_KEY deployer-github-app-private-key
+export_role_identifier TERRAFORM_GITHUB_APP_ID terraform-github-app-id
+export_role_secret TERRAFORM_GITHUB_APP_PRIVATE_KEY terraform-github-app-private-key
 
 # Plan and apply share the provisioner and Git Sync credentials; the reason
 # lives with the service account in terraform/bootstrap/grafana.tf.

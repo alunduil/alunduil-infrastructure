@@ -37,7 +37,7 @@ The three operator entrypoints:
 Supporting how-tos:
 
 - [docs/how-to/create-bootstrap-cloudflare-token.md](docs/how-to/create-bootstrap-cloudflare-token.md)
-- [docs/how-to/create-deployer-github-apps.md](docs/how-to/create-deployer-github-apps.md)
+- [docs/how-to/create-terraform-github-apps.md](docs/how-to/create-terraform-github-apps.md)
 - [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
 - [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
 - [docs/how-to/create-grafana-github-app.md](docs/how-to/create-grafana-github-app.md)

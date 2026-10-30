@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Create the deployer GitHub Apps
+# Create the Terraform GitHub Apps
 
 Two GitHub Apps authenticate the `integrations/github` Terraform provider
 in CI. Plan runs whatever workflow a pull request supplies, so it uses a
@@ -15,7 +15,7 @@ Create each App at <https://github.com/settings/apps/new> with:
 - **GitHub App name**: `alunduil-terraform-plan` or
   `alunduil-terraform-apply`. GitHub credits each change the App makes to
   this name. Renaming one means renaming it in
-  `scripts/configure-deployer-github-secrets.sh` too.
+  `scripts/configure-terraform-github-secrets.sh` too.
 - **Description**:
   - Plan: `Read-only access for terraform plan in
     alunduil/alunduil-infrastructure. Only the plan deployer service
@@ -54,12 +54,12 @@ roll out a new key, set the variables and run the script. Supplied
 values overwrite the stored ones:
 
 ```sh
-export DEPLOYER_GITHUB_APP_ID_RO=<read-only-app-id>
-export DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO=<path-to-read-only-key.pem>
-export DEPLOYER_GITHUB_APP_ID_RW=<read-write-app-id>
-export DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW=<path-to-read-write-key.pem>
+export TERRAFORM_GITHUB_APP_ID_RO=<read-only-app-id>
+export TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO=<path-to-read-only-key.pem>
+export TERRAFORM_GITHUB_APP_ID_RW=<read-write-app-id>
+export TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW=<path-to-read-write-key.pem>
 
-scripts/configure-deployer-github-secrets.sh
+scripts/configure-terraform-github-secrets.sh
 ```
 
 Shred each `.pem` once the script has stored it.

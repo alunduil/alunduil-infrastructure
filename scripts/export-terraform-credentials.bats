@@ -104,8 +104,8 @@ multiline() {
   access() { printf '%s' "${1}"; }
   # shellcheck disable=SC2034 # read by the sourced export_role_identifier
   role=rw
-  run export_role_identifier DEPLOYER_GITHUB_APP_ID deployer-github-app-id
+  run export_role_identifier TERRAFORM_GITHUB_APP_ID terraform-github-app-id
   [[ ${status} -eq 0 ]]
   [[ -z ${output} ]]
-  [[ "$(cat "${GITHUB_ENV}")" == $'DEPLOYER_GITHUB_APP_ID<<__TFVAR__\ndeployer-github-app-id-rw\n__TFVAR__' ]]
+  [[ "$(cat "${GITHUB_ENV}")" == $'TERRAFORM_GITHUB_APP_ID<<__TFVAR__\nterraform-github-app-id-rw\n__TFVAR__' ]]
 }

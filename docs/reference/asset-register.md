@@ -376,16 +376,16 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
-#### C-09: Deployer GitHub App (RW)
+#### C-09: `alunduil-terraform-apply`
 
 - Kind: GitHub App ID and private key
 - Scope: `Administration`, `Contents`, and `Pages` write, installed on
   every `alunduil` repository
 - Consumer: the `integrations/github` provider in `terraform apply`.
-  `terraform-apply.yml` reads `deployer-github-app-id-rw` and
-  `deployer-github-app-private-key-rw` from Secret Manager as C-04
+  `terraform-apply.yml` reads `terraform-github-app-id-rw` and
+  `terraform-github-app-private-key-rw` from Secret Manager as C-04
 - Grants: P-3
-- Source: [`create-deployer-github-apps.md`](../how-to/create-deployer-github-apps.md)
+- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
 
 #### C-10: Git Sync GitHub App
 
@@ -511,16 +511,16 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-1
 - Source: [`create-grafana-github-app.md`](../how-to/create-grafana-github-app.md)
 
-#### C-27: Deployer GitHub App (RO)
+#### C-27: `alunduil-terraform-plan`
 
 - Kind: GitHub App ID and private key
 - Scope: read-only `Administration`, `Contents`, `Metadata`, and
   `Pages`, installed on every `alunduil` repository
 - Consumer: the `integrations/github` provider in `terraform plan`.
-  `terraform-plan.yml` reads `deployer-github-app-id-ro` and
-  `deployer-github-app-private-key-ro` from Secret Manager as C-03
+  `terraform-plan.yml` reads `terraform-github-app-id-ro` and
+  `terraform-github-app-private-key-ro` from Secret Manager as C-03
 - Grants: P-2
-- Source: [`create-deployer-github-apps.md`](../how-to/create-deployer-github-apps.md)
+- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
 
 ## Maintenance
 

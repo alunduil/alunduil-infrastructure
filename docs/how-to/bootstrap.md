@@ -12,8 +12,8 @@ scratch or rotating the core credentials.
 
 - A bootstrap Cloudflare API token—see
   [create-bootstrap-cloudflare-token.md](create-bootstrap-cloudflare-token.md).
-- The two deployer GitHub Apps created and installed—see
-  [create-deployer-github-apps.md](create-deployer-github-apps.md).
+- The two Terraform GitHub Apps created and installed—see
+  [create-terraform-github-apps.md](create-terraform-github-apps.md).
 - Grafana Cloud credentials—see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed—see
@@ -40,11 +40,11 @@ export TF_VAR_grafana_cloud_access_policy_token=...
 just bootstrap
 ```
 
-`just bootstrap` then prompts for the two deployer Apps' IDs and private
+`just bootstrap` then prompts for the two Terraform Apps' IDs and private
 keys, read-only for plan and read-write for apply, and stores them in
 Secret Manager. Later runs prompt only for an empty one. Set
-`DEPLOYER_GITHUB_APP_ID_RO`, `DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO`,
-`DEPLOYER_GITHUB_APP_ID_RW`, and `DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW`
+`TERRAFORM_GITHUB_APP_ID_RO`, `TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO`,
+`TERRAFORM_GITHUB_APP_ID_RW`, and `TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW`
 to answer without the prompts.
 
 It then prompts for the Git Sync App's ID, installation ID,

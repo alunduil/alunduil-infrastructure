@@ -61,13 +61,13 @@ jobs:
       - name: Export provider credentials
         run: scripts/export-terraform-credentials.sh ro
 
-      # The read-only deployer App's token spans every managed repo and
+      # The alunduil-terraform-plan App's token spans every managed repo and
       # writes none of them.
       - id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ env.DEPLOYER_GITHUB_APP_ID }}
-          private-key: ${{ env.DEPLOYER_GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ env.TERRAFORM_GITHUB_APP_ID }}
+          private-key: ${{ env.TERRAFORM_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
       - name: Terraform Init

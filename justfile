@@ -9,7 +9,7 @@ bootstrap: && configure-hook-fix projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
-    scripts/configure-deployer-github-secrets.sh
+    scripts/configure-terraform-github-secrets.sh
     scripts/configure-git-sync-secrets.sh
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
@@ -52,7 +52,7 @@ alunduil:
     export_secret TF_VAR_tailscale_client_id tailscale-client-id-rw
     TF_VAR_tailscale_identity_token="${TAILSCALE_IDENTITY_TOKEN:?set to an OIDC token the tailnet trusts; see docs/how-to/create-tailscale-trust-credential.md}"
     export TF_VAR_tailscale_identity_token
-    # The github provider reads GITHUB_TOKEN. CI injects a deployer App token;
+    # The github provider reads GITHUB_TOKEN. CI injects a Terraform App token;
     # break-glass runs under the operator's identity.
     GITHUB_TOKEN="$(gh auth token)"
     export GITHUB_TOKEN

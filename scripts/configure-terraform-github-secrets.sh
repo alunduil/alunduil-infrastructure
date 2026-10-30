@@ -2,13 +2,13 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Populates the deployer GitHub Apps' IDs and private keys in the Secret Manager
-# shells terraform/bootstrap/deployer_github_app.tf declares.
+# Populates the Terraform GitHub Apps' IDs and private keys in the Secret Manager
+# shells terraform/bootstrap/terraform_github_app.tf declares.
 
 set -euo pipefail
 
 # shellcheck disable=SC2034 # read by lib/app-secrets.sh
-SETUP_DOC="docs/how-to/create-deployer-github-apps.md"
+SETUP_DOC="docs/how-to/create-terraform-github-apps.md"
 
 # shellcheck source=scripts/lib/app-secrets.sh disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/lib/app-secrets.sh"
@@ -25,13 +25,13 @@ configure_app() {
   # shellcheck disable=SC2034 # read by lib/app-secrets.sh
   local APP_NAME="$4" pointer_shown=""
 
-  ensure_secret "deployer-github-app-id-${role}" "${APP_NAME} App ID" \
+  ensure_secret "terraform-github-app-id-${role}" "${APP_NAME} App ID" \
     "${id}" check_digits
-  ensure_secret "deployer-github-app-private-key-${role}" \
+  ensure_secret "terraform-github-app-private-key-${role}" \
     "Path to the ${APP_NAME} private key .pem" "${key_file}" read_private_key
 }
 
-configure_app ro "${DEPLOYER_GITHUB_APP_ID_RO:-}" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-terraform-plan
-configure_app rw "${DEPLOYER_GITHUB_APP_ID_RW:-}" \
-  "${DEPLOYER_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-terraform-apply
+configure_app ro "${TERRAFORM_GITHUB_APP_ID_RO:-}" \
+  "${TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-terraform-plan
+configure_app rw "${TERRAFORM_GITHUB_APP_ID_RW:-}" \
+  "${TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-terraform-apply
