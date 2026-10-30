@@ -54,10 +54,10 @@ roll out a new key, set the variables and run the script. Supplied
 values overwrite the stored ones:
 
 ```sh
-export TERRAFORM_GITHUB_APP_ID_RO=<read-only-app-id>
-export TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO=<path-to-read-only-key.pem>
-export TERRAFORM_GITHUB_APP_ID_RW=<read-write-app-id>
-export TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW=<path-to-read-write-key.pem>
+export TERRAFORM_PLAN_APP_ID=<alunduil-terraform-plan App ID>
+export TERRAFORM_PLAN_APP_PRIVATE_KEY_FILE=<path to alunduil-terraform-plan .pem>
+export TERRAFORM_APPLY_APP_ID=<alunduil-terraform-apply App ID>
+export TERRAFORM_APPLY_APP_PRIVATE_KEY_FILE=<path to alunduil-terraform-apply .pem>
 
 scripts/configure-terraform-github-secrets.sh
 ```

@@ -31,7 +31,7 @@ configure_app() {
     "Path to the ${APP_NAME} private key .pem" "${key_file}" read_private_key
 }
 
-configure_app ro "${TERRAFORM_GITHUB_APP_ID_RO:-}" \
-  "${TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO:-}" alunduil-terraform-plan
-configure_app rw "${TERRAFORM_GITHUB_APP_ID_RW:-}" \
-  "${TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW:-}" alunduil-terraform-apply
+configure_app ro "${TERRAFORM_PLAN_APP_ID:-}" \
+  "${TERRAFORM_PLAN_APP_PRIVATE_KEY_FILE:-}" alunduil-terraform-plan
+configure_app rw "${TERRAFORM_APPLY_APP_ID:-}" \
+  "${TERRAFORM_APPLY_APP_PRIVATE_KEY_FILE:-}" alunduil-terraform-apply

@@ -43,8 +43,8 @@ just bootstrap
 `just bootstrap` then prompts for the two Terraform Apps' IDs and private
 keys, read-only for plan and read-write for apply, and stores them in
 Secret Manager. Later runs prompt only for an empty one. Set
-`TERRAFORM_GITHUB_APP_ID_RO`, `TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RO`,
-`TERRAFORM_GITHUB_APP_ID_RW`, and `TERRAFORM_GITHUB_APP_PRIVATE_KEY_FILE_RW`
+`TERRAFORM_PLAN_APP_ID`, `TERRAFORM_PLAN_APP_PRIVATE_KEY_FILE`,
+`TERRAFORM_APPLY_APP_ID`, and `TERRAFORM_APPLY_APP_PRIVATE_KEY_FILE`
 to answer without the prompts.
 
 It then prompts for the Git Sync App's ID, installation ID,
