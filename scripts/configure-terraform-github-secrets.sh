@@ -21,9 +21,8 @@ command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 # The locals shadow lib/app-secrets.sh's globals, giving each App its own name
 # and pointer.
 configure_app() {
-  local role="$1" id="$2" key_file="$3"
-  # shellcheck disable=SC2034 # read by lib/app-secrets.sh
-  local APP_NAME="$4" pointer_shown=""
+  # shellcheck disable=SC2034 # APP_NAME and pointer_shown are read by lib/app-secrets.sh
+  local role="$1" APP_NAME="$2" id="$3" key_file="$4" pointer_shown=""
 
   ensure_secret "terraform-github-app-id-${role}" "${APP_NAME} App ID" \
     "${id}" check_digits
@@ -31,7 +30,7 @@ configure_app() {
     "Path to the ${APP_NAME} private key .pem" "${key_file}" read_private_key
 }
 
-configure_app ro "${TERRAFORM_PLAN_APP_ID:-}" \
-  "${TERRAFORM_PLAN_APP_PRIVATE_KEY_FILE:-}" alunduil-terraform-plan
-configure_app rw "${TERRAFORM_APPLY_APP_ID:-}" \
-  "${TERRAFORM_APPLY_APP_PRIVATE_KEY_FILE:-}" alunduil-terraform-apply
+configure_app ro alunduil-terraform-plan \
+  "${TERRAFORM_PLAN_APP_ID:-}" "${TERRAFORM_PLAN_APP_PRIVATE_KEY_FILE:-}"
+configure_app rw alunduil-terraform-apply \
+  "${TERRAFORM_APPLY_APP_ID:-}" "${TERRAFORM_APPLY_APP_PRIVATE_KEY_FILE:-}"
