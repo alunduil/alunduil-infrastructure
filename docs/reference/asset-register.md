@@ -376,17 +376,6 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
-#### C-09: `alunduil-terraform-apply`
-
-- Kind: GitHub App ID and private key
-- Scope: `Administration`, `Contents`, and `Pages` write, installed on
-  every `alunduil` repository
-- Consumer: the `integrations/github` provider in `terraform apply`.
-  `terraform-apply.yml` reads `terraform-github-app-id-rw` and
-  `terraform-github-app-private-key-rw` from Secret Manager as C-04
-- Grants: P-3
-- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
-
 #### C-10: Git Sync GitHub App
 
 - Kind: GitHub App ID, installation ID, and private key
@@ -520,6 +509,17 @@ Each needs an operator in a console, because no apply rotates them.
   `terraform-plan.yml` reads `terraform-github-app-id-ro` and
   `terraform-github-app-private-key-ro` from Secret Manager as C-03
 - Grants: P-2
+- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
+
+#### C-28: `alunduil-terraform-apply`
+
+- Kind: GitHub App ID and private key
+- Scope: `Administration`, `Contents`, and `Pages` write, installed on
+  every `alunduil` repository
+- Consumer: the `integrations/github` provider in `terraform apply`.
+  `terraform-apply.yml` reads `terraform-github-app-id-rw` and
+  `terraform-github-app-private-key-rw` from Secret Manager as C-04
+- Grants: P-3
 - Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
 
 ## Maintenance
