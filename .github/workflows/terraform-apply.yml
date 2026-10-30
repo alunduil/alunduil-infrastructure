@@ -70,8 +70,8 @@ jobs:
         working-directory: terraform/alunduil
         run: terraform init
 
-      # plan-then-apply (not apply direct) so the applied diff is the same
-      # one the PR's terraform-plan comment showed.
+      # Unlike the PR plan, this one refreshes, so the applied diff can also
+      # revert changes made outside Terraform since the last apply.
       - name: Terraform Plan
         working-directory: terraform/alunduil
         env:
