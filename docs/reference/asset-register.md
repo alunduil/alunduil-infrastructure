@@ -385,7 +385,7 @@ Each needs an operator in a console, because no apply rotates them.
   `terraform-apply.yml` reads `deployer-github-app-id-rw` and
   `deployer-github-app-private-key-rw` from Secret Manager as C-04
 - Grants: P-3
-- Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
+- Source: [`create-deployer-github-apps.md`](../how-to/create-deployer-github-apps.md)
 
 #### C-10: Git Sync GitHub App
 
@@ -520,7 +520,7 @@ Each needs an operator in a console, because no apply rotates them.
   `terraform-plan.yml` reads `deployer-github-app-id-ro` and
   `deployer-github-app-private-key-ro` from Secret Manager as C-03
 - Grants: P-2
-- Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
+- Source: [`create-deployer-github-apps.md`](../how-to/create-deployer-github-apps.md)
 
 ## Maintenance
 

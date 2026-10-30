@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # shellcheck disable=SC2034 # read by lib/app-secrets.sh
-SETUP_DOC="docs/how-to/create-deployer-github-app.md"
+SETUP_DOC="docs/how-to/create-deployer-github-apps.md"
 
 # shellcheck source=scripts/lib/app-secrets.sh disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/lib/app-secrets.sh"

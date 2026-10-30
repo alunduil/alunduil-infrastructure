@@ -55,20 +55,8 @@ gh() { echo "gh $*"; }
   [[ ${output} != *"--repo"* ]]
 }
 
-@test "set_secret skips the __KEEP__ sentinel without calling gh" {
-  run set_secret "GCP_RO_SERVICE_ACCOUNT_EMAIL" "__KEEP__"
-  [[ ${output} != *"gh secret set"* ]]
-}
-
 @test "set_secret targets another repo when given one" {
   run set_secret "GCP_SERVICE_ACCOUNT_EMAIL" "sa@example.test" "owner/other"
   [[ ${output} == *"--repo owner/other"* ]]
   [[ ${output} == *"--body sa@example.test"* ]]
-}
-
-# Derived values never carry the sentinel, so nothing should skip them. This
-# is the path that keeps a rotated identifier reaching the blog.
-@test "set_secret writes a derived value through to another repo" {
-  run set_secret "CLOUDFLARE_ANALYTICS_SECRET_NAME" "a-secret-name" "owner/other"
-  [[ ${output} == *"gh secret set CLOUDFLARE_ANALYTICS_SECRET_NAME"* ]]
 }

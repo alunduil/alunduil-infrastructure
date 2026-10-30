@@ -13,7 +13,7 @@ scratch or rotating the core credentials.
 - A bootstrap Cloudflare API token—see
   [create-bootstrap-cloudflare-token.md](create-bootstrap-cloudflare-token.md).
 - The two deployer GitHub Apps created and installed—see
-  [create-deployer-github-app.md](create-deployer-github-app.md).
+  [create-deployer-github-apps.md](create-deployer-github-apps.md).
 - Grafana Cloud credentials—see
   [create-grafana-git-sync-token.md](create-grafana-git-sync-token.md).
 - A Git Sync GitHub App created and installed—see

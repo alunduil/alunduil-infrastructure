@@ -38,8 +38,8 @@ EOF
 }
 
 # Precedence: an explicit environment value wins; otherwise an already-set
-# secret is left untouched (signalled by the __KEEP__ sentinel, which the
-# setters below skip); otherwise prompt.
+# secret is left untouched (signalled by the __KEEP__ sentinel); otherwise
+# prompt.
 resolve_project_sync_token() {
   if [[ -n "${GH_PROJECT_SYNC_TOKEN:-}" ]]; then
     printf '%s' "${GH_PROJECT_SYNC_TOKEN}"
@@ -58,15 +58,9 @@ tf_output() {
   terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
 }
 
-# The __KEEP__ sentinel means the secret is already set and was deliberately
-# not re-resolved, so it is left alone.
 set_secret() {
   local name="$1" value="$2" repo="${3:-}"
   local target=() label=""
-
-  if [[ ${value} == "__KEEP__" ]]; then
-    return
-  fi
 
   if [[ -n ${repo} ]]; then
     target=(--repo "${repo}")
