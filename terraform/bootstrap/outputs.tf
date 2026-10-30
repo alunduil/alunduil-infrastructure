@@ -76,6 +76,12 @@ output "hook_fix_app_secrets" {
   sensitive   = false
 }
 
+output "terraform_github_app_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.terraform_github_app : secret.secret_id])
+  description = "Secret Manager short names holding the Terraform GitHub Apps' IDs and private keys, read-only for plan and read-write for apply; populated by scripts/configure-terraform-github-secrets.sh and fetched by scripts/export-terraform-credentials.sh"
+  sensitive   = false
+}
+
 # Grafana Git Sync inputs for terraform/alunduil/. The stack coordinates reach
 # the alunduil layer through the published bootstrap-outputs.json object (see
 # published_outputs.tf); the App's three values are fetched from Secret Manager

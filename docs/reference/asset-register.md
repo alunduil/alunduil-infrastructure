@@ -7,7 +7,7 @@ The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
 principals.
 
-Verified 2026-10-27.
+Verified 2026-10-29.
 
 ## Scope
 
@@ -376,14 +376,6 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-1
 - Source: [`create-grafana-git-sync-token.md`](../how-to/create-grafana-git-sync-token.md)
 
-#### C-09: Deployer GitHub App
-
-- Kind: GitHub App ID and private key
-- Scope: installed across the managed repositories
-- Consumer: the `integrations/github` provider in CI
-- Grants: P-2, P-3
-- Source: [`create-deployer-github-app.md`](../how-to/create-deployer-github-app.md)
-
 #### C-10: Git Sync GitHub App
 
 - Kind: GitHub App ID, installation ID, and private key
@@ -507,6 +499,28 @@ Each needs an operator in a console, because no apply rotates them.
   the key through the Grafana API
 - Grants: P-1
 - Source: [`create-grafana-github-app.md`](../how-to/create-grafana-github-app.md)
+
+#### C-27: `alunduil-terraform-plan`
+
+- Kind: GitHub App ID and private key
+- Scope: read-only `Administration`, `Contents`, `Metadata`, and
+  `Pages`, installed on every `alunduil` repository
+- Consumer: the `integrations/github` provider in `terraform plan`.
+  `terraform-plan.yml` reads `terraform-github-app-id-ro` and
+  `terraform-github-app-private-key-ro` from Secret Manager as C-03
+- Grants: P-2
+- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
+
+#### C-28: `alunduil-terraform-apply`
+
+- Kind: GitHub App ID and private key
+- Scope: `Administration`, `Contents`, and `Pages` write, installed on
+  every `alunduil` repository
+- Consumer: the `integrations/github` provider in `terraform apply`.
+  `terraform-apply.yml` reads `terraform-github-app-id-rw` and
+  `terraform-github-app-private-key-rw` from Secret Manager as C-04
+- Grants: P-3
+- Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
 
 ## Maintenance
 

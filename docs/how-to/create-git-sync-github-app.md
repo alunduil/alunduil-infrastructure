@@ -4,8 +4,8 @@
 # Create the Git Sync GitHub App
 
 A dedicated GitHub App Grafana Git Sync uses to open dashboard pull
-requests. Unlike the deployer App in
-[create-deployer-github-app.md](create-deployer-github-app.md), install
+requests. Unlike the Terraform Apps in
+[create-terraform-github-apps.md](create-terraform-github-apps.md), install
 this one on only `alunduil-infrastructure`, so the private key handed to
 Grafana Cloud can reach nothing else.
 

@@ -95,3 +95,17 @@ multiline() {
   write_var TF_VAR_grafana_git_sync_app_id 1234
   [[ "$(cat "${GITHUB_ENV}")" == $'TF_VAR_grafana_git_sync_app_id<<__TFVAR__\n1234\n__TFVAR__' ]]
 }
+
+# --- export_role_identifier -----------------------------------------------
+
+@test "export_role_identifier reads the role's secret and leaves it unmasked" {
+  # Stands in for Secret Manager by echoing the secret name it was asked for.
+  # shellcheck disable=SC2329 # reached through export_identifier
+  access() { printf '%s' "${1}"; }
+  # shellcheck disable=SC2034 # read by the sourced export_role_identifier
+  role=rw
+  run export_role_identifier TERRAFORM_GITHUB_APP_ID terraform-github-app-id
+  [[ ${status} -eq 0 ]]
+  [[ -z ${output} ]]
+  [[ "$(cat "${GITHUB_ENV}")" == $'TERRAFORM_GITHUB_APP_ID<<__TFVAR__\nterraform-github-app-id-rw\n__TFVAR__' ]]
+}

@@ -2,10 +2,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Exports the provider credentials the Terraform workflows consume as TF_VAR_*
-# entries in GITHUB_ENV. The role argument, ro for the plan workflow and rw for
-# the apply, selects the Cloudflare token version that deployer's SA holds
-# secretAccessor on. Every secret read here is populated by the bootstrap layer.
+# Exports the provider credentials the Terraform workflows consume as entries in
+# GITHUB_ENV, as TF_VAR_* where Terraform reads them directly. The role
+# argument, ro for the plan workflow and rw for the apply, selects the -ro or
+# -rw secret of each role-split credential, whichever that deployer's SA can
+# read. Every secret read here is populated by the bootstrap layer.
 
 set -euo pipefail
 
@@ -69,6 +70,10 @@ export_role_secret() {
   export_secret "${1}" "${2}-${role}"
 }
 
+export_role_identifier() {
+  export_identifier "${1}" "${2}-${role}"
+}
+
 # Skip the executable body when sourced (e.g. by
 # export-terraform-credentials.bats).
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
@@ -91,6 +96,10 @@ command -v gcloud >/dev/null || {
 }
 
 export_role_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer
+
+# The workflow exchanges these for the github provider's installation token.
+export_role_identifier TERRAFORM_GITHUB_APP_ID terraform-github-app-id
+export_role_secret TERRAFORM_GITHUB_APP_PRIVATE_KEY terraform-github-app-private-key
 
 # Plan and apply share the provisioner and Git Sync credentials; the reason
 # lives with the service account in terraform/bootstrap/grafana.tf.

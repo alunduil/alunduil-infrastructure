@@ -16,32 +16,13 @@ ENVIRONMENT="project-sync"
 # Cloudflare analytics token, so its identifiers are configured here too.
 BLOG_REPO="alunduil/blog.alunduil.com"
 
-# existing_secrets / existing_env_secrets are populated by the executable
-# body (from `gh secret list`) before these run; the bats suite sets them
-# directly.
-has_secret() { grep -Fxq "$1" <<<"${existing_secrets}"; }
+# existing_env_secrets is populated by the executable body (from
+# `gh secret list`) before these run; the bats suite sets it directly.
 has_env_secret() { grep -Fxq "$1" <<<"${existing_env_secrets}"; }
-
-print_gh_app_pointer() {
-  cat >&2 <<'EOF'
-
-The GitHub App authenticates the terraform github provider in CI. If
-you haven't created one yet, see docs/how-to/create-deployer-github-app.md.
-
-EOF
-}
 
 # A value is prompted for only when it is neither supplied via the
 # environment nor already present as a secret — so a re-run never clobbers
 # an existing secret with a fresh prompt.
-needs_id_prompt() {
-  [[ -z "${GH_APP_ID:-}" ]] && ! has_secret "GH_APP_ID"
-}
-
-needs_key_prompt() {
-  [[ -z "${GH_APP_PRIVATE_KEY_FILE:-}" ]] && ! has_secret "GH_APP_PRIVATE_KEY"
-}
-
 needs_token_prompt() {
   [[ -z "${GH_PROJECT_SYNC_TOKEN:-}" ]] && ! has_env_secret "GH_PROJECT_SYNC_TOKEN"
 }
@@ -56,41 +37,9 @@ docs/how-to/create-github-project-sync-token.md.
 EOF
 }
 
-# The resolve_* helpers follow one precedence: an explicit environment
-# value wins; otherwise an already-set secret is left untouched (signalled
-# by the __KEEP__ sentinel, which the setters below skip); otherwise prompt.
-resolve_gh_app_id() {
-  if [[ -n "${GH_APP_ID:-}" ]]; then
-    printf '%s' "${GH_APP_ID}"
-  elif has_secret "GH_APP_ID"; then # pragma: allowlist secret
-    echo "GH_APP_ID already set in repo secrets; leaving as-is" >&2
-    printf '__KEEP__'
-  else
-    local value
-    read -r -p "Enter GH_APP_ID (numeric, visible on App settings page): " value
-    printf '%s' "${value}"
-  fi
-}
-
-resolve_gh_app_private_key() {
-  local path
-  if [[ -n "${GH_APP_PRIVATE_KEY_FILE:-}" ]]; then
-    path="${GH_APP_PRIVATE_KEY_FILE}"
-  elif has_secret "GH_APP_PRIVATE_KEY"; then # pragma: allowlist secret
-    echo "GH_APP_PRIVATE_KEY already set in repo secrets; leaving as-is" >&2
-    printf '__KEEP__'
-    return
-  else
-    read -r -p "Path to GitHub App private key (.pem): " path
-  fi
-  path="${path/#\~/${HOME}}"
-  [[ -r "${path}" ]] || {
-    echo "error: cannot read '${path}'" >&2
-    exit 1
-  }
-  cat "${path}"
-}
-
+# Precedence: an explicit environment value wins; otherwise an already-set
+# secret is left untouched (signalled by the __KEEP__ sentinel); otherwise
+# prompt.
 resolve_project_sync_token() {
   if [[ -n "${GH_PROJECT_SYNC_TOKEN:-}" ]]; then
     printf '%s' "${GH_PROJECT_SYNC_TOKEN}"
@@ -109,15 +58,9 @@ tf_output() {
   terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
 }
 
-# The __KEEP__ sentinel means the secret is already set and was deliberately
-# not re-resolved, so it is left alone.
 set_secret() {
   local name="$1" value="$2" repo="${3:-}"
   local target=() label=""
-
-  if [[ ${value} == "__KEEP__" ]]; then
-    return
-  fi
 
   if [[ -n ${repo} ]]; then
     target=(--repo "${repo}")
@@ -184,19 +127,12 @@ BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
 BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
 BLOG_SECRET_MANAGER_ID="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
 
-existing_secrets="$(gh secret list --json name --jq '.[].name')"
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
-
-if needs_id_prompt || needs_key_prompt; then
-  print_gh_app_pointer
-fi
 
 if needs_token_prompt; then
   print_project_sync_token_pointer
 fi
 
-GH_APP_ID_VALUE="$(resolve_gh_app_id)"
-GH_APP_PRIVATE_KEY_VALUE="$(resolve_gh_app_private_key)"
 GH_PROJECT_SYNC_TOKEN_VALUE="$(resolve_project_sync_token)"
 
 declare -A SECRETS=(
@@ -204,8 +140,6 @@ declare -A SECRETS=(
   [GCP_RO_SERVICE_ACCOUNT_EMAIL]="${RO_SA_EMAIL}"
   [GCP_RW_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
   [GCP_RW_SERVICE_ACCOUNT_EMAIL]="${RW_SA_EMAIL}"
-  [GH_APP_ID]="${GH_APP_ID_VALUE}"
-  [GH_APP_PRIVATE_KEY]="${GH_APP_PRIVATE_KEY_VALUE}"
 )
 
 for name in "${!SECRETS[@]}"; do
