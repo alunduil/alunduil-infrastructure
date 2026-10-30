@@ -75,8 +75,9 @@ jobs:
         run: terraform init
 
       # No refresh: GitHub hides merge settings and ruleset bypass actors from
-      # a read-only token, so refreshing them would read as blank and plan a
-      # phantom change. The diff runs against the state apply last refreshed.
+      # a read-only token, so a refresh reads them as blank and plans changes
+      # the repos don't need. The diff runs against the state apply last
+      # refreshed.
       - name: Terraform Plan
         working-directory: terraform/alunduil
         env:
