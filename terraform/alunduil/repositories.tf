@@ -24,7 +24,7 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
-  # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
+  # The Hourly workflow's Inbox sync reads GH_PROJECT_SYNC_TOKEN from this environment; the
   # branch policy pins the token to main so a workflow_dispatch from an
   # arbitrary branch can't reach it. Token injected out of band.
   environments = {

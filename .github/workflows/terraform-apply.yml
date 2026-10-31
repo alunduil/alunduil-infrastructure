@@ -30,7 +30,7 @@ concurrency:
   queue: max
 
 jobs:
-  run:
+  apply:
     name: Apply Terraform changes
     runs-on: ubuntu-latest
     timeout-minutes: 20

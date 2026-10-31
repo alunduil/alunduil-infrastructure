@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
+  plan:
     name: Plan Terraform changes
     runs-on: ubuntu-latest
     timeout-minutes: 10
