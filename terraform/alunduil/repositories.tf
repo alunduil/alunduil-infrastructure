@@ -111,6 +111,18 @@ module "network_arbitrary" {
   }
 }
 
+module "pre_commit_hooks" {
+  source      = "../modules/github_repository"
+  name        = "pre-commit-hooks"
+  description = "Shared pre-commit hooks for any repo's .pre-commit-config.yaml: reference a check by tag instead of copying a local hook between repositories."
+  topics      = ["pre-commit", "pre-commit-hooks"]
+}
+
+import {
+  to = module.pre_commit_hooks.github_repository.this
+  id = "pre-commit-hooks"
+}
+
 module "projects_v2_sync" {
   source      = "../modules/github_repository"
   name        = "projects-v2-sync"
