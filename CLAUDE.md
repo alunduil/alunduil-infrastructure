@@ -93,5 +93,5 @@ in a scoped PR ships infra the reviewer didn't ask for.
   warnings don't. New terms go in `accept.txt` under
   `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
   casing for product names.
-- The `Plan Terraform changes` job posts the plan as a PR comment. Don't
-  approve a merge until it looks right — merging applies it.
+- Approve a merge only once the plan comment looks right — merging
+  applies it.
