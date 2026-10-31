@@ -5,7 +5,9 @@ locals {
   # Merge commits are the only merge method that breaks linear history.
   merge_commits = var.merge_method == "merge"
 
-  renovate_automerge = var.required_status_checks != null ? var.required_status_checks.renovate_automerge : false
+  # Only jobs that report on every pull request belong here; a required check
+  # that never reports blocks every merge.
+  shared_required_checks = ["Run pre-commit hooks"]
 }
 
 resource "github_repository" "this" {
@@ -81,7 +83,7 @@ locals {
   # it push to the default branch.
   merge_bypass_actors = concat(
     [local.admin_bypass_actor],
-    local.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
+    var.required_status_checks.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
   )
 }
 
@@ -197,8 +199,6 @@ resource "github_repository_ruleset" "review" {
 # No bypass actors: a merge that bypasses any ruleset skips every rule its
 # merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
-  count = var.required_status_checks != null ? 1 : 0
-
   name        = "checks"
   repository  = github_repository.this.name
   target      = "branch"
@@ -219,6 +219,7 @@ resource "github_repository_ruleset" "checks" {
 
       dynamic "required_check" {
         for_each = concat(
+          local.shared_required_checks,
           var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
           var.required_status_checks.contexts,
         )
@@ -230,10 +231,15 @@ resource "github_repository_ruleset" "checks" {
   }
 }
 
+moved {
+  from = github_repository_ruleset.checks[0]
+  to   = github_repository_ruleset.checks
+}
+
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
-  count = local.renovate_automerge ? 1 : 0
+  count = var.required_status_checks.renovate_automerge ? 1 : 0
 
   name        = "renovate"
   repository  = github_repository.this.name
