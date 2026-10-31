@@ -39,6 +39,7 @@ Deco's
 Quad9
 Crostini
 ChromeOS
+Chromecast
 Squarespace
 zellij
 
