@@ -2,19 +2,15 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Installs the Terraform that mise.lock pins onto a GitHub Actions job's PATH,
-# for jobs that can't run jdx/mise-action, such as the shared hook-fix
-# workflow's setup command. Reading the lock's URL and checksum keeps one
-# Terraform pin, which Renovate bumps.
-#
-# Usage: scripts/install-terraform.sh
+# Installs mise.lock's Terraform onto a GitHub Actions job's PATH, for jobs
+# that can't run jdx/mise-action. Reading the lock keeps a single Terraform
+# pin.
 set -euo pipefail
 
 PLATFORM="linux-x64"
 MISE_LOCK="$(dirname "${BASH_SOURCE[0]}")/../mise.lock"
 
-# Echo Terraform's download URL and sha256 for PLATFORM from LOCK on one
-# line. Fails when the lock has no such entry or its checksum isn't sha256.
+# Echo LOCK's Terraform URL and sha256 for PLATFORM, space-separated.
 terraform_lock_entry() {
   local lock="$1" platform="$2"
   python3 - "${lock}" "${platform}" <<'EOF'
@@ -36,7 +32,7 @@ print(url, digest)
 EOF
 }
 
-# Skip the executable body when sourced (e.g. by install-terraform.bats).
+# Stop here when sourced, so the bats suite loads only the functions.
 if [[ ${BASH_SOURCE[0]} != "${0}" ]]; then
   # shellcheck disable=SC2317 # reached only when sourced, which shellcheck can't see
   return 0 2>/dev/null || true

@@ -43,14 +43,14 @@ jobs:
           # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
 
-  # Skipped outside Renovate pull requests, so `Check CI results` doesn't
-  # need it.
+  # Not in `Check CI results`' needs: it skips on non-Renovate pull requests,
+  # which that job counts as a failure.
   fix-renovate-hooks:
     name: Fix hooks on Renovate branches
     permissions:
       contents: read
       id-token: write
-    # A reusable workflow's path plus its SHA pin can't fit 100 characters.
+    # A SHA-pinned reusable workflow can't be wrapped.
     # yamllint disable rule:line-length
     uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@ff872063ec22851e3a0e9d331a631fe61df40f57 # main
     # yamllint enable rule:line-length

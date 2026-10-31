@@ -2,9 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for terraform_lock_entry in install-terraform.sh. The download
-# and unzip are network side effects with no project-specific logic to
-# assert.
+# The download and unzip carry no project-specific logic, so only
+# terraform_lock_entry is tested.
 
 setup() {
   # shellcheck source=install-terraform.sh disable=SC1091
