@@ -86,6 +86,14 @@ module "git_worktree_poi" {
   name        = "git-worktree-poi"
   description = "Prune git worktrees whose branch has merged or whose upstream is gone, and report what's left in a gh-poi-style summary. Reach for it when a worktree-per-branch workflow leaves stale checkouts behind; run it by hand or on a systemd timer."
   topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
+  required_status_checks = {
+    contexts = [
+      "Run pre-commit hooks",
+      "Run the test suite",
+      "Check dependency policy",
+      "Build the x86_64 Linux release",
+    ]
+  }
 }
 
 module "network_arbitrary" {
