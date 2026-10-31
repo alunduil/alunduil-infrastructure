@@ -5,9 +5,8 @@ locals {
   # Merge commits are the only merge method that breaks linear history.
   merge_commits = var.merge_method == "merge"
 
-  # Rulesets match checks by exact name, so these are the job names in every
-  # managed repo's CI workflow. Only always-on jobs belong here: a required
-  # check that doesn't report blocks the merge.
+  # Only jobs that report on every pull request belong here; a required check
+  # that never reports blocks every merge.
   shared_required_checks = ["Run pre-commit hooks"]
 }
 

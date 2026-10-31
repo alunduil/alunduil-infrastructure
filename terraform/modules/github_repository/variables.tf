@@ -47,10 +47,9 @@ variable "required_status_checks" {
   default     = {}
   nullable    = false
   description = <<-EOT
-    Status checks that must pass before merging into the default branch,
-    on top of the shared checks every managed repo requires: the CI jobs
-    named in the module's shared_required_checks. A repo that renames one
-    of those jobs can't merge until it renames it back.
+    Status checks that must pass before merging into the default branch.
+    Every repo also requires the CI jobs in local.shared_required_checks;
+    renaming one of those jobs blocks that repo's merges.
 
     contexts are matched by check-run name. Only require check names that
     are unique on a PR — a name shared by several workflows can't be
