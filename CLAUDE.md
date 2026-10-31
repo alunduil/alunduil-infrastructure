@@ -21,7 +21,8 @@ Maintainer notes (HTML comments are stripped from Claude's context):
 - **Open draft PRs only.** Don't push to `main`; don't merge your
   own PRs. alunduil reviews and merges.
 - **Don't run `terraform apply`.** Merging a PR to `main` triggers
-  the apply in CI. `terraform plan` runs in CI on every PR and posts
+  the apply in CI. `terraform plan` runs in CI on every PR touching
+  Terraform and posts
   its output as a comment; local `just alunduil` is break-glass only.
 - **Follow-ups land in a new session and a new PR.** A merged PR
   is done — don't keep iterating on it for adjacent work.
