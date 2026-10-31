@@ -123,7 +123,9 @@ module "projects_v2_sync" {
   require_code_owner_review = true
   required_status_checks = {
     contexts = [
-      "Lint, typecheck, and test",
+      "Run pre-commit hooks",
+      "Run unit tests",
+      "Validate PR title",
       "Review dependencies",
       "Bundle is current",
       "Action loads and exits clean",
