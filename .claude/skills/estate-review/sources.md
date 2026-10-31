@@ -11,6 +11,8 @@ Agent briefs for the estate-review skill.
   or a proxy (logs, alerts).
 - Report what failed or couldn't be retrieved, instead of inferring around it.
 - Structure: broken, working, blind spots. About 800 words.
+- The home addresses: the fibre range `45.133.123.x`, and the O2 mobile
+  backup link's `82.132.x.x`.
 
 ## UptimeRobot
 
@@ -25,9 +27,8 @@ Probe: `list-monitors`.
 - Report each monitor's status, and its uptime computed from incident
   durations — the stats call returns only an aggregate.
 - Read the resolved IP from each Plex incident's request log, then classify:
-  - All timeouts, and the IP leaves the fibre range `45.133.123.x` (an O2
-    `82.132.x.x` address): failover to the mobile backup link, where DDNS
-    publishes a CGNAT address.
+  - All timeouts, and the IP moves from the fibre range to the mobile
+    backup range: failover, where DDNS publishes a CGNAT address.
   - `no route to host` → `connection refused` → `503` → `200`, IP stable:
     TrueNAS restarting.
   - 1–4 minutes of `connection timed out` on a stable fibre IP: a WAN blip.
@@ -167,17 +168,18 @@ gcloud logging read --freshness=7d --project=alunduil \
    AND NOT protoPayload.authenticationInfo.principalEmail=~"^github-deployer-"'
 ```
 
-alunduil's own bootstrap and break-glass runs from the home IP go under
-working. The home IP is the fibre range `45.133.123.x` named in the
-UptimeRobot brief. Anonymous `storage.objects.list` denials on the
-`blog.alunduil.com` bucket are scanners. #1 tracks deleting the bucket.
+These go under working:
+
+- alunduil's own bootstrap and break-glass runs from the home addresses.
+- Anonymous `storage.objects.list` denials on the `blog.alunduil.com`
+  bucket, from scanners. #1 tracks deleting the bucket.
 
 Tailscale (A-10): `tailscale status --json`. Probe: the same call. It passes
 when `BackendState` is `Running`. Any other state means the workstation is
-signed out: ask alunduil to sign in. Report offline devices, node keys
-expiring within the due-soon horizon or already expired, and whether both
-exit nodes and `homeassistant` are online. List these expired or expiring
-keys under working: offline phones, tablets and Chromebooks, which renew at
-their next sign-in, and `penguin`, the workstation, which alunduil renews
-from the CLI. The Chromecast is offline by design: it joins only when
-alunduil needs a nonstandard exit node.
+signed out: ask alunduil to sign in. Report offline devices, except the
+Chromecast, which joins only when alunduil needs a nonstandard exit node.
+Report node keys expiring within the due-soon horizon or already expired,
+and whether both exit nodes and `homeassistant` are online. List these
+expired or expiring keys under working: offline phones, tablets and
+Chromebooks, which renew at their next sign-in, and `penguin`, the
+workstation, which alunduil renews from the CLI.
