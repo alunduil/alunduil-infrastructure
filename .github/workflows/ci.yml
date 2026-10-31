@@ -58,9 +58,7 @@ jobs:
       hook-runner: prek
       # terraform_fmt is the only fixing hook that needs a tool prek doesn't
       # install.
-      setup: >-
-        scripts/install-terraform.sh --bin-dir "${HOME}/.local/bin"
-        && echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+      setup: scripts/install-terraform.sh
 
   bats:
     name: Run bats suites
