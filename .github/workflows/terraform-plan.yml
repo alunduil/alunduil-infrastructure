@@ -4,17 +4,14 @@
 
 name: Terraform Plan
 
+# Its own file, not a job in ci.yml: the read-only Tailscale credential
+# binds to this workflow's job_workflow_ref, which names the file.
+#
+# A required check whose workflow a paths: filter skips stays Pending
+# forever, so the changes job carries the paths instead. A job skipped by
+# its if: reports Success.
 on:
   pull_request:
-    paths:
-      - 'terraform/alunduil/**'
-      - 'terraform/modules/**'
-      - '.github/workflows/terraform-plan.yml'
-      - '.github/actions/terraform-providers/**'
-      - 'scripts/export-terraform-credentials.sh'
-      - 'scripts/eval-recording-rules.sh'
-      - 'mise.toml'
-      - 'mise.lock'
 
 permissions:
   contents: read
@@ -24,8 +21,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Separate from plan: that job claims the terraform-state slot before its
+  # first step, so filtering there would queue every pull request behind an
+  # in-flight apply.
+  changes:
+    name: Detect Terraform changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      terraform: ${{ steps.diff.outputs.terraform }}
+
+    steps:
+      # The pull_request checkout is the merge commit; its first parent is
+      # the base branch tip.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
+
+      - id: diff
+        run: |
+          if git diff --quiet HEAD^1 HEAD -- \
+            terraform/alunduil \
+            terraform/modules \
+            .github/workflows/terraform-plan.yml \
+            .github/actions/terraform-providers \
+            scripts/export-terraform-credentials.sh \
+            scripts/eval-recording-rules.sh \
+            mise.toml \
+            mise.lock
+          then
+            echo terraform=false >> "$GITHUB_OUTPUT"
+          else
+            echo terraform=true >> "$GITHUB_OUTPUT"
+          fi
+
+  # The default-branch ruleset requires this check by name, so renaming the
+  # job breaks the merge gate. A failed changes job also skips it, and so
+  # passes; the ruleset requires Detect Terraform changes too.
   plan:
     name: Plan Terraform changes
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight
