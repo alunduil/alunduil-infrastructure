@@ -184,7 +184,7 @@ module "woodland_generators" {
     contexts = [
       "Build every package",
       "Enforce Conventional Commits",
-      "Run every pre-commit hook",
+      "Run pre-commit hooks",
       "Audit production dependencies",
       "Scan for live secrets",
     ]
