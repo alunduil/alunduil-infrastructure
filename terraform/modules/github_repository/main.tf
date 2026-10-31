@@ -5,8 +5,6 @@ locals {
   # Merge commits are the only merge method that breaks linear history.
   merge_commits = var.merge_method == "merge"
 
-  renovate_automerge = var.required_status_checks.renovate_automerge
-
   # Rulesets match checks by exact name, so these are the job names in every
   # managed repo's CI workflow. Only always-on jobs belong here: a required
   # check that doesn't report blocks the merge.
@@ -86,7 +84,7 @@ locals {
   # it push to the default branch.
   merge_bypass_actors = concat(
     [local.admin_bypass_actor],
-    local.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
+    var.required_status_checks.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
   )
 }
 
@@ -242,7 +240,7 @@ moved {
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
-  count = local.renovate_automerge ? 1 : 0
+  count = var.required_status_checks.renovate_automerge ? 1 : 0
 
   name        = "renovate"
   repository  = github_repository.this.name
