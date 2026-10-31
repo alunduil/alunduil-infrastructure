@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-name: sync-project
+name: Hourly
 
 on:
   schedule:
@@ -25,9 +25,7 @@ jobs:
 
       - name: Run sync against github/projects/inbox.json
         env:
-          # Classic PAT created out-of-band and pushed via
-          # scripts/configure-github-secrets.sh. One token serves every
-          # board the script syncs. See
-          # docs/how-to/create-github-project-sync-token.md for scopes.
+          # One token serves every board the script syncs. Scopes:
+          # docs/how-to/create-github-project-sync-token.md.
           GH_PROJECT_SYNC_TOKEN: ${{ secrets.GH_PROJECT_SYNC_TOKEN }}
         run: ./scripts/sync-project.sh github/projects/inbox.json

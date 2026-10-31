@@ -24,7 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run:
+  plan:
+    name: Plan Terraform changes
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight

@@ -24,9 +24,9 @@ module "alunduil_chezmoi" {
 module "alunduil_infrastructure" {
   source = "../modules/github_repository"
   name   = "alunduil-infrastructure"
-  # sync-project reads GH_PROJECT_SYNC_TOKEN from this environment; the
-  # branch policy pins the token to main so a workflow_dispatch from an
-  # arbitrary branch can't reach it. Token injected out of band.
+  # The Hourly Inbox sync reads GH_PROJECT_SYNC_TOKEN from this
+  # environment. Pinning it to main keeps a workflow_dispatch on another
+  # branch from reaching the token. Terraform doesn't set the token.
   environments = {
     "project-sync" = { deployment_branches = ["main"] }
   }

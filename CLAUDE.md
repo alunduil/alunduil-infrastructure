@@ -21,8 +21,9 @@ Maintainer notes (HTML comments are stripped from Claude's context):
 - **Open draft PRs only.** Don't push to `main`; don't merge your
   own PRs. alunduil reviews and merges.
 - **Don't run `terraform apply`.** Merging a PR to `main` triggers
-  the apply in CI. `terraform plan` runs in CI on every PR and posts
-  its output as a comment; local `just alunduil` is break-glass only.
+  the apply in CI. `terraform plan` runs in CI on every PR touching
+  Terraform and posts its output as a comment; local `just alunduil`
+  is break-glass only.
 - **Follow-ups land in a new session and a new PR.** A merged PR
   is done — don't keep iterating on it for adjacent work.
 
@@ -93,5 +94,5 @@ in a scoped PR ships infra the reviewer didn't ask for.
   warnings don't. New terms go in `accept.txt` under
   `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
   casing for product names.
-- The `terraform-plan` job posts the plan as a PR comment. Don't
-  approve a merge until it looks right — merging applies it.
+- Approve a merge only once the plan comment looks right — merging
+  applies it.
