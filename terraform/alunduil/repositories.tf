@@ -9,7 +9,6 @@ module "alunduil_chezmoi" {
 
   required_status_checks = {
     contexts = [
-      "Run pre-commit hooks",
       "Test shell scripts",
       "Validate chezmoi source",
       "Validate zellij config",
@@ -57,7 +56,6 @@ module "blog_alunduil_com" {
       "Test skill scripts",
       "Test TypeScript utilities",
       "Build the site",
-      "Run pre-commit hooks",
       "Review dependencies",
     ]
     renovate_automerge = true
@@ -88,7 +86,6 @@ module "git_worktree_poi" {
   topics      = ["cli", "rust", "git", "git-worktree", "claude-code"]
   required_status_checks = {
     contexts = [
-      "Run pre-commit hooks",
       "Run the test suite",
       "Check dependency policy",
       "Build the x86_64 Linux release",
@@ -123,7 +120,6 @@ module "projects_v2_sync" {
   require_code_owner_review = true
   required_status_checks = {
     contexts = [
-      "Run pre-commit hooks",
       "Run unit tests",
       "Validate PR title",
       "Review dependencies",
@@ -139,9 +135,6 @@ module "renovate_config" {
   name        = "renovate-config"
   description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
   topics      = ["renovate", "renovate-config", "dependency-management"]
-  required_status_checks = {
-    contexts = ["Run pre-commit hooks"]
-  }
 }
 
 import {
@@ -186,7 +179,6 @@ module "woodland_generators" {
     contexts = [
       "Build every package",
       "Enforce Conventional Commits",
-      "Run pre-commit hooks",
       "Audit production dependencies",
       "Scan for live secrets",
     ]

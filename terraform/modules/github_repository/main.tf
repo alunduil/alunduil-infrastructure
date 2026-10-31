@@ -5,7 +5,12 @@ locals {
   # Merge commits are the only merge method that breaks linear history.
   merge_commits = var.merge_method == "merge"
 
-  renovate_automerge = var.required_status_checks != null ? var.required_status_checks.renovate_automerge : false
+  renovate_automerge = var.required_status_checks.renovate_automerge
+
+  # Rulesets match checks by exact name, so these are the job names in every
+  # managed repo's CI workflow. Only always-on jobs belong here: a required
+  # check that doesn't report blocks the merge.
+  shared_required_checks = ["Run pre-commit hooks"]
 }
 
 resource "github_repository" "this" {
@@ -197,8 +202,6 @@ resource "github_repository_ruleset" "review" {
 # No bypass actors: a merge that bypasses any ruleset skips every rule its
 # merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
-  count = var.required_status_checks != null ? 1 : 0
-
   name        = "checks"
   repository  = github_repository.this.name
   target      = "branch"
@@ -219,6 +222,7 @@ resource "github_repository_ruleset" "checks" {
 
       dynamic "required_check" {
         for_each = concat(
+          local.shared_required_checks,
           var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
           var.required_status_checks.contexts,
         )
@@ -228,6 +232,11 @@ resource "github_repository_ruleset" "checks" {
       }
     }
   }
+}
+
+moved {
+  from = github_repository_ruleset.checks[0]
+  to   = github_repository_ruleset.checks
 }
 
 # Without this, anyone who can push to a Renovate branch could add commits to a

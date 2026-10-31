@@ -44,11 +44,15 @@ variable "required_status_checks" {
     require_up_to_date = optional(bool, false)
     renovate_automerge = optional(bool, false)
   })
-  default     = null
+  default     = {}
+  nullable    = false
   description = <<-EOT
-    Status checks that must pass before merging into the default branch.
-    contexts are matched by check-run name. Omit to leave the branch
-    ungated (the baseline for most repos). Only require check names that
+    Status checks that must pass before merging into the default branch,
+    on top of the shared checks every managed repo requires: the CI jobs
+    named in the module's shared_required_checks. A repo that renames one
+    of those jobs can't merge until it renames it back.
+
+    contexts are matched by check-run name. Only require check names that
     are unique on a PR — a name shared by several workflows can't be
     pinned to one of them.
 
