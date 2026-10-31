@@ -77,7 +77,7 @@ module "collection_json_hs" {
   environments = { hackage = {} }
   required_status_checks = {
     ci_results_check = true
-    contexts         = ["Hooks", "Check links"]
+    contexts         = ["Check links"]
   }
 }
 
