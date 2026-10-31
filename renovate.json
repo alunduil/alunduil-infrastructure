@@ -10,6 +10,9 @@
   "timezone": "Europe/London",
   "reviewers": ["alunduil"],
   "labels": ["dependencies"],
+  "gitIgnoredAuthors": [
+    "342169994+alunduil-hook-fix[bot]@users.noreply.github.com"
+  ],
   "minimumReleaseAge": "3 days",
   "osvVulnerabilityAlerts": true,
   "pre-commit": {
