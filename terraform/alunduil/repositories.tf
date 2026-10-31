@@ -135,7 +135,7 @@ module "projects_v2_sync" {
 module "renovate_config" {
   source      = "../modules/github_repository"
   name        = "renovate-config"
-  description = "Shared Renovate policy to extend from any repo's renovate.json, plus a reusable workflow that pushes hook fixes to Renovate branches."
+  description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
   topics      = ["renovate", "renovate-config", "dependency-management"]
   required_status_checks = {
     contexts = ["Run pre-commit hooks"]
