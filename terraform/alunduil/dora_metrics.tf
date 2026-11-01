@@ -11,6 +11,9 @@ locals {
   dora_window_seconds   = 30 * 86400
   dora_interval_seconds = 3600
 
+  # A rule that misses this many evaluations in a row alerts.
+  dora_missed_evaluations = 3
+
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
   dora_short_lookback_seconds = local.dora_window_seconds + 86400
@@ -153,6 +156,10 @@ resource "grafana_rule_group" "dora" {
   }
 }
 
+data "grafana_data_source" "prometheus" {
+  uid = "grafanacloud-prom"
+}
+
 # dora_deploys reports both outcomes every evaluation, so its absence means
 # the repository's rules failed. The median series go missing whenever the
 # window has nothing to measure, so they can't tell failure from a quiet month.
@@ -171,22 +178,21 @@ resource "grafana_rule_group" "dora_recording" {
 
     data {
       ref_id         = "A"
-      datasource_uid = "grafanacloud-prom"
+      datasource_uid = data.grafana_data_source.prometheus.uid
       relative_time_range {
         from = 600
         to   = 0
       }
       model = jsonencode({
         refId      = "A"
-        datasource = { type = "prometheus", uid = "grafanacloud-prom" }
+        datasource = { type = data.grafana_data_source.prometheus.type, uid = data.grafana_data_source.prometheus.uid }
         instant    = true
         range      = false
         # An equality matcher carries its label onto absent_over_time's
-        # result, so each failing repository fires its own alert. The range
-        # spans three of the recording rules' hourly evaluations.
+        # result, so each failing repository fires its own alert.
         expr = join(" or ", [
           for name in keys(local.dora_targets) :
-          "absent_over_time(dora_deploys{repository=\"${name}\"}[${3 * local.dora_interval_seconds}s])"
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_missed_evaluations * local.dora_interval_seconds}s])"
         ])
       })
     }
