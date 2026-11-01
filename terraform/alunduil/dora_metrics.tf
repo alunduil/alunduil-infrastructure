@@ -8,7 +8,8 @@
 # evaluation timeout.
 
 locals {
-  dora_window_seconds = 30 * 86400
+  dora_window_seconds   = 30 * 86400
+  dora_interval_seconds = 3600
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
@@ -87,7 +88,7 @@ resource "grafana_rule_group" "dora" {
 
   name             = each.key
   folder_uid       = grafana_folder.dora.uid
-  interval_seconds = 3600
+  interval_seconds = local.dora_interval_seconds
 
   dynamic "rule" {
     for_each = local.dora_metrics
@@ -148,6 +149,62 @@ resource "grafana_rule_group" "dora" {
           })
         })
       }
+    }
+  }
+}
+
+# dora_deploys reports both outcomes every evaluation, so its absence means
+# the repository's rules failed. The median series go missing whenever the
+# window has nothing to measure, so they can't tell failure from a quiet month.
+resource "grafana_rule_group" "dora_recording" {
+  name             = "Recording"
+  folder_uid       = grafana_folder.dora.uid
+  interval_seconds = 300
+
+  rule {
+    name           = "DORA rules stopped recording"
+    condition      = "C"
+    for            = "0s"
+    no_data_state  = "OK"
+    exec_err_state = "Error"
+    labels         = { severity = "warning" }
+
+    data {
+      ref_id         = "A"
+      datasource_uid = "grafanacloud-prom"
+      relative_time_range {
+        from = 600
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "A"
+        datasource = { type = "prometheus", uid = "grafanacloud-prom" }
+        instant    = true
+        range      = false
+        # An equality matcher carries its label onto absent_over_time's
+        # result, so each failing repository fires its own alert. The range
+        # spans three of the recording rules' hourly evaluations.
+        expr = join(" or ", [
+          for name in keys(local.dora_targets) :
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${3 * local.dora_interval_seconds}s])"
+        ])
+      })
+    }
+
+    data {
+      ref_id         = "C"
+      datasource_uid = "__expr__"
+      relative_time_range {
+        from = 600
+        to   = 0
+      }
+      model = jsonencode({
+        refId      = "C"
+        type       = "threshold"
+        datasource = { type = "__expr__", uid = "__expr__" }
+        expression = "A"
+        conditions = [{ evaluator = { type = "gt", params = [0] } }]
+      })
     }
   }
 }
