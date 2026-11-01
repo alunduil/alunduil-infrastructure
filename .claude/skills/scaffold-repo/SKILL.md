@@ -1,6 +1,6 @@
 ---
 name: scaffold-repo
-description: Scaffold a new GitHub repository for the alunduil org end to end. Classifies each github_repository module input as shared/archetype-shared/specific against the module and the existing repositories.tf, creates the repo (confirmed, via gh) so Terraform can adopt it, emits the module block plus the adoption import in one draft PR, and files a follow-up to remove the import after apply. Use when adding a repo to a Terraform repositories.tf.
+description: Scaffold a new GitHub repository for the alunduil org end to end. Classifies each github_repository module input as shared/archetype-shared/specific against the module and the existing repositories.tf, creates the repo (confirmed, via gh) so Terraform can adopt it, emits the repositories map entry plus the adoption import in one draft PR, and files a follow-up to remove the import after apply. Use when adding a repo to a Terraform repositories.tf.
 ---
 
 # Scaffold a new repository
@@ -30,7 +30,8 @@ Two hard rules:
    `main.tf` for settings hardcoded on every repo (public visibility,
    squash-only merges, secret scanning, the default ruleset, vuln alerts).
    Those aren't inputs — never restate them in a block.
-2. Read every `terraform/*/repositories.tf`; tally each input's values.
+2. Read every `terraform/*/repositories.tf`; tally each input's values
+   across the `local.repositories` entries.
 3. Classify each input:
    - **Shared** — matches the module default; leave it unset.
    - **Archetype-shared** — set across the cluster the repo joins; copy its
@@ -49,9 +50,13 @@ Two hard rules:
    - Static site / Pages: `pages` + `homepage_url` + a build check;
      `github-pages` topic.
    - Rust/WASM plugin, CLI: topic conventions only.
-5. Draft `module "<name_underscored>"` (dots/dashes → underscores), setting
-   only archetype-shared and specific values in declaration order. Leave
-   `=` alignment to `terraform_fmt`.
+5. Draft a `local.repositories` entry keyed by the repository name,
+   setting only archetype-shared and specific values in declaration order.
+   Leave `=` alignment to `terraform_fmt`.
+6. Ask how the repository deploys. A repository that deploys gets a
+   `deploy` declaration and a matching row in the Repositories table of
+   `docs/reference/delivery-metrics.md`, which defines each class, workflow
+   and filter. A repository that never deploys leaves `deploy` unset.
 
 ## Path A — net-new repo
 
@@ -64,12 +69,12 @@ Two hard rules:
    `--add-readme` is required: it seeds a commit on `main` so
    `github_branch_default` has a branch to point at. Empty repo → apply
    fails setting the default branch.
-2. Add the module block and, beside it, the repository import (import
+2. Add the map entry and, beside the module, the repository import (import
    blocks are not permitted in child modules):
 
    ```hcl
    import {
-     to = module.<name>.github_repository.this
+     to = module.repository["<name>"].github_repository.this
      id = "<name>"
    }
    ```
@@ -79,14 +84,14 @@ Two hard rules:
 
 ## Path B — adopt an existing untracked repo
 
-1. Add the module block + repository import (as in Path A, no create).
+1. Add the map entry + repository import (as in Path A, no create).
 2. Repo already has a hand-made `default` ruleset → first apply hits 422
    "Name must be unique". Import it too, id from
    `gh api repos/alunduil/<name>/rulesets` (the `default` entry):
 
    ```hcl
    import {
-     to = module.<name>.github_repository_ruleset.default
+     to = module.repository["<name>"].github_repository_ruleset.default
      id = "<name>:<ruleset_id>"
    }
    ```

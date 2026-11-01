@@ -15,20 +15,6 @@ locals {
   dora_short_lookback_seconds = local.dora_window_seconds + 86400
   dora_long_lookback_seconds  = 2 * 365 * 86400
 
-  # Workflow and filter per the doc's Repositories table. A run without an
-  # event matches any event.
-  dora_repositories = {
-    "alunduil-infrastructure" = { class = "run", workflow = "terraform-apply.yml", branch = "main" }
-    "blog.alunduil.com"       = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
-    "collection-json.hs"      = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
-    "network-arbitrary"       = { class = "run", workflow = "release.yml", event = "release" }
-    "zfs-replicate"           = { class = "run", workflow = "release.yml", event = "release" }
-    "woodland-generators"     = { class = "release" }
-    "siren-json.hs"           = { class = "release" }
-    "renovate-config"         = { class = "merge" }
-    "alunduil-chezmoi"        = { class = "merge" }
-  }
-
   dora_metrics = {
     deploys                      = { metric = "deploys", statistic = "" }
     lead_time_seconds_bucket     = { metric = "lead_time", statistic = "bucket" }
@@ -43,12 +29,18 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  dora_shapes = {
-    for name, repo in local.dora_repositories : name => merge(
+  dora_deploys = {
+    for name, repo in local.repositories : name => merge(
       { workflow = "", branch = "", event = "" },
-      repo,
-      { ships_by_commit = repo.class == "run" && contains(["", "push"], lookup(repo, "event", "")) },
-    )
+      repo.deploy,
+      { default_branch = module.repository[name].default_branch },
+    ) if lookup(repo, "deploy", null) != null
+  }
+
+  dora_shapes = {
+    for name, deploy in local.dora_deploys : name => merge(deploy, {
+      ships_by_commit = deploy.class == "run" && contains(["", "push"], deploy.event)
+    })
   }
 
   dora_targets = {
@@ -72,7 +64,7 @@ locals {
         repo.ships_by_commit ? [{
           ref_id     = "C"
           query_type = "Commits"
-          options    = { gitRef = "main" }
+          options    = { gitRef = repo.default_branch }
         }] : [],
         [{
           ref_id     = "P"

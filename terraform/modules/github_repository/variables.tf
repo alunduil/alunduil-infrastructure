@@ -9,6 +9,7 @@ variable "name" {
 variable "description" {
   type        = string
   default     = ""
+  nullable    = false
   description = "Short repository description."
 }
 
@@ -21,12 +22,14 @@ variable "homepage_url" {
 variable "topics" {
   type        = list(string)
   default     = []
+  nullable    = false
   description = "GitHub topics applied to the repository."
 }
 
 variable "default_branch" {
   type        = string
   default     = "main"
+  nullable    = false
   description = <<-EOT
     Branch treated as default and protected. Override only for repos
     predating the main convention. When changing this on an existing
@@ -77,6 +80,7 @@ variable "required_status_checks" {
 variable "require_code_owner_review" {
   type        = bool
   default     = false
+  nullable    = false
   description = <<-EOT
     Require an approving review from a code owner before merging into the
     default branch. Gates a pull request whenever CODEOWNERS assigns an
@@ -88,6 +92,7 @@ variable "require_code_owner_review" {
 variable "admin_only_updates" {
   type        = bool
   default     = true
+  nullable    = false
   description = <<-EOT
     Only the repository admin, and Renovate under
     required_status_checks.renovate_automerge, can update the default
@@ -99,6 +104,7 @@ variable "admin_only_updates" {
 variable "merge_method" {
   type        = string
   default     = "squash"
+  nullable    = false
   description = <<-EOT
     How pull requests merge into the default branch: "squash" or "merge".
     "merge" also lifts the linear-history requirement.
@@ -113,6 +119,7 @@ variable "merge_method" {
 variable "has_discussions" {
   type        = bool
   default     = false
+  nullable    = false
   description = "Enable GitHub Discussions on the repository."
 }
 
@@ -131,6 +138,7 @@ variable "environments" {
     deployment_branches = optional(list(string), [])
   }))
   default     = {}
+  nullable    = false
   description = <<-EOT
     Deployment environments, keyed by name. Each scopes its own secrets
     (e.g. a Hackage upload token, injected out of band) and gives a
@@ -164,6 +172,7 @@ variable "pages" {
 variable "allowed_action_patterns" {
   type        = list(string)
   default     = []
+  nullable    = false
   description = <<-EOT
     Actions only this repo calls, as owner/repo@* patterns, including
     those nested in composite actions. GitHub-owned actions and those
