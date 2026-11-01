@@ -53,11 +53,10 @@ Two hard rules:
 5. Draft a `local.repositories` entry keyed by the repository name,
    setting only archetype-shared and specific values in declaration order.
    Leave `=` alignment to `terraform_fmt`.
-6. Ask how the repository deploys. One that deploys gets a `deploy`
-   declaration and a matching row in the Repositories table of
-   `docs/reference/delivery-metrics.md`; the table defines each class,
-   workflow and filter. Leave `deploy` unset for a repository that never
-   deploys.
+6. Ask how the repository deploys. A repository that deploys gets a
+   `deploy` declaration and a matching row in the Repositories table of
+   `docs/reference/delivery-metrics.md`, which defines each class, workflow
+   and filter. A repository that never deploys leaves `deploy` unset.
 
 ## Path A — net-new repo
 

@@ -2,13 +2,11 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # Keyed by repository name. Each entry sets the github_repository inputs
-  # it overrides; an unset input takes the module's default.
+  # An input an entry leaves unset takes the module's default.
   #
-  # deploy declares the repository's deploy for the DORA recording rules, per
-  # the Repositories table in docs/reference/delivery-metrics.md. A repository
-  # without one records no DORA metrics. A run without an event matches any
-  # event.
+  # deploy matches the repository's row in the Repositories table of
+  # docs/reference/delivery-metrics.md. A repository without one records no
+  # DORA metrics. A run without an event matches any event.
   repositories = {
     "alunduil-chezmoi" = {
       description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
@@ -60,9 +58,9 @@ locals {
       }
       # .github/CODEOWNERS assigns every path to @alunduil.
       require_code_owner_review = true
-      # Deviates from the baseline (squash only). The AstroPaper theme syncs by
-      # merging upstream, and each sync diffs against the upstream parent that only
-      # a merge commit keeps.
+      # Deviates from the baseline (squash only). The AstroPaper theme syncs
+      # by merging upstream, and each sync diffs against the upstream parent
+      # that only a merge commit keeps.
       merge_method = "merge"
       pages = {
         cname          = "blog.alunduil.com"
@@ -177,9 +175,9 @@ locals {
       # .github/CODEOWNERS assigns every path to @alunduil.
       require_code_owner_review = true
       # Deviates from the baseline (discussions off). The repo sets
-      # blank_issues_enabled: false and routes every non-bug, non-feature path to a
-      # Discussions category from .github/ISSUE_TEMPLATE/config.yml, so disabling
-      # this leaves help-seekers with nowhere to land.
+      # blank_issues_enabled: false and routes every non-bug, non-feature path
+      # to a Discussions category from .github/ISSUE_TEMPLATE/config.yml, so
+      # disabling this leaves help-seekers with nowhere to land.
       has_discussions = true
       template = {
         owner      = "League-of-Foundry-Developers"
