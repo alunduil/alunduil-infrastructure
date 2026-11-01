@@ -1,27 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices",
-    "security:openssf-scorecard",
-    "customManagers:githubActionsVersions",
+    "github>alunduil/renovate-config",
     ":automergeMinor",
     ":automergeDigest"
   ],
-  "timezone": "Europe/London",
-  "reviewers": ["alunduil"],
-  "labels": ["dependencies"],
-  "gitIgnoredAuthors": [
-    "342169994+alunduil-hook-fix[bot]@users.noreply.github.com"
-  ],
-  "minimumReleaseAge": "3 days",
-  "osvVulnerabilityAlerts": true,
-  "pre-commit": {
-    "enabled": true
-  },
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Annotated *_VERSION pins in the install scripts. The paired sha256 is not updated, so the build fails its checksum until the pin is refreshed by hand",
+      "description": "Renovate leaves the paired sha256 alone, so a bump fails its checksum until someone refreshes it",
       "managerFilePatterns": ["/^scripts/install-.*\\.sh$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
@@ -30,35 +17,17 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
-      "groupName": "reuse"
-    },
-    {
       "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
       "matchDepNames": ["prek"],
       "groupName": "prek"
     },
     {
-      "description": "Update types with no release timestamp can never satisfy the bake, and internalChecksFilter defaults to strict, so without this they stall on a pending renovate/stability-days check forever",
-      "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "lockfileUpdate",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
-      "minimumReleaseAge": null
-    },
-    {
-      "description": "Provider and Terraform updates change every later plan, bootstrap's included, so they wait for review",
+      "description": "Provider and Terraform updates change every later plan, bootstrap's included",
       "matchManagers": ["terraform"],
       "automerge": false
     },
     {
-      "description": "Merging any path terraform-apply.yml triggers on applies it, so these wait for review. Renovate automerges a branch only when every upgrade in it qualifies, so one matching file holds the whole pull request. Lists every terraform-apply.yml paths entry",
+      "description": "Merging a change to any of terraform-apply.yml's paths applies it. One matching file holds the whole pull request, because Renovate automerges a branch only when every upgrade in it qualifies. Keep in step with terraform-apply.yml's paths",
       "matchFileNames": [
         "terraform/alunduil/**",
         "terraform/modules/**",

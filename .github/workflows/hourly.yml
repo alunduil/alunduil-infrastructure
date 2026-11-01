@@ -15,7 +15,7 @@ permissions:
 jobs:
   inbox:
     name: Sync the Inbox board
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: project-sync
     timeout-minutes: 30
 
