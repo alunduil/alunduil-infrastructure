@@ -17,10 +17,6 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["reuse", "fsfe/reuse-tool"],
-      "groupName": "reuse"
-    },
-    {
       "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
       "matchDepNames": ["prek"],
       "groupName": "prek"
