@@ -25,7 +25,7 @@ jobs:
   # apply.
   changes:
     name: Detect Terraform changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       changed: ${{ steps.diff.outputs.changed }}
@@ -59,7 +59,7 @@ jobs:
     name: Plan Terraform changes
     needs: changes
     if: needs.changes.outputs.changed == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight
     # apply. The read-only deployer SA can't write a .tflock object, so the
