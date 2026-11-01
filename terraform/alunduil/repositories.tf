@@ -32,6 +32,8 @@ module "alunduil_infrastructure" {
   allowed_action_patterns = ["devcontainers/ci@*"]
   required_status_checks = {
     ci_results_check = true
+    # A failed detect job skips the plan, and a skipped job passes.
+    contexts = ["Detect Terraform changes", "Plan Terraform changes"]
     # renovate.json holds back every update that would trigger an apply.
     renovate_automerge = true
   }

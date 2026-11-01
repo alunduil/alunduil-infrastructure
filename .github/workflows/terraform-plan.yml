@@ -4,17 +4,10 @@
 
 name: Terraform Plan
 
+# The read-only Tailscale credential matches this file's path in
+# job_workflow_ref, so the plan keeps its own workflow.
 on:
   pull_request:
-    paths:
-      - 'terraform/alunduil/**'
-      - 'terraform/modules/**'
-      - '.github/workflows/terraform-plan.yml'
-      - '.github/actions/terraform-providers/**'
-      - 'scripts/export-terraform-credentials.sh'
-      - 'scripts/eval-recording-rules.sh'
-      - 'mise.toml'
-      - 'mise.lock'
 
 permissions:
   contents: read
@@ -24,8 +17,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # A required check skipped by a trigger paths: filter stays Pending forever.
+  # One skipped by a job's if: reports Success.
+  #
+  # Plan queues for the terraform-state slot before its first step, so
+  # filtering inside it would hold every pull request behind an in-flight
+  # apply.
+  changes:
+    name: Detect Terraform changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+
+    steps:
+      # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
+
+      - id: diff
+        run: |
+          if git diff --quiet HEAD^1 HEAD -- \
+            terraform/alunduil \
+            terraform/modules \
+            .github/workflows/terraform-plan.yml \
+            .github/actions/terraform-providers \
+            scripts/export-terraform-credentials.sh \
+            scripts/eval-recording-rules.sh \
+            mise.toml \
+            mise.lock
+          then
+            echo changed=false >> "$GITHUB_OUTPUT"
+          else
+            echo changed=true >> "$GITHUB_OUTPUT"
+          fi
+
+  # The default-branch ruleset requires this check by name, so renaming the
+  # job breaks the merge gate.
   plan:
     name: Plan Terraform changes
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight
