@@ -53,6 +53,7 @@ locals {
           "Test TypeScript utilities",
           "Build the site",
           "Review dependencies",
+          "Check workflow dry runs",
         ]
         renovate_automerge = true
       }
