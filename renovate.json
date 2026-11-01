@@ -8,7 +8,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Annotated *_VERSION pins in the install scripts. The paired sha256 is not updated, so the build fails its checksum until the pin is refreshed by hand",
+      "description": "Renovate leaves the paired sha256 alone, so a bump fails its checksum until someone refreshes it",
       "managerFilePatterns": ["/^scripts/install-.*\\.sh$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
@@ -22,12 +22,12 @@
       "groupName": "prek"
     },
     {
-      "description": "Provider and Terraform updates change every later plan, bootstrap's included, so they wait for review",
+      "description": "Provider and Terraform updates change every later plan, bootstrap's included",
       "matchManagers": ["terraform"],
       "automerge": false
     },
     {
-      "description": "Merging any path terraform-apply.yml triggers on applies it, so these wait for review. Renovate automerges a branch only when every upgrade in it qualifies, so one matching file holds the whole pull request. Lists every terraform-apply.yml paths entry",
+      "description": "Merging a change to any of terraform-apply.yml's paths applies it. One matching file holds the whole pull request, because Renovate automerges a branch only when every upgrade in it qualifies. Keep in step with terraform-apply.yml's paths",
       "matchFileNames": [
         "terraform/alunduil/**",
         "terraform/modules/**",
