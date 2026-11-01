@@ -186,8 +186,7 @@ resource "github_repository_ruleset" "review" {
   }
 
   rules {
-    # Code owner review is a separate condition from the review count, so a
-    # repo gates on CODEOWNERS while the count stays at 0. A repo without
+    # A review count of 0 still enforces code-owner review. A repo without
     # .github/CODEOWNERS on its default branch isn't gated.
     pull_request {
       required_approving_review_count   = 0
