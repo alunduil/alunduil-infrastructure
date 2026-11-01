@@ -1,9 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The push, SMS, and voice-call order is an IRM personal notification rule,
-# set by hand in IRM's user settings. Managing it here needs an IRM API
-# token on top of the stack service account.
+# alunduil's contact methods, and the order IRM tries them, are IRM user
+# settings managed by hand.
 
 data "grafana_oncall_user" "alunduil" {
   username = "alunduil"
@@ -29,16 +28,11 @@ resource "grafana_oncall_integration" "grafana_alerting" {
   }
 }
 
-# Email goes out with every page so an alert still lands when IRM is down.
 resource "grafana_contact_point" "alunduil" {
   name = "alunduil"
 
   oncall {
     url = grafana_oncall_integration.grafana_alerting.link
-  }
-
-  email {
-    addresses = [data.grafana_oncall_user.alunduil.email]
   }
 }
 
