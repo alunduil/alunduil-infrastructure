@@ -198,7 +198,8 @@ beyond it.
 
 - Description: stack `alunduil` in `prod-gb-south-1`. Metrics, logs,
   traces, profiles, and dashboards, syncing
-  from this repository's `grafana/` directory through Git Sync
+  from this repository's `grafana/` directory through Git Sync.
+  Alerts page P-1 through IRM, declared in `terraform/alunduil/alerting.tf`
 - Exposed to: T-1. Its API is public
 - Administered by: P-3
 
