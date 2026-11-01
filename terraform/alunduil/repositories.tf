@@ -203,8 +203,9 @@ module "zellij_claude_pair" {
   description = "Zellij plugin for the Claude Code pairing workflow: in-session repo picker and branch/PR status widgets plus worktree session orchestration."
   topics      = ["zellij", "zellij-plugin", "claude-code", "rust", "wasm"]
   required_status_checks = {
-    ci_results_check = true
-    contexts         = ["Enforce Conventional Commits"]
+    ci_results_check   = true
+    contexts           = ["Enforce Conventional Commits"]
+    renovate_automerge = true
   }
 }
 
