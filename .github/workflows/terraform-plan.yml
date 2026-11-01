@@ -6,10 +6,6 @@ name: Terraform Plan
 
 # Its own file, not a job in ci.yml: the read-only Tailscale credential
 # binds to this workflow's job_workflow_ref, which names the file.
-#
-# A required check whose workflow a paths: filter skips stays Pending
-# forever, so the changes job carries the paths instead. A job skipped by
-# its if: reports Success.
 on:
   pull_request:
 
@@ -21,15 +17,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Separate from plan: that job claims the terraform-state slot before its
-  # first step, so filtering there would queue every pull request behind an
-  # in-flight apply.
+  # Carries the paths in place of a trigger paths: filter, which would leave
+  # the required plan check Pending forever. A job skipped by its if:
+  # reports Success. Separate from plan: that job claims the terraform-state
+  # slot before its first step, so filtering there would queue every pull
+  # request behind an in-flight apply.
   changes:
     name: Detect Terraform changes
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      terraform: ${{ steps.diff.outputs.terraform }}
+      changed: ${{ steps.diff.outputs.changed }}
 
     steps:
       # The pull_request checkout is the merge commit; its first parent is
@@ -50,18 +48,17 @@ jobs:
             mise.toml \
             mise.lock
           then
-            echo terraform=false >> "$GITHUB_OUTPUT"
+            echo changed=false >> "$GITHUB_OUTPUT"
           else
-            echo terraform=true >> "$GITHUB_OUTPUT"
+            echo changed=true >> "$GITHUB_OUTPUT"
           fi
 
   # The default-branch ruleset requires this check by name, so renaming the
-  # job breaks the merge gate. A failed changes job also skips it, and so
-  # passes; the ruleset requires Detect Terraform changes too.
+  # job breaks the merge gate.
   plan:
     name: Plan Terraform changes
     needs: changes
-    if: needs.changes.outputs.terraform == 'true'
+    if: needs.changes.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Joins terraform-apply.yml's group so a plan waits out an in-flight
