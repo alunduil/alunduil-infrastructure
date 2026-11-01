@@ -42,7 +42,7 @@ resource "grafana_contact_point" "alunduil" {
   }
 
   email {
-    addresses = ["alunduil@gmail.com"]
+    addresses = [data.grafana_oncall_user.alunduil.email]
   }
 }
 
