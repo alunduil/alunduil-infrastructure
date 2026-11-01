@@ -11,7 +11,6 @@ locals {
   dora_window_seconds   = 30 * 86400
   dora_interval_seconds = 3600
 
-  # A rule that misses this many evaluations in a row alerts.
   dora_missed_evaluations = 3
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
@@ -160,11 +159,11 @@ data "grafana_data_source" "prometheus" {
   uid = "grafanacloud-prom"
 }
 
-# dora_deploys reports both outcomes every evaluation, so its absence means
-# the repository's rules failed. The median series go missing whenever the
-# window has nothing to measure, so they can't tell failure from a quiet month.
+# dora_deploys records both outcomes every evaluation, even with no deploys,
+# so its absence means the repository's rules failed. A median series is
+# also absent while the window has nothing to measure.
 resource "grafana_rule_group" "dora_recording" {
-  name             = "Recording"
+  name             = "Alerts"
   folder_uid       = grafana_folder.dora.uid
   interval_seconds = 300
 
