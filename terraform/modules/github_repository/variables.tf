@@ -79,7 +79,7 @@ variable "required_status_checks" {
 
 variable "require_code_owner_review" {
   type        = bool
-  default     = false
+  default     = true
   nullable    = false
   description = <<-EOT
     Require an approving review from a code owner before merging into the
