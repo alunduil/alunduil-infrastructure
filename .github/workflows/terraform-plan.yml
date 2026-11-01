@@ -17,10 +17,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # A required check skipped by a trigger paths: filter stays Pending forever;
-  # one skipped by a job's if: reports Success. Plan queues for the
-  # terraform-state slot before its first step, so filtering inside it would
-  # hold every pull request behind an in-flight apply.
+  # A required check skipped by a trigger paths: filter stays Pending forever.
+  # One skipped by a job's if: reports Success.
+  #
+  # Plan queues for the terraform-state slot before its first step, so
+  # filtering inside it would hold every pull request behind an in-flight
+  # apply.
   changes:
     name: Detect Terraform changes
     runs-on: ubuntu-latest
