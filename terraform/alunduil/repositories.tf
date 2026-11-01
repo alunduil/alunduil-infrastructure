@@ -93,6 +93,7 @@ locals {
           "Check dependency policy",
           "Build the x86_64 Linux release",
         ]
+        renovate_automerge = true
       }
     }
 
