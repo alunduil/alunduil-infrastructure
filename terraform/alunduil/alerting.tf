@@ -1,11 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Every firing Grafana alert reaches alunduil through IRM, which pages by
-# mobile push, SMS, and voice call. The order and delays between those
-# channels are IRM personal notification rules, set by hand in IRM's user
-# settings: managing them here would need a separate IRM API token, which
-# the stack service account can't stand in for.
+# The push, SMS, and voice-call order is an IRM personal notification rule,
+# set by hand in IRM's user settings. Managing it here needs an IRM API
+# token on top of the stack service account.
 
 data "grafana_oncall_user" "alunduil" {
   username = "alunduil"
@@ -31,9 +29,7 @@ resource "grafana_oncall_integration" "grafana_alerting" {
   }
 }
 
-# A contact point notifies through every integration it holds at once, so
-# the email goes out alongside the IRM page rather than after it fails. It
-# still arrives when IRM is down.
+# Email goes out with every page so an alert still lands when IRM is down.
 resource "grafana_contact_point" "alunduil" {
   name = "alunduil"
 
