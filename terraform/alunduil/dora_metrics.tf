@@ -29,15 +29,18 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  dora_shapes = {
+  dora_deploys = {
     for name, repo in local.repositories : name => merge(
       { workflow = "", branch = "", event = "" },
       repo.deploy,
-      {
-        default_branch  = module.repository[name].default_branch
-        ships_by_commit = repo.deploy.class == "run" && contains(["", "push"], lookup(repo.deploy, "event", ""))
-      },
+      { default_branch = module.repository[name].default_branch },
     ) if lookup(repo, "deploy", null) != null
+  }
+
+  dora_shapes = {
+    for name, deploy in local.dora_deploys : name => merge(deploy, {
+      ships_by_commit = deploy.class == "run" && contains(["", "push"], deploy.event)
+    })
   }
 
   dora_targets = {
