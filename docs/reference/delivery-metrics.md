@@ -191,6 +191,8 @@ a `repository` label.
 : Your failed deploys recovered within `le` seconds.
 
 A median series is absent while the window has nothing to measure.
+A repository whose `dora_deploys` is absent for three hourly
+evaluations raises the **DORA rules stopped recording** alert.
 
 ## SPACE metrics
 
