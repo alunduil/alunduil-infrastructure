@@ -1,23 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices",
-    "security:openssf-scorecard",
-    "customManagers:githubActionsVersions",
+    "github>alunduil/renovate-config",
     ":automergeMinor",
     ":automergeDigest"
   ],
-  "timezone": "Europe/London",
-  "reviewers": ["alunduil"],
-  "labels": ["dependencies"],
-  "gitIgnoredAuthors": [
-    "342169994+alunduil-hook-fix[bot]@users.noreply.github.com"
-  ],
-  "minimumReleaseAge": "3 days",
-  "osvVulnerabilityAlerts": true,
-  "pre-commit": {
-    "enabled": true
-  },
   "customManagers": [
     {
       "customType": "regex",
@@ -37,20 +24,6 @@
       "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
       "matchDepNames": ["prek"],
       "groupName": "prek"
-    },
-    {
-      "description": "Update types with no release timestamp can never satisfy the bake, and internalChecksFilter defaults to strict, so without this they stall on a pending renovate/stability-days check forever",
-      "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "lockfileUpdate",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
-      "minimumReleaseAge": null
     },
     {
       "description": "Provider and Terraform updates change every later plan, bootstrap's included, so they wait for review",
