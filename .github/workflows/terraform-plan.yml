@@ -4,8 +4,8 @@
 
 name: Terraform Plan
 
-# Its own file, not a job in ci.yml: the read-only Tailscale credential
-# binds to this workflow's job_workflow_ref, which names the file.
+# The read-only Tailscale credential matches this file's path in
+# job_workflow_ref, so the plan keeps its own workflow.
 on:
   pull_request:
 
@@ -17,11 +17,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Carries the paths in place of a trigger paths: filter, which would leave
-  # the required plan check Pending forever. A job skipped by its if:
-  # reports Success. Separate from plan: that job claims the terraform-state
-  # slot before its first step, so filtering there would queue every pull
-  # request behind an in-flight apply.
+  # A required check skipped by a trigger paths: filter stays Pending forever;
+  # one skipped by a job's if: reports Success. Plan queues for the
+  # terraform-state slot before its first step, so filtering inside it would
+  # hold every pull request behind an in-flight apply.
   changes:
     name: Detect Terraform changes
     runs-on: ubuntu-latest
@@ -30,8 +29,7 @@ jobs:
       changed: ${{ steps.diff.outputs.changed }}
 
     steps:
-      # The pull_request checkout is the merge commit; its first parent is
-      # the base branch tip.
+      # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
