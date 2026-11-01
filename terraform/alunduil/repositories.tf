@@ -218,20 +218,19 @@ module "repository" {
   source   = "../modules/github_repository"
   for_each = local.repositories
 
-  name                      = each.key
-  description               = lookup(each.value, "description", null)
-  homepage_url              = lookup(each.value, "homepage_url", null)
-  topics                    = lookup(each.value, "topics", null)
-  default_branch            = lookup(each.value, "default_branch", null)
-  required_status_checks    = lookup(each.value, "required_status_checks", null)
-  require_code_owner_review = lookup(each.value, "require_code_owner_review", null)
-  admin_only_updates        = lookup(each.value, "admin_only_updates", null)
-  merge_method              = lookup(each.value, "merge_method", null)
-  has_discussions           = lookup(each.value, "has_discussions", null)
-  template                  = lookup(each.value, "template", null)
-  environments              = lookup(each.value, "environments", null)
-  pages                     = lookup(each.value, "pages", null)
-  allowed_action_patterns   = lookup(each.value, "allowed_action_patterns", null)
+  name                    = each.key
+  description             = lookup(each.value, "description", null)
+  homepage_url            = lookup(each.value, "homepage_url", null)
+  topics                  = lookup(each.value, "topics", null)
+  default_branch          = lookup(each.value, "default_branch", null)
+  required_status_checks  = lookup(each.value, "required_status_checks", null)
+  admin_only_updates      = lookup(each.value, "admin_only_updates", null)
+  merge_method            = lookup(each.value, "merge_method", null)
+  has_discussions         = lookup(each.value, "has_discussions", null)
+  template                = lookup(each.value, "template", null)
+  environments            = lookup(each.value, "environments", null)
+  pages                   = lookup(each.value, "pages", null)
+  allowed_action_patterns = lookup(each.value, "allowed_action_patterns", null)
 }
 
 import {
