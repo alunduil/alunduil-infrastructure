@@ -32,12 +32,19 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
+  # Kept free of module outputs: the alert rule reads it, and a new resource
+  # depending on module.repository cycles with the module's check block.
+  dora_repositories = [
+    for name, repo in local.repositories : name
+    if lookup(repo, "deploy", null) != null
+  ]
+
   dora_deploys = {
-    for name, repo in local.repositories : name => merge(
+    for name in local.dora_repositories : name => merge(
       { workflow = "", branch = "", event = "" },
-      repo.deploy,
+      local.repositories[name].deploy,
       { default_branch = module.repository[name].default_branch },
-    ) if lookup(repo, "deploy", null) != null
+    )
   }
 
   dora_shapes = {
@@ -190,7 +197,7 @@ resource "grafana_rule_group" "dora_recording" {
         # An equality matcher carries its label onto absent_over_time's
         # result, so each failing repository fires its own alert.
         expr = join(" or ", [
-          for name in keys(local.dora_targets) :
+          for name in local.dora_repositories :
           "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_missed_evaluations * local.dora_interval_seconds}s])"
         ])
       })
