@@ -80,7 +80,6 @@ locals {
         contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      # Deployment environment for Hackage releases.
       environments = { hackage = {} }
       deploy       = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
     }
