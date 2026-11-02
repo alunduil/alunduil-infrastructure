@@ -136,6 +136,7 @@ variable "template" {
 variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
+    deployment_tags     = optional(list(string), [])
   }))
   default     = {}
   nullable    = false
@@ -144,9 +145,12 @@ variable "environments" {
     (e.g. a Hackage upload token, injected out of band) and gives a
     workflow a target to declare via `environment: <name>`.
 
-    deployment_branches lists the refs a job may reference this
-    environment from — i.e. the only refs that can read its secrets.
-    Empty (the default) admits any ref. Maps to the environment's
+    deployment_branches and deployment_tags list the branch and tag
+    patterns a job may reference this environment from — i.e. the only
+    refs that can read its secrets. Both empty (the default) admits any
+    ref; setting either admits only the listed refs, so a workflow
+    triggered from a tag (e.g. `release: published`) needs a tag
+    pattern. Maps to the environment's
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
   EOT
