@@ -367,7 +367,7 @@ resource "github_repository_environment" "this" {
   environment = each.key
 
   dynamic "deployment_branch_policy" {
-    for_each = length(each.value.deployment_branches) > 0 ? [1] : []
+    for_each = length(concat(each.value.deployment_branches, each.value.deployment_tags)) > 0 ? [1] : []
     content {
       protected_branches     = false
       custom_branch_policies = true
@@ -375,17 +375,33 @@ resource "github_repository_environment" "this" {
   }
 }
 
-resource "github_repository_environment_deployment_policy" "this" {
-  for_each = merge([
-    for env_name, env in var.environments : {
-      for pattern in env.deployment_branches :
-      "${env_name}:${pattern}" => { environment = env_name, pattern = pattern }
-    }
+locals {
+  deployment_policies = merge([
+    for env_name, env in var.environments : merge(
+      {
+        for pattern in env.deployment_branches :
+        "${env_name}:branch:${pattern}" => { environment = env_name, branch = pattern, tag = null }
+      },
+      {
+        for pattern in env.deployment_tags :
+        "${env_name}:tag:${pattern}" => { environment = env_name, branch = null, tag = pattern }
+      },
+    )
   ]...)
+}
+
+resource "github_repository_environment_deployment_policy" "this" {
+  for_each = local.deployment_policies
 
   repository     = github_repository.this.name
   environment    = github_repository_environment.this[each.value.environment].environment
-  branch_pattern = each.value.pattern
+  branch_pattern = each.value.branch
+  tag_pattern    = each.value.tag
+}
+
+moved {
+  from = github_repository_environment_deployment_policy.this["project-sync:main"]
+  to   = github_repository_environment_deployment_policy.this["project-sync:branch:main"]
 }
 
 resource "github_repository_pages" "this" {
