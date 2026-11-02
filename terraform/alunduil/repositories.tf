@@ -76,8 +76,9 @@ locals {
       description = "Collection+JSON Tools for Haskell"
       topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
       required_status_checks = {
-        ci_results_check = true
-        contexts         = ["Check links"]
+        ci_results_check   = true
+        contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
+        renovate_automerge = true
       }
       # Deployment environment for Hackage releases.
       environments = { hackage = {} }
