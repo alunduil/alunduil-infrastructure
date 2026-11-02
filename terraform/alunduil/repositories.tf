@@ -215,8 +215,8 @@ locals {
       # pull requests here too.
       admin_only_updates = false
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
-      # environment, so the publish job has to run in this one. The release
-      # workflow runs from the release's tag ref, so the scope is a tag pattern.
+      # environment, so the publish job has to run in this one. A `release`
+      # event runs from the release's tag, which no branch pattern matches.
       environments = { pypi = { deployment_tags = ["v*.*.*"] } }
       deploy       = { class = "run", workflow = "release.yml", event = "release" }
     }
