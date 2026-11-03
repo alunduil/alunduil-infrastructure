@@ -81,10 +81,15 @@ jobs:
         with:
           install_args: bats
 
+      # A stalled apt mirror otherwise holds the job until its timeout: apt
+      # retries idle connections, the step timeout bounds the rest, and full
+      # apt output shows which phase stalled.
       - name: Install kcov
+        timeout-minutes: 5
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq cmake ninja-build binutils-dev \
+          apt=(-o Acquire::Retries=3 -o Acquire::http::Timeout=30)
+          sudo apt-get "${apt[@]}" update
+          sudo apt-get "${apt[@]}" install -y cmake ninja-build binutils-dev \
             libcurl4-openssl-dev zlib1g-dev libdw-dev libiberty-dev libssl-dev
           scripts/install-kcov.sh --bin-dir "$HOME/.local/bin"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
