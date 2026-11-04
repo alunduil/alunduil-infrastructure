@@ -505,9 +505,7 @@ Each needs an operator in a console, because no apply rotates them.
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads `hook-fix-app-id` and
   `hook-fix-app-private-key` from Secret Manager through the `hook-fix`
-  workload identity pool, whose provider admits any ref of that workflow.
-  `zfs-replicate` also holds an unused copy, which issue
-  `alunduil/zfs-replicate#824` removes
+  workload identity pool, whose provider admits any ref of that workflow
 - Grants: P-5
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
@@ -560,15 +558,6 @@ Each needs an operator in a console, because no apply rotates them.
   `Unverified`
 - Consumer: `release.yml`, from the `hackage` environment
 - Grants: uploads to D-12
-- Source: `None`
-
-#### C-31: Hackage login in `network-arbitrary`
-
-- Kind: username and password, as repository secrets
-- Scope: whether the password is still valid is `Unverified`. Issue
-  `alunduil/network-arbitrary#242` removes it
-- Consumer: none
-- Grants: P-1's Hackage account, if valid
 - Source: `None`
 
 #### C-32: `woodland-generators` release token

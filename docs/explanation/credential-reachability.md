@@ -44,12 +44,10 @@ flowchart LR
   hook["Hook code in a Renovate update"]
   p7["P-7 Write collaborator"]
   p6["P-6 Renovate"]
-  copy["Copy of C-25 in zfs-replicate"]
   c25["C-25 Hook-fix App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
   c32["C-32 woodland-generators token"]
-  c31["C-31 Hackage login"]
   tokens["C-29, C-30 Hackage tokens"]
   p2["P-2 CI plan"]
   p3["P-3 CI apply"]
@@ -67,9 +65,6 @@ flowchart LR
   end
 
   hook -->|"fix pushed as C-25, one repository"| branch
-  p7 -->|"branch workflow reads, zfs-replicate#824"| copy
-  copy --> c25
-  p7 -->|"branch workflow reads, network-arbitrary#242"| c31
   p7 -->|"environment unscoped, #686, #1052"| tokens
   p7 -->|"creates a tag, #1055"| tag
 
@@ -93,7 +88,6 @@ flowchart LR
   job --> tokens
   job -->|"trusted publishing"| d13
   tokens --> d12
-  c31 --> d12
 ```
 
 ### What CI holds
@@ -157,11 +151,9 @@ C-22, C-23, C-24, and C-33.
 - C-25 reaches every repository's tags and branches, P-2, P-3, and both
   registries. #1057, #1055, and `woodland-generators#915` remove those
   routes.
-- P-7 on `zfs-replicate` reaches everything C-25 does, through the copy.
-  `zfs-replicate#824` removes the copy, which leaves D-13 through a tag,
-  and #1055 removes that.
-- P-7 on `network-arbitrary` reaches C-30, C-31, and D-12. #1052,
-  `network-arbitrary#242`, and #1055 remove those routes.
+- P-7 on `zfs-replicate` reaches D-13 through a tag. #1055 removes that.
+- P-7 on `network-arbitrary` reaches C-30 and D-12. #1052 and #1055 remove
+  those routes.
 - P-7 on `collection-json.hs` reaches C-29 and D-12. #686 and #1055
   remove those routes.
 - P-3, C-04, and C-28 reach every repository, and so every registry.
@@ -169,7 +161,7 @@ C-22, C-23, C-24, and C-33.
 - P-2, C-03, and C-10 reach C-01, C-06, C-10, C-11, C-20, and C-27. #501
   narrows what each job holds.
 - C-32 reaches `woodland-generators` at least. #738 removes the token.
-- C-29, C-30, and C-31 reach D-12 and stop there.
+- C-29 and C-30 reach D-12 and stop there.
 - C-13 and C-34 reach nothing further.
 - P-6 reaches everything C-25 does, and that trust is accepted.
 
