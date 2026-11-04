@@ -36,9 +36,9 @@ Out of scope:
 ## How credentials connect
 
 An arrow means the source can obtain or act through the target. A dashed
-arrow is an accepted trust in Renovate, covered
-[later](#why-renovate-is-accepted). An arrow to a box applies to everything
-inside it.
+arrow is an accepted trust, covered
+[later](#why-renovate-and-the-claude-app-are-accepted). An arrow to a box
+applies to everything inside it.
 
 ### From a foothold to a release
 
@@ -79,9 +79,9 @@ flowchart LR
   c13 -->|"as the account, no workflow scope"| refs
   c32 -->|"as the account, scope Unverified"| refs
 
-  p8 -->|"pushes workflow changes"| pr
-  p8 -->|"creates, #1055"| tag
-  p8 -->|"replaces"| assets
+  p8 -.->|"pushes workflow changes"| pr
+  p8 -.->|"creates, #1055"| tag
+  p8 -.->|"replaces"| assets
 
   c25 -->|"pushes"| branch
   c25 -->|"pushes, if a pull request is open"| pr
@@ -181,10 +181,10 @@ Each credential or identity then reaches:
   C-04 admits only `terraform-apply.yml` on `main`, which keeps an unmerged
   branch away from write access.
 - The Claude App (P-8) holds `contents`, `workflows`, `actions`, and
-  `repository_hooks` write. Wherever it's installed it reaches tags, assets,
+  `repository_hooks` write on every repository. It reaches tags, assets,
   and pull request branches, and so CI plan (P-2) and the registries. No
   ruleset names it, so it can't land on a default branch alone. #1055 would
-  remove its tag route. Nobody has decided whether to accept it (#542).
+  remove its tag route, and the rest of that trust is accepted.
 - The Codecov App (P-9) reads contents and can report checks and statuses.
   That could satisfy a required check matched by name (#429), and it leads
   nowhere further.
@@ -227,7 +227,7 @@ wrote a commit or what it means. `renovate.json` holds back updates to
 `terraform-apply.yml`'s paths, but it judges the files Renovate's upgrade
 touches, so a later commit on the branch isn't held.
 
-## Why Renovate is accepted
+## Why Renovate and the Claude App are accepted
 
 Renovate (P-6) reaches everything the hook-fix key does, and more, because
 its App holds `contents`, `workflows`, and `checks` write on every
@@ -239,9 +239,15 @@ That trust is accepted rather than removed. Rulesets name the App by its
 ID, so another actor can't claim its bypass. Compromising it means
 compromising Mend, and the same compromise could already choose which
 package versions these repositories run, so restricting the App further
-buys little. That reasoning covers Renovate alone, not P-8. Hook-fix
-differs because it runs third-party code and commits the output, and that
-risk needs no compromise at Mend.
+buys little. Hook-fix differs because it runs third-party code and commits
+the output, and that risk needs no compromise at Mend.
+
+The Claude App (P-8) is accepted for a different reason: the operator uses
+it on every repository, so narrowing it now would stop that work. This
+holds until sessions run with their own repo-scoped identities, which
+`alunduil-chezmoi#856` is working out. Compromising it means compromising
+Anthropic, so it's the same kind of trust as Mend, without the ruleset
+bypass.
 
 One consequence is that a path existing only through P-6 doesn't need
 its own fix. Anything able to push workflow changes to a `renovate-config`

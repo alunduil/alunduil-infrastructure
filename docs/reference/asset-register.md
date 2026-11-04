@@ -75,10 +75,10 @@ from.
 | P-5 | Hook fix | C-25's App token in Actions | A Renovate pull request |
 | P-6 | Renovate | Mend's App, ID 2740, on every repository | Mend |
 | P-7 | Write collaborator | A person with write access | Their account |
-| P-8 | Claude | Anthropic's App, ID 1236702 | Anthropic |
+| P-8 | Claude | Anthropic's App, ID 1236702, on every repository | Anthropic |
 | P-9 | Codecov | Its vendor's App, ID 254 | Codecov |
 
-Which repositories P-8 and P-9 are installed on is `Unverified`.
+Which repositories P-9 is installed on is `Unverified`.
 
 ## Trust boundaries
 
