@@ -28,80 +28,54 @@ Out of scope:
   without review, which hasn't been traced.
 - Credentials nobody has listed. Issue #542 sweeps the provider consoles.
 
-## The graph
+## The graphs
 
 An arrow means the source can obtain or act through the target. A dashed
 arrow is an accepted trust in Renovate, covered
-[later](#why-renovate-is-accepted).
+[later](#why-renovate-is-accepted). An arrow to a box applies to everything
+inside it.
+
+### From a foothold to a release
+
+P-2 and P-3 are where this graph hands over to the next one.
 
 ```mermaid
 flowchart LR
-  subgraph start["Footholds"]
-    hook["Hook code in a Renovate update"]
-    p7["P-7 Write collaborator"]
-    p6["P-6 Renovate"]
-  end
+  hook["Hook code in a Renovate update"]
+  p7["P-7 Write collaborator"]
+  p6["P-6 Renovate"]
+  copy["Copy of C-25 in zfs-replicate"]
+  c25["C-25 Hook-fix App"]
+  c10["C-10 Git Sync App"]
+  c28["C-28 Apply App"]
+  c32["C-32 woodland-generators token"]
+  c31["C-31 Hackage login"]
+  tokens["C-29, C-30 Hackage tokens"]
+  p2["P-2 CI plan"]
+  p3["P-3 CI apply"]
+  d12["D-12 Hackage"]
+  d13["D-13 PyPI"]
 
-  subgraph github["GitHub: code and refs"]
+  subgraph refs["Repository branches, tags, and assets"]
     branch["renovate/** branches"]
     pr["Pull request branch in this repository"]
     infra["main in this repository"]
     other["Default branches elsewhere"]
     tag["Release tags and Releases"]
-    job["Release jobs"]
     assets["Foundry module assets"]
-  end
-
-  subgraph ghcreds["GitHub: stored and App credentials"]
-    copy["Copy of C-25 in zfs-replicate"]
-    c25["C-25 Hook-fix App"]
-    c10["C-10 Git Sync App"]
-    c13["C-13 Projects token"]
-    c27["C-27 Plan App"]
-    c28["C-28 Apply App"]
-    c29["C-29 collection-json.hs Hackage token"]
-    c30["C-30 network-arbitrary Hackage token"]
-    c31["C-31 Hackage login"]
-    c32["C-32 woodland-generators token"]
-  end
-
-  subgraph gcp["Google Cloud: identities"]
-    p2["P-2 CI plan"]
-    c03["C-03 Plan service account"]
-    p3["P-3 CI apply"]
-    c04["C-04 Apply service account"]
-  end
-
-  subgraph vendors["Vendor credentials"]
-    c01["C-01 Cloudflare read"]
-    c02["C-02 Cloudflare write"]
-    c34["C-34 Blog analytics read"]
-    c06["C-06 Grafana stack Admin"]
-    c20["C-20 Fleet Management read"]
-    c21["C-21 Fleet Management write"]
-    c05["C-05 Grafana's Google Cloud reader"]
-    c26["C-26 Grafana's GitHub reader"]
-    c11["C-11 Tailscale read"]
-    c12["C-12 Tailscale write"]
-  end
-
-  subgraph registries["Package registries"]
-    d12["D-12 Hackage"]
-    d13["D-13 PyPI"]
+    job["Release jobs"]
   end
 
   hook -->|"fix pushed as C-25, one repository"| branch
   p7 -->|"branch workflow reads, zfs-replicate#824"| copy
   copy --> c25
-  p7 -->|"environment unscoped, #686, #1052"| c29
-  p7 -->|"environment unscoped, #686, #1052"| c30
   p7 -->|"branch workflow reads, network-arbitrary#242"| c31
+  p7 -->|"environment unscoped, #686, #1052"| tokens
   p7 -->|"creates a tag, #1055"| tag
 
-  p6 -.->|"pushes"| branch
-  p6 -.->|"pushes"| pr
-  p6 -.->|"creates"| tag
-  p6 -.->|"replaces"| assets
+  p6 -.->|"writes"| refs
+  c28 -->|"administers every repository"| refs
+  c32 -->|"as the account, scope Unverified"| refs
 
   c25 -->|"pushes"| branch
   c25 -->|"pushes"| pr
@@ -111,45 +85,63 @@ flowchart LR
 
   branch -->|"Renovate automerges, #1057"| infra
   branch -->|"Renovate automerges, #1057"| other
+  tag -->|"workflow at the tag runs"| job
+  other --> job
+
   pr -->|"plan runs the branch's script"| p2
   infra -->|"terraform-apply.yml runs"| p3
-  infra -->|"Hourly job reads"| c13
-  other -->|"pages.yml reads"| c34
-  other --> job
-  tag -->|"workflow at the tag runs"| job
-  job --> c29
-  job --> c30
+  job --> tokens
   job -->|"trusted publishing"| d13
+  tokens --> d12
+  c31 --> d12
+```
+
+### What CI holds
+
+C-28 at the end of this graph is the same node that administers every
+repository in the previous one, which is what closes the loop.
+
+```mermaid
+flowchart LR
+  p2["P-2 CI plan"]
+  p3["P-3 CI apply"]
+  c03["C-03 Plan service account"]
+  c04["C-04 Apply service account"]
+  c01["C-01 Cloudflare read"]
+  c02["C-02 Cloudflare write"]
+  c06["C-06 Grafana stack Admin"]
+  c10["C-10 Git Sync App"]
+  c11["C-11 Tailscale read"]
+  c12["C-12 Tailscale write"]
+  c20["C-20 Fleet Management read"]
+  c21["C-21 Fleet Management write"]
+  c27["C-27 Plan App"]
+  c28["C-28 Apply App"]
+  c05["C-05 Grafana's Google Cloud reader"]
+  c26["C-26 Grafana's GitHub reader"]
+  infra["main in this repository"]
+  other["Blog's default branch"]
+  c13["C-13 Projects token"]
+  c34["C-34 Blog analytics read"]
 
   p2 --> c03
   c03 --> c01
-  c03 --> c06
-  c03 --> c10
   c03 --> c11
   c03 --> c20
   c03 --> c27
+  c03 --> c06
+  c03 --> c10
   p3 --> c04
-  c04 --> c02
   c04 --> c06
   c04 --> c10
+  c04 --> c02
   c04 --> c12
   c04 --> c21
   c04 --> c28
-
-  c28 -->|"edits rulesets and environments"| branch
-  c28 --> tag
-  c28 --> other
-  c28 --> infra
-  c28 --> assets
-  c32 -->|"acts as the account, scope Unverified"| other
-  c32 --> tag
-  c32 --> assets
-
   c06 -->|"queries through"| c05
   c06 -->|"queries through"| c26
-  c29 --> d12
-  c30 --> d12
-  c31 --> d12
+  infra -->|"Hourly job reads"| c13
+  other -->|"pages.yml reads"| c34
 ```
 
 These credentials have no edge in or out, apart from P-1 and the host
@@ -174,8 +166,8 @@ C-22, C-23, C-24, and C-33.
   remove those routes.
 - P-3, C-04, and C-28 reach every repository, and so every registry.
   Terraform needs this authority, so no fix removes it.
-- P-2, C-03, and C-10 reach C-01, C-06, C-10, C-11, C-20, and C-27. No
-  open issue removes this.
+- P-2, C-03, and C-10 reach C-01, C-06, C-10, C-11, C-20, and C-27. #501
+  narrows what each job holds.
 - C-32 reaches `woodland-generators` at least. #738 removes the token.
 - C-29, C-30, and C-31 reach D-12 and stop there.
 - C-13 and C-34 reach nothing further.
