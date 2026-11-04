@@ -5,9 +5,10 @@
 
 The assets in the personal estate, the zones they're exposed to, the
 principals that act on them, and the credentials that grant those
-principals.
+principals. [Credential reachability](../explanation/credential-reachability.md)
+follows what each credential leads to.
 
-Verified 2026-10-29.
+Verified 2026-11-04.
 
 ## Scope
 
@@ -72,6 +73,8 @@ from.
 | P-3 | CI apply | `terraform apply` in Actions | A push to `main` |
 | P-4 | Host service | A service with its own credential | The host's holder |
 | P-5 | Hook fix | C-25's App token in Actions | A Renovate pull request |
+| P-6 | Renovate | Mend's App, ID 2740, on every repository | Mend |
+| P-7 | Write collaborator | A person with write access | Their account |
 
 ## Trust boundaries
 
@@ -259,6 +262,8 @@ vendor.
 | D-09 | GitHub (A-09) | This repository and its CI logs |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
 | D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
+| D-12 | Hackage | Haskell packages, which can't be recalled |
+| D-13 | PyPI | `zfs-replicate` distributions, through trusted publishing |
 
 ## Credentials
 
@@ -326,9 +331,19 @@ Google Cloud's other credentials.
 
 - Kind: Grafana stack service account token
 - Scope: stack Admin
-- Consumer: the Grafana resources in `terraform/alunduil/`
-- Grants: P-3
+- Consumer: the Grafana resources in `terraform/alunduil/`, in both plan
+  and apply
+- Grants: P-2, P-3
 - Source: `terraform/bootstrap/grafana.tf`
+
+#### C-34: `blog.alunduil.com analytics (RO)`
+
+- Kind: Cloudflare API token
+- Scope: Account Analytics Read on the account holding `alunduil.com`
+- Consumer: the blog's `pages.yml`, through the `blog` workload identity
+  pool, whose provider admits only that workflow
+- Grants: analytics read, for the blog's build
+- Source: `terraform/bootstrap/blog_analytics.tf`
 
 #### C-20: `alunduil-infrastructure-fleet-management-ro`
 
@@ -380,9 +395,11 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-10: Git Sync GitHub App
 
 - Kind: GitHub App ID, installation ID, and private key
-- Scope: installed on `alunduil-infrastructure` alone
-- Consumer: A-11's Git Sync, for dashboard pull requests
-- Grants: P-3
+- Scope: `Contents`, `Pull requests`, and `Webhooks` write, installed
+  on `alunduil-infrastructure` alone
+- Consumer: A-11's Git Sync, for dashboard pull requests. Plan and apply
+  both read the key
+- Grants: P-2, P-3
 - Source: [`create-git-sync-github-app.md`](../how-to/create-git-sync-github-app.md)
 
 #### C-11: Tailscale trust credential (read)
@@ -481,12 +498,16 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-25: Hook-fix GitHub App
 
 - Kind: GitHub App ID and private key
-- Scope: `Contents` write wherever it's installed, without `Workflows`.
-  Of the protected branches, only `renovate/**` admits its pushes
+- Scope: `Contents` write on every repository it's installed on,
+  without `Workflows`. That covers creating tags and Releases, replacing
+  Release assets, and pushing unprotected branches, as well as
+  `renovate/**`, the only protected branches that admit its pushes
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads `hook-fix-app-id` and
   `hook-fix-app-private-key` from Secret Manager through the `hook-fix`
-  workload identity pool, whose provider admits only that workflow
+  workload identity pool, whose provider admits any ref of that workflow.
+  `zfs-replicate` also holds an unused copy, which issue
+  `alunduil/zfs-replicate#824` removes
 - Grants: P-5
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
 
@@ -523,8 +544,56 @@ Each needs an operator in a console, because no apply rotates them.
 - Grants: P-3
 - Source: [`create-terraform-github-apps.md`](../how-to/create-terraform-github-apps.md)
 
+#### C-29: `collection-json.hs` Hackage token
+
+- Kind: Hackage API token
+- Scope: uploads to Hackage. Whether it reaches beyond this package is
+  `Unverified`
+- Consumer: `release.yml`, from the `hackage` environment
+- Grants: uploads to D-12
+- Source: `None`
+
+#### C-30: `network-arbitrary` Hackage token
+
+- Kind: Hackage API token
+- Scope: uploads to Hackage. Whether it reaches beyond this package is
+  `Unverified`
+- Consumer: `release.yml`, from the `hackage` environment
+- Grants: uploads to D-12
+- Source: `None`
+
+#### C-31: Hackage login in `network-arbitrary`
+
+- Kind: username and password, as repository secrets
+- Scope: whether the password is still valid is `Unverified`. Issue
+  `alunduil/network-arbitrary#242` removes it
+- Consumer: none
+- Grants: P-1's Hackage account, if valid
+- Source: `None`
+
+#### C-32: `woodland-generators` release token
+
+- Kind: GitHub fine-grained personal access token, with no expiry
+- Scope: `Unverified`. It acts with the account's identity, so it passes
+  ruleset bypasses the admin role holds. Issue #738 removes it
+- Consumer: `release.yml`, for release-please
+- Grants: the admin role, within its scope
+- Source: `None`
+
+#### C-33: Codecov upload tokens
+
+- Kind: Codecov repository tokens, one per repository
+- Scope: coverage uploads for `collection-json.hs`,
+  `network-arbitrary`, `siren-json.hs`, and `woodland-generators`
+- Consumer: each repository's CI
+- Grants: nothing in the estate
+- Source: `None`
+
 ## Maintenance
 
 Adding or removing an asset, entry point, dependency, or credential
 updates this register in the same pull request, and the verification
-date at the top changes with it. IDs aren't reused.
+date at the top changes with it. A credential, or a change to who can
+obtain one, also updates
+[Credential reachability](../explanation/credential-reachability.md). IDs
+aren't reused.

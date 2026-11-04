@@ -50,6 +50,10 @@ Estate assets, trust levels, entry points, and credentials:
 
 - [docs/reference/asset-register.md](docs/reference/asset-register.md)
 
+What each credential's leak reaches:
+
+- [docs/explanation/credential-reachability.md](docs/explanation/credential-reachability.md)
+
 DORA and SPACE metric definitions against GitHub data:
 
 - [docs/reference/delivery-metrics.md](docs/reference/delivery-metrics.md)
