@@ -76,9 +76,7 @@ from.
 | P-6 | Renovate | Mend's App, ID 2740, on every repository | Mend |
 | P-7 | Write collaborator | A person with write access | Their account |
 | P-8 | Claude | Anthropic's App, ID 1236702, on every repository | Anthropic |
-| P-9 | Codecov | Its vendor's App, ID 254 | Codecov |
-
-Which repositories P-9 is installed on is `Unverified`.
+| P-9 | Codecov | Its vendor's App, ID 254, on every repository | Codecov |
 
 ## Trust boundaries
 
