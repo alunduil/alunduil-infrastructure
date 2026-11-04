@@ -105,7 +105,7 @@ locals {
         contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      environments = { hackage = {} }
+      environments = { hackage = { deployment_tags = ["v*"] } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
