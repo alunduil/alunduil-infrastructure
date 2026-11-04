@@ -263,7 +263,7 @@ vendor.
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
 | D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
-| D-13 | PyPI | `zfs-replicate` distributions, through trusted publishing |
+| D-13 | PyPI | `zfs-replicate` distributions |
 
 ## Credentials
 
@@ -366,9 +366,9 @@ Google Cloud's other credentials.
 
 - Kind: Cloudflare API token
 - Scope: Account Analytics Read on the account holding `alunduil.com`
-- Consumer: the blog's `pages.yml`, through the `blog` workload identity
-  pool, whose provider admits only that workflow
-- Grants: analytics read, for the blog's build
+- Consumer: none. The `blog` workload identity pool's provider admits only
+  `pages.yml`, which the blog doesn't have. Issue #1070 resolves it
+- Grants: nothing until a workflow reads it
 - Source: `terraform/bootstrap/blog_analytics.tf`
 
 ### Created by hand
@@ -421,9 +421,12 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-13: `GH_PROJECT_SYNC_TOKEN`
 
 - Kind: GitHub classic personal access token
-- Scope: Projects v2 write
-- Consumer: the Projects v2 sync workflow
-- Grants: P-3
+- Scope: `project`, `repo`, and `read:org`, as the account, without
+  `workflow`. `repo` covers writing to every repository the account can,
+  though the sync only reads them. Issue #1069 replaces it
+- Consumer: the hourly Projects v2 sync, from the `project-sync`
+  environment on `main`
+- Grants: the admin role, within those scopes
 - Source: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
 
 #### C-14: Web Analytics beacon

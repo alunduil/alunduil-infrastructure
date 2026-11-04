@@ -18,12 +18,17 @@ node here.
 Reachability differs from data flow. A data flow diagram draws data
 that moves, while this graph draws what an actor could obtain, including
 paths that have never run. The edges come from reading configuration.
-None has been exercised.
+Some have run in normal use, such as a hook-fix commit automerging in
+`projects-v2-sync#49`, but none has been tested as an attack.
 
 Out of scope:
 
 - P-1, which reaches every node. Drawing those edges would hide the rest.
 - Paths inside T-2 hosts, including credentials on A-01 and A-02.
+- What a vendor credential can do once used. The graph stops at C-12's
+  Tailscale write, for example, without following it on to tailnet hosts.
+- The Terraform state bucket, which C-03 can read and C-04 can write. The
+  code keeps keys out of that state, but nobody has read it to confirm.
 - Whether a change to `alunduil-chezmoi`'s default branch reaches A-06
   without review, which hasn't been traced.
 - Credentials nobody has listed. Issue #542 sweeps the provider consoles.
@@ -47,6 +52,7 @@ flowchart LR
   c25["C-25 Hook-fix App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
+  c13["C-13 Projects token"]
   c32["C-32 woodland-generators token"]
   tokens["C-29, C-30 Hackage tokens"]
   p2["P-2 CI plan"]
@@ -69,10 +75,11 @@ flowchart LR
 
   p6 -.->|"writes"| refs
   c28 -->|"administers every repository"| refs
+  c13 -->|"as the account, no workflow scope"| refs
   c32 -->|"as the account, scope Unverified"| refs
 
   c25 -->|"pushes"| branch
-  c25 -->|"pushes"| pr
+  c25 -->|"pushes, if a pull request is open"| pr
   c25 -->|"creates, #1055"| tag
   c25 -->|"replaces, woodland-generators#915"| assets
   c10 -->|"pushes"| pr
@@ -84,6 +91,7 @@ flowchart LR
 
   pr -->|"plan runs the branch's script"| p2
   infra -->|"terraform-apply.yml runs"| p3
+  infra -->|"Hourly job reads, #1069"| c13
   job --> tokens
   job -->|"trusted publishing"| d13
   tokens --> d12
@@ -112,10 +120,6 @@ flowchart LR
   c28["C-28 Apply App"]
   c05["C-05 Grafana's Google Cloud reader"]
   c26["C-26 Grafana's GitHub reader"]
-  infra["main in this repository"]
-  blog["Blog's default branch"]
-  c13["C-13 Projects token"]
-  c34["C-34 Blog analytics read"]
 
   p2 --> c03
   c03 --> c01
@@ -133,13 +137,14 @@ flowchart LR
   c04 --> c28
   c06 -->|"queries through"| c05
   c06 -->|"queries through"| c26
-  infra -->|"Hourly job reads"| c13
-  blog -->|"pages.yml reads"| c34
 ```
 
 These credentials have no edge in or out, apart from P-1 and the host
-that consumes them: C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19,
-C-22, C-23, C-24, and C-33.
+that consumes them: C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22,
+C-23, and C-24. C-34 is the same, because nothing reads it (#1070).
+
+The Codecov tokens (C-33) lead nowhere further, though any P-7 on the
+repository holding one can read it.
 
 ## What each foothold reaches
 
@@ -148,8 +153,8 @@ A foothold is where someone starts without holding a credential:
 - Hook code in a Renovate update reaches its own repository's default
   branch and release, because the App token it pushes with covers one
   repository. In this repository that branch is `main`, which leads to CI
-  apply (P-3), the Apply App (C-28), and everything C-28 reaches. #1057
-  removes the path.
+  apply (P-3), the Apply App (C-28), the Projects token (C-13), and
+  everything those reach. #1057 removes the path.
 - A write collaborator (P-7) reaches a registry by creating a release tag.
   On `zfs-replicate` that's PyPI (D-13). On `collection-json.hs` and
   `network-arbitrary` it's Hackage (D-12), through that repository's token
@@ -170,17 +175,18 @@ Each credential or identity then reaches:
   (C-06). #501 narrows what each job holds. They stop short of P-3 because
   C-04 admits only `terraform-apply.yml` on `main`, which keeps an unmerged
   branch away from write access.
+- The Projects token (C-13) acts as the account on every repository it can
+  write to, in other organizations too, and bypasses the rulesets the admin
+  role does. It can't edit workflow files. #1069 replaces it.
 - The `woodland-generators` token (C-32) reaches that repository at least.
   #738 removes it.
 - The Hackage tokens (C-29, C-30) reach D-12 and stop there, though that
   means every package the token's Hackage user can upload, not only the
   repository's own.
-- The Projects token (C-13) and the blog analytics token (C-34) reach
-  nothing further.
 
 ## Where paths converge
 
-Two nodes do most of the connecting.
+Three nodes do most of the connecting.
 
 The Apply App (C-28) is the expected hub. Terraform has to administer every
 repository, so anything reaching `main` in this repository reaches
@@ -194,9 +200,14 @@ code from everything else. The key then needs #1055 and
 `woodland-generators#915` to lose its remaining routes to a release,
 which leaves it only what CI plan holds.
 
+The Projects token (C-13) is the other surprise. It exists to update one
+board, yet its `repo` scope covers every repository the account can write
+to. Any merge to `main` reaches it, because the hourly job runs the script
+from the checkout and that path has no review hold.
+
 This matters for any credential added later. Keeping a credential to one
 repository contains a leak only if nothing else joins that repository to
-the others, and today the hook-fix key does.
+the others, and today the hook-fix key and the Projects token both do.
 
 Required checks don't change these edges, since they don't inspect who
 wrote a commit or what it means. `renovate.json` holds back updates to
@@ -219,7 +230,7 @@ buys little. Hook-fix differs because it runs third-party code and
 commits the output, and that risk needs no compromise at Mend.
 
 One consequence is that a path existing only through P-6 doesn't need
-its own fix. Anything able to push a branch to `renovate-config` can run
-any ref of `fix-renovate-hooks.yml` and read C-25, because the
-provider's condition matches that file by prefix. Renovate can push
+its own fix. Anything able to push workflow changes to a `renovate-config`
+branch can run any ref of `fix-renovate-hooks.yml` and read C-25, because
+the provider's condition matches that file by prefix. Renovate can push
 there, yet the key gives it nothing it lacks.

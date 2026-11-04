@@ -86,7 +86,7 @@ Nygard's
 (?i)ADRs
 (?i)agentic
 (?i)APIs
-(?i)automerges?
+(?i)automerg(e|es|ing)
 (?i)config
 (?i)deployer
 (?i)devcontainer
