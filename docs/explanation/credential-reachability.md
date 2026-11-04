@@ -51,6 +51,7 @@ flowchart LR
   tokens["C-29, C-30 Hackage tokens"]
   p2["P-2 CI plan"]
   p3["P-3 CI apply"]
+  job["Release jobs"]
   d12["D-12 Hackage"]
   d13["D-13 PyPI"]
 
@@ -61,7 +62,6 @@ flowchart LR
     other["Default branches elsewhere"]
     tag["Release tags and Releases"]
     assets["Foundry module assets"]
-    job["Release jobs"]
   end
 
   hook -->|"fix pushed as C-25, one repository"| branch
@@ -113,7 +113,7 @@ flowchart LR
   c05["C-05 Grafana's Google Cloud reader"]
   c26["C-26 Grafana's GitHub reader"]
   infra["main in this repository"]
-  other["Blog's default branch"]
+  blog["Blog's default branch"]
   c13["C-13 Projects token"]
   c34["C-34 Blog analytics read"]
 
@@ -134,7 +134,7 @@ flowchart LR
   c06 -->|"queries through"| c05
   c06 -->|"queries through"| c26
   infra -->|"Hourly job reads"| c13
-  other -->|"pages.yml reads"| c34
+  blog -->|"pages.yml reads"| c34
 ```
 
 These credentials have no edge in or out, apart from P-1 and the host
