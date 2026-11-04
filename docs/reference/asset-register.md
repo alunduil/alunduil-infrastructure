@@ -336,15 +336,6 @@ Google Cloud's other credentials.
 - Grants: P-2, P-3
 - Source: `terraform/bootstrap/grafana.tf`
 
-#### C-34: `blog.alunduil.com analytics (RO)`
-
-- Kind: Cloudflare API token
-- Scope: Account Analytics Read on the account holding `alunduil.com`
-- Consumer: the blog's `pages.yml`, through the `blog` workload identity
-  pool, whose provider admits only that workflow
-- Grants: analytics read, for the blog's build
-- Source: `terraform/bootstrap/blog_analytics.tf`
-
 #### C-20: `alunduil-infrastructure-fleet-management-ro`
 
 - Kind: Grafana Cloud access-policy token
@@ -370,6 +361,15 @@ Google Cloud's other credentials.
   Management pipelines authenticate with. No deployer reads it
 - Grants: P-4
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
+
+#### C-34: `blog.alunduil.com analytics (RO)`
+
+- Kind: Cloudflare API token
+- Scope: Account Analytics Read on the account holding `alunduil.com`
+- Consumer: the blog's `pages.yml`, through the `blog` workload identity
+  pool, whose provider admits only that workflow
+- Grants: analytics read, for the blog's build
+- Source: `terraform/bootstrap/blog_analytics.tf`
 
 ### Created by hand
 

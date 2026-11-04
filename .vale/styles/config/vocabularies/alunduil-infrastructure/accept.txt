@@ -19,6 +19,7 @@ alunduil
 Terraform
 Terraform's
 Cloudflare
+Codecov
 TrueNAS
 Grafana
 Plex
@@ -85,6 +86,7 @@ Nygard's
 (?i)ADRs
 (?i)agentic
 (?i)APIs
+(?i)automerges?
 (?i)config
 (?i)deployer
 (?i)devcontainer
@@ -105,9 +107,11 @@ Nygard's
 (?i)PRs
 (?i)PR's
 (?i)quadlets
+(?i)reachability
 (?i)repo
 (?i)repos
 (?i)tailnet
+(?i)rulesets?
 (?i)subnet
 (?i)subnets
 (?i)syslog
@@ -115,6 +119,8 @@ Nygard's
 (?i)triaged
 (?i)uncheck
 (?i)unmanaged
+(?i)unmerged
+(?i)unreviewed
 (?i)unshipped
 (?i)untracked
 (?i)upserts
@@ -125,9 +131,3 @@ Nygard's
 (?i)vuln
 (?i)worktree
 (?i)worktrees
-Codecov
-(?i)automerges?
-(?i)reachability
-(?i)rulesets?
-(?i)unmerged
-(?i)unreviewed
