@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# A credential the graph omits reads as one that reaches nothing, so the page
-# and the register have to name the same set.
+# The page and the register must name the same credentials: one missing from
+# the graph looks like it reaches nothing.
 
 setup() {
   repo_root="${BATS_TEST_DIRNAME}/.."

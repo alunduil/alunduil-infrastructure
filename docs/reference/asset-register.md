@@ -424,8 +424,8 @@ Each needs an operator in a console, because no apply rotates them.
 
 - Kind: GitHub classic personal access token
 - Scope: `project`, `repo`, and `read:org`, as the account, without
-  `workflow`. `repo` covers writing to every repository the account can,
-  though the sync only reads them. Issue #1069 replaces it
+  `workflow`. `repo` lets it write to every repository the account can. The
+  sync only reads them. Issue #1069 replaces it
 - Consumer: the hourly Projects v2 sync, from the `project-sync`
   environment on `main`
 - Grants: the admin role, within those scopes
@@ -504,9 +504,9 @@ Each needs an operator in a console, because no apply rotates them.
 
 - Kind: GitHub App ID and private key
 - Scope: `Contents` write on every repository it's installed on,
-  without `Workflows`. That covers creating tags and Releases, replacing
-  Release assets, and pushing unprotected branches, as well as
-  `renovate/**`, the only protected branches that admit its pushes
+  without `Workflows`. It can create tags and Releases, replace Release
+  assets, and push to unprotected branches. `renovate/**` is the only
+  protected pattern that admits its pushes
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads `hook-fix-app-id` and
   `hook-fix-app-private-key` from Secret Manager through the `hook-fix`
@@ -568,8 +568,8 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-32: `woodland-generators` release token
 
 - Kind: GitHub fine-grained personal access token, with no expiry
-- Scope: `Unverified`. It acts with the account's identity, so it passes
-  ruleset bypasses the admin role holds. Issue #738 removes it
+- Scope: `Unverified`. It acts as the account, so it holds the admin role's
+  ruleset bypasses. Issue #738 removes it
 - Consumer: `release.yml`, for release-please
 - Grants: the admin role, within its scope
 - Source: `None`
