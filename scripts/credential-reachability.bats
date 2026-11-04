@@ -9,11 +9,12 @@ setup() {
   repo_root="${BATS_TEST_DIRNAME}/.."
   register="${repo_root}/docs/reference/asset-register.md"
   page="${repo_root}/docs/explanation/credential-reachability.md"
+  id_pattern='[A-Z]-[0-9]+'
 }
 
 registered_ids() {
-  grep -oE '^#{3,4} [ACE]-[0-9]+|^\| [A-Z]-[0-9]+ \|' "${register}" \
-    | grep -oE '[A-Z]-[0-9]+' | sort -u
+  grep -oE "^#{3,4} ${id_pattern}|^\| ${id_pattern} \|" "${register}" \
+    | grep -oE "${id_pattern}" | sort -u
 }
 
 @test "the reachability page names every credential in the register" {
@@ -36,7 +37,7 @@ registered_ids() {
 @test "every ID on the reachability page exists in the register" {
   local known ids unknown=()
   known="$(registered_ids)"
-  mapfile -t ids < <(grep -oE '\b[ACDEPT]-[0-9]+\b' "${page}" | sort -u)
+  mapfile -t ids < <(grep -oE "\b${id_pattern}\b" "${page}" | sort -u)
   [[ ${#ids[@]} -gt 0 ]]
 
   local id
