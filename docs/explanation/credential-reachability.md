@@ -65,7 +65,6 @@ flowchart LR
   end
 
   hook -->|"fix pushed as C-25, one repository"| branch
-  p7 -->|"environment unscoped, #686, #1052"| tokens
   p7 -->|"creates a tag, #1055"| tag
 
   p6 -.->|"writes"| refs
@@ -152,10 +151,10 @@ C-22, C-23, C-24, and C-33.
   registries. #1057, #1055, and `woodland-generators#915` remove those
   routes.
 - P-7 on `zfs-replicate` reaches D-13 through a tag. #1055 removes that.
-- P-7 on `network-arbitrary` reaches C-30 and D-12. #1052 and #1055 remove
-  those routes.
-- P-7 on `collection-json.hs` reaches C-29 and D-12. #686 and #1055
-  remove those routes.
+- P-7 on `network-arbitrary` reaches C-30 and D-12 through a tag. #1055
+  removes that.
+- P-7 on `collection-json.hs` reaches C-29 and D-12 through a tag. #1055
+  removes that.
 - P-3, C-04, and C-28 reach every repository, and so every registry.
   Terraform needs this authority, so no fix removes it.
 - P-2, C-03, and C-10 reach C-01, C-06, C-10, C-11, C-20, and C-27. #501
