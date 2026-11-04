@@ -20,6 +20,7 @@ Terraform
 Terraform's
 Cloudflare
 Codecov
+Anthropic's
 TrueNAS
 Grafana
 Plex
