@@ -161,7 +161,8 @@ C-22, C-23, C-24, and C-33.
 - P-2, C-03, and C-10 reach C-01, C-06, C-10, C-11, C-20, and C-27. #501
   narrows what each job holds.
 - C-32 reaches `woodland-generators` at least. #738 removes the token.
-- C-29 and C-30 reach D-12 and stop there.
+- C-29 and C-30 reach D-12 and stop there, though D-12 means every package
+  the token's Hackage user can upload, not only the repository's own.
 - C-13 and C-34 reach nothing further.
 - P-6 reaches everything C-25 does, and that trust is accepted.
 

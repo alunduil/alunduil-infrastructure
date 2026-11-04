@@ -545,8 +545,8 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-29: `collection-json.hs` Hackage token
 
 - Kind: Hackage API token
-- Scope: uploads to Hackage. Whether it reaches beyond this package is
-  `Unverified`
+- Scope: authenticates as a Hackage user, so it can upload every package
+  that user can. Hackage tokens have no per-package scope
 - Consumer: `release.yml`, from the `hackage` environment
 - Grants: uploads to D-12
 - Source: `None`
@@ -554,8 +554,8 @@ Each needs an operator in a console, because no apply rotates them.
 #### C-30: `network-arbitrary` Hackage token
 
 - Kind: Hackage API token
-- Scope: uploads to Hackage. Whether it reaches beyond this package is
-  `Unverified`
+- Scope: authenticates as a Hackage user, so it can upload every package
+  that user can. Hackage tokens have no per-package scope
 - Consumer: `release.yml`, from the `hackage` environment
 - Grants: uploads to D-12
 - Source: `None`
