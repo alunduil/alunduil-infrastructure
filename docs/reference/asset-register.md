@@ -141,7 +141,8 @@ principals that read or change an asset through Terraform.
 
 - Description: Tailscale exit node presenting a US address. Sits in
   the American Midwest in a household that isn't alunduil's, and is
-  administered remotely from London. Recovery is
+  administered remotely from London. Runs alloy, enrolled in Fleet
+  Management as collector `NanoPi-NEO3`. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Exposed to: T-3, via E-09
 
@@ -465,8 +466,8 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read` and `fleet-management:write` on the
   stack realm
-- Consumer: `terraform apply` in CI
-- Grants: P-3
+- Consumer: `terraform apply` in CI, and `just alunduil`
+- Grants: P-3, and P-1 through the break-glass path
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 

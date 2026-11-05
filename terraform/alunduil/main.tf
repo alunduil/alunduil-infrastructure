@@ -52,6 +52,14 @@ provider "grafana" {
   stack_id = local.bootstrap.grafana_stack_id
 }
 
+# Fleet Management answers on its own regional host and takes basic auth, so the
+# stack token above can't reach it.
+provider "grafana" {
+  alias                 = "fleet_management"
+  fleet_management_url  = local.bootstrap.grafana_fleet_management_url
+  fleet_management_auth = "${local.bootstrap.grafana_fleet_management_user_id}:${var.grafana_fleet_management_token}"
+}
+
 locals {
   # A token handed in means there was no runtime to mint one from, which is the
   # break-glass path. The provider rejects audience and identity_token together,

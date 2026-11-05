@@ -21,6 +21,12 @@ variable "grafana_service_account_token" {
   sensitive   = true
 }
 
+variable "grafana_fleet_management_token" {
+  type        = string
+  description = "Grafana Cloud access-policy token authenticating the provider to Fleet Management, read-only for plan and read-write for apply. Export as TF_VAR_grafana_fleet_management_token."
+  sensitive   = true
+}
+
 variable "grafana_git_sync_app_private_key" {
   type        = string
   description = "PEM private key of the dedicated Git Sync GitHub App; Grafana uses it to generate installation tokens for alunduil-infrastructure. Export as TF_VAR_grafana_git_sync_app_private_key."

@@ -1,0 +1,47 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+loki.relabel "journal" {
+	forward_to = []
+
+	rule {
+		source_labels = ["__journal__systemd_unit"]
+		target_label  = "unit"
+	}
+
+	rule {
+		source_labels = ["__journal__boot_id"]
+		target_label  = "boot_id"
+	}
+
+	rule {
+		source_labels = ["__journal__transport"]
+		target_label  = "transport"
+	}
+
+	rule {
+		source_labels = ["__journal_priority_keyword"]
+		target_label  = "level"
+	}
+}
+
+loki.source.journal "system" {
+	max_age       = "12h"
+	relabel_rules = loki.relabel.journal.rules
+	forward_to    = [loki.write.default.receiver]
+	labels        = {
+		"instance" = constants.hostname,
+		"job"      = "integrations/node_exporter",
+	}
+}
+
+loki.write "default" {
+	endpoint {
+		url = "${logs_url}/loki/api/v1/push"
+
+		basic_auth {
+			username = "${logs_user_id}"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}
