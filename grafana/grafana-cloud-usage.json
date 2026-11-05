@@ -27,7 +27,7 @@
       }
     ],
     "cursorSync": "Crosshair",
-    "description": "What Grafana's own usage dashboards don't show: spend against the 12 USD monthly overage budget, shipper and alert path failures, and series and scrape rate per job. The links lead to the rest.",
+    "description": "What Grafana's own usage dashboards don't show: spend against the 12 USD monthly overage budget, shipper and alert path failures, and series and scrape rate per job. The links lead to the rest. A month ending over budget means finding and fixing the source. A month ending under budget needs no optimisation.",
     "editable": true,
     "elements": {
       "panel-1": {
@@ -62,7 +62,7 @@
               "transformations": []
             }
           },
-          "description": "Month-to-date overage across every product as a share of the 12 USD budget. Early-month spikes fall as the month averages out.",
+          "description": "Month-to-date overage across every product as a share of the 12 USD budget. Metrics bill at the month's 95th percentile, so a short early spike falls out as the month goes on.",
           "id": 1,
           "links": [],
           "title": "Budget used this month",
@@ -133,8 +133,8 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "grafanacloud_org_total_overage",
-                        "legendFormat": "Overage",
+                        "expr": "clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)",
+                        "legendFormat": "Projected",
                         "range": true
                       },
                       "version": "v0"
@@ -147,8 +147,113 @@
               "transformations": []
             }
           },
-          "description": "Month-to-date overage, which resets each month. The lines are 80% of the budget and the budget.",
+          "description": "If the last 7 days continue: the lower of this month's billable series and the last 7 days' 95th percentile DPM, at 6.50 USD per 1,000 above included, plus other products' overage so far. Excludes the 19 USD base plan. Unreliable for about the first 10 days, and can't foresee a regression. Assumes DPM sets the bill, not active series.",
           "id": 2,
+          "links": [],
+          "title": "Projected month-end overage",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 2,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "orange",
+                        "value": 9.600000000000001
+                      },
+                      {
+                        "color": "red",
+                        "value": 12
+                      }
+                    ]
+                  },
+                  "unit": "currencyUSD"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "grafanacloud_org_total_overage",
+                        "legendFormat": "Month to date",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)",
+                        "legendFormat": "Projected",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Month-to-date overage and the month-end projection, both reset each month. The lines are 80% of the budget and the budget.",
+          "id": 3,
           "links": [],
           "title": "Overage against budget",
           "vizConfig": {
@@ -213,7 +318,7 @@
           }
         }
       },
-      "panel-3": {
+      "panel-4": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -246,7 +351,7 @@
             }
           },
           "description": "Samples an Alloy shipper could not send. Only shippers with self-monitoring report this.",
-          "id": 3,
+          "id": 4,
           "links": [],
           "title": "Failed samples at shippers",
           "vizConfig": {
@@ -294,7 +399,7 @@
           }
         }
       },
-      "panel-4": {
+      "panel-5": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -387,7 +492,7 @@
             }
           },
           "description": "A failing rule or notification hides the alert it would raise.",
-          "id": 4,
+          "id": 5,
           "links": [],
           "title": "Alert path failures",
           "vizConfig": {
@@ -435,7 +540,7 @@
           }
         }
       },
-      "panel-5": {
+      "panel-6": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -468,7 +573,7 @@
             }
           },
           "description": "Stored series, aggregated ones included. A new metric family shows as a step here. Read it against samples per minute on the Billing/Usage dashboard.",
-          "id": 5,
+          "id": 6,
           "links": [],
           "title": "Series by job",
           "vizConfig": {
@@ -516,7 +621,7 @@
           }
         }
       },
-      "panel-6": {
+      "panel-7": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -549,7 +654,7 @@
             }
           },
           "description": "Measured from each job's up series, so a faster scrape shows here.",
-          "id": 6,
+          "id": 7,
           "links": [],
           "title": "Scrapes per minute by job",
           "vizConfig": {
@@ -609,7 +714,7 @@
                 "kind": "ElementReference",
                 "name": "panel-1"
               },
-              "height": 8,
+              "height": 4,
               "width": 6,
               "x": 0,
               "y": 0
@@ -622,6 +727,19 @@
                 "kind": "ElementReference",
                 "name": "panel-2"
               },
+              "height": 4,
+              "width": 6,
+              "x": 0,
+              "y": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              },
               "height": 8,
               "width": 18,
               "x": 6,
@@ -633,24 +751,11 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
-                "name": "panel-3"
-              },
-              "height": 8,
-              "width": 12,
-              "x": 0,
-              "y": 8
-            }
-          },
-          {
-            "kind": "GridLayoutItem",
-            "spec": {
-              "element": {
-                "kind": "ElementReference",
                 "name": "panel-4"
               },
               "height": 8,
               "width": 12,
-              "x": 12,
+              "x": 0,
               "y": 8
             }
           },
@@ -663,6 +768,19 @@
               },
               "height": 8,
               "width": 12,
+              "x": 12,
+              "y": 8
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              },
+              "height": 8,
+              "width": 12,
               "x": 0,
               "y": 16
             }
@@ -672,7 +790,7 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
-                "name": "panel-6"
+                "name": "panel-7"
               },
               "height": 8,
               "width": 12,

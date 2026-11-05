@@ -33,7 +33,7 @@ locals {
       for       = local.usage_hold
     }
     "Overage over budget" = {
-      summary   = "Grafana Cloud overage this month is above the budget."
+      summary   = "Grafana Cloud overage this month is above the budget. If the month ends over budget, file an issue to find and fix the source. If it ends under budget, no optimisation is needed."
       expr      = "grafanacloud_org_total_overage"
       threshold = local.usage_overage_budget_usd
       for       = local.usage_hold
