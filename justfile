@@ -43,6 +43,7 @@ alunduil:
     }
     export_secret TF_VAR_cloudflare_api_token cloudflare-api-token-deployer-rw
     export_secret TF_VAR_grafana_service_account_token grafana-provisioner-token
+    export_secret TF_VAR_grafana_fleet_management_token grafana-fleet-management-token-rw
     export_secret TF_VAR_grafana_git_sync_app_private_key grafana-git-sync-app-private-key
     export_secret TF_VAR_grafana_git_sync_app_id grafana-git-sync-app-id
     export_secret TF_VAR_grafana_git_sync_app_installation_id grafana-git-sync-app-installation-id

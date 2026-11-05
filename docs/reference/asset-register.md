@@ -141,7 +141,8 @@ principals that read or change an asset through Terraform.
 
 - Description: Tailscale exit node presenting a US address. Sits in
   the American Midwest in a household that isn't alunduil's, and is
-  administered remotely from London. Recovery is
+  administered remotely from London. Runs alloy, enrolled in Fleet
+  Management as collector `NanoPi-NEO3`. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Exposed to: T-3, via E-09
 
