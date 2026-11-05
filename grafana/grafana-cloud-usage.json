@@ -27,10 +27,47 @@
       }
     ],
     "cursorSync": "Crosshair",
-    "description": "What Grafana's own usage dashboards don't show: spend against the 12 USD monthly overage budget, shipper and alert path failures, and series and scrape rate per job. The links lead to the rest. A month ending over budget means finding and fixing the source. A month ending under budget needs no optimisation.",
+    "description": "What Grafana's own usage dashboards don't show: spend against the 12 USD monthly overage budget, Adaptive Metrics savings, delivery failures, and series and scrape rate per job. The links lead to the rest.",
     "editable": true,
     "elements": {
       "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 1,
+          "links": [],
+          "title": "",
+          "vizConfig": {
+            "group": "text",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              },
+              "options": {
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                },
+                "content": "**Over 12 USD at month end:** file an issue to find and fix the source. **Under:** no optimisation needed, even if an alert fired during the month.",
+                "mode": "markdown"
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-2": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -63,7 +100,7 @@
             }
           },
           "description": "Month-to-date overage across every product as a share of the 12 USD budget. Metrics bill at the month's 95th percentile, so a short early spike falls out as the month goes on.",
-          "id": 1,
+          "id": 2,
           "links": [],
           "title": "Budget used this month",
           "vizConfig": {
@@ -115,7 +152,7 @@
           }
         }
       },
-      "panel-2": {
+      "panel-3": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -147,10 +184,10 @@
               "transformations": []
             }
           },
-          "description": "If the last 7 days continue: the lower of this month's billable series and the last 7 days' 95th percentile DPM, at 6.50 USD per 1,000 above included, plus other products' overage so far. Excludes the 19 USD base plan. Unreliable for about the first 10 days, and can't foresee a regression. Assumes DPM sets the bill, not active series.",
-          "id": 2,
+          "description": "Month-end overage if the last 7 days continue: the lower of this month's billable series and the last 7 days' 95th percentile DPM, at 6.50 USD per 1,000 above included, plus other products' overage so far. Excludes the 19 USD base plan. Unreliable for about the first 10 days, and can't foresee a regression. Assumes DPM sets the bill, not active series.",
+          "id": 3,
           "links": [],
-          "title": "Projected month-end overage",
+          "title": "Projected overage",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -200,7 +237,282 @@
           }
         }
       },
-      "panel-3": {
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "quantile_over_time(0.5, ((sum(grafanacloud_instance_aggregation_raw_samples_total:rate5m) - sum(grafanacloud_instance_aggregation_aggregated_samples_total:rate5m)) * 60)[7d:1h]) * 0.0065",
+                        "legendFormat": "Saving",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Samples per minute avoided by aggregation, priced at 6.50 USD per 1,000, using the 7-day median because the raw metric is erratic. An order-of-magnitude estimate. Excludes samples dropped before they reach Grafana, such as Alloy keep lists.",
+          "id": 4,
+          "links": [],
+          "title": "Adaptive saving/month",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "text",
+                        "value": null
+                      }
+                    ]
+                  },
+                  "unit": "currencyUSD"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "sum(grafanacloud_instance_recommendations_estimated_savings_series)",
+                        "legendFormat": "Series",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Series Grafana estimates its unapplied Adaptive Metrics recommendations would save.",
+          "id": 5,
+          "links": [],
+          "title": "Series still saveable",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "text",
+                        "value": null
+                      }
+                    ]
+                  },
+                  "unit": "short"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value",
+                "wideLayout": true
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-prom"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "sum(rate(prometheus_remote_storage_samples_failed_total[5m]))",
+                        "legendFormat": "Shippers",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "sum(grafanacloud_grafana_instance_alerting_rule_evaluation_failures_total:rate5m) + sum(grafanacloud_instance_rule_evaluation_failures_total:rate5m)",
+                        "legendFormat": "Rules",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "sum(grafanacloud_instance_alertmanager_notifications_failed_per_second) + sum(grafanacloud_instance_ruler_notifications_errors_total:rate5m)",
+                        "legendFormat": "Notifications",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Per second. Failed shipper samples, rule evaluations and notifications, any of which can hide data or an alert. The sparkline shows past failures. Only shippers with self-monitoring report samples.",
+          "id": 6,
+          "links": [],
+          "title": "Delivery failures now",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 2,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "red",
+                        "value": 1e-06
+                      }
+                    ]
+                  },
+                  "unit": "cps"
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name",
+                "wideLayout": true
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-7": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -292,10 +604,10 @@
               "transformations": []
             }
           },
-          "description": "Month-to-date overage and the month-end projection, both reset each month.",
-          "id": 3,
+          "description": "Month to date, resetting each month, and the month-end projection. The axis stops at 30 USD to keep the budget lines readable, so a larger overage runs off the top. The legend gives its maximum.",
+          "id": 7,
           "links": [],
-          "title": "Overage against budget",
+          "title": "Overage against budget (axis stops at $30)",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -314,10 +626,12 @@
                     },
                     "thresholdsStyle": {
                       "mode": "off"
-                    }
+                    },
+                    "axisGridShow": false
                   },
                   "unit": "currencyUSD",
-                  "min": 0
+                  "min": 0,
+                  "max": 30
                 },
                 "overrides": [
                   {
@@ -330,7 +644,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "green"
+                          "fixedColor": "#d8d9da"
                         }
                       }
                     ]
@@ -346,6 +660,16 @@
                         "value": {
                           "mode": "fixed",
                           "fixedColor": "blue"
+                        }
+                      },
+                      {
+                        "id": "custom.lineStyle",
+                        "value": {
+                          "fill": "dash",
+                          "dash": [
+                            6,
+                            4
+                          ]
                         }
                       }
                     ]
@@ -391,7 +715,7 @@
                   "displayMode": "table",
                   "placement": "right",
                   "showLegend": true,
-                  "width": 260,
+                  "width": 250,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -405,7 +729,7 @@
           }
         }
       },
-      "panel-4": {
+      "panel-8": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -418,13 +742,13 @@
                     "hidden": false,
                     "query": {
                       "datasource": {
-                        "name": "grafanacloud-prom"
+                        "name": "grafanacloud-usage"
                       },
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum(rate(prometheus_remote_storage_samples_failed_total[5m]))",
-                        "legendFormat": "Failed samples",
+                        "expr": "quantile_over_time(0.5, ((sum(grafanacloud_instance_aggregation_raw_samples_total:rate5m) - sum(grafanacloud_instance_aggregation_aggregated_samples_total:rate5m)) * 60)[7d:1h])",
+                        "legendFormat": "Samples/min avoided",
                         "range": true
                       },
                       "version": "v0"
@@ -437,10 +761,10 @@
               "transformations": []
             }
           },
-          "description": "Samples Alloy shippers could not send, in total. Only shippers with self-monitoring report this.",
-          "id": 4,
+          "description": "Samples per minute before aggregation, minus after, across every rule, manual or recommended. Read a fall against overage: alongside rising overage it means a rule stopped working; alongside flat overage it means fewer samples arrived at all.",
+          "id": 8,
           "links": [],
-          "title": "Failed samples at shippers",
+          "title": "Samples/min avoided by Adaptive Metrics (7-day median)",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -460,9 +784,9 @@
                     "thresholdsStyle": {
                       "mode": "off"
                     },
-                    "axisSoftMax": 1
+                    "axisGridShow": false
                   },
-                  "unit": "cps",
+                  "unit": "short",
                   "min": 0
                 },
                 "overrides": []
@@ -470,13 +794,12 @@
               "options": {
                 "legend": {
                   "calcs": [
-                    "lastNotNull",
-                    "max"
+                    "lastNotNull"
                   ],
                   "displayMode": "table",
                   "placement": "right",
-                  "showLegend": true,
-                  "width": 260,
+                  "showLegend": false,
+                  "width": 190,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -490,152 +813,7 @@
           }
         }
       },
-      "panel-5": {
-        "kind": "Panel",
-        "spec": {
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "grafanacloud-usage"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "sum(grafanacloud_grafana_instance_alerting_rule_evaluation_failures_total:rate5m)",
-                        "legendFormat": "Grafana rules",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "A"
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "grafanacloud-usage"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "sum(grafanacloud_instance_rule_evaluation_failures_total:rate5m)",
-                        "legendFormat": "Mimir rules",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "B"
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "grafanacloud-usage"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "sum(grafanacloud_instance_alertmanager_notifications_failed_per_second)",
-                        "legendFormat": "Alertmanager",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "C"
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "grafanacloud-usage"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "expr": "sum(grafanacloud_instance_ruler_notifications_errors_total:rate5m)",
-                        "legendFormat": "Ruler",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "D"
-                  }
-                }
-              ],
-              "queryOptions": {},
-              "transformations": []
-            }
-          },
-          "description": "Rule evaluations (Grafana, Mimir) and notifications (Alertmanager, Ruler) that failed. A failure here can hide the alert it would raise.",
-          "id": 5,
-          "links": [],
-          "title": "Alert path failures",
-          "vizConfig": {
-            "group": "timeseries",
-            "kind": "VizConfig",
-            "spec": {
-              "fieldConfig": {
-                "defaults": {
-                  "custom": {
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "lineWidth": 1,
-                    "showPoints": "never",
-                    "spanNulls": true,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    },
-                    "axisSoftMax": 0.01
-                  },
-                  "unit": "cps",
-                  "min": 0
-                },
-                "overrides": []
-              },
-              "options": {
-                "legend": {
-                  "calcs": [
-                    "lastNotNull",
-                    "max"
-                  ],
-                  "displayMode": "table",
-                  "placement": "right",
-                  "showLegend": true,
-                  "width": 260,
-                  "sortBy": "Last *",
-                  "sortDesc": true
-                },
-                "tooltip": {
-                  "mode": "multi",
-                  "sort": "desc"
-                }
-              }
-            },
-            "version": "13.3.0"
-          }
-        }
-      },
-      "panel-6": {
+      "panel-9": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -653,7 +831,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "count by (job) ({__name__=~\".+\", job!=\"\"})",
+                        "expr": "label_replace(count by (job) ({__name__=~\".+\", job!~\"<aggregated>|\"}), \"job\", \"$1\", \"job\", \"integrations/(.*)\")",
                         "legendFormat": "{{job}}",
                         "range": true
                       },
@@ -668,7 +846,7 @@
             }
           },
           "description": "Stored series on a log axis, aggregated ones included. A new metric family shows as a step. Read it against samples per minute on the Billing/Usage dashboard.",
-          "id": 6,
+          "id": 9,
           "links": [],
           "title": "Series by job",
           "vizConfig": {
@@ -693,22 +871,25 @@
                     "scaleDistribution": {
                       "type": "log",
                       "log": 10
-                    }
+                    },
+                    "axisGridShow": false
                   },
-                  "unit": "short"
+                  "unit": "short",
+                  "color": {
+                    "mode": "palette-classic-by-name"
+                  }
                 },
                 "overrides": []
               },
               "options": {
                 "legend": {
                   "calcs": [
-                    "lastNotNull",
-                    "max"
+                    "lastNotNull"
                   ],
                   "displayMode": "table",
                   "placement": "right",
                   "showLegend": true,
-                  "width": 260,
+                  "width": 190,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -722,7 +903,7 @@
           }
         }
       },
-      "panel-7": {
+      "panel-10": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -740,7 +921,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "avg by (job) (count_over_time(up[5m])) / 5",
+                        "expr": "label_replace(avg by (job) (count_over_time(up[5m])) / 5, \"job\", \"$1\", \"job\", \"integrations/(.*)\")",
                         "legendFormat": "{{job}}",
                         "range": true
                       },
@@ -755,7 +936,7 @@
             }
           },
           "description": "Measured from each job's up series, so a faster scrape shows as a step up. Short dips are missed scrapes.",
-          "id": 7,
+          "id": 10,
           "links": [],
           "title": "Scrapes per minute by job",
           "vizConfig": {
@@ -777,23 +958,26 @@
                     "thresholdsStyle": {
                       "mode": "off"
                     },
-                    "lineInterpolation": "stepAfter"
+                    "lineInterpolation": "stepAfter",
+                    "axisGridShow": false
                   },
                   "unit": "none",
-                  "min": 0
+                  "min": 0,
+                  "color": {
+                    "mode": "palette-classic-by-name"
+                  }
                 },
                 "overrides": []
               },
               "options": {
                 "legend": {
                   "calcs": [
-                    "lastNotNull",
-                    "max"
+                    "lastNotNull"
                   ],
                   "displayMode": "table",
                   "placement": "right",
                   "showLegend": true,
-                  "width": 260,
+                  "width": 190,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -819,8 +1003,8 @@
                 "kind": "ElementReference",
                 "name": "panel-1"
               },
-              "height": 4,
-              "width": 6,
+              "height": 2,
+              "width": 24,
               "x": 0,
               "y": 0
             }
@@ -832,10 +1016,10 @@
                 "kind": "ElementReference",
                 "name": "panel-2"
               },
-              "height": 4,
-              "width": 6,
+              "height": 5,
+              "width": 4,
               "x": 0,
-              "y": 4
+              "y": 2
             }
           },
           {
@@ -845,10 +1029,10 @@
                 "kind": "ElementReference",
                 "name": "panel-3"
               },
-              "height": 8,
-              "width": 18,
-              "x": 6,
-              "y": 0
+              "height": 5,
+              "width": 4,
+              "x": 4,
+              "y": 2
             }
           },
           {
@@ -858,10 +1042,10 @@
                 "kind": "ElementReference",
                 "name": "panel-4"
               },
-              "height": 8,
-              "width": 12,
-              "x": 0,
-              "y": 8
+              "height": 5,
+              "width": 4,
+              "x": 8,
+              "y": 2
             }
           },
           {
@@ -871,10 +1055,10 @@
                 "kind": "ElementReference",
                 "name": "panel-5"
               },
-              "height": 8,
-              "width": 12,
+              "height": 5,
+              "width": 4,
               "x": 12,
-              "y": 8
+              "y": 2
             }
           },
           {
@@ -883,6 +1067,45 @@
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-6"
+              },
+              "height": 5,
+              "width": 8,
+              "x": 16,
+              "y": 2
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              },
+              "height": 9,
+              "width": 14,
+              "x": 0,
+              "y": 7
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-8"
+              },
+              "height": 9,
+              "width": 10,
+              "x": 14,
+              "y": 7
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-9"
               },
               "height": 9,
               "width": 12,
@@ -895,7 +1118,7 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
-                "name": "panel-7"
+                "name": "panel-10"
               },
               "height": 9,
               "width": 12,
@@ -960,16 +1183,9 @@
     ],
     "timeSettings": {
       "autoRefresh": "",
-      "autoRefreshIntervals": [
-        "5m",
-        "15m",
-        "30m",
-        "1h",
-        "2h",
-        "1d"
-      ],
+      "autoRefreshIntervals": [],
       "fiscalYearStartMonth": 0,
-      "from": "now-30d",
+      "from": "now-90d",
       "hideTimepicker": false,
       "timezone": "browser",
       "to": "now"
