@@ -96,7 +96,7 @@
               },
               "options": {
                 "colorMode": "value",
-                "graphMode": "area",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "reduceOptions": {
@@ -181,7 +181,7 @@
               },
               "options": {
                 "colorMode": "value",
-                "graphMode": "area",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "reduceOptions": {
@@ -246,13 +246,53 @@
                     },
                     "refId": "B"
                   }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "vector(12)",
+                        "legendFormat": "Budget",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "expr": "vector(9.600000000000001)",
+                        "legendFormat": "80% of budget",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
                 }
               ],
               "queryOptions": {},
               "transformations": []
             }
           },
-          "description": "Month-to-date overage and the month-end projection, both reset each month. The lines are 80% of the budget and the budget.",
+          "description": "Month-to-date overage and the month-end projection, both reset each month.",
           "id": 3,
           "links": [],
           "title": "Overage against budget",
@@ -273,30 +313,74 @@
                       "mode": "none"
                     },
                     "thresholdsStyle": {
-                      "mode": "line"
+                      "mode": "off"
                     }
                   },
                   "unit": "currencyUSD",
-                  "min": 0,
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
+                  "min": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Month to date"
+                    },
+                    "properties": [
                       {
-                        "color": "green",
-                        "value": null
-                      },
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "green"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Projected"
+                    },
+                    "properties": [
                       {
-                        "color": "orange",
-                        "value": 9.600000000000001
-                      },
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "blue"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Budget"
+                    },
+                    "properties": [
                       {
-                        "color": "red",
-                        "value": 12
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "red"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "80% of budget"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
                       }
                     ]
                   }
-                },
-                "overrides": []
+                ]
               },
               "options": {
                 "legend": {
@@ -305,8 +389,11 @@
                     "max"
                   ],
                   "displayMode": "table",
-                  "placement": "bottom",
-                  "showLegend": true
+                  "placement": "right",
+                  "showLegend": true,
+                  "width": 260,
+                  "sortBy": "Last *",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -336,8 +423,8 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "sum by (instance) (rate(prometheus_remote_storage_samples_failed_total[5m]))",
-                        "legendFormat": "{{instance}}",
+                        "expr": "sum(rate(prometheus_remote_storage_samples_failed_total[5m]))",
+                        "legendFormat": "Failed samples",
                         "range": true
                       },
                       "version": "v0"
@@ -350,7 +437,7 @@
               "transformations": []
             }
           },
-          "description": "Samples an Alloy shipper could not send. Only shippers with self-monitoring report this.",
+          "description": "Samples Alloy shippers could not send, in total. Only shippers with self-monitoring report this.",
           "id": 4,
           "links": [],
           "title": "Failed samples at shippers",
@@ -372,7 +459,8 @@
                     },
                     "thresholdsStyle": {
                       "mode": "off"
-                    }
+                    },
+                    "axisSoftMax": 1
                   },
                   "unit": "cps",
                   "min": 0
@@ -386,8 +474,11 @@
                     "max"
                   ],
                   "displayMode": "table",
-                  "placement": "bottom",
-                  "showLegend": true
+                  "placement": "right",
+                  "showLegend": true,
+                  "width": 260,
+                  "sortBy": "Last *",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -418,7 +509,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "sum(grafanacloud_grafana_instance_alerting_rule_evaluation_failures_total:rate5m)",
-                        "legendFormat": "Grafana-managed rule evaluations",
+                        "legendFormat": "Grafana rules",
                         "range": true
                       },
                       "version": "v0"
@@ -438,7 +529,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "sum(grafanacloud_instance_rule_evaluation_failures_total:rate5m)",
-                        "legendFormat": "Mimir rule evaluations",
+                        "legendFormat": "Mimir rules",
                         "range": true
                       },
                       "version": "v0"
@@ -458,7 +549,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "sum(grafanacloud_instance_alertmanager_notifications_failed_per_second)",
-                        "legendFormat": "Alertmanager notifications",
+                        "legendFormat": "Alertmanager",
                         "range": true
                       },
                       "version": "v0"
@@ -478,7 +569,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "expr": "sum(grafanacloud_instance_ruler_notifications_errors_total:rate5m)",
-                        "legendFormat": "Ruler notifications",
+                        "legendFormat": "Ruler",
                         "range": true
                       },
                       "version": "v0"
@@ -491,7 +582,7 @@
               "transformations": []
             }
           },
-          "description": "A failing rule or notification hides the alert it would raise.",
+          "description": "Rule evaluations (Grafana, Mimir) and notifications (Alertmanager, Ruler) that failed. A failure here can hide the alert it would raise.",
           "id": 5,
           "links": [],
           "title": "Alert path failures",
@@ -513,7 +604,8 @@
                     },
                     "thresholdsStyle": {
                       "mode": "off"
-                    }
+                    },
+                    "axisSoftMax": 0.01
                   },
                   "unit": "cps",
                   "min": 0
@@ -527,8 +619,11 @@
                     "max"
                   ],
                   "displayMode": "table",
-                  "placement": "bottom",
-                  "showLegend": true
+                  "placement": "right",
+                  "showLegend": true,
+                  "width": 260,
+                  "sortBy": "Last *",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -558,7 +653,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "count by (job) ({__name__=~\".+\"})",
+                        "expr": "count by (job) ({__name__=~\".+\", job!=\"\"})",
                         "legendFormat": "{{job}}",
                         "range": true
                       },
@@ -572,7 +667,7 @@
               "transformations": []
             }
           },
-          "description": "Stored series, aggregated ones included. A new metric family shows as a step here. Read it against samples per minute on the Billing/Usage dashboard.",
+          "description": "Stored series on a log axis, aggregated ones included. A new metric family shows as a step. Read it against samples per minute on the Billing/Usage dashboard.",
           "id": 6,
           "links": [],
           "title": "Series by job",
@@ -594,10 +689,13 @@
                     },
                     "thresholdsStyle": {
                       "mode": "off"
+                    },
+                    "scaleDistribution": {
+                      "type": "log",
+                      "log": 10
                     }
                   },
-                  "unit": "short",
-                  "min": 0
+                  "unit": "short"
                 },
                 "overrides": []
               },
@@ -608,8 +706,11 @@
                     "max"
                   ],
                   "displayMode": "table",
-                  "placement": "bottom",
-                  "showLegend": true
+                  "placement": "right",
+                  "showLegend": true,
+                  "width": 260,
+                  "sortBy": "Last *",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -653,7 +754,7 @@
               "transformations": []
             }
           },
-          "description": "Measured from each job's up series, so a faster scrape shows here.",
+          "description": "Measured from each job's up series, so a faster scrape shows as a step up. Short dips are missed scrapes.",
           "id": 7,
           "links": [],
           "title": "Scrapes per minute by job",
@@ -675,7 +776,8 @@
                     },
                     "thresholdsStyle": {
                       "mode": "off"
-                    }
+                    },
+                    "lineInterpolation": "stepAfter"
                   },
                   "unit": "none",
                   "min": 0
@@ -689,8 +791,11 @@
                     "max"
                   ],
                   "displayMode": "table",
-                  "placement": "bottom",
-                  "showLegend": true
+                  "placement": "right",
+                  "showLegend": true,
+                  "width": 260,
+                  "sortBy": "Last *",
+                  "sortDesc": true
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -779,7 +884,7 @@
                 "kind": "ElementReference",
                 "name": "panel-6"
               },
-              "height": 8,
+              "height": 9,
               "width": 12,
               "x": 0,
               "y": 16
@@ -792,7 +897,7 @@
                 "kind": "ElementReference",
                 "name": "panel-7"
               },
-              "height": 8,
+              "height": 9,
               "width": 12,
               "x": 12,
               "y": 16
