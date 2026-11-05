@@ -15,11 +15,9 @@ leak spreads. It assumes the
 [asset register](../reference/asset-register.md), whose IDs name every
 node here.
 
-A data flow diagram draws data that moves. These graphs draw what an actor
-could obtain, including paths that have never run.
-
-The edges come from reading configuration. Some have run in normal use, but
-none has been tested as an attack.
+The graphs draw what an actor could obtain, including paths that have never
+run. The edges come from reading configuration. Some have run in normal use,
+but none has been tested as an attack.
 
 Out of scope:
 
@@ -45,7 +43,7 @@ graph, so reviewing credentials one at a time misses it.
 
 Keeping a new credential to one repository contains a leak only if nothing
 else joins that repository to the others. The hook-fix key and the Projects
-token (C-13) both do.
+token (C-13) both join repositories this way.
 
 ## How credentials connect
 
@@ -175,8 +173,8 @@ creating a tag.
 The apply service account (C-04) admits only `terraform-apply.yml` on `main`,
 so a pull request branch runs with CI plan's credentials. That keeps it from
 the Apply App and from the Cloudflare, Tailscale, and Fleet Management write
-credentials. The plan side still matters, because it holds Grafana stack Admin
-(C-06) and the Git Sync App (C-10).
+credentials. CI plan still holds Grafana stack Admin (C-06) and the Git Sync
+App (C-10).
 
 Hook-fix commits cross this boundary without review, and neither of these
 controls stops them:
@@ -184,9 +182,9 @@ controls stops them:
 - Required checks don't inspect who wrote a commit or what it means. They also
   match by name, so an App that can report checks, such as Codecov (P-9), could
   satisfy one (#429).
-- `renovate.json` holds back updates to `terraform-apply.yml`'s paths by the
-  files Renovate's upgrade touches, so it doesn't hold a later commit on the
-  branch.
+- `renovate.json` holds back updates that touch `terraform-apply.yml`'s paths.
+  It judges only the files Renovate's upgrade changes, so it doesn't hold a
+  later commit on the branch.
 
 ### Tagging
 
@@ -195,10 +193,10 @@ commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
 reach the registries without passing through a default branch.
 
-The controls that guard merging don't apply here. Branch rulesets don't cover
+No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
-one. Environment tag patterns don't help either, because whoever creates the
-tag chooses its name.
+one. Environment tag patterns don't help, because whoever creates the tag
+chooses its name.
 
 ## Why one hub is necessary and two aren't
 
@@ -206,22 +204,23 @@ Three nodes connect most of the graph. Only the Apply App's reach comes from
 its job.
 
 The Apply App (C-28) administers every repository because Terraform manages
-their settings from CI. No fix removes that authority, so the defense has to
-be limiting what reaches it. Anything reaching `main` in this repository
+their settings from CI. No fix removes that authority, so the defense is
+limiting what reaches it. Anything reaching `main` in this repository
 reaches everything else.
 
 The hook-fix key (C-25) connects repositories because one reusable workflow
 serves them all with one key. Hook code alone is more contained: its fix is
 pushed with an App token covering one repository, so it reaches that
 repository's default branch and release. It reaches other repositories only
-when that repository is this one. Removing the edge from `renovate/**` to the
-default branches disconnects hook code from everything else.
+when that repository is `alunduil-infrastructure`. Removing the edge from
+`renovate/**` to the default branches disconnects hook code from everything
+else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
 organizations too, and it bypasses rulesets as the admin role does. Any merge
-to `main` reaches it, because the hourly job runs the script from the checkout
-and that path has no review hold.
+to `main` reaches it, because the hourly job runs its script from `main`, and
+no review hold covers that script.
 
 ## Why Renovate and the Claude App are accepted
 
@@ -231,15 +230,15 @@ could edit the workflow or report the result itself.
 
 Rulesets name the App by its ID, so another actor can't claim its bypass.
 Compromising it means compromising Mend, which could already choose the
-package versions these repositories run, so restricting the App further buys
+package versions these repositories run, so restricting the App further gains
 little. Hook-fix differs because it runs third-party code and commits the
 output, which needs no compromise at Mend.
 
-A path existing only through P-6 therefore needs no fix of its own. Anything
-able to push workflow changes to a `renovate-config` branch can run any ref
-of `fix-renovate-hooks.yml` and read C-25, because the provider's condition
-matches that file by prefix. Renovate can push there, but C-25 gives it
-nothing it lacks.
+A path existing only through P-6 therefore needs no fix of its own. For
+example, anything able to push workflow changes to a `renovate-config` branch
+can read C-25, because its provider admits any ref of
+`fix-renovate-hooks.yml`. Renovate can push there, but C-25 gives it nothing it
+lacks.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.

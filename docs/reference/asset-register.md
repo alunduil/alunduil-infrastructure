@@ -3,7 +3,7 @@
 
 # Asset register
 
-The personal estate as a threat model needs it listed: zones, principals,
+Lists the personal estate for threat modeling: zones, principals,
 trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
@@ -14,7 +14,6 @@ Verified 2026-11-04.
 
 Follows the enumeration [OWASP's threat modeling
 process](https://community.owasp.org/Threat_Modeling_Process) asks for.
-Other documents cite entries here by ID.
 
 Out of scope:
 
@@ -64,7 +63,7 @@ from.
 | P-6 | Renovate | Mend's App, ID 2740, on every repository | Mend |
 | P-7 | Write collaborator | A person with write access | Their account |
 | P-8 | Claude | Anthropic's App, ID 1236702, on every repository | Anthropic |
-| P-9 | Codecov | Its vendor's App, ID 254, on every repository | Codecov |
+| P-9 | Codecov | Codecov's App, ID 254, on every repository | Codecov |
 
 The vendor Apps hold these permissions:
 
@@ -185,8 +184,7 @@ principals that read or change an asset through Terraform.
   certificates on, global nameservers pinned to Quad9. Both exit nodes
   carry per-device key-expiry exemptions set outside Terraform. The policy
   file is declared in `terraform/alunduil/tailscale-acl.hujson`
-- Exposed to: T-1. Its API is public. T-3 is what it grants, not what
-  reaches it
+- Exposed to: T-1. Its API is public. It provides T-3
 - Terraform access: P-2, P-3
 
 ### A-11: Grafana Cloud
@@ -206,7 +204,7 @@ principals that read or change an asset through Terraform.
 
 ## Entry points
 
-Interfaces where data arrives. Each names the asset a client actually
+Interfaces where data arrives. Each names the asset a client
 reaches: the container where B-1 holds, and the host where it doesn't,
 which is why E-01 names A-12 and E-11 names A-01.
 
@@ -258,8 +256,8 @@ vendor.
 
 ## Credentials
 
-The credentials this repository declares or documents, in ID order. Some
-fields need defining:
+The credentials this repository declares or documents, in ID order. Fields
+with a specific meaning:
 
 - `Grants`: the principal holding the credential or, where no listed
   principal holds it, what it allows.
@@ -269,7 +267,7 @@ fields need defining:
   it. `None` means nothing here does either.
 - `Tracked by`: the issue that changes it, where one exists.
 
-A credential live in a provider console with no entry below is an
+A credential in a provider console with no entry below is an
 orphan. Two inventories are complete at the verification date:
 Grafana Cloud's, which held C-18, and Google Cloud's OAuth clients, which
 held C-23. Nobody has enumerated Cloudflare, GitHub, Tailscale, or
