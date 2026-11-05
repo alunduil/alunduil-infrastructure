@@ -172,11 +172,11 @@ creating a tag.
 
 ### Merging
 
-C-04 admits only `terraform-apply.yml` on `main`, so a pull request branch runs
-with CI plan's credentials. That keeps it from the Apply App and from the
-Cloudflare, Tailscale, and Fleet Management write credentials. The plan side
-still matters, because it holds Grafana stack Admin (C-06) and the Git Sync App
-(C-10).
+The apply service account (C-04) admits only `terraform-apply.yml` on `main`,
+so a pull request branch runs with CI plan's credentials. That keeps it from
+the Apply App and from the Cloudflare, Tailscale, and Fleet Management write
+credentials. The plan side still matters, because it holds Grafana stack Admin
+(C-06) and the Git Sync App (C-10).
 
 Hook-fix commits cross this boundary without review, and neither of these
 controls stops them:
@@ -192,8 +192,8 @@ controls stops them:
 
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
-P-7, P-8, and C-25 reach the registries without passing through a default
-branch.
+write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
+reach the registries without passing through a default branch.
 
 The controls that guard merging don't apply here. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
@@ -243,7 +243,6 @@ nothing it lacks.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.
-
 It's accepted for a different reason: the operator uses it on every repository,
 so narrowing it now would stop that work. `alunduil-chezmoi#856` tracks
 repo-scoped identities for sessions, which could replace it. Compromising it
