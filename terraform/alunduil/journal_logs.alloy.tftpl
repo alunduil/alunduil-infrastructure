@@ -26,7 +26,7 @@ loki.relabel "journal" {
 }
 
 loki.source.journal "system" {
-	max_age       = "12h0m0s"
+	max_age       = "12h"
 	relabel_rules = loki.relabel.journal.rules
 	forward_to    = [loki.write.default.receiver]
 	labels        = {
