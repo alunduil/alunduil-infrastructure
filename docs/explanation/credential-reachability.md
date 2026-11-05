@@ -33,11 +33,28 @@ Out of scope:
   without review.
 - Credentials nobody has listed. Issue #542 sweeps the provider consoles.
 
+## Why a narrow grant can reach far
+
+The register lists what each credential is granted, while reach adds
+whatever that grant can obtain in turn. The hook-fix key (C-25) holds
+`Contents` write to push formatting fixes. Its fix can automerge to `main` in
+this repository, which runs `terraform apply`. Reach depends on the whole
+graph, so reviewing credentials one at a time misses it.
+
 ## How credentials connect
 
 An arrow means the source can obtain or act through the target. A dashed
 arrow is an [accepted trust](#why-renovate-and-the-claude-app-are-accepted).
-An arrow to a box applies to everything inside it.
+An arrow to a box applies to everything inside it. A number on an edge is the
+issue tracking that path.
+
+The graphs leave out what connects to nothing:
+
+- C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, and C-24 have no
+  edge apart from P-1 and the host that consumes them.
+- C-34 has no edge because nothing reads it.
+- C-33 and the Codecov App (P-9) lead nowhere further, though any P-7 on a
+  repository holding a C-33 token can read it.
 
 ### From a foothold to a release
 
@@ -142,79 +159,63 @@ flowchart LR
   c06 -->|"queries through"| c26
 ```
 
-## What each starting point reaches
+## Why merging and tagging are the boundaries
 
-A foothold is where someone starts without holding a credential:
+Two events decide how far unreviewed code gets: reaching a default branch and
+creating a tag.
 
-- Hook code in a Renovate update reaches its own repository's default
-  branch and release, because its fix is pushed with an App token covering
-  one repository. In this repository that branch is `main`, which leads to CI
-  apply (P-3), the Apply App (C-28), the Projects token (C-13), and
-  everything those reach. #1057 removes the path.
-- A write collaborator (P-7) reaches a registry by creating a release tag.
-  On `zfs-replicate` that's PyPI (D-13). On `collection-json.hs` and
-  `network-arbitrary` it's Hackage (D-12), through that repository's token
-  (C-29 or C-30). #1055 removes these.
+### Merging
 
-Each credential or identity reaches:
+C-04 admits only `terraform-apply.yml` on `main`, so a pull request branch runs
+with CI plan's credentials. That keeps it from the Apply App and from the
+Cloudflare, Tailscale, and Fleet Management write credentials. The plan side
+still matters, because it holds Grafana stack Admin (C-06) and the Git Sync App
+(C-10).
 
-- The apply identities (P-3, C-04, C-28) reach every repository, and so
-  every registry. Terraform needs this authority, so no fix removes it.
-- The Projects token (C-13) acts as the account on every repository it can
-  write to, in other organizations too, and bypasses rulesets as the admin
-  role does. It can't edit workflow files. #1069 replaces it.
-- Renovate (P-6) reaches everything the hook-fix key does, and that trust
-  is accepted.
-- The hook-fix key (C-25) reaches tags and branches on every repository the
-  App is installed on, CI plan (P-2), CI apply (P-3), and both registries.
-  #1057, #1055, and `woodland-generators#915` remove those routes.
-- The Claude App (P-8) holds `contents`, `workflows`, `actions`, and
-  `repository_hooks` write on every repository. It reaches tags, assets,
-  and pull request branches, and so CI plan (P-2) and the registries. No
-  ruleset names it, so it can't land on a default branch alone. #1055 would
-  remove its tag route. The rest is accepted.
-- The plan identities (P-2, C-03) and the Git Sync App (C-10) reach the
-  Cloudflare, Tailscale, and Fleet Management read credentials (C-01, C-11,
-  C-20), the Plan App (C-27), the Git Sync App, and Grafana stack Admin
-  (C-06). #501 narrows what each job holds. They stop short of P-3 because
-  C-04 admits only `terraform-apply.yml` on `main`, which keeps an unmerged
-  branch away from write access.
-- The `woodland-generators` token (C-32) reaches that repository at least.
-  #738 removes it.
-- The Hackage tokens (C-29, C-30) reach every package on D-12 that the
-  token's Hackage user can upload.
-- The Codecov App (P-9) reads contents and can report checks and statuses.
-  It could satisfy a required check matched by name (#429), and leads
-  nowhere further.
-- The Codecov tokens (C-33) lead nowhere further, though any P-7 on the
-  repository holding one can read it.
+The boundary is only as strong as what can cross it without review, and
+hook-fix commits can. Two controls look like they stop them, but neither does:
 
-The rest have no edge in or out, apart from P-1 and the host that consumes
-them: C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, and C-24.
-C-34 is the same, because nothing reads it (#1070).
+- Required checks don't inspect who wrote a commit or what it means. They also
+  match by name, so an App that can report checks, such as Codecov (P-9), could
+  satisfy one (#429).
+- `renovate.json` holds back updates to `terraform-apply.yml`'s paths by the
+  files Renovate's upgrade touches, so it doesn't hold a later commit on the
+  branch.
 
-## Where paths converge
+### Tagging
 
-Three nodes connect most of the graph.
+A release needs no merge, because the workflow at a tag runs from whatever
+commit the tag names. `Contents` write is enough to create one, which is how
+P-7, P-8, and C-25 reach the registries without passing through a default
+branch.
 
-The Apply App (C-28) administers every repository, as Terraform requires, so
-anything reaching `main` in this repository reaches everything else.
+The controls that guard merging don't apply here. Branch rulesets don't cover
+tags, and `immutable-tags` blocks updating and deleting a tag but not creating
+one. Environment tag patterns don't help either, because whoever creates the
+tag chooses its name.
 
-The hook-fix key (C-25) pushes formatting fixes, but one key covers every
-repository, and its commits automerge. Removing the edge from `renovate/**`
-to the default branches disconnects hook code from everything else. Also
-adding #1055 and `woodland-generators#915` removes the key's other routes to
-a release, leaving only what CI plan holds.
+## Why one hub is necessary and two aren't
 
-Required checks don't change that edge, because they don't inspect who wrote
-a commit or what it means. `renovate.json` holds back updates to
-`terraform-apply.yml`'s paths by the files Renovate's upgrade touches, so it
-doesn't hold a later commit on the branch.
+Three nodes connect most of the graph. Only the Apply App's reach comes from
+its job.
 
-The Projects token (C-13) updates one board, but its `repo` scope covers
-every repository the account can write to. Any merge to `main` reaches it,
-because the hourly job runs the script from the checkout and that path has
-no review hold.
+The Apply App (C-28) administers every repository because Terraform manages
+their settings from CI. No fix removes that authority, so the defense has to
+be limiting what reaches it. Anything reaching `main` in this repository
+reaches everything else.
+
+The hook-fix key (C-25) connects repositories because one reusable workflow
+serves them all with one key. Hook code alone is more contained: its fix is
+pushed with an App token covering one repository, so it reaches that
+repository's default branch and release. It only escapes when that repository
+is this one. Removing the edge from `renovate/**` to the default branches
+disconnects hook code from everything else.
+
+The Projects token (C-13) updates one board and only reads repositories. Its
+`repo` scope still covers every repository the account can write to, in other
+organizations too, and it bypasses rulesets as the admin role does. Any merge
+to `main` reaches it, because the hourly job runs the script from the checkout
+and that path has no review hold.
 
 Keeping a new credential to one repository contains a leak only if nothing
 else joins that repository to the others. The hook-fix key and the Projects
@@ -239,8 +240,13 @@ of `fix-renovate-hooks.yml` and read C-25, because the provider's condition
 matches that file by prefix. Renovate can push there, but C-25 gives it
 nothing it lacks.
 
-The Claude App (P-8) is accepted for a different reason: the operator uses it
-on every repository, so narrowing it now would stop that work.
-`alunduil-chezmoi#856` tracks repo-scoped identities for sessions, which could
-replace it. Compromising it means compromising Anthropic, the same kind of
-trust as Mend, without the ruleset bypass.
+The Claude App (P-8) holds `contents`, `workflows`, `actions`, and
+`repository_hooks` write on every repository. No ruleset names it, so it can't
+land on a default branch alone, but it reaches tags, assets, and pull request
+branches.
+
+It's accepted for a different reason: the operator uses it on every repository,
+so narrowing it now would stop that work. `alunduil-chezmoi#856` tracks
+repo-scoped identities for sessions, which could replace it. Compromising it
+means compromising Anthropic, the same kind of trust as Mend, without the
+ruleset bypass.
