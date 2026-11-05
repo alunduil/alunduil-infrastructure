@@ -120,7 +120,6 @@ Nygard's
 (?i)triaged
 (?i)uncheck
 (?i)unmanaged
-(?i)unmerged
 (?i)unreviewed
 (?i)unshipped
 (?i)untracked

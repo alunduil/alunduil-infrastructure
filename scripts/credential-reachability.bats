@@ -13,7 +13,7 @@ setup() {
 }
 
 registered_ids() {
-  grep -oE "^#{3,4} ${id_pattern}|^\| ${id_pattern} \|" "${register}" \
+  grep -oE "^### ${id_pattern}|^\| ${id_pattern} \|" "${register}" \
     | grep -oE "${id_pattern}" | sort -u
 }
 
