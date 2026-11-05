@@ -3,8 +3,8 @@
 
 # Credential reachability
 
-What each credential or foothold in the estate can reach, directly or
-through other credentials.
+Why a leak of one credential can spread beyond what it was granted, and which
+controls limit that.
 
 Verified 2026-11-04.
 
@@ -40,6 +40,10 @@ whatever that grant can obtain in turn. The hook-fix key (C-25) holds
 `Contents` write to push formatting fixes. Its fix can automerge to `main` in
 this repository, which runs `terraform apply`. Reach depends on the whole
 graph, so reviewing credentials one at a time misses it.
+
+Keeping a new credential to one repository contains a leak only if nothing
+else joins that repository to the others. The hook-fix key and the Projects
+token (C-13) both do.
 
 ## How credentials connect
 
@@ -172,8 +176,8 @@ Cloudflare, Tailscale, and Fleet Management write credentials. The plan side
 still matters, because it holds Grafana stack Admin (C-06) and the Git Sync App
 (C-10).
 
-The boundary is only as strong as what can cross it without review, and
-hook-fix commits can. Two controls look like they stop them, but neither does:
+Hook-fix commits cross this boundary without review, and neither of these
+controls stops them:
 
 - Required checks don't inspect who wrote a commit or what it means. They also
   match by name, so an App that can report checks, such as Codecov (P-9), could
@@ -207,9 +211,9 @@ reaches everything else.
 The hook-fix key (C-25) connects repositories because one reusable workflow
 serves them all with one key. Hook code alone is more contained: its fix is
 pushed with an App token covering one repository, so it reaches that
-repository's default branch and release. It only escapes when that repository
-is this one. Removing the edge from `renovate/**` to the default branches
-disconnects hook code from everything else.
+repository's default branch and release. It reaches other repositories only
+when that repository is this one. Removing the edge from `renovate/**` to the
+default branches disconnects hook code from everything else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
@@ -217,16 +221,11 @@ organizations too, and it bypasses rulesets as the admin role does. Any merge
 to `main` reaches it, because the hourly job runs the script from the checkout
 and that path has no review hold.
 
-Keeping a new credential to one repository contains a leak only if nothing
-else joins that repository to the others. The hook-fix key and the Projects
-token both do.
-
 ## Why Renovate and the Claude App are accepted
 
-Renovate (P-6) reaches everything the hook-fix key does, and more, because
-its App holds `contents`, `workflows`, and `checks` write on every
-repository. No required check binds it, since it could edit the workflow or
-report the result itself.
+Renovate (P-6) reaches everything the hook-fix key does, and more, because its
+App can also write workflows and checks. No required check binds it, since it
+could edit the workflow or report the result itself.
 
 Rulesets name the App by its ID, so another actor can't claim its bypass.
 Compromising it means compromising Mend, which could already choose the
@@ -240,10 +239,8 @@ of `fix-renovate-hooks.yml` and read C-25, because the provider's condition
 matches that file by prefix. Renovate can push there, but C-25 gives it
 nothing it lacks.
 
-The Claude App (P-8) holds `contents`, `workflows`, `actions`, and
-`repository_hooks` write on every repository. No ruleset names it, so it can't
-land on a default branch alone, but it reaches tags, assets, and pull request
-branches.
+The Claude App (P-8) reaches tags, assets, and pull request branches on every
+repository. No ruleset names it, so it can't land on a default branch alone.
 
 It's accepted for a different reason: the operator uses it on every repository,
 so narrowing it now would stop that work. `alunduil-chezmoi#856` tracks

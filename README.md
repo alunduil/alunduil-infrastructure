@@ -34,29 +34,43 @@ The three operator entrypoints:
 - `just projects`—Projects v2 board fields, after editing a spec in
   `github/projects/`. Needs only a `gh` login with the `project` scope.
 
-Supporting how-tos:
+## Documentation
 
-- [docs/how-to/create-bootstrap-cloudflare-token.md](docs/how-to/create-bootstrap-cloudflare-token.md)
-- [docs/how-to/create-terraform-github-apps.md](docs/how-to/create-terraform-github-apps.md)
-- [docs/how-to/create-git-sync-github-app.md](docs/how-to/create-git-sync-github-app.md)
-- [docs/how-to/create-grafana-git-sync-token.md](docs/how-to/create-grafana-git-sync-token.md)
-- [docs/how-to/create-grafana-github-app.md](docs/how-to/create-grafana-github-app.md)
-- [docs/how-to/connect-grafana-to-gcp.md](docs/how-to/connect-grafana-to-gcp.md)
-- [docs/how-to/create-tailscale-trust-credential.md](docs/how-to/create-tailscale-trust-credential.md)
-- [docs/how-to/create-web-analytics-site.md](docs/how-to/create-web-analytics-site.md)
-- [docs/how-to/rotate-git-sync-app-key.md](docs/how-to/rotate-git-sync-app-key.md)
+How-to guides for credentials:
 
-Estate assets, trust levels, entry points, and credentials:
+- [Create the bootstrap Cloudflare token](docs/how-to/create-bootstrap-cloudflare-token.md)
+- [Create the Terraform GitHub Apps](docs/how-to/create-terraform-github-apps.md)
+- [Create the Git Sync GitHub App](docs/how-to/create-git-sync-github-app.md)
+- [Rotate the Git Sync App's private key](docs/how-to/rotate-git-sync-app-key.md)
+- [Create the Grafana Git Sync credentials](docs/how-to/create-grafana-git-sync-token.md)
+- [Create the Grafana GitHub data source App](docs/how-to/create-grafana-github-app.md)
+- [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
+- [Create the GitHub Projects sync token](docs/how-to/create-github-project-sync-token.md)
+- [Create the Tailscale trust credentials](docs/how-to/create-tailscale-trust-credential.md)
+- [Create the blog's Web Analytics site](docs/how-to/create-web-analytics-site.md)
 
-- [docs/reference/asset-register.md](docs/reference/asset-register.md)
+How-to guides for hosts and services:
 
-What each credential's leak reaches:
+- [Set the alloy push credential on the collector](docs/how-to/configure-alloy-push-credential.md)
+- [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
+- [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)
+- [Configure the Google Takeout backup on TrueNAS](docs/how-to/configure-truenas-takeout-backup.md)
 
-- [docs/explanation/credential-reachability.md](docs/explanation/credential-reachability.md)
+Reference:
 
-DORA and SPACE metric definitions against GitHub data:
+- [Asset register](docs/reference/asset-register.md): estate assets, zones,
+  principals, entry points, dependencies, and credentials
+- [Delivery metrics](docs/reference/delivery-metrics.md): DORA and SPACE metric
+  definitions against GitHub data
 
-- [docs/reference/delivery-metrics.md](docs/reference/delivery-metrics.md)
+Explanation:
+
+- [Credential reachability](docs/explanation/credential-reachability.md): why a
+  leak of one credential can spread beyond what it was granted
+
+Decisions:
+
+- [Architecture Decision Records](docs/adr/README.md)
 
 ## Support and contributions
 
