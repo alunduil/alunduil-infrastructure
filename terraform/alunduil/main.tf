@@ -52,8 +52,8 @@ provider "grafana" {
   stack_id = local.bootstrap.grafana_stack_id
 }
 
-# Fleet Management answers on its own regional host and takes basic auth, on a
-# credential whose scopes split by role where the provisioner token's can't.
+# Fleet Management answers on its own regional host and takes basic auth, so the
+# stack token above can't reach it.
 provider "grafana" {
   alias                 = "fleet_management"
   fleet_management_url  = local.bootstrap.grafana_fleet_management_url

@@ -466,8 +466,8 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read` and `fleet-management:write` on the
   stack realm
-- Consumer: `terraform apply` in CI
-- Grants: P-3
+- Consumer: `terraform apply` in CI, and `just alunduil`
+- Grants: P-3, and P-1 through the break-glass path
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 

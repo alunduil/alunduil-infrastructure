@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Collectors evaluate pipeline contents themselves, so the literal
-# sys.env("GCLOUD_RW_API_KEY") stays in each template and the token never reaches
-# this state. A pipeline runs in its own scope and can't share another's writer,
-# so each template carries its own.
+# Collectors evaluate pipeline contents themselves, so templates read the push
+# token from the collector's environment and it stays out of this state. Pipelines
+# can't share components, so each template carries its own writer.
 
 resource "grafana_fleet_management_collector" "nanopi_neo3" {
   provider = grafana.fleet_management
@@ -17,9 +16,8 @@ import {
   id = "NanoPi-NEO3"
 }
 
-# One pipeline per concern. A key names the template, the pipeline, and the
-# attribute a collector sets in its remotecfg to opt in, so a collector can't run
-# a pipeline alongside the local config it replaces unless its own config says so.
+# A collector opts in to a pipeline by setting the attribute of the same name in
+# its remotecfg.
 resource "grafana_fleet_management_pipeline" "concern" {
   for_each = toset(["journal_logs", "node_metrics"])
 
