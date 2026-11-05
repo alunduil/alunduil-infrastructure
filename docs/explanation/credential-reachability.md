@@ -32,6 +32,8 @@ Out of scope:
 - Whether a change to `alunduil-chezmoi`'s default branch reaches A-06
   without review.
 - Credentials nobody has listed. Issue #542 sweeps the provider consoles.
+- Routes that start a release other than a tag or a default branch, such as
+  `workflow_dispatch`. Issue #1077 inventories them.
 
 ## Why a narrow grant can reach far
 
