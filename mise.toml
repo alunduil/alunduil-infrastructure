@@ -6,7 +6,11 @@ locked = true
 lockfile_platforms = ["linux-x64"]
 
 [tools]
+# Locking and installing this pypi: tool needs the python and uv pins below.
+ansible-core = "2.22.0"
 bats = "1.14.0"
 just = "1.59.0"
 prek = "0.5.7"
+python = "3.14.10"
 terraform = "1.17.0"
+uv = "0.13.6"

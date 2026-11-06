@@ -2,6 +2,12 @@
 
 lockfile_version = 3
 
+[[tools.ansible-core]]
+version = "2.22.0"
+backend = "pypi:ansible-core"
+specifiers = ["2.22.0"]
+uv = { path = ".mise/locks/ansible-core/2.22.0", digest = "sha256:82b050102b9f5769232b8331e624f9385f28a5aa08468bd571b3d3c1cf27ff7f" }
+
 [[tools.bats]]
 version = "1.14.0"
 backend = "aqua:bats-core/bats-core"
@@ -32,6 +38,16 @@ url = "https://github.com/j178/prek/releases/download/v0.5.7/prek-x86_64-unknown
 url_api = "https://api.github.com/repos/j178/prek/releases/assets/660929556"
 provenance = "github-attestations"
 
+[[tools.python]]
+version = "3.14.10"
+backend = "core:python"
+specifiers = ["3.14.10"]
+
+[tools.python."platforms.linux-x64"]
+checksum = "sha256:4d3c16c59ed0802a3d1d34d8bce504b15ceeaff39d62dadecc6a9fa803412aed"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.14.10+20261026-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+provenance = "github-attestations"
+
 [[tools.terraform]]
 version = "1.17.0"
 backend = "aqua:hashicorp/terraform"
@@ -40,3 +56,14 @@ specifiers = ["1.17.0"]
 [tools.terraform."platforms.linux-x64"]
 checksum = "sha256:c168cab7c637a8769fdb90089ddd19de701bc6ff8aca64dc2e2185fe46f59f67"
 url = "https://releases.hashicorp.com/terraform/1.17.0/terraform_1.17.0_linux_amd64.zip"
+
+[[tools.uv]]
+version = "0.13.6"
+backend = "aqua:astral-sh/uv"
+specifiers = ["0.13.6"]
+
+[tools.uv."platforms.linux-x64"]
+checksum = "sha256:f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.6/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/679980644"
+provenance = "github-attestations"
