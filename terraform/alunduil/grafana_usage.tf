@@ -11,7 +11,7 @@ data "grafana_data_source" "usage" {
 locals {
   # Monthly overage on top of the base plan, across the whole organization: what
   # UptimeRobot costs at 144 USD a year, which Grafana Cloud replaces.
-  usage_budget_usd = 12
+  usage_budget_usd   = 12
   usage_budget_label = format("$%d", local.usage_budget_usd)
 
   # grafanacloud-usage reports on every stack in the organization, and this
