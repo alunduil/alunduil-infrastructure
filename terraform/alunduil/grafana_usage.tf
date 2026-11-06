@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on what Grafana Cloud bills and what it rejects.
-
 data "grafana_data_source" "usage" {
   uid = "grafanacloud-usage"
 }
@@ -15,8 +13,8 @@ locals {
 }
 
 locals {
-  # Monthly overage on top of the base plan, across the whole organization: what
-  # UptimeRobot costs at 144 USD a year, which Grafana Cloud replaces.
+  # Monthly overage across the organization, on top of the base plan. Equals
+  # UptimeRobot's 144 USD a year, which Grafana Cloud replaces.
   usage_budget_usd = 12
 
   usage_spend_levels = [
@@ -29,8 +27,8 @@ locals {
     })
   ]
 
-  # grafanacloud-usage reports on every stack in the organization, and this
-  # repository owns only this one.
+  # grafanacloud-usage reports on every stack, and this repository owns only
+  # this one.
   usage_stack_selector = "{stack_id=\"1273682\"}"
 
   usage_anomalies = [
@@ -44,8 +42,8 @@ locals {
     })
   ]
 
-  # The Cost Management and Billing app generated these rules and reads their
-  # labels and annotations to show them on its Usage Alerts tab.
+  # These match what the Cost Management and Billing app writes, because it lists
+  # them on its Usage Alerts tab.
   usage_alerts = concat(
     [
       for anomaly in local.usage_anomalies : {
@@ -95,9 +93,8 @@ import {
   id = "1:grafana-cmab-usage-alerts:Usage Alerts Rule Group"
 }
 
-# Applying this replaces the whole group, so an alert created on the Usage
-# Alerts tab disappears until it's added here. Create it there to get its
-# definition, then copy it in.
+# Applying replaces the whole group, so add any alert created on the Usage Alerts
+# tab here too, or it disappears.
 resource "grafana_rule_group" "usage_alerts" {
   name             = "Usage Alerts Rule Group"
   folder_uid       = "grafana-cmab-usage-alerts"
@@ -153,8 +150,7 @@ resource "grafana_folder" "ingestion" {
   uid   = "grafana-cloud-ingestion"
 }
 
-# Rejected samples are missing data rather than cost, so the Usage Alerts tab has
-# no equivalent.
+# Rejected samples aren't a cost, so this stays out of the Usage Alerts group.
 resource "grafana_rule_group" "ingestion" {
   name             = "Ingestion"
   folder_uid       = grafana_folder.ingestion.uid
@@ -163,7 +159,7 @@ resource "grafana_rule_group" "ingestion" {
   rule {
     name      = "Samples discarded"
     condition = "C"
-    # Discards spike briefly during restarts and clear without intervention.
+    # Discards spike briefly and clear on their own.
     for            = "1h"
     no_data_state  = "OK"
     exec_err_state = "Error"
