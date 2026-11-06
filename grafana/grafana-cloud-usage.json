@@ -170,9 +170,10 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)",
+                        "expr": "(clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)) and on () (day_of_month() > 10)",
                         "legendFormat": "Projected",
-                        "range": true
+                        "range": false,
+                        "instant": true
                       },
                       "version": "v0"
                     },
@@ -184,7 +185,7 @@
               "transformations": []
             }
           },
-          "description": "Month-end overage if the last 7 days continue: the lower of this month's billable series and the last 7 days' 95th percentile DPM, at 6.50 USD per 1,000 above included, plus other products' overage so far. Excludes the 19 USD base plan. Unreliable for about the first 10 days, and can't foresee a regression. Assumes DPM sets the bill, not active series.",
+          "description": "Month-end overage if the last 7 days continue: the lower of this month's billable series and the last 7 days' 95th percentile DPM, at 6.50 USD per 1,000 above included, plus other products' overage so far. Excludes the 19 USD base plan. Hidden until the 11th, because it's unreliable before then. Can't foresee a regression. Assumes DPM sets the bill, not active series.",
           "id": 3,
           "links": [],
           "title": "Projected overage",
@@ -212,7 +213,8 @@
                       }
                     ]
                   },
-                  "unit": "currencyUSD"
+                  "unit": "currencyUSD",
+                  "noValue": "Too early (before the 11th)"
                 },
                 "overrides": []
               },
@@ -463,10 +465,10 @@
               "transformations": []
             }
           },
-          "description": "Per second. Failed shipper samples, rule evaluations and notifications, any of which can hide data or an alert. The sparkline shows past failures. Only shippers with self-monitoring report samples.",
+          "description": "Failed shipper samples, rule evaluations and notifications, any of which can hide data or an alert. The sparkline shows past failures. Only shippers with self-monitoring report samples.",
           "id": 6,
           "links": [],
-          "title": "Delivery failures now",
+          "title": "Delivery failures per second",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -487,7 +489,7 @@
                       }
                     ]
                   },
-                  "unit": "cps"
+                  "unit": "none"
                 },
                 "overrides": []
               },
@@ -530,6 +532,122 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
+                        "expr": "(grafanacloud_org_total_overage offset -1d) and on () (day_of_month(vector(time() + 86400)) == 1)",
+                        "legendFormat": "Overage",
+                        "range": true,
+                        "interval": "1d"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": [
+                {
+                  "kind": "convertFieldType",
+                  "spec": {
+                    "id": "convertFieldType",
+                    "options": {
+                      "conversions": [
+                        {
+                          "dateFormat": "MMM YYYY",
+                          "destinationType": "string",
+                          "targetField": "Time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "description": "Overage as each month closed, from the usage metric, against the budget. Invoices differ by cents: 118.25 USD billed for September, 9.37 USD for October. The dashboard's time range sets how many months appear.",
+          "id": 7,
+          "links": [],
+          "title": "Month-end overage (approximate)",
+          "vizConfig": {
+            "group": "barchart",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "axisGridShow": false,
+                    "fillOpacity": 80,
+                    "lineWidth": 0,
+                    "thresholdsStyle": {
+                      "mode": "line"
+                    }
+                  },
+                  "decimals": 2,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "orange",
+                        "value": 9.600000000000001
+                      },
+                      {
+                        "color": "red",
+                        "value": 12
+                      }
+                    ]
+                  },
+                  "unit": "currencyUSD"
+                },
+                "overrides": []
+              },
+              "options": {
+                "barWidth": 0.6,
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "orientation": "auto",
+                "showValue": "always",
+                "stacking": "none",
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                },
+                "xField": "Time"
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "grafanacloud-usage"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
                         "expr": "grafanacloud_org_total_overage",
                         "legendFormat": "Month to date",
                         "range": true
@@ -550,7 +668,7 @@
                       "group": "prometheus",
                       "kind": "DataQuery",
                       "spec": {
-                        "expr": "clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)",
+                        "expr": "(clamp_min(clamp_max(grafanacloud_org_metrics_billable_series, scalar(max(quantile_over_time(0.95, (grafanacloud_instance_samples_per_second * 60)[7d:5m])))) - grafanacloud_org_metrics_included_series, 0) * 0.0065 + on (org_id) (grafanacloud_org_total_overage - grafanacloud_org_metrics_overage)) and on () (day_of_month() > 10)",
                         "legendFormat": "Projected",
                         "range": true
                       },
@@ -600,14 +718,16 @@
                   }
                 }
               ],
-              "queryOptions": {},
+              "queryOptions": {
+                "timeFrom": "now/M"
+              },
               "transformations": []
             }
           },
-          "description": "Month to date, resetting each month, and the month-end projection. The axis stops at 30 USD to keep the budget lines readable, so a larger overage runs off the top. The legend gives its maximum.",
-          "id": 7,
+          "description": "Month to date and the month-end projection against the budget, for the current month whatever the dashboard's time range. The projection starts on the 11th.",
+          "id": 8,
           "links": [],
-          "title": "Overage against budget (axis stops at $30)",
+          "title": "This month's overage",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -630,8 +750,7 @@
                     "axisGridShow": false
                   },
                   "unit": "currencyUSD",
-                  "min": 0,
-                  "max": 30
+                  "min": 0
                 },
                 "overrides": [
                   {
@@ -708,14 +827,11 @@
               },
               "options": {
                 "legend": {
-                  "calcs": [
-                    "lastNotNull",
-                    "max"
-                  ],
-                  "displayMode": "table",
-                  "placement": "right",
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
                   "showLegend": true,
-                  "width": 250,
+                  "width": 190,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -729,7 +845,57 @@
           }
         }
       },
-      "panel-8": {
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "Current state of the rules in the Grafana Cloud usage folder.",
+          "id": 9,
+          "links": [],
+          "title": "Usage alerts",
+          "vizConfig": {
+            "group": "alertlist",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              },
+              "options": {
+                "alertInstanceLabelFilter": "",
+                "alertName": "",
+                "dashboardAlerts": false,
+                "folder": {
+                  "title": "Grafana Cloud usage",
+                  "uid": "grafana-cloud-usage"
+                },
+                "groupBy": [],
+                "groupMode": "default",
+                "maxItems": 10,
+                "showInstances": false,
+                "sortOrder": 1,
+                "stateFilter": {
+                  "error": true,
+                  "firing": true,
+                  "noData": false,
+                  "normal": true,
+                  "pending": true
+                },
+                "viewMode": "list"
+              }
+            },
+            "version": "13.3.0"
+          }
+        }
+      },
+      "panel-10": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -762,9 +928,9 @@
             }
           },
           "description": "Samples per minute before aggregation, minus after, across every rule, manual or recommended. Read a fall against overage: alongside rising overage it means a rule stopped working; alongside flat overage it means fewer samples arrived at all.",
-          "id": 8,
+          "id": 10,
           "links": [],
-          "title": "Samples/min avoided by Adaptive Metrics (7-day median)",
+          "title": "Samples/min avoided (7-day median)",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -813,7 +979,7 @@
           }
         }
       },
-      "panel-9": {
+      "panel-11": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -846,7 +1012,7 @@
             }
           },
           "description": "Stored series on a log axis, aggregated ones included. A new metric family shows as a step. Read it against samples per minute on the Billing/Usage dashboard.",
-          "id": 9,
+          "id": 11,
           "links": [],
           "title": "Series by job",
           "vizConfig": {
@@ -883,13 +1049,11 @@
               },
               "options": {
                 "legend": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "displayMode": "table",
+                  "calcs": [],
+                  "displayMode": "list",
                   "placement": "right",
                   "showLegend": true,
-                  "width": 190,
+                  "width": 120,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -903,7 +1067,7 @@
           }
         }
       },
-      "panel-10": {
+      "panel-12": {
         "kind": "Panel",
         "spec": {
           "data": {
@@ -936,7 +1100,7 @@
             }
           },
           "description": "Measured from each job's up series, so a faster scrape shows as a step up. Short dips are missed scrapes.",
-          "id": 10,
+          "id": 12,
           "links": [],
           "title": "Scrapes per minute by job",
           "vizConfig": {
@@ -971,13 +1135,11 @@
               },
               "options": {
                 "legend": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "displayMode": "table",
+                  "calcs": [],
+                  "displayMode": "list",
                   "placement": "right",
                   "showLegend": true,
-                  "width": 190,
+                  "width": 120,
                   "sortBy": "Last *",
                   "sortDesc": true
                 },
@@ -1082,7 +1244,7 @@
                 "name": "panel-7"
               },
               "height": 9,
-              "width": 14,
+              "width": 8,
               "x": 0,
               "y": 7
             }
@@ -1096,7 +1258,7 @@
               },
               "height": 9,
               "width": 10,
-              "x": 14,
+              "x": 8,
               "y": 7
             }
           },
@@ -1108,9 +1270,9 @@
                 "name": "panel-9"
               },
               "height": 9,
-              "width": 12,
-              "x": 0,
-              "y": 16
+              "width": 6,
+              "x": 18,
+              "y": 7
             }
           },
           {
@@ -1121,8 +1283,34 @@
                 "name": "panel-10"
               },
               "height": 9,
-              "width": 12,
-              "x": 12,
+              "width": 8,
+              "x": 0,
+              "y": 16
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-11"
+              },
+              "height": 9,
+              "width": 8,
+              "x": 8,
+              "y": 16
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-12"
+              },
+              "height": 9,
+              "width": 8,
+              "x": 16,
               "y": 16
             }
           }
