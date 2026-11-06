@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-04.
+Verified 2026-11-06.
 
 ## Scope
 
@@ -64,12 +64,19 @@ from.
 | P-7 | Write collaborator | A person with write access | Their account |
 | P-8 | Claude | Anthropic's App, ID 1236702, on every repository | Anthropic |
 | P-9 | Codecov | Codecov's App, ID 254, on every repository | Codecov |
+| P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
+| P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
+| P-12 | Release App | Planned in #556, not created | P-10 |
 
 The vendor Apps hold these permissions:
 
 - P-6: `contents`, `workflows`, and `checks` write
 - P-8: `contents`, `workflows`, `actions`, and `repository_hooks` write
 - P-9: reads contents, and reports checks and statuses
+
+P-11 reads by default, and a job's `permissions:` block can widen that. Tags
+and Releases it creates start no workflow, and every managed repository refuses
+it pull request creation. A dispatch it sends does start one.
 
 ## Trust boundaries
 
@@ -222,6 +229,15 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-09 | Services published to the tailnet | A-01, A-02, A-05 | T-3 |
 | E-11 | Netdata on 20489 | A-01 | T-2 |
 | E-12 | Scrutiny on 31054 and 31055 | A-01 | T-2 |
+| E-13 | Tag creation, through Git or the API | A-09 | T-1 |
+| E-14 | Release creation, through the API | A-09 | T-1 |
+| E-15 | `workflow_dispatch` on a release workflow | A-09 | T-1 |
+
+E-13 and E-14 need `Contents` write, and E-15 needs `Actions` write. Each can
+start a publish, and the
+[release path threat model](../explanation/threat-model-release-path.md) walks
+all three. `woodland-generators` ships through D-09's Release assets, which
+Foundry installs from.
 
 Plex asks a T-1 client to sign in. Its allowed-networks setting covers
 every private IPv4 range, so a client already in T-2 reaches it without
@@ -249,7 +265,7 @@ vendor.
 | D-06 | TP-Link cloud | Administration of A-04, telemetry (`Unverified`) |
 | D-07 | Google Cloud (A-07) | Terraform state and every secret |
 | D-08 | Cloudflare (A-08) | Zone configuration, the home address via C-15 |
-| D-09 | GitHub (A-09) | This repository and its CI logs |
+| D-09 | GitHub (A-09) | Repositories, CI logs, and Release assets |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
 | D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
