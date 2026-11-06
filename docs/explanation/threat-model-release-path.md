@@ -122,7 +122,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1064 | Not Started | — |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account and bypasses every ruleset | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1064 | Not Started | `woodland-generators` releases report the account as author |
-| Hackage | Spoofing | Something impersonates Hackage to `cabal upload`. Whether cabal requires TLS for an upload is unread | Low | Whoever reads cabal's upload code resolves this | Needs Investigation | — |
+| Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | #1064 compares registry versions with tags | Not Started | — |
 | PyPI | Spoofing | Something impersonates PyPI to the publish action | Low | TLS, by the pinned action | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |
 | PyPI | Repudiation | PyPI's record is the only one of what it accepted | Low | #1064 compares registry versions with tags | Not Started | — |
@@ -246,7 +246,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F18 Hackage token | Tampering | Stays inside GitHub, so tampering needs a compromise of GitHub | — | — | Not Applicable | register, D-09 |
 | F18 Hackage token | Information Disclosure | Earlier steps in the job can reach the token | High | `collection-json.hs#454` | Not Started | `collection-json.hs` `release.yml`, job `candidate` |
 | F18 Hackage token | Denial of Service | A ref outside the pattern is refused, which is the rule working | — | — | Not Applicable | `main.tf`, `github_repository_environment_deployment_policy` |
-| F19 Hackage upload | Tampering | Whether `cabal upload` requires TLS is unread | Low | Whoever reads cabal's upload code resolves this | Needs Investigation | — |
+| F19 Hackage upload | Tampering | The upload changes in transit | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | F19 Hackage upload | Information Disclosure | A token leaked from one repository uploads every package its account can | High | #1093 | Not Started | register, C-29 and C-30 |
 | F19 Hackage upload | Denial of Service | A Hackage outage fails the job, and a re-run keeps the tag | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
 | F20 candidate tarball | Tampering | The tarball Hackage returns differs from the built one | High | `publish` compares them before publishing | Mitigated | `collection-json.hs` `release.yml`, job `publish` |
