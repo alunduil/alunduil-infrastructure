@@ -42,6 +42,9 @@ ansible-galaxy collection install -r ansible/requirements.yml
 ansible-playbook --inventory ansible/inventory.yml ansible/site.yml
 ```
 
+If a run hangs while connecting, run `tailscale ssh nanopi-neo3 true` and
+complete the browser login it asks for.
+
 ## Documentation
 
 How-to guides for credentials:

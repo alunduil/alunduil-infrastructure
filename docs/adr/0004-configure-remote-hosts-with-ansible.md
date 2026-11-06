@@ -99,13 +99,14 @@ Bad / accepted:
 - Only the workstation can run a playbook against a host. A scheduled drift
   check would need CI to reach the tailnet.
 
+- The tailnet's SSH rule uses `action: check`, so a run hangs with no prompt when
+  the operator's login has lapsed. Running `tailscale ssh` first shows the login
+  URL, and runs connect once the operator completes it.
+
 ### Open questions
 
-- The tailnet's SSH rule uses `action: check`. Whether that stops a
-  non-interactive run until the operator re-authenticates in a browser is
-  untested.
-- The same rule targets `autogroup:self`, which may stop matching once #514
-  tags the NanoPi-NEO3. That change may need an explicit SSH rule.
+- The SSH rule targets `autogroup:self`, which may stop matching once #514 tags
+  the NanoPi-NEO3. That change may need an explicit SSH rule.
 
 ## More Information
 
