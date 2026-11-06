@@ -1,41 +1,55 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on Grafana Cloud's bill.
+# Alerts on what Grafana Cloud bills and what it rejects.
 
 data "grafana_data_source" "usage" {
   uid = "grafanacloud-usage"
 }
 
 locals {
+  usage_data_source = {
+    type = data.grafana_data_source.usage.type
+    uid  = data.grafana_data_source.usage.uid
+  }
+}
+
+locals {
   # Monthly overage on top of the base plan, across the whole organization: what
   # UptimeRobot costs at 144 USD a year, which Grafana Cloud replaces.
-  usage_budget_usd   = 12
-  usage_budget_label = format("$%d", local.usage_budget_usd)
+  usage_budget_usd = 12
 
-  # grafanacloud-usage reports on every stack in the organization, and this
-  # repository owns only this one.
-  usage_stack_id = "1273682"
-
-  usage_anomalies = [
-    for anomaly in [
-      { product = "Metrics", series = "grafanacloud_instance_active_series" },
-      { product = "Logs", series = "grafanacloud_logs_instance_bytes_received_per_second" },
-      ] : merge(anomaly, {
-        current  = "sum by (stack_id) (avg_over_time(${anomaly.series}{stack_id=\"${local.usage_stack_id}\"} [24h]))"
-        baseline = "sum by (stack_id) (avg_over_time(${anomaly.series}{stack_id=\"${local.usage_stack_id}\"} [7d] offset 168h))"
-        spread   = "sum by (stack_id) (stddev_over_time(${anomaly.series}{stack_id=\"${local.usage_stack_id}\"} [7d] offset 168h))"
+  usage_spend_levels = [
+    for level in [
+      { percent = 80, uid = "dg3gvrq2zwlj4f" },
+      { percent = 100, uid = "bg3gvrqguwuf4a" },
+      ] : merge(level, {
+        threshold = local.usage_budget_usd * level.percent / 100
+        title     = format("%d%% of $%d", level.percent, local.usage_budget_usd)
     })
   ]
 
-  usage_summary = "This alert is provisioned by the Grafana Cloud Cost Management and Billing app."
+  # grafanacloud-usage reports on every stack in the organization, and this
+  # repository owns only this one.
+  usage_stack_selector = "{stack_id=\"1273682\"}"
+
+  usage_anomalies = [
+    for anomaly in [
+      { product = "Metrics", uid = "dg3gvdzuups00f", selector = "grafanacloud_instance_active_series${local.usage_stack_selector}" },
+      { product = "Logs", uid = "eg3gveqh5ovswf", selector = "grafanacloud_logs_instance_bytes_received_per_second${local.usage_stack_selector}" },
+      ] : merge(anomaly, {
+        current  = "sum by (stack_id) (avg_over_time(${anomaly.selector} [24h]))"
+        baseline = "sum by (stack_id) (avg_over_time(${anomaly.selector} [7d] offset 168h))"
+        spread   = "sum by (stack_id) (stddev_over_time(${anomaly.selector} [7d] offset 168h))"
+    })
+  ]
 
   # The Cost Management and Billing app generated these rules and reads their
   # labels and annotations to show them on its Usage Alerts tab.
   usage_alerts = concat(
     [
       for anomaly in local.usage_anomalies : {
-        uid    = { Metrics = "dg3gvdzuups00f", Logs = "eg3gveqh5ovswf" }[anomaly.product]
+        uid    = anomaly.uid
         name   = "Anomaly: ${anomaly.product} Usage (Low sensitivity)"
         labels = { alert_type = "anomaly", product = anomaly.product }
         annotations = {
@@ -57,15 +71,12 @@ locals {
       }
     ],
     [
-      for level in [
-        { percent = 80, uid = "dg3gvrq2zwlj4f" },
-        { percent = 100, uid = "bg3gvrqguwuf4a" },
-        ] : {
+      for level in local.usage_spend_levels : {
         uid    = level.uid
-        name   = "Global Spend: ${level.percent}% of ${local.usage_budget_label}"
-        labels = { product = "Global Spend", threshold = "${level.percent}% of ${local.usage_budget_label}" }
+        name   = "Global Spend: ${level.title}"
+        labels = { product = "Global Spend", threshold = level.title }
         annotations = {
-          actual_threshold = tostring(local.usage_budget_usd * level.percent / 100)
+          actual_threshold = tostring(level.threshold)
           alert_type       = "threshold_percent"
           description      = "If the month ends over budget, file an issue to find and fix the source. If it ends under budget, no optimisation is needed."
           overage          = "false"
@@ -73,7 +84,7 @@ locals {
           product          = "Global Spend"
           threshold        = tostring(local.usage_budget_usd)
         }
-        expr = "# Alert when usage exceeds ${level.percent}% of ${local.usage_budget_label}\n grafanacloud_org_total_overage > bool ${local.usage_budget_usd * level.percent / 100}"
+        expr = "# Alert when usage exceeds ${level.title}\n grafanacloud_org_total_overage > bool ${level.threshold}"
       }
     ],
   )
@@ -105,7 +116,7 @@ resource "grafana_rule_group" "usage_alerts" {
       labels         = merge(rule.value.labels, { __grafana_origin = "plugin/grafana-cmab-app" })
       annotations = merge(rule.value.annotations, {
         contact_point = grafana_contact_point.alunduil.name
-        summary       = local.usage_summary
+        summary       = "This alert is provisioned by the Grafana Cloud Cost Management and Billing app."
       })
 
       notification_settings {
@@ -114,13 +125,13 @@ resource "grafana_rule_group" "usage_alerts" {
 
       data {
         ref_id         = "A"
-        datasource_uid = data.grafana_data_source.usage.uid
+        datasource_uid = local.usage_data_source.uid
         relative_time_range {
           from = 600
           to   = 0
         }
         model = jsonencode({
-          datasource    = { type = data.grafana_data_source.usage.type, uid = data.grafana_data_source.usage.uid }
+          datasource    = local.usage_data_source
           expr          = rule.value.expr
           hide          = false
           instant       = true
@@ -137,16 +148,16 @@ resource "grafana_rule_group" "usage_alerts" {
 
 # Alert rules must live in a folder, and deleting a Git Sync folder deletes the
 # alert rules inside it without recreating them, so this gets its own.
-resource "grafana_folder" "usage" {
-  title = "Grafana Cloud usage"
-  uid   = "grafana-cloud-usage"
+resource "grafana_folder" "ingestion" {
+  title = "Grafana Cloud ingestion"
+  uid   = "grafana-cloud-ingestion"
 }
 
 # Rejected samples are missing data rather than cost, so the Usage Alerts tab has
 # no equivalent.
-resource "grafana_rule_group" "usage" {
-  name             = "Usage"
-  folder_uid       = grafana_folder.usage.uid
+resource "grafana_rule_group" "ingestion" {
+  name             = "Ingestion"
+  folder_uid       = grafana_folder.ingestion.uid
   interval_seconds = 300
 
   rule {
@@ -161,14 +172,14 @@ resource "grafana_rule_group" "usage" {
 
     data {
       ref_id         = "A"
-      datasource_uid = data.grafana_data_source.usage.uid
+      datasource_uid = local.usage_data_source.uid
       relative_time_range {
         from = 600
         to   = 0
       }
       model = jsonencode({
         refId      = "A"
-        datasource = { type = data.grafana_data_source.usage.type, uid = data.grafana_data_source.usage.uid }
+        datasource = local.usage_data_source
         instant    = true
         range      = false
         expr       = "sum by (reason) (grafanacloud_instance_samples_discarded_per_second)"
