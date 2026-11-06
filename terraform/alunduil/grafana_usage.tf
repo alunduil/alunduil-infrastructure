@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on Grafana Cloud's bill. grafana/grafana-cloud-usage.json plots the
-# same budget as constants, so a new budget changes both.
+# Alerts on Grafana Cloud's bill.
 
 data "grafana_data_source" "usage" {
   uid = "grafanacloud-usage"
@@ -68,6 +67,7 @@ locals {
         annotations = {
           actual_threshold = tostring(local.usage_budget_usd * level.percent / 100)
           alert_type       = "threshold_percent"
+          description      = "If the month ends over budget, file an issue to find and fix the source. If it ends under budget, no optimisation is needed."
           overage          = "false"
           percent          = tostring(level.percent)
           product          = "Global Spend"
