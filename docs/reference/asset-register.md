@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-06.
+Verified 2026-11-07.
 
 ## Scope
 
@@ -622,6 +622,17 @@ Google Cloud's other credentials.
 - Created by: Terraform
 - Source: `terraform/bootstrap/blog_analytics.tf`
 - Tracked by: #1070
+
+### C-35: `truenas-acme`
+
+- Kind: Cloudflare API token
+- Scope: Zone Read and DNS Write on `alunduil.com`
+- Consumer: A-01's ACME DNS authenticator, which renews the
+  `truenas.alunduil.com` web UI certificate. No deployer reads it
+- Grants: P-4
+- Created by: Terraform
+- Source: `terraform/bootstrap/truenas_acme.tf`, set on A-01 from
+  [`configure-truenas-acme-token.md`](../how-to/configure-truenas-acme-token.md)
 
 ## Maintenance
 

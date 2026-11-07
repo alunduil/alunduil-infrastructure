@@ -54,7 +54,8 @@ issue tracking that path.
 
 The graphs leave out what connects to nothing:
 
-- C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, and C-24 have no
+- C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, C-24, and C-35
+  have no
   edge apart from P-1 and the host that consumes them.
 - C-34 has no edge because nothing reads it.
 - C-33 and the Codecov App (P-9) lead nowhere further, though any P-7 on a

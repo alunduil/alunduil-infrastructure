@@ -52,6 +52,7 @@ How-to guides for credentials:
 How-to guides for hosts and services:
 
 - [Set the alloy push credential on the collector](docs/how-to/configure-alloy-push-credential.md)
+- [Set the ACME token on TrueNAS](docs/how-to/configure-truenas-acme-token.md)
 - [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
 - [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)
 - [Configure the Google Takeout backup on TrueNAS](docs/how-to/configure-truenas-takeout-backup.md)
