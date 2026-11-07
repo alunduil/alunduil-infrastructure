@@ -67,6 +67,10 @@ Explanation:
 
 - [Credential reachability](docs/explanation/credential-reachability.md): why a
   leak of one credential can spread beyond what it was granted
+- [Release path data flow](docs/explanation/release-path-data-flow.md): how a
+  commit becomes a published package, and what crosses each trust boundary
+- [Release path threat model](docs/explanation/threat-model-release-path.md):
+  what can go wrong on that path, and where the release App fits
 
 Decisions:
 
