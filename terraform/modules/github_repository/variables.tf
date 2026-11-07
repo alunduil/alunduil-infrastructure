@@ -96,10 +96,9 @@ variable "admin_only_updates" {
   description = <<-EOT
     Only the repository admin, and Renovate under
     required_status_checks.renovate_automerge, can update the default
-    branch, whether by push or by merging a pull request. Write
-    collaborators can't merge their own pull requests, and the admin
-    merges past a ruleset bypass. Set true on repositories with write
-    collaborators who shouldn't merge.
+    branch, whether by push or by merging a pull request. Every admin
+    merge then needs the ruleset bypass, so set true only where write
+    collaborators shouldn't merge.
   EOT
 }
 
