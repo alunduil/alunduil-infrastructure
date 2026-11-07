@@ -110,3 +110,36 @@ resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_deploye
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }
+
+# No expires_on: nothing renews this token, so an expiry would stop TrueNAS
+# renewing its web UI certificate.
+resource "cloudflare_api_token" "truenas_acme" {
+  name = "truenas.alunduil.com ACME"
+
+  policies = [{
+    effect = "allow"
+    permission_groups = [
+      { id = data.cloudflare_api_token_permission_groups_list.zone_read.result[0].id },
+      { id = data.cloudflare_api_token_permission_groups_list.dns_write.result[0].id },
+    ]
+    resources = local.alunduil_com_zone_resource
+  }]
+}
+
+# No secretAccessor binding: an operator copies the value onto A-01, and no
+# deployer uses it.
+resource "google_secret_manager_secret" "cloudflare_api_token_truenas_acme" {
+  project   = google_project.env.project_id
+  secret_id = "cloudflare-api-token-truenas-acme"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "cloudflare_api_token_truenas_acme" {
+  secret      = google_secret_manager_secret.cloudflare_api_token_truenas_acme.id
+  secret_data = cloudflare_api_token.truenas_acme.value
+}
