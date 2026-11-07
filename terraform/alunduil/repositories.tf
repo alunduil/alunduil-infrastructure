@@ -80,8 +80,10 @@ locals {
         contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      environments = { hackage = { deployment_tags = ["v*"] } }
-      deploy       = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
+      # Write collaborators open pull requests but don't merge them.
+      admin_only_updates = true
+      environments       = { hackage = { deployment_tags = ["v*"] } }
+      deploy             = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
     }
 
     "git-worktree-poi" = {
@@ -105,7 +107,9 @@ locals {
         contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      environments = { hackage = { deployment_tags = ["v*"] } }
+      # Write collaborators open pull requests but don't merge them.
+      admin_only_updates = true
+      environments       = { hackage = { deployment_tags = ["v*"] } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -143,8 +147,10 @@ locals {
       required_status_checks = {
         ci_results_check = true
       }
-      environments = { hackage = {} }
-      deploy       = { class = "release" }
+      # Write collaborators open pull requests but don't merge them.
+      admin_only_updates = true
+      environments       = { hackage = {} }
+      deploy             = { class = "release" }
     }
 
     "woodland-generators" = {
@@ -211,9 +217,6 @@ locals {
       # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
       # non-owner pull request but Renovate's.
       require_code_owner_review = true
-      # Deviates from the baseline (admin-only on): write collaborators merge
-      # pull requests here too.
-      admin_only_updates = false
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.

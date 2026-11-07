@@ -132,7 +132,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 1.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 1.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 1.0 Merge pull request | Denial of Service | A pull request opened by P-11 runs no workflows, so required checks never report | Medium | #556 | Not Started | `main.tf`, `github_workflow_repository_permissions` |
-| 1.0 Merge pull request | Elevation of Privilege | A write collaborator merges past review | Medium | `admin-only` and `review`. On `zfs-replicate`, Code Owner review | Mitigated | `main.tf`, `github_repository_ruleset.admin_only` |
+| 1.0 Merge pull request | Elevation of Privilege | A write collaborator merges past review | Medium | `admin-only` on repositories with write collaborators, and `review`. On `zfs-replicate`, Code Owner review | Mitigated | `main.tf`, `github_repository_ruleset.admin_only` |
 | 3.0 Create tag or Release | Spoofing | GitHub treats whoever presents a valid credential as its owner, which the Write actor and Operator rows cover | — | — | Not Applicable | register, D-09 |
 | 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Tampering | Someone moves or deletes a published tag | High | `immutable-tags` | Mitigated | `main.tf`, `github_repository_ruleset.immutable_tags` |
