@@ -91,13 +91,14 @@ variable "require_code_owner_review" {
 
 variable "admin_only_updates" {
   type        = bool
-  default     = true
+  default     = false
   nullable    = false
   description = <<-EOT
     Only the repository admin, and Renovate under
     required_status_checks.renovate_automerge, can update the default
-    branch, whether by push or by merging a pull request. Set false once
-    others merge pull requests.
+    branch, whether by push or by merging a pull request. Every admin
+    merge then needs the ruleset bypass, so set true only where write
+    collaborators shouldn't merge.
   EOT
 }
 
