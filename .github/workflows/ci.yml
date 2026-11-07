@@ -38,7 +38,7 @@ jobs:
       - name: Run pre-commit hooks
         uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
         with:
-          prek-version: '0.5.7'
+          prek-version: 'v0.5.10'
         env:
           # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
