@@ -34,6 +34,17 @@ The three operator entrypoints:
 - `just projects`—Projects v2 board fields, after editing a spec in
   `github/projects/`. Needs only a `gh` login with the `project` scope.
 
+Ansible configures remote hosts from `ansible/`, run from the operator's
+workstation:
+
+```bash
+ansible-galaxy collection install -r ansible/requirements.yml
+ansible-playbook --inventory ansible/inventory.yml ansible/site.yml
+```
+
+If a run hangs while connecting, run `tailscale ssh nanopi-neo3 true` and
+complete the browser login it asks for.
+
 ## Documentation
 
 How-to guides for credentials:

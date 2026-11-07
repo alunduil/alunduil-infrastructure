@@ -45,6 +45,7 @@ check what's already in place:
   Projects v2 provider. #90 tracks the declarative replacement.
   Deliberate exception to the `scripts/` rule above — don't move it
   back.
+- Remote host configuration: `ansible/`, decided in ADR 0004.
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
 - Adding a new repo to the org? The `scaffold-repo` skill
