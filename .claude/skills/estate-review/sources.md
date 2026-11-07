@@ -89,8 +89,8 @@ Probe: an instant query for `up{job="truenas-scale"}` through
 What ships where:
 
 - TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit;
-  Prometheus `up{job="truenas-scale"}`, Netdata scraped by alloy, and
-  `alloy_build_info`.
+  Prometheus `up{job="truenas-scale"}`, `alloy_build_info`, and Netdata
+  scraped by alloy.
 - Home Assistant: Loki `{hostname="homeassistant"}`; Prometheus `hass_*`.
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
 - penguin: Loki `{host="penguin"}`; Prometheus `integrations/unix`.
@@ -112,10 +112,10 @@ Report:
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
 - Alert rules: what fired, and anything in an error or no-data state.
   Read transitions with `{from="state-history"}` through the
-  `grafanacloud-alert-state-history` call. Each line carries the rule
-  title, the previous and current state, and the instance's labels.
-  Report each firing with its rule's query and the firing window. When
-  the query reads data `gcx` can reach, run it for that window.
+  `grafanacloud-alert-state-history` call. Each line names the rule, its
+  previous and current state, and the labels of the instance that fired.
+  Report each firing with its rule's query and the firing window. If
+  `gcx` can reach the query's data, run it for that window.
 
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
 series. A `<aggregated>` label is a known gap, not an empty result.
