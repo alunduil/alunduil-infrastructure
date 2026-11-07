@@ -623,7 +623,7 @@ Google Cloud's other credentials.
 - Source: `terraform/bootstrap/blog_analytics.tf`
 - Tracked by: #1070
 
-### C-35: `truenas-acme`
+### C-35: `truenas.alunduil.com ACME`
 
 - Kind: Cloudflare API token
 - Scope: Zone Read and DNS Write on `alunduil.com`
@@ -631,7 +631,7 @@ Google Cloud's other credentials.
   `truenas.alunduil.com` web UI certificate. No deployer reads it
 - Grants: P-4
 - Created by: Terraform
-- Source: `terraform/bootstrap/truenas_acme.tf`, set on A-01 from
+- Source: `terraform/bootstrap/cloudflare_tokens.tf`, set on A-01 from
   [`configure-truenas-acme-token.md`](../how-to/configure-truenas-acme-token.md)
 
 ## Maintenance
