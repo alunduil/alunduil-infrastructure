@@ -80,7 +80,6 @@ locals {
         contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      # Write collaborators open pull requests but don't merge them.
       admin_only_updates = true
       environments       = { hackage = { deployment_tags = ["v*"] } }
       deploy             = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
@@ -107,7 +106,6 @@ locals {
         contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
         renovate_automerge = true
       }
-      # Write collaborators open pull requests but don't merge them.
       admin_only_updates = true
       environments       = { hackage = { deployment_tags = ["v*"] } }
       # create-pull-request is nested in haskell-bounds-bump-action.
@@ -147,7 +145,6 @@ locals {
       required_status_checks = {
         ci_results_check = true
       }
-      # Write collaborators open pull requests but don't merge them.
       admin_only_updates = true
       environments       = { hackage = {} }
       deploy             = { class = "release" }
