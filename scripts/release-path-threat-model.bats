@@ -10,7 +10,7 @@ setup() {
   diagram="${repo_root}/docs/explanation/release-path-data-flow.md"
   model="${repo_root}/docs/explanation/threat-model-release-path.md"
 
-  # The categories STRIDE-per-element applies to each element type.
+  # STRIDE-per-element: the categories each element type is subject to.
   entity_categories=(Spoofing Repudiation)
   process_categories=(Spoofing Tampering Repudiation "Information Disclosure"
     "Denial of Service" "Elevation of Privilege")
@@ -42,7 +42,6 @@ flows() {
   level_0_diagram | grep -oE '\|"F[0-9]+ [^"[]+' | sed -E 's/^\|"//; s/ +$//'
 }
 
-# Pairs each element name on stdin with every category in the arguments.
 with_categories() {
   local element category
   while IFS= read -r element; do

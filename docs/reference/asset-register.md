@@ -75,8 +75,8 @@ The vendor Apps hold these permissions:
 - P-9: reads contents, and reports checks and statuses
 
 P-11 reads by default, and a job's `permissions:` block can widen that. Tags
-and Releases it creates start no workflow, and every managed repository refuses
-it pull request creation. A dispatch it sends does start one.
+and Releases it creates start no workflow, but a dispatch it sends does. Every
+managed repository refuses it pull request creation.
 
 ## Trust boundaries
 
@@ -234,10 +234,9 @@ which is why E-01 names A-12 and E-11 names A-01.
 | E-15 | `workflow_dispatch` on a release workflow | A-09 | T-1 |
 
 E-13 and E-14 need `Contents` write, and E-15 needs `Actions` write. Each can
-start a publish, and the
+start a publish. The
 [release path threat model](../explanation/threat-model-release-path.md) walks
-all three. `woodland-generators` ships through D-09's Release assets, which
-Foundry installs from.
+all three.
 
 Plex asks a T-1 client to sign in. Its allowed-networks setting covers
 every private IPv4 range, so a client already in T-2 reaches it without
@@ -270,6 +269,9 @@ vendor.
 | D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
 | D-13 | PyPI | `zfs-replicate` distributions |
+
+`woodland-generators` ships through D-09's Release assets, which Foundry
+installs from.
 
 ## Credentials
 

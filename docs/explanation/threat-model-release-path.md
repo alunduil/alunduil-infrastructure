@@ -4,8 +4,8 @@
 
 # Release path threat model
 
-What can go wrong between a commit and a published package, and where the
-release App #556 plans should sit given that. Registry uploads can't be
+What can go wrong between a commit and a published package, and where #556's
+release App belongs. Registry uploads can't be
 recalled, so this model weighs who can start one above everything else.
 
 Verified 2026-11-06.
@@ -33,8 +33,7 @@ Out of scope:
 ## Where the release App fits
 
 A per-repository App should create release tags, and a person should merge the
-release pull request until #1075 decides otherwise. The findings below drive
-that choice.
+release pull request until #1075 decides otherwise.
 
 | Candidate | Who creates the tag | Result |
 | --- | --- | --- |
@@ -44,15 +43,14 @@ that choice.
 | One App across repositories | P-12 | Rejected. One leaked key would tag and publish in all of them |
 | Tag as a record, publish from `main` (`network-arbitrary#241`) | P-12 | Rejected. A leaked tag credential can't publish, but anyone able to dispatch can, and `hackage` can't then be scoped to tags |
 
-That answers #556's open questions:
+The App's design follows:
 
 - **Permissions:** `Contents` and `Pull requests` write. `Contents` write also
   allows pushing unprotected branches and replacing Release assets, which is
   why each repository gets its own App.
 - **Installation:** one repository per App. Each key sits in Secret Manager
   behind a reader that only that repository's default branch and `release`
-  environment can use. This replaces the Actions secrets
-  `collection-json.hs#307` and #749 name, which settles the naming divergence.
+  environment can use, rather than in Actions secrets.
 - **The job holding the key:** pinned actions only, with no checkout and no
   repository code.
 - **Tag ruleset:** yes. #1055 restricts creation to the admin role and the App.
@@ -160,7 +158,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Environment secrets | Tampering | Changing a secret needs the admin role, which reaches everything anyway | — | — | Not Applicable | register, P-1 |
 | Environment secrets | Repudiation | A run denies reading a token | Low | GitHub records each deployment to an environment | Mitigated | `main.tf`, `github_repository_environment.this` |
 | Environment secrets | Information Disclosure | Any `v*` tag on any commit admits its job to the environment, because the rule checks the name | High | #1055 | Not Started | `main.tf`, `github_repository_environment_deployment_policy` |
-| Environment secrets | Information Disclosure | `siren-json.hs`'s `hackage` environment admits any ref. It holds no secret yet | Low | #697 | Not Started | `terraform/alunduil/repositories.tf`, `siren-json.hs` |
+| Environment secrets | Information Disclosure | `siren-json.hs`'s `hackage` environment admits any ref, though it holds no secret | Low | #697 | Not Started | `terraform/alunduil/repositories.tf`, `siren-json.hs` |
 | Environment secrets | Denial of Service | Deleting a token needs the admin role, and only delays a release | — | — | Not Applicable | register, P-1 |
 | 2.0 Prepare release | Spoofing | Only a push to `main` starts this job, so review already gated its input | — | — | Not Applicable | `woodland-generators` `release.yml`, `on.push` |
 | 2.0 Prepare release | Tampering | A changed release-please action alters what the job does with C-32 | Medium | SHA pinning, and #738 removes the token | Not Started | `main.tf`, `sha_pinning_required` |

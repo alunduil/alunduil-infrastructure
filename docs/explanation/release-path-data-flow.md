@@ -14,8 +14,7 @@ Verified 2026-11-06.
 
 Written for the operator deciding where a new release credential belongs. It
 assumes the [asset register](../reference/asset-register.md), whose IDs appear
-here, and describes today's path. The App #556 plans appears only in the threat
-model's comparison.
+here. The App #556 plans appears only in the threat model's comparison.
 
 The diagrams cover the repositories that publish or plan to:
 
@@ -30,9 +29,8 @@ Out of scope:
 
 - What happens to a package after a registry accepts it.
 - How a dependency reaches a pull request, apart from Renovate pushing it.
-- Routes other repositories could add later. Issue #1077 keeps the inventory
-  of what starts a release, and this page records what the workflows do at the
-  verification date.
+- Release routes added after the verification date. #1077 keeps that
+  inventory.
 
 ## Context
 
@@ -74,6 +72,9 @@ The entities group principals that face the same threats:
 | Hackage | D-12 |
 | PyPI | D-13 |
 | Foundry world | Anyone installing the `woodland-generators` module |
+
+Of the Write actors, only P-7 and P-8 hold the `Actions` write that a dispatch
+needs.
 
 ## Level 0
 
@@ -153,17 +154,14 @@ Each repository uses part of the diagram:
   `v*`.
 - `network-arbitrary`: `published` publishes to D-12. C-30 sits in the `hackage`
   environment, which admits `v*`.
-- `siren-json.hs`: nothing starts the path yet, because it has no `release.yml`.
+- `siren-json.hs`: nothing starts the path, because it has no `release.yml`.
   Its `hackage` environment admits any ref and holds no secret.
 - `woodland-generators`: a push to `main` runs release-please with C-32. A later
   job attaches Release assets with P-11, and no environment is involved.
-- `zellij-claude-pair`: nothing starts the path yet, because it has no release
+- `zellij-claude-pair`: nothing starts the path, because it has no release
   workflow.
 - `zfs-replicate`: `published` publishes to D-13 through trusted publishing. Its
   `pypi` environment admits `v*.*.*`.
-
-The operator created the latest Releases everywhere except `woodland-generators`,
-where C-32 acts as the account.
 
 The diagram draws processes rather than jobs, and three differences matter for
 the threat model:
@@ -177,6 +175,3 @@ the threat model:
 Only `collection-json.hs` refuses a tag that isn't on the default branch. That
 check lives in the workflow at the tag, so it binds only an actor who can't
 change workflow files.
-
-Every Write actor can also use F9, and those holding `Actions` write can use
-F14.
