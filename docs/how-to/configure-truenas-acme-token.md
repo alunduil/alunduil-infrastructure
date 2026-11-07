@@ -13,7 +13,6 @@ any bootstrap re-run that replaces it.
 
 ## Prerequisites
 
-- `just bootstrap` applied, so the secret holds a version.
 - `gcloud` available, authenticated as an identity that can read the
   `cloudflare-api-token-truenas-acme` secret. The deployer service accounts
   can't read it.
@@ -30,7 +29,7 @@ gcloud secrets versions access latest \
 In the TrueNAS web UI, open **Credentials → Certificates**. Under **ACME DNS
 Authenticators**, edit the Cloudflare authenticator, paste the token into
 **API Token**, and save. Leave **Cloudflare Email** and **API Key** empty: they
-belong to Cloudflare's global key, which this token replaces.
+authenticate with Cloudflare's global API key instead.
 
 ## Renew the certificate
 
@@ -49,6 +48,5 @@ openssl s_client -connect truenas.alunduil.com:443 \
   | openssl x509 -noout -enddate
 ```
 
-A `notAfter` date in the future confirms the renewal and that the web UI
-serves the new certificate. `Invalid access token` in the job's error means
-TrueNAS still holds the old token.
+A future `notAfter` date means the web UI serves the renewed certificate. A job
+failing with `Invalid access token` means TrueNAS still holds the old token.

@@ -111,12 +111,8 @@ resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_deploye
   member    = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }
 
-# TrueNAS's ACME DNS authenticator answers DNS-01 challenges for
-# truenas.alunduil.com by writing _acme-challenge TXT records.
-#
-# No expires_on: an expired token fails renewal silently until the certificate
-# lapses. Rotation is a bootstrap re-run followed by
-# docs/how-to/configure-truenas-acme-token.md.
+# No expires_on: nothing renews this token, so an expiry would stop TrueNAS
+# renewing its web UI certificate.
 resource "cloudflare_api_token" "truenas_acme" {
   name = "truenas.alunduil.com ACME"
 
@@ -130,8 +126,8 @@ resource "cloudflare_api_token" "truenas_acme" {
   }]
 }
 
-# No secretAccessor binding: the consumer is A-01, which an operator configures
-# by hand, and no deployer needs DNS write on the zone through this token.
+# No secretAccessor binding: an operator copies the value onto A-01, and no
+# deployer uses it.
 resource "google_secret_manager_secret" "cloudflare_api_token_truenas_acme" {
   project   = google_project.env.project_id
   secret_id = "cloudflare-api-token-truenas-acme"
