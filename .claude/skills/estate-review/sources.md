@@ -91,7 +91,8 @@ What ships where:
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
 - penguin: Prometheus `integrations/unix`, Loki `host="penguin"`.
 - alloy: `alloy_build_info`.
-- NanoPi-NEO3: confirm whether it ships anything.
+- NanoPi-NEO3: Loki `{instance="NanoPi-NEO3"}`; Prometheus
+  `up{job="integrations/alloy"}`.
 
 Report:
 
@@ -115,10 +116,11 @@ A drop seen as DNS failures on every host at once is the home link. A local
 connection resetting in the same minute, such as Zigbee2MQTT to the
 coordinator, points inside the house rather than at the ISP.
 
-`GRAFANA_ALERTS` keeps only `alertname` and state, and the rule state
-history is empty, so a firing alert doesn't say what fired it. Report each
-firing with its rule's query and the firing window; when the query reads
-data `gcx` can reach, run it for that window.
+Read alert transitions from Loki `{from="state-history"}` through
+`grafanacloud-alert-state-history`. Each line carries the rule title, the
+previous and current state, and the instance's labels. Report each firing
+with its rule's query and the firing window; when the query reads data
+`gcx` can reach, run it for that window.
 
 ## GitHub
 
