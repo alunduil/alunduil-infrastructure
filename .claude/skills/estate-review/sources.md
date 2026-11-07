@@ -75,6 +75,9 @@ GRAFANA_ORG_ID=1 gcx api -o json \
   "$ds/grafanacloud-logs/loki/api/v1/query_range?query=..." 2>/dev/null
 GRAFANA_ORG_ID=1 gcx api -o json \
   "$ds/grafanacloud-prom/api/v1/query_range?query=..." 2>/dev/null
+GRAFANA_ORG_ID=1 gcx api -o json \
+  "$ds/grafanacloud-alert-state-history/loki/api/v1/query_range?query=..." \
+  2>/dev/null
 ```
 
 URL-encode queries. Keep `2>/dev/null`, so the `gcx` hint line stays out of
@@ -86,12 +89,13 @@ Probe: an instant query for `up{job="truenas-scale"}` through
 What ships where:
 
 - TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit;
-  Prometheus `up{job="truenas-scale"}`, Netdata scraped by alloy.
+  Prometheus `up{job="truenas-scale"}`, `alloy_build_info`, and Netdata
+  scraped by alloy.
 - Home Assistant: Loki `{hostname="homeassistant"}`; Prometheus `hass_*`.
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
-- penguin: Prometheus `integrations/unix`, Loki `host="penguin"`.
-- alloy: `alloy_build_info`.
-- NanoPi-NEO3: confirm whether it ships anything.
+- penguin: Loki `{host="penguin"}`; Prometheus `integrations/unix`.
+- NanoPi-NEO3: Loki `{instance="NanoPi-NEO3"}`; Prometheus
+  `up{job="integrations/alloy"}` and `alloy_build_info`.
 
 Report:
 
@@ -107,6 +111,11 @@ Report:
 - Home Assistant: automation errors by entity and reason, integrations
   failing, Zigbee2MQTT disconnects, Nabu Casa connection errors, IP bans.
 - Alert rules: what fired, and anything in an error or no-data state.
+  Read transitions with `{from="state-history"}` through the
+  `grafanacloud-alert-state-history` call. Each line names the rule, its
+  previous and current state, and the labels of the instance that fired.
+  Report each firing with its rule's query and the firing window. If
+  `gcx` can reach the query's data, run it for that window.
 
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
 series. A `<aggregated>` label is a known gap, not an empty result.
@@ -114,11 +123,6 @@ series. A `<aggregated>` label is a known gap, not an empty result.
 A drop seen as DNS failures on every host at once is the home link. A local
 connection resetting in the same minute, such as Zigbee2MQTT to the
 coordinator, points inside the house rather than at the ISP.
-
-`GRAFANA_ALERTS` keeps only `alertname` and state, and the rule state
-history is empty, so a firing alert doesn't say what fired it. Report each
-firing with its rule's query and the firing window; when the query reads
-data `gcx` can reach, run it for that window.
 
 ## GitHub
 
