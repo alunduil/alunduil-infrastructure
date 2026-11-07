@@ -37,7 +37,7 @@ TrueNAS's daily `certificate.renew_certs` job picks up the new token. To renew
 now, run this from a TrueNAS shell:
 
 ```sh
-midclt call -job certificate.renew_certs
+sudo midclt call --job certificate.renew_certs
 ```
 
 ## Confirm it worked
