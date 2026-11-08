@@ -143,7 +143,9 @@ locals {
       description = "Siren+JSON Tools for Haskell"
       topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
       required_status_checks = {
-        ci_results_check = true
+        ci_results_check   = true
+        contexts           = ["Prune stale pull requests", "Check GHC matrix drift", "Check links"]
+        renovate_automerge = true
       }
       admin_only_updates = true
       environments       = { hackage = {} }
