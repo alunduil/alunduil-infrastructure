@@ -16,7 +16,7 @@
     },
     {
       "customType": "regex",
-      "description": "Without a version, mise-action and the mise feature each install the newest mise on their own schedule, so one dependency keeps both pins in a single pull request",
+      "description": "A devcontainer on a different mise from CI can reject a mise.lock that CI accepts, so one dependency bumps both pins together",
       "managerFilePatterns": [
         "/^\\.github/actions/mise/action\\.yml$/",
         "/^\\.devcontainer/devcontainer\\.json$/"
