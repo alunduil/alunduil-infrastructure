@@ -38,6 +38,11 @@
         "mise.lock"
       ],
       "automerge": false
+    },
+    {
+      "description": "Lock file maintenance merges only when terraform-plan.yml confirms its plan changes nothing. Last, so it overrides both holds above",
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "automerge": true
     }
   ]
 }

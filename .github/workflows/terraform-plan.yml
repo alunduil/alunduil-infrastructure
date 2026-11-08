@@ -73,6 +73,8 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
+    outputs:
+      changes: ${{ steps.count.outputs.changes }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -175,3 +177,35 @@ jobs:
         run: |
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
+
+      # Data sources read during apply change nothing, so only managed
+      # resources count.
+      - id: count
+        name: Count planned resource changes
+        working-directory: terraform/alunduil
+        run: |
+          changes=$(jq '[.resource_changes[]?
+            | select(.mode == "managed" and .change.actions != ["no-op"])]
+            | length' plan.json)
+          echo "changes=${changes}" >> "$GITHUB_OUTPUT"
+
+  # renovate.json automerges lock file maintenance, and Renovate merges only
+  # once every check passes, required or not. This job stays out of the
+  # required checks so a person can still merge a pull request whose plan
+  # changes something.
+  lock-file-plan:
+    name: Confirm lock file maintenance plans no changes
+    needs: plan
+    if: github.head_ref == 'renovate/lock-file-maintenance'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Fail on planned changes
+        env:
+          CHANGES: ${{ needs.plan.outputs.changes }}
+        run: |
+          if [[ "${CHANGES}" != 0 ]]; then
+            echo "::error::The plan changes ${CHANGES} resources, and merging applies them."
+            exit 1
+          fi
