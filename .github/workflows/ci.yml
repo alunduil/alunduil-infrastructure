@@ -124,6 +124,37 @@ jobs:
       - name: Review dependencies
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
+  ansible-check:
+    name: Check the Ansible playbook against a container
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Ansible
+        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        with:
+          install_args: python uv ansible-core
+
+      - name: Install collections
+        run: ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Start the stand-in host
+        run: |
+          docker build --tag ansible-stand-in ansible
+          docker run --detach --name ansible-stand-in ansible-stand-in
+
+      # Extra vars outrank the inventory, so this reaches the container through
+      # the real inventory's hosts.
+      - name: Run the playbook in check mode
+        run: >-
+          ansible-playbook --check --diff
+          --inventory ansible/inventory.yml
+          --extra-vars ansible_connection=community.docker.docker
+          --extra-vars ansible_host=ansible-stand-in
+          ansible/site.yml
+
   # The default-branch ruleset requires this check by name, so renaming the
   # job breaks the merge gate.
   results:
@@ -133,6 +164,7 @@ jobs:
     needs:
       - pre-commit
       - bats
+      - ansible-check
       - dependency-review
     if: always()
     steps:

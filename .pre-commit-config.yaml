@@ -52,6 +52,15 @@ repos:
       - id: yamllint
         args: [--strict]
 
+  # Ansible linting
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v26.11.0
+    hooks:
+      - id: ansible-lint
+        args: [ansible/]
+        always_run: false
+        files: ^ansible/
+
   # Project spec validation
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.39.0

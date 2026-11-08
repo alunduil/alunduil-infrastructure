@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+all:
+  vars:
+    # Tailscale's known-hosts file holds keys from the tailnet, listed under
+    # each host's fully qualified name with its trailing dot. The operator's
+    # SSH can't resolve tailnet names directly, so tailscale nc connects.
+    ansible_ssh_common_args: >-
+      -o ProxyCommand="tailscale nc %h %p"
+      -o UserKnownHostsFile=~/.config/tailscale/ssh_known_hosts
+      -o StrictHostKeyChecking=yes
+  hosts:
+    nanopi-neo3:
+      ansible_host: nanopi-neo3.tail3af06.ts.net.
