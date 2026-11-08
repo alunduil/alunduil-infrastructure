@@ -74,7 +74,7 @@ jobs:
       id-token: write
       pull-requests: write
     outputs:
-      changes: ${{ steps.count.outputs.changes }}
+      resource_changes: ${{ steps.resource-changes.outputs.count }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -180,14 +180,14 @@ jobs:
 
       # Data sources read during apply change nothing, so only managed
       # resources count.
-      - id: count
+      - id: resource-changes
         name: Count planned resource changes
         working-directory: terraform/alunduil
         run: |
-          changes=$(jq '[.resource_changes[]?
+          count=$(jq '[.resource_changes[]?
             | select(.mode == "managed" and .change.actions != ["no-op"])]
             | length' plan.json)
-          echo "changes=${changes}" >> "$GITHUB_OUTPUT"
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
 
   # renovate.json automerges lock file maintenance, and Renovate merges only
   # once every check passes, required or not. This job stays out of the
@@ -203,9 +203,9 @@ jobs:
     steps:
       - name: Fail on planned changes
         env:
-          CHANGES: ${{ needs.plan.outputs.changes }}
+          RESOURCE_CHANGES: ${{ needs.plan.outputs.resource_changes }}
         run: |
-          if [[ "${CHANGES}" != 0 ]]; then
-            echo "::error::The plan changes ${CHANGES} resources, and merging applies them."
+          if [[ "${RESOURCE_CHANGES}" != 0 ]]; then
+            echo "::error::Merging applies the plan's ${RESOURCE_CHANGES} resource changes."
             exit 1
           fi
