@@ -24,10 +24,9 @@ The repositories ship in two ways:
   and `siren-json.hs` upload a source package to Hackage, and
   `zfs-replicate` uploads to PyPI. Each package holds only its own
   source. Consumers resolve its dependencies themselves.
-- **Bundled dependencies.** `woodland-generators` attaches a
-  `module.zip` that `esbuild` builds with `bundle: true`.
-  `zellij-claude-pair` will attach a `.wasm` that statically links
-  every crate in its `Cargo.lock`. Dependency code ships to users.
+- **Bundled dependencies.** `woodland-generators` attaches a module zip,
+  and `zellij-claude-pair` will attach a `.wasm`. Both include their
+  dependencies' code.
 
 The [release path threat model](../explanation/threat-model-release-path.md)
 lists routes to a publish that skip the merge:
@@ -77,9 +76,8 @@ development or CI updates.
 
 Renovate automerge and the release approval are separate gates.
 Automerge decides what lands on the default branch without review. The
-approval decides what reaches users. A change that automerge lands ships
-only through a release, so the approval backs automerge up. Automerge
-follows where a dependency runs:
+approval decides what reaches users, and a change automerge lands reaches
+them only through a release. Automerge follows where a dependency runs:
 
 - Updates to development, test, and CI-only dependencies automerge after
   green checks.
@@ -90,27 +88,23 @@ follows where a dependency runs:
 - Updates to runtime dependencies a package bundles wait for review,
   because their code ships.
 
-The approval reviews tested bytes only if the build is clean. The threat
-model's findings on caches, build code sharing a job with a credential,
-and untested artifacts close before any release runs unattended up to
-the approval.
+The approval reviews tested bytes only if the build is clean. No release
+runs unattended up to the approval until the threat model's findings on
+caches, build code sharing a job with a credential, and untested
+artifacts close.
 
 ### Consequences
 
 Good:
 
-- One action per release, at the step that can't be undone, on bytes
-  that have already been built and tested.
-- The approval also stops a forged tag or a leaked release key from
-  publishing.
+- A forged tag or a leaked release key can't publish without the
+  approval.
 
 Bad / accepted:
 
-- The milestone's objective changes from no manual step to one approval
-  per release.
-- The approval is given by the account that tokens acting as the account
-  impersonate. A stolen account token can approve a pending deployment
-  until #1076, #1069, and #738 remove those tokens.
+- Each release needs one human action.
+- A stolen token that acts as the operator's account can approve a
+  pending deployment until #1076, #1069, and #738 remove those tokens.
 - Holding updates to actions shared by CI and release jobs also holds
   their CI updates. That adds Renovate pull requests to review.
 

@@ -33,12 +33,12 @@ Out of scope:
 ## Where the release App fits
 
 A per-repository App should create release tags. The release pull request may
-merge on a schedule, because [ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)
-puts the last human check on the publish environment's approval.
+merge on a schedule, since the last human check is the publish environment's
+approval ([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
 | Candidate | Who creates the tag | Result |
 | --- | --- | --- |
-| Operator by hand | P-1 | No new credential, but every release needs the operator to cut it, which misses the milestone's one-approval-per-release objective |
+| Operator by hand | P-1 | No new credential, but every release needs the operator to cut it |
 | `GITHUB_TOKEN` | P-11 | Its Release starts no workflow and its pull request runs no checks. A dispatch would start a run, but #1055's bypass list would then have to admit P-11, which GitHub's documentation doesn't list as an option |
 | One App per repository | P-12 | Chosen. A leak reaches one repository, provided #1057 and #1076 close the routes between repositories |
 | One App across repositories | P-12 | Rejected. One leaked key would tag and publish in all of them |
