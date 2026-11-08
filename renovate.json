@@ -13,6 +13,22 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Neither the devcontainer manager nor the github-actions manager reads the mise feature's or mise-action's version",
+      "managerFilePatterns": [
+        "/^\\.devcontainer/devcontainer\\.json$/",
+        "/^\\.github/workflows/[^/]+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "\"ghcr\\.io/devcontainers-extra/features/mise:[^\"]+\":\\s*\\{[^}]*\"version\":\\s*\"(?<currentValue>[^\"]+)\"",
+        "uses: jdx/mise-action@\\S+[^\\n]*\\n\\s+with:\\n(?:\\s+[\\w-]+:[^\\n]*\\n)*?\\s+version: ['\"]?(?<currentValue>[^'\"\\s]+)"
+      ],
+      "depNameTemplate": "mise",
+      "packageNameTemplate": "jdx/mise",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
@@ -20,6 +36,11 @@
       "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
       "matchDepNames": ["prek"],
       "groupName": "prek"
+    },
+    {
+      "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
+      "matchDepNames": ["mise"],
+      "groupName": "mise"
     },
     {
       "description": "Provider and Terraform updates change every later plan, bootstrap's included",
