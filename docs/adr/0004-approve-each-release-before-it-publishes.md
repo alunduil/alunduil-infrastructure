@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# Approve each release at its publish environment
+# Approve each release before it publishes
 
 - Status: Proposed
 - Date: 2026-11-08
@@ -57,10 +57,9 @@ lists routes to a publish that skip the merge:
   person sees a release. Alerts on an unexpected release (#1064) fire
   after an upload that can't be recalled.
 - **Unattended where a package only declares its dependencies, with
-  approval where it bundles them.** The packages that only declare their
-  dependencies are the ones with uploads that can't be recalled, and the
-  ones that bundle ship dependency code. Each group needs the approval
-  for a different reason, so this collapses into approval everywhere.
+  approval where it bundles them.** Both groups above need the approval:
+  the first because its uploads can't be recalled, the second because
+  dependency code ships. This collapses into approval everywhere.
 - **Approve the publish job's environment.** It meets all four
   requirements.
 
@@ -79,24 +78,22 @@ development or CI updates.
 Renovate automerge and the release approval are separate gates.
 Automerge decides what lands on the default branch without review. The
 approval decides what reaches users. A change that automerge lands ships
-only through a release, so the approval backs automerge up. Automerge follows
-where a dependency runs:
+only through a release, so the approval backs automerge up. Automerge
+follows where a dependency runs:
 
 - Updates to development, test, and CI-only dependencies automerge after
   green checks.
 - Updates to anything a release job runs wait for review, because it
   runs before or alongside the job's credential. Those are the job's
-  actions, the composite actions it calls, and its compiler and build tool pins.
+  actions, the composite actions it calls, and its compiler and build
+  tool pins.
 - Updates to runtime dependencies a package bundles wait for review,
   because their code ships.
 
-These controls hold before any release runs unattended up to the
-approval:
-
-- No release job restores a cache.
-- Build code shares no job with a release credential.
-- Each release tests its exact artifact before the approval is asked
-  for.
+The approval reviews tested bytes only if the build is clean. The threat
+model's findings on caches, build code sharing a job with a credential,
+and untested artifacts close before any release runs unattended up to
+the approval.
 
 ### Consequences
 
@@ -106,8 +103,6 @@ Good:
   that have already been built and tested.
 - The approval also stops a forged tag or a leaked release key from
   publishing.
-- Without caches, a release job can't restore a poisoned one, so no
-  cache needs a trust analysis.
 
 Bad / accepted:
 
@@ -118,7 +113,6 @@ Bad / accepted:
   until #1076, #1069, and #738 remove those tokens.
 - Holding updates to actions shared by CI and release jobs also holds
   their CI updates. That adds Renovate pull requests to review.
-- Release builds without caches run slower.
 
 Neutral:
 
@@ -128,6 +122,6 @@ Neutral:
 
 ## More Information
 
-The decision and the bundling check are recorded on #1075. Environment
-approvals land in #1121 and #1122, the automerge rules in
-`alunduil/renovate-config#49`, and the cache rule in #1079.
+The bundling check per repository is on #1075. Environment approvals
+land in #1121 and #1122, and the automerge rules in
+`alunduil/renovate-config#49`.
