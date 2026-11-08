@@ -16,7 +16,7 @@
     },
     {
       "customType": "regex",
-      "description": "Neither the devcontainer manager nor the github-actions manager reads the mise feature's or mise-action's version",
+      "description": "Renovate's built-in managers skip the version inputs of the mise feature and mise-action",
       "managerFilePatterns": [
         "/^\\.devcontainer/devcontainer\\.json$/",
         "/^\\.github/actions/mise/action\\.yml$/"

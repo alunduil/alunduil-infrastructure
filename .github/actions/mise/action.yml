@@ -3,13 +3,11 @@
 # SPDX-License-Identifier: MIT
 
 name: Set up mise
-description: >-
-  Installs the mise the devcontainer runs, then the named tools from
-  mise.lock.
+description: Installs the mise version the devcontainer pins.
 
 inputs:
   install_args:
-    description: Tools to install, as passed to mise install.
+    description: Tools to install from mise.lock.
     required: true
 
 runs:
