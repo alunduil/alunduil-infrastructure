@@ -13,6 +13,22 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Without a version, mise-action and the mise feature each install the newest mise on their own schedule, so one dependency keeps every pin in a single pull request. Each mise-action step lists version first under with",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/",
+        "/^\\.devcontainer/devcontainer\\.json$/"
+      ],
+      "matchStrings": [
+        "uses: jdx/mise-action@\\S+.*\\n\\s+with:\\n\\s+version: '(?<currentValue>[^']+)'",
+        "\"ghcr\\.io/devcontainers-extra/features/mise:\\d+\": \\{\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "mise",
+      "packageNameTemplate": "jdx/mise",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
