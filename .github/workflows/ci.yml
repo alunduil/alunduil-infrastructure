@@ -28,9 +28,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Terraform and just
-        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        uses: ./.github/actions/mise
         with:
-          version: '2026.10.25'
           install_args: terraform just
 
       - name: Set up Terraform providers
@@ -78,9 +77,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up bats
-        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        uses: ./.github/actions/mise
         with:
-          version: '2026.10.25'
           install_args: bats
 
       # Apt mirrors can stall, so this step fails well before the job timeout.

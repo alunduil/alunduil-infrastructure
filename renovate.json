@@ -16,13 +16,13 @@
     },
     {
       "customType": "regex",
-      "description": "Without a version, mise-action and the mise feature each install the newest mise on their own schedule, so one dependency keeps every pin in a single pull request. Each mise-action step lists version first under with",
+      "description": "Without a version, mise-action and the mise feature each install the newest mise on their own schedule, so one dependency keeps both pins in a single pull request",
       "managerFilePatterns": [
-        "/^\\.github/workflows/.+\\.ya?ml$/",
+        "/^\\.github/actions/mise/action\\.yml$/",
         "/^\\.devcontainer/devcontainer\\.json$/"
       ],
       "matchStrings": [
-        "uses: jdx/mise-action@\\S+.*\\n\\s+with:\\n\\s+version: '(?<currentValue>[^']+)'",
+        "\\n\\s+version: '(?<currentValue>[^']+)'",
         "\"ghcr\\.io/devcontainers-extra/features/mise:\\d+\": \\{\\s*\"version\": \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "mise",
@@ -49,6 +49,7 @@
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
         ".github/actions/terraform-providers/**",
+        ".github/actions/mise/**",
         "scripts/export-terraform-credentials.sh",
         "mise.toml",
         "mise.lock"
