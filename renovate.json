@@ -19,11 +19,11 @@
       "description": "Neither the devcontainer manager nor the github-actions manager reads the mise feature's or mise-action's version",
       "managerFilePatterns": [
         "/^\\.devcontainer/devcontainer\\.json$/",
-        "/^\\.github/workflows/[^/]+\\.ya?ml$/"
+        "/^\\.github/actions/mise/action\\.yml$/"
       ],
       "matchStrings": [
         "\"ghcr\\.io/devcontainers-extra/features/mise:[^\"]+\":\\s*\\{[^}]*\"version\":\\s*\"(?<currentValue>[^\"]+)\"",
-        "uses: jdx/mise-action@\\S+[^\\n]*\\n\\s+with:\\n(?:\\s+[\\w-]+:[^\\n]*\\n)*?\\s+version: ['\"]?(?<currentValue>[^'\"\\s]+)"
+        "uses: jdx/mise-action@\\S+[^\\n]*\\n\\s+with:\\n\\s+version: (?<currentValue>\\S+)"
       ],
       "depNameTemplate": "mise",
       "packageNameTemplate": "jdx/mise",
@@ -53,6 +53,7 @@
         "terraform/alunduil/**",
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
+        ".github/actions/mise/**",
         ".github/actions/terraform-providers/**",
         "scripts/export-terraform-credentials.sh",
         "mise.toml",
