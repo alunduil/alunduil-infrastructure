@@ -40,7 +40,7 @@
       "automerge": false
     },
     {
-      "description": "Lock file maintenance merges only when terraform-plan.yml confirms its plan changes nothing. Last, so it overrides both holds above",
+      "description": "Lock file maintenance merges only when terraform-plan.yml confirms its plan changes nothing. Keep this rule last so it overrides both holds above",
       "matchUpdateTypes": ["lockFileMaintenance"],
       "automerge": true
     }

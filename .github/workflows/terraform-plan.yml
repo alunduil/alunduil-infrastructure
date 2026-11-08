@@ -178,8 +178,7 @@ jobs:
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
 
-      # Data sources read during apply change nothing, so only managed
-      # resources count.
+      # Data sources read during apply change nothing.
       - id: resource-changes
         name: Count planned resource changes
         working-directory: terraform/alunduil
@@ -189,10 +188,9 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # renovate.json automerges lock file maintenance, and Renovate merges only
-  # once every check passes, required or not. This job stays out of the
-  # required checks so a person can still merge a pull request whose plan
-  # changes something.
+  # Gates renovate.json's lock file maintenance automerge, since Renovate
+  # waits for every check. Keep it out of the required checks so a person
+  # can still merge a plan that changes something.
   lock-file-plan:
     name: Confirm lock file maintenance plans no changes
     needs: plan
