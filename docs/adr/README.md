@@ -14,3 +14,4 @@ Records (MADR) for substantive records).
 | [0001](0001-use-talos-for-home-ad-hoc-services.md) | Use Talos Linux for the home ad-hoc-services platform |
 | [0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) | Build the NanoPi-NEO3 recovery image with Armbian's build framework |
 | [0003](0003-run-hooks-with-prek.md) | Run hooks with prek instead of pre-commit |
+| [0004](0004-approve-each-release-at-its-publish-environment.md) | Approve each release at its publish environment |
