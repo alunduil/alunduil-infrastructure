@@ -9,14 +9,16 @@
 ## Context and Problem Statement
 
 Six repositories publish, or plan to. Every past release was cut by the
-operator by hand. The 2027-02 milestones automate the path. A weekly job
-opens a release pull request, a schedule or a person merges it, and
-workflows tag, build, and publish.
+operator by hand. The 2027-02 milestones automate the path:
+
+1. A weekly job opens a release pull request.
+2. A schedule or a person merges it.
+3. Workflows tag, build, and publish.
 
 Renovate already merges low-risk updates after green checks with no
-review. Together with an unattended release, a compromised dependency
-could merge and reach users with nobody looking. Uploads to Hackage and
-PyPI can't be recalled.
+review. If releases also run unattended, a compromised dependency could
+reach users with nobody looking. Uploads to Hackage and PyPI can't be
+recalled.
 
 The repositories ship in two ways:
 
@@ -33,7 +35,7 @@ lists routes to a publish that skip the merge:
 
 - A forged release tag.
 - A dispatch on an existing tag.
-- Build code tampering with the package.
+- Build code that tampers with the package.
 - A poisoned cache.
 
 ### Requirements
@@ -56,7 +58,7 @@ lists routes to a publish that skip the merge:
   person sees a release. Alerts on an unexpected release (#1064) fire
   after an upload that can't be recalled.
 - **Unattended where a package only declares its dependencies, with
-  approval where it bundles them.** Both groups above need the approval:
+  approval where it bundles them.** Both groups need the approval:
   the first because its uploads can't be recalled, the second because
   dependency code ships. This collapses into approval everywhere.
 - **Approve the publish job's environment.** It meets all four
@@ -76,22 +78,26 @@ development or CI updates.
 
 Renovate automerge and the release approval are separate gates.
 Automerge decides what lands on the default branch without review. The
-approval decides what reaches users, and a change automerge lands reaches
-them only through a release. Automerge follows where a dependency runs:
+approval decides what reaches users. A change that automerge lands
+reaches users only through a release. Automerge follows where a
+dependency runs:
 
 - Updates to development, test, and CI-only dependencies automerge after
   green checks.
 - Updates to anything a release job runs wait for review, because it
-  runs before or alongside the job's credential. Those are the job's
+  runs in the same job as the credential. Those are the job's
   actions, the composite actions it calls, and its compiler and build
   tool pins.
 - Updates to runtime dependencies a package bundles wait for review,
   because their code ships.
 
 The approval reviews tested bytes only if the build is clean. No release
-runs unattended up to the approval until the threat model's findings on
-caches, build code sharing a job with a credential, and untested
-artifacts close.
+runs unattended up to the approval until these threat model findings
+close:
+
+- A build can restore a poisoned cache.
+- Build code shares a job with a credential.
+- A release uploads a package no test ran against.
 
 ### Consequences
 
@@ -105,8 +111,8 @@ Bad / accepted:
 - Each release needs one human action.
 - A stolen token that acts as the operator's account can approve a
   pending deployment until #1076, #1069, and #738 remove those tokens.
-- Holding updates to actions shared by CI and release jobs also holds
-  their CI updates. That adds Renovate pull requests to review.
+- An action that both CI and a release job use waits for review in
+  both. That adds Renovate pull requests to review.
 
 Neutral:
 

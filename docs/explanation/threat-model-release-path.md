@@ -33,8 +33,9 @@ Out of scope:
 ## Where the release App fits
 
 A per-repository App should create release tags. The release pull request may
-merge on a schedule, since the last human check is the publish environment's
-approval ([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
+merge on a schedule, because the last human check is the publish
+environment's approval
+([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
 | Candidate | Who creates the tag | Result |
 | --- | --- | --- |
