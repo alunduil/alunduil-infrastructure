@@ -3,7 +3,7 @@
 
 # Approve each release before it publishes
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-08
 
 ## Context and Problem Statement
