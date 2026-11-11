@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 name: Set up mise
-description: Installs the mise version the devcontainer pins.
+description: Installs the same mise version as the devcontainer.
 
 inputs:
   install_args:
