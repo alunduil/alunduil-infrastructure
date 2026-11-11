@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 locals {
+  # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
+  # must report on every pull request, so these run on pull requests too.
+  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+
   # An input an entry leaves unset takes the module's default.
   #
   # deploy matches the repository's row in the Repositories table of
@@ -30,7 +34,8 @@ locals {
         ci_results_check = true
         # A failed detect job skips the plan, and a skipped job passes.
         contexts = ["Detect Terraform changes", "Plan Terraform changes"]
-        # renovate.json holds back every update that would trigger an apply.
+        # renovate.json holds back every update that would trigger an apply,
+        # except lock file maintenance whose plan changes nothing.
         renovate_automerge = true
       }
       # The Hourly Inbox sync reads GH_PROJECT_SYNC_TOKEN from this
@@ -77,7 +82,7 @@ locals {
       topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
       required_status_checks = {
         ci_results_check   = true
-        contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
+        contexts           = concat(local.haskell_scheduled_checks, ["Check links"])
         renovate_automerge = true
       }
       admin_only_updates = true
@@ -103,7 +108,7 @@ locals {
       topics      = ["haskell-library", "haskell", "network", "quickcheck"]
       required_status_checks = {
         ci_results_check   = true
-        contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
+        contexts           = local.haskell_scheduled_checks
         renovate_automerge = true
       }
       admin_only_updates = true
@@ -143,7 +148,9 @@ locals {
       description = "Siren+JSON Tools for Haskell"
       topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
       required_status_checks = {
-        ci_results_check = true
+        ci_results_check   = true
+        contexts           = concat(local.haskell_scheduled_checks, ["Check links"])
+        renovate_automerge = true
       }
       admin_only_updates = true
       environments       = { hackage = {} }
