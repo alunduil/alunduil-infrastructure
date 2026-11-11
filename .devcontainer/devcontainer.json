@@ -4,6 +4,10 @@
   "features": {
     "ghcr.io/devcontainers-extra/features/mise:1": {
       "version": "2026.10.25"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "os-provided",
+      "installTools": false
     }
   },
   "containerEnv": {

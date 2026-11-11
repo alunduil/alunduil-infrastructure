@@ -32,12 +32,14 @@ Out of scope:
 
 ## Where the release App fits
 
-A per-repository App should create release tags, and a person should merge the
-release pull request until #1075 decides otherwise.
+A per-repository App should create release tags. The release pull request may
+merge on a schedule, because the last human check is the publish
+environment's approval
+([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
 | Candidate | Who creates the tag | Result |
 | --- | --- | --- |
-| Operator by hand | P-1 | No new credential, but it misses the milestone's no-manual-step objective |
+| Operator by hand | P-1 | No new credential, but every release needs the operator to cut it |
 | `GITHUB_TOKEN` | P-11 | Its Release starts no workflow and its pull request runs no checks. A dispatch would start a run, but #1055's bypass list would then have to admit P-11, which GitHub's documentation doesn't list as an option |
 | One App per repository | P-12 | Chosen. A leak reaches one repository, provided #1057 and #1076 close the routes between repositories |
 | One App across repositories | P-12 | Rejected. One leaked key would tag and publish in all of them |
@@ -82,7 +84,8 @@ Every unmitigated row below points to one of these.
 | A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` |
 | Tokens acting as the account bypass the tag rule | #1076, #1069, #738 |
 | Hook-fix commits reach a default branch unreviewed | #1057 |
-| A dependency update can merge and ship with nobody looking | #1075 |
+| A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` |
+| A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` |
 | A required check can be satisfied by any App reporting its name | #429 |
 | A write collaborator can dispatch a publish on an existing tag | `collection-json.hs#406`, #1077 |
 | Build code shares a job with the Hackage token | `collection-json.hs#454`, `network-arbitrary#172` |
@@ -128,7 +131,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Foundry world | Repudiation | A world takes no action the path depends on | — | — | Not Applicable | `woodland-generators` `release.yml`, job `verify-release` |
 | 1.0 Merge pull request | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
 | 1.0 Merge pull request | Tampering | A hook-fix commit lands on a default branch unreviewed | High | #1057 | Not Started | `main.tf`, `github_repository_ruleset.renovate` |
-| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | #1075 | Not Started | `terraform/alunduil/repositories.tf`, `renovate_automerge` |
+| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval (#1121, #1122), and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `renovate_automerge` |
 | 1.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 1.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 1.0 Merge pull request | Denial of Service | A pull request opened by P-11 runs no workflows, so required checks never report | Medium | #556 | Not Started | `main.tf`, `github_workflow_repository_permissions` |
@@ -184,12 +187,13 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Build artifacts | Repudiation | Nothing proves which run produced an artifact once it expires | Low | #1078 | Not Started | — |
 | Build artifacts | Information Disclosure | An artifact holds only the package, which is public | — | — | Not Applicable | `zfs-replicate` `release.yml`, job `build` |
 | Build artifacts | Denial of Service | An expired artifact fails `Find candidate run`, and a new version recovers | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | #1055 | Not Started | `main.tf`, `github_repository_environment_deployment_policy` |
+| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | #1055, and the publish environment's approval (#1121) | Not Started | `main.tf`, `github_repository_environment_deployment_policy` |
 | 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, job `publish` |
 | 5.0 Upload package | Repudiation | A Hackage upload names the account, not the run | Medium | #1078 | Not Started | — |
 | 5.0 Upload package | Information Disclosure | `network-arbitrary` passes its key on the command line | Low | `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, step `cabal upload` |
 | 5.0 Upload package | Denial of Service | A registry outage fails the job, and a re-run keeps the tag | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, job `publish` |
+| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | `collection-json.hs#406`, #1077, and the publish environment's approval (#1121) | Not Started | `collection-json.hs` `release.yml`, job `publish` |
+| 5.0 Upload package | Tampering | The release builds the package again after CI and uploads it untested | Medium | `zfs-replicate#848`, `network-arbitrary#172` | Not Started | `zfs-replicate` `release.yml`, job `pypi` needs only `build` |
 | F1 proposed commits | Tampering | GitHub carries this over TLS, so tampering needs a compromise of GitHub | — | — | Not Applicable | register, D-09 |
 | F1 proposed commits | Information Disclosure | Pull requests are public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F1 proposed commits | Denial of Service | A flood of pull requests delays review and publishes nothing | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
