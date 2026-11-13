@@ -6,11 +6,6 @@ locals {
   # must report on every pull request, so these run on pull requests too.
   haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
 
-  # Required where codecov.yml sets a project threshold. Codecov sometimes
-  # leaves this run in progress, which blocks the merge until the coverage
-  # upload is re-run.
-  codecov_checks = ["codecov/project"]
-
   # An input an entry leaves unset takes the module's default.
   #
   # deploy matches the repository's row in the Repositories table of
@@ -87,9 +82,10 @@ locals {
       description = "Collection+JSON Tools for Haskell"
       topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = concat(local.haskell_scheduled_checks, ["Check links"], local.codecov_checks)
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        renovate_automerge    = true
       }
       admin_only_updates = true
       environments       = { hackage = { deployment_tags = ["v*"] } }
@@ -113,9 +109,10 @@ locals {
       description = "Arbitrary Instances for Network Types"
       topics      = ["haskell-library", "haskell", "network", "quickcheck"]
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = concat(local.haskell_scheduled_checks, local.codecov_checks)
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = local.haskell_scheduled_checks
+        renovate_automerge    = true
       }
       admin_only_updates = true
       environments       = { hackage = { deployment_tags = ["v*"] } }
@@ -154,9 +151,10 @@ locals {
       description = "Siren+JSON Tools for Haskell"
       topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = concat(local.haskell_scheduled_checks, ["Check links"], local.codecov_checks)
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        renovate_automerge    = true
       }
       admin_only_updates = true
       environments       = { hackage = {} }
@@ -181,13 +179,14 @@ locals {
       ]
       # Codecov's upload legs aren't required.
       required_status_checks = {
-        ci_results_check = true
-        contexts = concat([
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts = [
           "Build every package",
           "Enforce Conventional Commits",
           "Audit production dependencies",
           "Scan for live secrets",
-        ], local.codecov_checks)
+        ]
         renovate_automerge = true
       }
       # .github/CODEOWNERS assigns every path to @alunduil.
@@ -220,9 +219,10 @@ locals {
       topics         = ["zfs", "replication", "snapshots"]
       default_branch = "master"
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = concat(["Validate PR title"], local.codecov_checks)
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = ["Validate PR title"]
+        renovate_automerge    = true
       }
       # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
       # non-owner pull request but Renovate's.

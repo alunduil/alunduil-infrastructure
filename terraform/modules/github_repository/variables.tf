@@ -42,10 +42,11 @@ variable "default_branch" {
 
 variable "required_status_checks" {
   type = object({
-    ci_results_check   = optional(bool, false)
-    contexts           = optional(list(string), [])
-    require_up_to_date = optional(bool, false)
-    renovate_automerge = optional(bool, false)
+    ci_results_check      = optional(bool, false)
+    codecov_project_check = optional(bool, false)
+    contexts              = optional(list(string), [])
+    require_up_to_date    = optional(bool, false)
+    renovate_automerge    = optional(bool, false)
   })
   default     = {}
   nullable    = false
@@ -69,6 +70,11 @@ variable "required_status_checks" {
     requires the aggregator instead of its legs. The job must list every
     job it stands in for under needs: and run on pushes to the default
     branch.
+
+    codecov_project_check requires Codecov's "codecov/project" check. Set
+    it where codecov.yml sets a project threshold. Codecov sometimes leaves
+    the check in progress, which blocks the merge until the coverage upload
+    is re-run.
 
     renovate_automerge lets Renovate merge its own pull requests without
     review. Renovate waits only for the checks listed here, so list every
