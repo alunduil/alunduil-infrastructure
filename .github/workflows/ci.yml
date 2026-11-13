@@ -52,7 +52,7 @@ jobs:
       id-token: write
     # A SHA-pinned reusable workflow can't be wrapped.
     # yamllint disable rule:line-length
-    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@1b88d89996aefce883fc1583d3f173ec65f4bbca # main
+    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@21412f798f3ad8d48fa994b7dc260a83fb66a99d # main
     # yamllint enable rule:line-length
     with:
       hook-runner: prek
