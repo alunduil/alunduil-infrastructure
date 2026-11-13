@@ -42,6 +42,7 @@ jobs:
             terraform/alunduil \
             terraform/modules \
             .github/workflows/terraform-plan.yml \
+            .github/actions/mise \
             .github/actions/terraform-providers \
             scripts/export-terraform-credentials.sh \
             scripts/eval-recording-rules.sh \
@@ -79,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: ./.github/actions/mise
         with:
           install_args: terraform
 

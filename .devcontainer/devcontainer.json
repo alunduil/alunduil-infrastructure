@@ -2,7 +2,9 @@
   "name": "alunduil-infrastructure",
   "image": "mcr.microsoft.com/devcontainers/base:3.0.12-ubuntu@sha256:b1e3b08610ae0b2599f57c3a492eebc93d1d26dbaefb4a0bad0caa7149e4ec95",
   "features": {
-    "ghcr.io/devcontainers-extra/features/mise:1": {},
+    "ghcr.io/devcontainers-extra/features/mise:1": {
+      "version": "2026.10.25"
+    },
     "ghcr.io/devcontainers/features/python:1": {
       "version": "os-provided",
       "installTools": false

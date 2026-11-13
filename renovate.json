@@ -13,6 +13,22 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION=\"(?<currentValue>.+?)\""
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Renovate's built-in managers skip the version inputs of the mise feature and mise-action",
+      "managerFilePatterns": [
+        "/^\\.devcontainer/devcontainer\\.json$/",
+        "/^\\.github/actions/mise/action\\.yml$/"
+      ],
+      "matchStrings": [
+        "\"ghcr\\.io/devcontainers-extra/features/mise:[^\"]+\":\\s*\\{[^}]*\"version\":\\s*\"(?<currentValue>[^\"]+)\"",
+        "uses: jdx/mise-action@\\S+[^\\n]*\\n\\s+with:\\n\\s+version: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "mise",
+      "packageNameTemplate": "jdx/mise",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
@@ -20,6 +36,11 @@
       "description": "prek-action's prek-version and mise.toml pin the same prek, so one pull request bumps both",
       "matchDepNames": ["prek"],
       "groupName": "prek"
+    },
+    {
+      "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
+      "matchDepNames": ["mise"],
+      "groupName": "mise"
     },
     {
       "description": "Provider and Terraform updates change every later plan, bootstrap's included",
@@ -32,6 +53,7 @@
         "terraform/alunduil/**",
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
+        ".github/actions/mise/**",
         ".github/actions/terraform-providers/**",
         "scripts/export-terraform-credentials.sh",
         "mise.toml",

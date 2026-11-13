@@ -1,0 +1,19 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Set up mise
+description: Installs the same mise version as the devcontainer.
+
+inputs:
+  install_args:
+    description: Tools to install from mise.lock.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      with:
+        version: 2026.10.25
+        install_args: ${{ inputs.install_args }}
