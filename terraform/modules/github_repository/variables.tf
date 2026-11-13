@@ -71,14 +71,14 @@ variable "required_status_checks" {
     job it stands in for under needs: and run on pushes to the default
     branch.
 
-    codecov_project_check requires Codecov's "codecov/project" check. Set
-    it where codecov.yml sets a project threshold. Codecov sometimes leaves
-    the check in progress, which blocks the merge until the coverage upload
-    is re-run.
+    Set codecov_project_check to require "codecov/project" where
+    codecov.yml sets a project threshold. Codecov sometimes leaves that
+    check in progress, which blocks merges until someone re-runs the
+    coverage upload.
 
     renovate_automerge lets Renovate merge its own pull requests without
-    review. Renovate waits only for the checks listed here, so list every
-    check a dependency update can break.
+    review. GitHub enforces only required checks on that merge, so require
+    every check a dependency update can break.
   EOT
 }
 
