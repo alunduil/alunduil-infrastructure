@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:3.0.13-ubuntu@sha256:b377a08d19467bcc08180cb95098448cac31c1a8423e287ce709a9eb09e14762",
   "features": {
     "ghcr.io/devcontainers-extra/features/mise:1": {
-      "version": "2026.10.25"
+      "version": "2026.11.6"
     },
     "ghcr.io/devcontainers/features/python:1": {
       "version": "os-provided",
