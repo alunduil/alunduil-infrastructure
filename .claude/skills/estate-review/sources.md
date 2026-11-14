@@ -163,9 +163,10 @@ Report response codes and zone settings modified in the window. Match any
 modification against this repository's commits to `main`. Neither server
 exposes DNSSEC, so list it under blind spots.
 
-Cloudflare answers a name with no record `NOERROR`, carrying a compact-denial
-NSEC record, so a NOERROR count doesn't show the name exists. Before reporting
-a record change, query the name with `dig @brenna.ns.cloudflare.com`.
+Before reporting a record change, query the name with
+`dig @brenna.ns.cloudflare.com`. A NOERROR count doesn't show that a name
+exists: for a name with no records, Cloudflare returns `NOERROR` and a
+compact-denial NSEC record.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
