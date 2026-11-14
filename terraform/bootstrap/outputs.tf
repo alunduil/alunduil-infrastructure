@@ -76,6 +76,25 @@ output "hook_fix_app_secrets" {
   sensitive   = false
 }
 
+# renovate-config's hook-fix-selftest.yml hard-codes these.
+output "hook_fix_selftest_workload_identity_provider" {
+  value       = google_iam_workload_identity_pool_provider.hook_fix_selftest.name
+  description = "Full resource name of the hook-fix self-test WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix-selftest/providers/github-provider"
+  sensitive   = false
+}
+
+output "hook_fix_selftest_reader_email" {
+  value       = google_service_account.hook_fix_selftest_reader.email
+  description = "Email of the service account renovate-config's hook-fix self-test impersonates"
+  sensitive   = false
+}
+
+output "hook_fix_selftest_app_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.hook_fix_selftest_app : secret.secret_id])
+  description = "Secret Manager short names holding the hook-fix self-test GitHub App ID and private key; populated by scripts/configure-hook-fix-selftest-secrets.sh and fetched by renovate-config's hook-fix self-test"
+  sensitive   = false
+}
+
 output "terraform_github_app_secrets" {
   value       = sort([for secret in google_secret_manager_secret.terraform_github_app : secret.secret_id])
   description = "Secret Manager short names holding the Terraform GitHub Apps' IDs and private keys, read-only for plan and read-write for apply; populated by scripts/configure-terraform-github-secrets.sh and fetched by scripts/export-terraform-credentials.sh"
