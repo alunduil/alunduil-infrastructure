@@ -40,13 +40,13 @@ output "cloudflare_api_token_deployer_rw_secret" {
 # configure-github-secrets.sh publishes these to blog.alunduil.com as Actions
 # secrets; its Pages build reads them by name.
 output "blog_analytics_workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.blog.name
+  value       = module.blog_analytics_reader.workload_identity_provider
   description = "Full resource name of the blog's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/blog/providers/github-provider"
   sensitive   = false
 }
 
 output "blog_analytics_reader_email" {
-  value       = google_service_account.blog_analytics_reader.email
+  value       = module.blog_analytics_reader.service_account_email
   description = "Email of the service account blog.alunduil.com's Pages build impersonates"
   sensitive   = false
 }
@@ -59,13 +59,13 @@ output "cloudflare_api_token_blog_analytics_ro_secret" {
 
 # renovate-config's fix-renovate-hooks.yml hard-codes these.
 output "hook_fix_workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.hook_fix.name
+  value       = module.hook_fix_reader.workload_identity_provider
   description = "Full resource name of the hook-fix WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix/providers/github-provider"
   sensitive   = false
 }
 
 output "hook_fix_reader_email" {
-  value       = google_service_account.hook_fix_reader.email
+  value       = module.hook_fix_reader.service_account_email
   description = "Email of the service account the reusable hook-fix workflow impersonates"
   sensitive   = false
 }
@@ -78,13 +78,13 @@ output "hook_fix_app_secrets" {
 
 # renovate-config's hook-fix-selftest.yml hard-codes these.
 output "hook_fix_selftest_workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.hook_fix_selftest.name
+  value       = module.hook_fix_selftest_reader.workload_identity_provider
   description = "Full resource name of the hook-fix self-test WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix-selftest/providers/github-provider"
   sensitive   = false
 }
 
 output "hook_fix_selftest_reader_email" {
-  value       = google_service_account.hook_fix_selftest_reader.email
+  value       = module.hook_fix_selftest_reader.service_account_email
   description = "Email of the service account renovate-config's hook-fix self-test impersonates"
   sensitive   = false
 }
