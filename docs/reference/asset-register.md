@@ -123,7 +123,9 @@ principals that read or change an asset through Terraform.
 
 - Description: home automation hub. Runs Zigbee2MQTT, Mosquitto, a
   Matter server, an OpenThread Border Router, alloy, Tailscale, SSH,
-  and the File editor. Every automation in the house runs here
+  and the File editor. Every automation in the house runs here. The
+  Deco integration polls A-04's system log and forwards it as syslog to
+  alloy, which listens on 1514 inside B-2 with no port published
 - Exposed to: T-1, via E-03
 
 ### A-03: `slzb-mr4u`
@@ -266,7 +268,7 @@ vendor.
 | D-08 | Cloudflare (A-08) | Zone configuration, the home address via C-15 |
 | D-09 | GitHub (A-09) | Repositories, CI logs, and Release assets |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
-| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
+| D-11 | Grafana Cloud (A-11) | Telemetry from A-01 through A-04, and A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
 | D-13 | PyPI | `zfs-replicate` distributions |
 
