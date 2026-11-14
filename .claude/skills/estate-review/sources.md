@@ -117,6 +117,9 @@ Report:
   Report each firing with its rule's query and the firing window. If
   `gcx` can reach the query's data, run it for that window.
 
+The NanoPi-NEO3's `rclone-backup` Drive quota errors are known: #671
+retires that backup. List them under working.
+
 Adaptive Metrics aggregates labels away on `hass_*_info` and change-time
 series. A `<aggregated>` label is a known gap, not an empty result.
 
@@ -157,6 +160,11 @@ once, with `datetime_geq` and `datetime_leq` spanning the window.
 Report response codes and zone settings modified in the window. Match any
 modification against this repository's commits to `main`. Neither server
 exposes DNSSEC, so list it under blind spots.
+
+Cloudflare answers a name with no record `NOERROR` and a compact-denial NSEC
+record, so the analytics mix NOERROR and NXDOMAIN for one name. Check
+`dig @brenna.ns.cloudflare.com` for an answer before reading the mix as a
+record change.
 
 Domain: RDAP `https://rdap.verisign.com/com/v1/domain/alunduil.com` for
 expiry. Renewal is automatic at Squarespace; report the date only.
