@@ -88,15 +88,16 @@ classify() {
       else "Needs me"
       end;
     def issue_column: pr_column | if . == "Drafts" then "In progress" else . end;
-    # Round-tripping through a timestamp rejects impossible dates such as
-    # 2026-02-30, which strptime would otherwise roll into March.
-    def valid_date: (. + "T00:00:00Z" | try (fromdateiso8601 | todate[:10]) catch null) == .;
+    # Only a real YYYY-MM-DD date survives a round trip through a timestamp
+    # unchanged: strptime rolls 2026-02-30 into March and pads 2026-6-1.
+    def is_date: (. + "T00:00:00Z" | try (fromdateiso8601 | todate[:10]) catch null) == .;
+    def warn($message): $message + "\n" | stderr | empty;
     def blocked_until:
       .url as $url
       | [(.body // "") | splits("\r?\n") | select(startswith("Blocked until:"))
-         | (capture("^Blocked until: (?<d>\\d{4}-\\d{2}-\\d{2})\\s*$").d // "") as $d
-         | if $d != "" and ($d | valid_date) then $d
-           else ("warning: ignoring \"" + . + "\" on " + $url + "\n" | stderr | empty)
+         | (ltrimstr("Blocked until: ") | sub("\\s+$"; "")) as $date
+         | if $date | is_date then $date
+           else warn("warning: ignoring \"" + . + "\" on " + $url)
            end]
       | max;
     def column($prs):

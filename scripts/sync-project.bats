@@ -98,7 +98,7 @@ column_of() {
 
 @test "an invalid Blocked until date is warned about and ignored" {
   local line
-  for line in 'Blocked until: 2026-02-30' 'Blocked until: next week' 'Blocked until: 2026-6-20'; do
+  for line in 'Blocked until: 2026-02-30' 'Blocked until: next week' 'Blocked until: 2026-6-20' 'Blocked until:2026-06-20'; do
     run --separate-stderr column_of "$ISSUE" "$(issue "$(body "$line")")"
     [[ $output == Backlog ]]
     [[ $stderr == *"$line"*"$ISSUE"* ]]
