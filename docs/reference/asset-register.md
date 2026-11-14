@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-07.
+Verified 2026-11-14.
 
 ## Scope
 
@@ -67,6 +67,7 @@ from.
 | P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
 | P-12 | Release App | Planned in #556, not created | P-10 |
+| P-13 | Hook-fix self-test | C-36's App token in Actions | A self-test run |
 
 The vendor Apps hold these permissions:
 
@@ -633,6 +634,21 @@ Google Cloud's other credentials.
 - Created by: Terraform
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`, set on A-01 from
   [`configure-truenas-acme-token.md`](../how-to/configure-truenas-acme-token.md)
+
+### C-36: Hook-fix self-test GitHub App
+
+- Kind: GitHub App ID and private key
+- Scope: `Contents`, `Pull requests`, and `Workflows` write, installed
+  only on `renovate-config`. Its pushes start workflows there, and it
+  can create tags and Releases
+- Consumer: `hook-fix-selftest.yml` in `renovate-config`, which opens
+  `renovate/hook-fix-selftest-*` pull requests to test
+  `fix-renovate-hooks.yml`. It reads the App's ID and key from Secret
+  Manager through the `hook-fix-selftest` workload identity pool, whose
+  provider admits any ref of that workflow
+- Grants: P-13
+- Created by: Operator
+- Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
 
 ## Maintenance
 

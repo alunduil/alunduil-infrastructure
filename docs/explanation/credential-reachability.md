@@ -72,6 +72,7 @@ flowchart LR
   p6["P-6 Renovate"]
   p8["P-8 Claude App"]
   c25["C-25 Hook-fix App"]
+  c36["C-36 Self-test App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
   c13["C-13 Projects token"]
@@ -109,6 +110,8 @@ flowchart LR
   c25 -->|"creates, #1055"| tag
   c25 -->|"replaces, woodland-generators#915"| assets
   c10 -->|"pushes"| pr
+  c36 -->|"pushes a renovate-config branch whose workflow reads"| c25
+  c36 -->|"creates in renovate-config, #1055"| tag
 
   branch -->|"Renovate automerges, #1057"| infra
   branch -->|"Renovate automerges, #1057"| other
@@ -238,8 +241,9 @@ output, which needs no compromise at Mend.
 A path existing only through P-6 therefore needs no fix of its own. For
 example, anything able to push workflow changes to a `renovate-config` branch
 can read C-25, because its provider admits any ref of
-`fix-renovate-hooks.yml`. Renovate can push there, but C-25 gives it nothing it
-lacks.
+`fix-renovate-hooks.yml`. C-36's provider admits any ref of
+`hook-fix-selftest.yml` the same way. Renovate can push there, but neither key
+gives it anything it lacks.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.
