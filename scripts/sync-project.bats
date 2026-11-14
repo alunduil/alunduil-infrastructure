@@ -9,6 +9,7 @@
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
+  bats_require_minimum_version 1.5.0
   FILED_BY_FIELD_NAME='Filed by'
   STATUS_FIELD_NAME='Status'
   # shellcheck source=sync-project.sh disable=SC1091
@@ -38,9 +39,17 @@ linked_pr() {
     '{closedByPullRequestsReferences: {nodes: [{url: $url, author: {login: $author}}]}}'
 }
 
-# classify rows for the given item nodes, as login "me" owning repos under "me".
+TODAY=2026-06-15
+
+# classify rows for the given item nodes, as login "me" owning repos under
+# "me", on TODAY.
 rows() {
-  printf '%s\n' "$@" | jq -s . | classify me '["me"]'
+  printf '%s\n' "$@" | jq -s . | classify me '["me"]' "$TODAY"
+}
+
+# Content JSON whose body is the given lines.
+body() {
+  jq -nc '{body: ($ARGS.positional | join("\n"))}' --args "$@"
 }
 
 # Column classify picks for the item with the given URL.
@@ -65,6 +74,35 @@ column_of() {
     "$(issue "$(linked_pr "" me | jq -c '. + {issueDependenciesSummary: {blockedBy: 1}}')")" \
     "$(pr '{"author": {"login": "me"}, "isDraft": true}')"
   [[ $output == Blocked ]]
+}
+
+@test "an issue or PR is Blocked until the date its body names" {
+  [[ $(column_of "$ISSUE" "$(issue "$(body 'Context.' 'Blocked until: 2026-06-16')")") == Blocked ]]
+  [[ $(column_of "$PR" "$(pr "$(body 'Blocked until: 2026-06-16')")") == Blocked ]]
+}
+
+@test "an item takes its usual column on and after its Blocked until date" {
+  [[ $(column_of "$ISSUE" "$(issue "$(body 'Blocked until: 2026-06-15')")") == Backlog ]]
+  [[ $(column_of "$PR" "$(pr "$(body 'Blocked until: 2026-06-14')")") == "Needs me" ]]
+}
+
+@test "a closed item is Closed whatever its Blocked until date" {
+  run column_of "$ISSUE" "$(issue "$(body 'Blocked until: 2027-01-01' | jq -c '. + {state: "CLOSED"}')")"
+  [[ $output == Closed ]]
+}
+
+@test "the latest of several Blocked until dates wins" {
+  run column_of "$ISSUE" "$(issue "$(body 'Blocked until: 2026-07-01' 'Blocked until: 2026-01-01')")"
+  [[ $output == Blocked ]]
+}
+
+@test "an invalid Blocked until date is warned about and ignored" {
+  local line
+  for line in 'Blocked until: 2026-02-30' 'Blocked until: next week' 'Blocked until: 2026-6-20' 'Blocked until:2026-06-20'; do
+    run --separate-stderr column_of "$ISSUE" "$(issue "$(body "$line")")"
+    [[ $output == Backlog ]]
+    [[ $stderr == *"$line"*"$ISSUE"* ]]
+  done
 }
 
 @test "an issue moves with the open PR I authored" {
