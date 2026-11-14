@@ -30,7 +30,7 @@
 #   Blocked until: YYYY-MM-DD
 #
 # stays Blocked until that UTC date, then takes its usual column. The
-# latest valid date wins; an invalid one is warned about and ignored.
+# latest valid date wins. The sync warns about an invalid date and ignores it.
 #
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
 # `gh` auth when GH_PROJECT_SYNC_TOKEN is unset. The scheduled job can't be
@@ -63,11 +63,10 @@ STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backl
 #
 # Fields are split on the ASCII unit separator (0x1f) because `read` merges
 # runs of whitespace separators such as tab, dropping empty fields.
-# want-status is REMOVE for an item whose repo is archived. A Blocked until
-# date after `today` (YYYY-MM-DD, default the current UTC date) blocks issues
-# and PRs; dependencies block only issues, as GitHub has none on PRs. An
-# issue's linked PR is looked up among the board's PRs, so one missing from
-# the board is ignored. Drafts holds PRs only.
+# `today` (YYYY-MM-DD) defaults to the current UTC date. want-status is
+# REMOVE for an item whose repo is archived. Dependencies block only issues:
+# GitHub has none on PRs. An issue's linked PR is looked up among the board's
+# PRs, so one missing from the board is ignored. Drafts holds PRs only.
 classify() {
   jq -r --arg me "$1" --argjson owned "$2" --arg today "${3:-$(date -u +%F)}" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
@@ -88,8 +87,8 @@ classify() {
       else "Needs me"
       end;
     def issue_column: pr_column | if . == "Drafts" then "In progress" else . end;
-    # Only a real YYYY-MM-DD date survives a round trip through a timestamp
-    # unchanged: strptime rolls 2026-02-30 into March and pads 2026-6-1.
+    # strptime accepts 2026-02-30 and 2026-6-1, but only a real YYYY-MM-DD
+    # date formats back unchanged.
     def is_date: (. + "T00:00:00Z" | try (fromdateiso8601 | todate[:10]) catch null) == .;
     def warn($message): $message + "\n" | stderr | empty;
     def blocked_until:
