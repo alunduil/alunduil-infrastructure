@@ -21,6 +21,7 @@ locals {
           "Validate chezmoi source",
           "Validate zellij config",
           "Validate telemetry config",
+          "Verify systemd units",
           "Check prose",
           "Run pinned tools",
           "Bootstrap a fresh Debian host",
