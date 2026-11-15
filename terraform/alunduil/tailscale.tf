@@ -86,8 +86,7 @@ locals {
     "nanopi-neo3" = local.tailscale_exit_node_routes
   }
 
-  # Old device name => new. Either name resolves to the new key, so renaming
-  # the device in the tailnet and here can land in either order.
+  # Lets a device's tailnet rename land before or after its key changes here.
   tailscale_device_renames = {
     "truenas-scale" = "truenas"
   }
@@ -112,9 +111,6 @@ import {
   id = local.tailscale_node_ids[each.key]
 }
 
-# Without this, a renamed key plans as a destroy and a create on the same
-# device, unordered: if the destroy lands last, the device's routes end up
-# disabled.
 moved {
   from = tailscale_device_subnet_routes.routers["truenas-scale"]
   to   = tailscale_device_subnet_routes.routers["truenas"]
