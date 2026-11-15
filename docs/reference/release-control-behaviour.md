@@ -60,8 +60,9 @@ Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issu
 ### Admin role bypass
 
 On a personal-account repository, GitHub accepts a bypass entry with
-`actor_type` `RepositoryRole` and `actor_id` 5, the admin role. A fine-grained
-token acting as the account then creates matching tags on all three routes.
+`actor_type` `RepositoryRole` and `actor_id` 5, the admin role. With that
+entry, a fine-grained token acting as the account creates matching tags on all
+three routes.
 Without that entry the ruleset refuses the same token, because owning the
 repository exempts nothing.
 
@@ -91,9 +92,10 @@ when the workflow files of that commit already exist on some branch:
 - The actor can tag, on all three routes, a commit whose `.github/workflows/`
   differs from the default branch's but matches another branch's head.
 - GitHub refuses a tag on a commit whose workflow files exist on no branch,
-  such as the head of a deleted branch. Both APIs return `403 Resource not
-  accessible by integration`, and `git push` returns `refusing to allow a
-  GitHub App to create or update workflow ... without workflows permission`.
+  such as the head of a deleted branch. `POST /git/refs` and `POST /releases`
+  return `403 Resource not accessible by integration`, and `git push`
+  returns `refusing to allow a GitHub App to create or update workflow ...
+  without workflows permission`.
 - The actor can't create a commit that adds a workflow: `POST /git/trees`
   returns `403`.
 

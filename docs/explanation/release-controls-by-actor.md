@@ -90,7 +90,8 @@ The job would rely on three behaviours:
 
 The operator accepts Renovate's access ([credential
 reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
-The tag ruleset has no bypass entry for it.
+The tag ruleset refuses Renovate's release tags, because no bypass entry names
+it.
 
 Renovate raises a re-pointed action tag as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
@@ -113,8 +114,8 @@ reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-acc
 The release App is the one actor meant to create release tags, so the tag
 ruleset gives it a bypass entry [by App
 ID](../reference/release-control-behaviour.md#app-bypass), beside the admin
-role's. The entry exempts the App on all three tested routes, so the ruleset
-doesn't limit which commit the App tags. Only the default-branch check stops a
+role's. The entry exempts the App, so the ruleset doesn't limit which commit
+the App tags. Only the default-branch check stops a
 leaked key, and only [while no branch carries a release workflow without the
 check](#what-withholding-workflows-stops).
 
