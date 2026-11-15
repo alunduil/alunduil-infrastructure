@@ -145,7 +145,9 @@ locals {
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
-      deploy      = { class = "merge" }
+      # Requires no test job. The presets are data, and the shared pre-commit
+      # check runs renovate-config-validator --strict over every one.
+      deploy = { class = "merge" }
     }
 
     "siren-json.hs" = {
