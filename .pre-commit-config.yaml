@@ -58,6 +58,8 @@ repos:
     hooks:
       - id: ansible-lint
         args: [ansible/]
+        language: python
+        additional_dependencies: [ansible-core==2.22.0]
         always_run: false
         files: ^ansible/
 

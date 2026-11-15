@@ -38,6 +38,11 @@
       "groupName": "prek"
     },
     {
+      "description": "ansible-lint's hook and mise.toml pin the same ansible-core, so one pull request bumps both",
+      "matchDepNames": ["ansible-core"],
+      "groupName": "ansible-core"
+    },
+    {
       "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
       "matchDepNames": ["mise"],
       "groupName": "mise"
