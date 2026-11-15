@@ -37,19 +37,18 @@ routes include creating a Release with a new tag. The App and admin-role
 bypass entries exempt their actors on every tested route.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
-default branch. GitHub runs the release workflow from the tagged commit, so
-when the workflow in that commit lacks the check, it publishes the tag
-unchecked.
+default branch. GitHub runs the release workflow from the tagged commit, so a
+workflow in that commit without the check publishes the tag unchecked.
 
 ## What withholding `Workflows` stops
 
-Withholding `Workflows` doesn't stop an actor tagging a commit whose workflow
-lacks the default-branch check. An actor without `Workflows` [can tag a
-commit whose workflow files exist on some
+The default-branch check stops an actor without `Workflows` only while no
+branch carries a release workflow without the check. Withholding `Workflows`
+doesn't stop an actor tagging a commit whose workflow lacks the check. An
+actor without `Workflows` [can tag a commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
-write can push a branch whose release workflow lacks the check. The check
-stops an actor without `Workflows` only while no such branch exists.
+write can push a branch whose release workflow lacks the check.
 
 ## Actors
 

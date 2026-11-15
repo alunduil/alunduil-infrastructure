@@ -71,7 +71,8 @@ The App's design follows:
 Three limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  default-branch check in the release workflow refuses to publish such a tag, so
+  default-branch check in the release workflow would refuse to publish such a
+  tag, so
   `zfs-replicate#827` and `network-arbitrary#172` have to carry the check.
   Without `Workflows`, the App can still tag a commit whose release workflow
   lacks the check ([release controls by
