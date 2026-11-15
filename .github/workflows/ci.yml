@@ -130,6 +130,40 @@ jobs:
       - name: Review dependencies
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
+  ansible-check:
+    name: Check the Ansible playbook against a container
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Ansible
+        uses: ./.github/actions/mise
+        with:
+          install_args: python uv ansible-core just
+
+      - name: Set up arm64 emulation
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: arm64
+
+      - name: Start the stand-in host
+        run: |
+          docker build --platform linux/arm64 --tag ansible-stand-in ansible
+          docker run --platform linux/arm64 --detach --name ansible-stand-in ansible-stand-in
+          test "$(docker exec ansible-stand-in uname -m)" = aarch64
+
+      # Extra vars outrank inventory vars, so the real inventory's host
+      # resolves to the container.
+      - name: Run the playbook in check mode
+        run: >-
+          just nanopi-neo3 --check --diff
+          --extra-vars ansible_connection=community.docker.docker
+          --extra-vars ansible_host=ansible-stand-in
+
   # The default-branch ruleset requires this check by name, so renaming the
   # job breaks the merge gate.
   results:
@@ -139,6 +173,7 @@ jobs:
     needs:
       - pre-commit
       - bats
+      - ansible-check
       - dependency-review
     if: always()
     steps:

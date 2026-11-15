@@ -24,7 +24,7 @@ Install the tools CI uses with `mise install`, or open the repository
 in its devcontainer, which runs it for you. Then run `prek install`
 to enable the commit hooks.
 
-The four operator entrypoints:
+The five operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
@@ -36,6 +36,10 @@ The four operator entrypoints:
   [docs/how-to/apply-terraform-to-truenas.md](docs/how-to/apply-terraform-to-truenas.md).
 - `just projects`—Projects v2 board fields, after editing a spec in
   `github/projects/`. Needs only a `gh` login with the `project` scope.
+- `just nanopi-neo3`—Ansible configuration of the NanoPi-NEO3 over
+  the tailnet. Add `--check --diff` to preview. If it hangs while
+  connecting, run `tailscale ssh nanopi-neo3 true` and complete the
+  browser login it asks for.
 
 ## Documentation
 

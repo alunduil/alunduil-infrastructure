@@ -15,3 +15,4 @@ Records (MADR) for substantive records).
 | [0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) | Build the NanoPi-NEO3 recovery image with Armbian's build framework |
 | [0003](0003-run-hooks-with-prek.md) | Run hooks with prek instead of pre-commit |
 | [0004](0004-approve-each-release-before-it-publishes.md) | Approve each release before it publishes |
+| [0005](0005-configure-remote-hosts-with-ansible.md) | Configure remote hosts with Ansible over the tailnet |
