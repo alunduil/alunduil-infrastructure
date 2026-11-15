@@ -83,13 +83,13 @@ GRAFANA_ORG_ID=1 gcx api -o json \
 URL-encode queries. Keep `2>/dev/null`, so the `gcx` hint line stays out of
 the JSON. Loki caps a query at 30 days.
 
-Probe: an instant query for `up{job="truenas-scale"}` through
+Probe: an instant query for `up{job="truenas"}` through
 `grafanacloud-prom`. It passes when it returns a series.
 
 What ships where:
 
 - TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit;
-  Prometheus `up{job="truenas-scale"}`, `alloy_build_info`, and Netdata
+  Prometheus `up{job="truenas"}`, `alloy_build_info`, and Netdata
   scraped by alloy.
 - Home Assistant: Loki `{hostname="homeassistant"}`; Prometheus `hass_*`.
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
