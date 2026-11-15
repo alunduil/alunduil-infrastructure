@@ -5,7 +5,7 @@ all:
   vars:
     # The operator's SSH can't resolve tailnet names, so tailscale nc connects.
     # Tailscale's known-hosts file lists each host by its fully qualified name
-    # with a trailing dot, which ansible_host must match.
+    # with a trailing dot, so ansible_host uses that form.
     ansible_ssh_common_args: >-
       -o ProxyCommand="tailscale nc %h %p"
       -o UserKnownHostsFile=~/.config/tailscale/ssh_known_hosts

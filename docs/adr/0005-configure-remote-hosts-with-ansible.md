@@ -14,13 +14,13 @@ host configuration belongs next to it.
 [ADR 0001](0001-use-talos-for-home-ad-hoc-services.md) covers the services
 platform. Nothing yet covers general-purpose hosts.
 
-alunduil/alunduil-chezmoi#842 sets the boundary. The workstation's own system
-layer stays in alunduil-chezmoi, and that issue records what would trigger
-moving it to a local playbook.
+alunduil/alunduil-chezmoi#842 keeps the workstation's own system layer in
+alunduil-chezmoi and records what would move it to a local playbook.
 
 ### Requirements
 
-- **Reach.** Runs reach a host in another household with no inbound port open.
+- **Reach.** A playbook reaches a host in another household without an inbound
+  port.
 - **Drift detection.** A run reports differences without changing the host.
 - **Pinning.** CI and the operator use pinned versions that Renovate tracks.
 
@@ -28,9 +28,9 @@ moving it to a local playbook.
 
 - **Ansible from the workstation, over Tailscale SSH.** It meets all three
   requirements with no agent on the host and no separate operator key.
-- **An idempotent script per host.** This is what
-  [ADR 0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) chose for a
-  single box. A script doesn't report drift.
+- **An idempotent script per host.**
+  [ADR 0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) chose one for
+  a single box. A script doesn't report drift.
 
 ## Decision Outcome
 
@@ -39,11 +39,11 @@ Chosen option: **Ansible, run from the workstation over Tailscale SSH.**
 ### Scope
 
 Ansible covers remote general-purpose hosts, starting with the NanoPi-NEO3
-(#671). Two things stay out:
+(#671). It excludes:
 
-- The workstation stays in alunduil-chezmoi.
-- The `ha-terminal` role on the Home Assistant SSH add-on stays out, because
-  Home Assistant manages it.
+- the workstation, which stays in alunduil-chezmoi;
+- the `ha-terminal` role on the Home Assistant SSH add-on, which Home Assistant
+  manages.
 
 ### Connection
 
@@ -58,8 +58,8 @@ file. No operator accepts a host key by hand.
 - This repo's `mise.toml` pins it for CI and the devcontainer, following #579.
 - The `ansible-lint` hook pins it for its own environment. A Renovate group bumps
   it with `mise.toml`.
-- alunduil/alunduil-chezmoi#1137 pins it on the workstation, because operator
-  runs use the host's tools, as `just bootstrap` does.
+- alunduil/alunduil-chezmoi#1137 pins it on the workstation, because the
+  operator runs playbooks with the host's tools, as with `just bootstrap`.
 
 The mise registry only offers `ansible-core` through `pypi:`, so this repo's pin
 departs from #579's preference for `core` and `aqua`.
@@ -70,9 +70,9 @@ the tools in `mise.toml`.
 ### Sensors
 
 - `ansible-lint` runs as a prek hook.
-- A CI job runs the playbook with `--check` through the real inventory against
-  a container matching the NanoPi-NEO3's Debian point release and
-  architecture, emulated with QEMU.
+- A CI job runs the playbook with `--check` through the real inventory. Its
+  target is a QEMU-emulated arm64 container on the NanoPi-NEO3's Debian point
+  release.
 
 ### Consequences
 
@@ -89,8 +89,8 @@ Bad / accepted:
   tool bump waits for review and triggers an apply on merge.
 - `mise lock` needs a real Python ahead of the mise shims on `PATH` to resolve
   the `pypi:` tool: `mise exec python uv -- mise lock`.
-- Renovate moves the stand-in's Debian point release and apt moves the
-  NanoPi-NEO3's, so the two can drift apart.
+- The stand-in's Debian point release follows Renovate, and the NanoPi-NEO3's
+  follows apt, so the two can drift apart.
 - Only the workstation can run a playbook against a host. A scheduled drift
   check would need CI to reach the tailnet.
 - The tailnet's SSH rule uses `action: check`, so a run hangs with no prompt when
