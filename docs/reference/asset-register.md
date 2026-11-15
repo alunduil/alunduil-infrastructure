@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-07.
+Verified 2026-11-15.
 
 ## Scope
 
@@ -118,6 +118,7 @@ principals that read or change an asset through Terraform.
   Advertises `192.168.68.0/22` to the tailnet as a subnet router, and
   offers an exit node
 - Exposed to: T-2, via E-05. A-12 carries its only path from T-1
+- Terraform access: P-1, through `just truenas`
 
 ### A-02: `homeassistant`
 
@@ -633,6 +634,17 @@ Google Cloud's other credentials.
 - Created by: Terraform
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`, set on A-01 from
   [`configure-truenas-acme-token.md`](../how-to/configure-truenas-acme-token.md)
+
+### C-36: `terraform` TrueNAS API key
+
+- Kind: TrueNAS API key
+- Scope: its owner's privileges on A-01, an administrator's
+- Consumer: `just truenas` on A-06. No workflow reads it
+- Grants: P-1
+- Created by: Operator
+- Source: [`apply-terraform-to-truenas.md`](../how-to/apply-terraform-to-truenas.md),
+  stored in the secret `terraform/bootstrap/truenas.tf` declares
+- Tracked by: #1109, which replaces the unverified TLS the recipe connects with
 
 ## Maintenance
 

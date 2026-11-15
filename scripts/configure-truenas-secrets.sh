@@ -13,7 +13,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/secret-manager.sh"
 
 SECRET="truenas-api-key" # pragma: allowlist secret
-SETUP_DOC="docs/how-to/create-truenas-api-key.md"
+SETUP_DOC="docs/how-to/apply-terraform-to-truenas.md"
 
 die() {
   echo "error: $*" >&2
