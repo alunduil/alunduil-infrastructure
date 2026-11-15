@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+rules:
+  self-repository:
+    # Every job checks out this repository before it uses a `./` action, so
+    # `./` and `$/` resolve to the same files.
+    disable: true
+
+  github-app:
+    # Terraform manages settings on every repository the App is installed on,
+    # so its token keeps the installation's full repository set and
+    # permissions. Scoping either breaks plan or apply whenever a resource
+    # reaches a new repository or permission.
+    ignore:
+      - terraform-plan.yml
+      - terraform-apply.yml

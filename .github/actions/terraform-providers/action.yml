@@ -42,11 +42,14 @@ runs:
     # No direct {} fallback: with one, init queries the registry for
     # available versions even when the mirror holds them. Lock file hashes
     # still verify each package.
+    #
+    # The exported value is a path under RUNNER_TEMP, which no workflow input
+    # can steer.
     - name: Point Terraform at the mirror
       shell: bash
       env:
         MIRROR: ${{ steps.mirror.outputs.dir }}
-      run: |
+      run: |  # zizmor: ignore[github-env]
         config="$RUNNER_TEMP/terraformrc"
         cat > "$config" <<EOF
         provider_installation {
