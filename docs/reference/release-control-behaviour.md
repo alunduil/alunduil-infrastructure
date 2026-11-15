@@ -69,7 +69,7 @@ repository exempts nothing.
 Tested: [#1065, tests 2 and
 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
-### Ruleset edits by account tokens
+### Ruleset edits by tokens acting as the account
 
 A fine-grained token acting as the account, with `Administration` write, can
 add a bypass entry to a ruleset and delete the ruleset.

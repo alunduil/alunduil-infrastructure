@@ -134,7 +134,7 @@ tested in #1065. The
 bypass](../reference/release-control-behaviour.md#admin-role-bypass) exempts
 it, so it can create release tags despite the ruleset. If C-32 holds
 `Administration` write, it [can also add a bypass entry or delete the
-ruleset](../reference/release-control-behaviour.md#ruleset-edits-by-account-tokens).
+ruleset](../reference/release-control-behaviour.md#ruleset-edits-by-tokens-acting-as-the-account).
 The register lists its scope as `Unverified`. The ruleset can't stop C-32, so
 issue #738 tracks removing the token.
 

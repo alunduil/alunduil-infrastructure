@@ -18,7 +18,7 @@ node here.
 The graphs draw what an actor could obtain, including paths that have never
 run. The edges come from reading configuration. Some have run in normal use.
 [Release control behaviour](../reference/release-control-behaviour.md)
-records tests of the tag and `Workflows` behaviour behind the tagging edges.
+records tests of tag rulesets and of tagging without `Workflows`.
 Nobody has tested any edge as an attack.
 
 Out of scope:
