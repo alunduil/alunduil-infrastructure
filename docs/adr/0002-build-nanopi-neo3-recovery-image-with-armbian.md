@@ -141,8 +141,8 @@ The second requirement eliminates the options that flash something
 Armbian or DietPi published, because a stock image can't be made to
 trust a key before it boots. Among the options that produce an image,
 the framework asks for the least: the action copies this repo's
-overlay into a checkout it manages and publishes the result, so what
-is owned here is an overlay and a workflow rather than a boot chain.
+overlay into a checkout it manages and publishes the result, so
+what's owned here is an overlay and a workflow rather than a boot chain.
 Every option that builds a root filesystem from scratch—`debos`,
 Buildroot, NixOS—requires supplying RK3328 u-boot, and NixOS also
 requires carrying a device tree that only Armbian has. Every option
