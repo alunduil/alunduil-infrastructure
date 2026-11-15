@@ -90,10 +90,9 @@ The job would rely on three behaviours:
 
 ### Renovate (P-6)
 
-The operator accepts Renovate's access ([credential
-reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
 The tag ruleset refuses Renovate's release tags, because no bypass entry names
-it.
+it. The operator accepts Renovate's access ([credential
+reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
 
 Renovate raises a re-pointed tag behind a digest pin as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
