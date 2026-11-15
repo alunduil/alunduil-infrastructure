@@ -1,7 +1,7 @@
 {
 	"hosts": {
-		// A-01's API listens here, not on A-01's tailnet address, so a node
-		// reaches it through the truenas subnet route.
+		// A-01's API answers only on its LAN address, through the truenas
+		// subnet route.
 		"truenas-lan":   "192.168.68.63",
 		"truenas":       "100.98.234.114",
 		"homeassistant": "100.84.29.105",
@@ -9,14 +9,13 @@
 	},
 
 	"tagOwners": {
-		// Ephemeral runners for the Terraform plan and apply workflows. The tag
-		// grants A-01's API, so other CI jobs take a tag of their own.
+		// Terraform plan and apply runners. This tag reaches A-01's API, so give
+		// other CI jobs their own.
 		"tag:terraform": ["autogroup:admin"],
 	},
 
 	"grants": [
-		// Tagged devices hold no user identity, so they fall outside
-		// autogroup:member and get only the grants naming their tag.
+		// Excludes tagged devices, which get only the grants naming their tag.
 		{"src": ["autogroup:member"], "dst": ["*"], "ip": ["*"]},
 
 		{"src": ["tag:terraform"], "dst": ["truenas-lan"], "ip": ["tcp:443"]},
