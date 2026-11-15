@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+rules:
+  self-repository:
+    # Every job checks out this repository first, so `./` and `$/` resolve to
+    # the same files.
+    disable: true
+
+  github-app:
+    # Terraform manages every repository the App is installed on, so a
+    # narrower token breaks plan or apply when a resource needs a new
+    # repository or permission.
+    ignore:
+      - terraform-plan.yml
+      - terraform-apply.yml
