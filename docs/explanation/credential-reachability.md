@@ -16,8 +16,10 @@ leak spreads. It assumes the
 node here.
 
 The graphs draw what an actor could obtain, including paths that have never
-run. The edges come from reading configuration. Some have run in normal use,
-but none has been tested as an attack.
+run. The edges come from reading configuration. Some have run in normal use.
+[Release control behaviour](../reference/release-control-behaviour.md)
+records tests of tag rulesets and of tagging without `Workflows`.
+Nobody has tested any edge as an attack.
 
 Out of scope:
 
@@ -192,7 +194,9 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch.
+reach the registries without passing through a default branch. C-25 reaches
+the registries this way even without `Workflows` ([release control
+behaviour](../reference/release-control-behaviour.md#tagging-without-workflows)).
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
@@ -219,9 +223,11 @@ else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
-organizations too, and it bypasses rulesets as the admin role does. Any merge
-to `main` reaches it, because the hourly job runs its script from `main`, and
-no review hold covers that script.
+organizations too. No test, documentation, or source shows whether the admin
+role's ruleset bypass exempts a classic token such as C-13 ([not
+established](../reference/release-control-behaviour.md#not-established)). Any
+merge to `main` reaches C-13, because the hourly job runs its script from
+`main`, and no review hold covers that script.
 
 ## Why Renovate and the Claude App are accepted
 

@@ -19,8 +19,12 @@ register](../reference/asset-register.md) and [credential
 reachability](credential-reachability.md).
 
 The rows come from reading configuration, workflows, and GitHub's documentation.
-Nobody has tried these attacks, and #1065 tests what the planned controls
-assume.
+[Release control behaviour](../reference/release-control-behaviour.md)
+records the platform behaviour that the planned tag ruleset and default-branch
+check rely on. That reference also records which commits an actor without `Workflows` can
+tag. [Release controls by
+actor](release-controls-by-actor.md) maps the recorded behaviour to each actor. Nobody has tried
+an attack against a managed repository.
 
 Out of scope:
 
@@ -67,9 +71,13 @@ The App's design follows:
 Three limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  workflow check refuses that only because the App lacks `Workflows`
-  permission, so `zfs-replicate#827` and `network-arbitrary#172` have to carry
-  the check.
+  default-branch check in the release workflow would refuse to publish such a
+  tag, so each release workflow has to carry the check (`zfs-replicate#827`,
+  `network-arbitrary#172`).
+  Without `Workflows`, the App can still tag a commit whose release workflow
+  lacks the check, as long as that workflow exists on some branch ([release
+  controls by
+  actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
 - Nothing alerts on an unexpected tag or upload until #1064 lands.
@@ -121,7 +129,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1064 | Not Started | — |
-| Operator | Spoofing | A stolen C-13 or C-32 acts as the account and bypasses every ruleset | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
+| Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1064 | Not Started | `woodland-generators` releases report the account as author |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | #1064 compares registry versions with tags | Not Started | — |
