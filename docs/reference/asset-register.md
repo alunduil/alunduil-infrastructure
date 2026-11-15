@@ -67,7 +67,7 @@ from.
 | P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
 | P-12 | Release App | Planned in #556, not created | P-10 |
-| P-13 | Hook-fix self-test | C-36's App token in Actions | A self-test run |
+| P-13 | Hook-fix self-test | C-36's token in Actions | A `renovate-config` PR |
 
 The vendor Apps hold these permissions:
 

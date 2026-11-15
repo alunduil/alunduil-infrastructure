@@ -3,24 +3,20 @@
 
 # Lets exactly one GitHub Actions workflow read a fixed set of secrets.
 #
-# The pool is the workflow's own, not another provider in a shared pool:
-# principalSet paths are pool-scoped, so no binding elsewhere can match a token
-# this pool admits.
+# Each workflow gets its own pool because principalSet paths are pool-scoped, so
+# no binding elsewhere can match a token this pool admits.
 
 locals {
   workflow_segments = split("/", var.caller.workflow)
 
-  # The provider's condition and the reader's binding both derive from
-  # caller.workflow, because a disagreement between them fails the exchange
-  # silently.
+  # A condition and binding that disagree fail the exchange silently.
   principal_value = {
     repository       = join("/", slice(local.workflow_segments, 0, 2))
     repository_owner = local.workflow_segments[0]
   }[var.caller.principal_attribute]
 
-  # job_workflow_ref, not workflow_ref, names the file the job is defined in.
-  # A reusable workflow's jobs carry their caller's workflow_ref, so pinning that
-  # would admit whatever the pinned workflow calls.
+  # A reusable workflow's jobs carry their caller's workflow_ref, so matching it
+  # would also admit every workflow the caller calls.
   ref_clause = (
     var.caller.ref == null
     ? "assertion.job_workflow_ref.startsWith('${var.caller.workflow}@')"

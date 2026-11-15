@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # The hook-fix self-test App's credentials, read at runtime by renovate-config's
-# hook-fix-selftest.yml to open the pull requests it tests fix-renovate-hooks.yml
-# against.
+# hook-fix-selftest.yml.
 
 locals {
   hook_fix_selftest_app_secrets = toset([
