@@ -82,13 +82,18 @@ locals {
   # route enabled in the admin console but absent here gets disabled on the
   # next apply.
   tailscale_enabled_routes = {
-    "truenas-scale" = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
-    "nanopi-neo3"   = local.tailscale_exit_node_routes
+    "truenas"     = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
+    "nanopi-neo3" = local.tailscale_exit_node_routes
+  }
+
+  # Lets a device's tailnet rename land before or after its key changes here.
+  tailscale_device_renames = {
+    "truenas-scale" = "truenas"
   }
 
   tailscale_node_ids = {
     for device in data.tailscale_devices.all.devices :
-    split(".", device.name)[0] => device.node_id
+    lookup(local.tailscale_device_renames, split(".", device.name)[0], split(".", device.name)[0]) => device.node_id
   }
 }
 
@@ -104,4 +109,9 @@ import {
 
   to = tailscale_device_subnet_routes.routers[each.key]
   id = local.tailscale_node_ids[each.key]
+}
+
+moved {
+  from = tailscale_device_subnet_routes.routers["truenas-scale"]
+  to   = tailscale_device_subnet_routes.routers["truenas"]
 }
