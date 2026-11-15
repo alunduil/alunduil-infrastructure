@@ -45,81 +45,63 @@ resource "google_secret_manager_secret_version" "cloudflare_api_token_blog_analy
   secret_data = cloudflare_api_token.blog_analytics_ro.value
 }
 
-# The provider's condition and the reader's binding have to name the same
-# repository, and a disagreement between them fails the exchange silently.
-locals {
-  blog_repository         = "alunduil/blog.alunduil.com"
-  blog_pages_workflow_ref = "${local.blog_repository}/.github/workflows/pages.yml@refs/heads/main"
-  blog_wif_principal      = "${local.wif_pool_prefix}/blog/attribute.repository/${local.blog_repository}"
-}
+# Pinned to the workflow, not the branch. Other workflows share the blog's
+# default branch and one of them fires on `issues: opened`, which any stranger
+# can trigger, so a branch-level condition would rest the boundary on each of
+# those files continuing to decline id-token: write.
+#
+# Renaming or moving pages.yml revokes access, and the build treats a missing
+# token as no data — so the symptom is a missing section on a green run.
+module "blog_analytics_reader" {
+  source = "../modules/workflow_secret_reader"
 
-# Its own pool, not another provider in `github`. principalSet paths are
-# pool-scoped, so no `github` binding can match a token from this repository.
-resource "google_iam_workload_identity_pool" "blog" {
-  project                   = google_project.env.project_id
-  workload_identity_pool_id = "blog"
-  display_name              = "blog.alunduil.com"
-  description               = "Workload Identity Pool for blog.alunduil.com builds"
-  disabled                  = false
+  project_id = google_project.env.project_id
 
-  depends_on = [google_project_service.sts]
-}
-
-resource "google_iam_workload_identity_pool_provider" "blog" {
-  project                            = google_project.env.project_id
-  workload_identity_pool_id          = google_iam_workload_identity_pool.blog.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-provider"
-  display_name                       = "GitHub"
-  description                        = "OIDC provider for blog.alunduil.com GitHub Actions"
-  disabled                           = false
-
-  attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
+  pool = {
+    id                   = "blog"
+    display_name         = "blog.alunduil.com"
+    description          = "Workload Identity Pool for blog.alunduil.com builds"
+    provider_description = "OIDC provider for blog.alunduil.com GitHub Actions"
   }
 
-  # Pinned to the workflow, not the branch. Other workflows share the blog's
-  # default branch and one of them fires on `issues: opened`, which any stranger
-  # can trigger, so a branch-level condition would rest the boundary on each of
-  # those files continuing to decline id-token: write.
-  #
-  # Renaming or moving pages.yml revokes access, and the build treats a missing
-  # token as no data — so the symptom is a missing section on a green run.
-  attribute_condition = "assertion.job_workflow_ref == '${local.blog_pages_workflow_ref}'"
-
-  oidc {
-    issuer_uri = "https://token.actions.githubusercontent.com"
+  caller = {
+    workflow            = "alunduil/blog.alunduil.com/.github/workflows/pages.yml"
+    ref                 = "refs/heads/main"
+    principal_attribute = "repository"
   }
+
+  service_account = {
+    account_id   = "blog-analytics-reader"
+    display_name = "blog.alunduil.com Analytics Reader"
+    description  = "Identity the blog's Pages build federates into to read its Cloudflare analytics token"
+  }
+
+  secret_ids = [google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.secret_id]
+
+  depends_on = [google_project_service.sts, google_project_service.iam]
 }
 
-resource "google_service_account" "blog_analytics_reader" {
-  project      = google_project.env.project_id
-  account_id   = "blog-analytics-reader"
-  display_name = "blog.alunduil.com Analytics Reader"
-  description  = "Identity the blog's Pages build federates into to read its Cloudflare analytics token"
-
-  depends_on = [google_project_service.iam]
+moved {
+  from = google_iam_workload_identity_pool.blog
+  to   = module.blog_analytics_reader.google_iam_workload_identity_pool.this
 }
 
-# workloadIdentityUser admits the federated identity; serviceAccountTokenCreator
-# lets it generate the access token get-secretmanager-secrets calls with.
-resource "google_service_account_iam_member" "blog_analytics_reader" {
-  for_each = toset([
-    "roles/iam.workloadIdentityUser",
-    "roles/iam.serviceAccountTokenCreator",
-  ])
-
-  service_account_id = google_service_account.blog_analytics_reader.name
-  role               = each.key
-  member             = local.blog_wif_principal
-
-  depends_on = [google_iam_workload_identity_pool_provider.blog]
+moved {
+  from = google_iam_workload_identity_pool_provider.blog
+  to   = module.blog_analytics_reader.google_iam_workload_identity_pool_provider.this
 }
 
-# The reader holds no project IAM; this grant is its entire authority.
-resource "google_secret_manager_secret_iam_member" "cloudflare_api_token_blog_analytics_ro_accessor" {
-  project   = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.project
-  secret_id = google_secret_manager_secret.cloudflare_api_token_blog_analytics_ro.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.blog_analytics_reader.email}"
+moved {
+  from = google_service_account.blog_analytics_reader
+  to   = module.blog_analytics_reader.google_service_account.reader
+}
+
+moved {
+  from = google_service_account_iam_member.blog_analytics_reader
+  to   = module.blog_analytics_reader.google_service_account_iam_member.reader
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.cloudflare_api_token_blog_analytics_ro_accessor
+  to   = module.blog_analytics_reader.google_secret_manager_secret_iam_member.reader["cloudflare-api-token-blog-analytics-ro"]
 }
