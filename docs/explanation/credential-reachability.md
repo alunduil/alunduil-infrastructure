@@ -194,12 +194,10 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch. Without
-`Workflows`, as with C-25, the workflow files of the tagged commit [must
-already exist on some
-branch](../reference/release-control-behaviour.md#without-it-an-actor-tags-only-commits-whose-workflow-files-exist-on-a-branch).
-Any `renovate/**` branch that changes a workflow meets that, so the edge
-stands.
+reach the registries without passing through a default branch. C-25 lacking
+`Workflows` doesn't remove its edge, for the reason [release controls by
+actor](release-controls-by-actor.md#why-no-single-control-holds-everyone)
+gives.
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
@@ -226,9 +224,11 @@ else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
-organizations too, and it bypasses rulesets as the admin role does. Any merge
-to `main` reaches it, because the hourly job runs its script from `main`, and
-no review hold covers that script.
+organizations too. Whether a classic token gets the admin role's ruleset
+bypass [isn't
+established](../reference/release-control-behaviour.md#not-established). Any
+merge to `main` reaches it, because the hourly job runs its script from
+`main`, and no review hold covers that script.
 
 ## Why Renovate and the Claude App are accepted
 

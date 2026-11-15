@@ -15,10 +15,10 @@ Verified 2026-11-15.
 Written for the operator choosing or reviewing a control on the release path.
 It assumes the [asset register](asset-register.md), whose IDs name the actors.
 
-Each entry names its evidence:
+Each entry states the behaviour, then its evidence:
 
 - **Tested**: run in a scratch personal-account repository for #1065. The
-  entry links the comment recording commands and responses.
+  link goes to the comment recording commands and responses.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
@@ -31,136 +31,161 @@ Out of scope:
 
 ## Tag rulesets
 
-### The `creation` rule covers every way to create a tag
+### Tag creation routes
 
-Tested ([#1065](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
-test 1). A tag ruleset with `creation` refuses a matching tag from a
-non-bypass actor through all three routes:
+A tag ruleset with the `creation` rule refuses a matching tag from a
+non-bypass actor on all three routes:
 
 - `POST /git/refs`: `422 Reference update failed`
 - `POST /releases` with a new `tag_name`: `422`, `Cannot create ref due to
   creations being restricted`
 - `git push`: `GH013: Repository rule violations found`
 
-A tag name outside the pattern is unaffected.
+`POST /releases` with a tag name outside the pattern succeeded. The other
+routes weren't tried with a non-matching name.
 
-### An App is exempt by its App ID
+Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
-Tested (test 2). A bypass entry with `actor_type` `Integration` and `actor_id`
-set to the App ID exempts that App on all three routes. No other actor gains
-anything from it.
+### App bypass
 
-### The admin role's bypass reaches tokens acting as the admin
+A bypass entry with `actor_type` `Integration` and `actor_id` set to the App
+ID exempts that App on all three routes. A fine-grained token acting as the
+admin, not listed, was refused on all three.
 
-Tested (tests 2 and 3). A personal-account repository accepts `actor_type`
-`RepositoryRole` with `actor_id` 5, the admin role. A fine-grained token
-created by the admin then creates matching tags on all three routes. Without
-that entry the same token is refused: owning the repository exempts nothing.
+Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
-### An admin token can rewrite any ruleset
+### Admin role bypass
 
-Tested (test 3). A fine-grained token acting as the admin, with
-`Administration` write, added a bypass entry to a ruleset and then deleted it.
+A personal-account repository accepts `actor_type` `RepositoryRole` with
+`actor_id` 5, the admin role. A fine-grained token created by the admin then
+creates matching tags on all three routes. Without that entry the same token
+is refused: owning the repository exempts nothing.
+
+Tested: [#1065, tests 2 and
+3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
+
+### Ruleset edits by admin tokens
+
+A fine-grained token acting as the admin, with `Administration` write, can add
+a bypass entry to a ruleset and delete the ruleset.
+
+Tested: [#1065, test 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
 ### Bypass modes and actor types
-
-Documented ([Rules](https://docs.github.com/en/rest/repos/rules)):
 
 - The `pull_request` bypass mode applies to branch rulesets only, so a tag
   ruleset's bypass is `always` or `exempt`.
 - `OrganizationAdmin` isn't available on personal repositories.
 
+Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
+
 ## The `Workflows` permission
 
-### Without it, an actor tags only commits whose workflow files exist on a branch
+### Tagging without `Workflows`
 
-Tested (test 4), with an App holding `Contents` write and no `Workflows`:
+An actor holding `Contents` write but not `Workflows` can tag a commit only
+when the workflow files of that commit already exist on some branch:
 
-- The App tagged a commit whose `.github/workflows/` differs from the default
-  branch's but matches another branch's head. It succeeded on all three routes.
-- The App was refused on a commit whose workflow files exist on no branch,
-  because its branch was deleted. Both APIs returned `403 Resource not
-  accessible by integration`, and `git push` returned `refusing to allow a
-  GitHub App to create or update workflow ... without workflows permission`.
-- The App couldn't create a commit adding a workflow either: `POST /git/trees`
-  returned `403`.
+- A commit whose `.github/workflows/` differs from the default branch's but
+  matches another branch's head is tagged on all three routes.
+- A commit whose workflow files exist on no branch, because its branch was
+  deleted, is refused. Both APIs return `403 Resource not accessible by
+  integration`, and `git push` returns `refusing to allow a GitHub App to
+  create or update workflow ... without workflows permission`.
+- A new commit adding a workflow can't be created either: `POST /git/trees`
+  returns `403`.
 
-The [Create a
-release](https://docs.github.com/en/rest/releases/releases#create-a-release)
-note compares against the default branch, which the test contradicts. The
-[`workflow`
+Tested: [#1065, test 4](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
+with an App.
+
+Documented: the [`workflow`
 scope](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps)
-wording matches it: workflow files are allowed when "the same file (with both
-the same path and contents) exists on another branch in the same repository."
+allows workflow files when "the same file (with both the same path and
+contents) exists on another branch in the same repository." The [Create a
+release](https://docs.github.com/en/rest/releases/releases#create-a-release)
+note compares against the default branch instead, which the test contradicts.
 
 ## Required checks
 
-### A failed run blocks the check until that run passes
+### Failed runs of a required check
 
-Tested ([#1065](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981),
-test 5). A `pull_request` run of a required job failed, and a later
-`pull_request_review` run of a job with the same name passed on the same head
-commit. The two runs sat in separate check suites. The merge was refused with
-`Required status check "Review gate" is failing.`
+A failed run of a required job keeps the check failing on that commit. A
+later passing run of a job with the same name, from another event and in
+another check suite, doesn't clear it. The merge is refused with `Required
+status check "Review gate" is failing.`
 
-### Re-running the failed run clears it
+Tested: [#1065, test 5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
 
-Tested ([#1065](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892554032),
-test 5b). A workflow on `pull_request_review: submitted`, with
-`actions: write`, called `POST /actions/runs/{id}/rerun-failed-jobs` with
-`GITHUB_TOKEN`. The re-run replaced the failed check run in its suite, and the
-pull request merged.
+### Re-running a failed run
 
-### Review-triggered runs report on the head commit
+Re-running the failed run replaces its check run in the same suite. When the
+re-run passes, the pull request merges. A workflow on `pull_request_review:
+submitted`, with `actions: write`, can start the re-run by calling `POST
+/actions/runs/{id}/rerun-failed-jobs` with `GITHUB_TOKEN`.
 
-Documented: `GITHUB_SHA` for `pull_request_review` is the merge commit
-([Events that trigger
-workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_review)).
-Tested in tests 5 and 5b: the check runs attached to the head commit.
+Tested: [#1065, test 5b](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892554032).
 
-Documented: `pull_request_review` is among the events whose checks count for a
-pull request ([Troubleshooting required status
-checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks)).
-The same page says "Required checks must pass on the latest commit SHA."
+### Review-triggered runs
+
+A `pull_request_review` run's checks count toward required checks, and attach
+to the head commit although `GITHUB_SHA` is the merge commit. Required checks
+must pass on the latest commit.
+
+Documented: [Events that trigger
+workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_review)
+gives `GITHUB_SHA`. [Troubleshooting required status
+checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks)
+lists `pull_request_review` among the events whose checks count, and says
+"Required checks must pass on the latest commit SHA."
+
+Tested: the `pull_request_review` check run in [test
+5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981)
+attached to the head commit.
 
 ## Commit verification
 
-### A commit by a bot is verified only when it carries no custom author
+### Bot commit verification
 
-Documented ([About commit signature
-verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots)).
 GitHub signs an API commit from a bot only when the request is authenticated
-as that App or bot and sets no custom author, committer, or signature.
+as that App or bot and sets no custom author, committer, or signature. The
+GraphQL `createCommitOnBranch` mutation can't set an author or committer, and
+its commits take the identity of whoever owns the credential that made the
+request.
 
-The GraphQL `createCommitOnBranch` mutation can't set an author or committer.
-Its commits take the identity of whoever owns the credential that made the
-request
-([schema](https://github.com/github/docs/blob/d59b2631959db46d71ca5f7748ec04311c6d0870/src/graphql/data/fpt/schema.docs.graphql#L28185-L28202)).
+Documented: [About commit signature
+verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots),
+and the `createCommitOnBranch`
+[schema](https://github.com/github/docs/blob/d59b2631959db46d71ca5f7748ec04311c6d0870/src/graphql/data/fpt/schema.docs.graphql#L28185-L28202).
 
 ## Renovate
 
-### A moved tag behind a digest pin is a `digest` update
+### Moved tags behind digest pins
 
-Source. For `uses: owner/action@<sha> # v7`, the extractor sets `currentValue`
-to `v7` and `currentDigest` to the SHA
+For `uses: owner/action@<sha> # v7`, a re-pointed `v7` tag produces a
+`digest` update. With `digestOneAndOnly` set and another update present, no
+digest update is added.
+
+Source: the extractor sets `currentValue` to `v7` and `currentDigest` to the
+SHA
 ([`extract.ts:145-146`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/modules/manager/github-actions/extract.ts#L145-L146)).
-Lookup then adds `updateType: 'digest'`
+Lookup adds `updateType: 'digest'`
 ([`lookup/index.ts:594-601`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/index.ts#L594-L601)),
 and keeps it when the tag's commit differs from the pin
 ([`utils.ts:94-96`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/utils.ts#L94-L96)).
-With `digestOneAndOnly` set and another update present, no digest update is
-added.
 
-### `matchFileNames` sees only the upgrade's files
+### `matchFileNames` scope
 
-Source. The matcher tests `packageFile` and `lockFiles`, not later commits on
-the branch
-([`files.ts:24-30`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/package-rules/files.ts#L24-L30)).
+`matchFileNames` tests an upgrade's `packageFile` and `lockFiles`, not later
+commits on the branch.
 
-### A branch counts as unmodified when its commit authors are ignored
+Source: [`files.ts:24-30`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/package-rules/files.ts#L24-L30).
 
-Source. `isBranchModified` compares the author email of each commit with
-`gitIgnoredAuthors`
+### Modified-branch detection
+
+Renovate treats a branch as unmodified when the author email of every commit
+is in `gitIgnoredAuthors`, so it keeps automerging the branch.
+
+Source: `isBranchModified`
 ([`git/index.ts:1040-1047`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/git/index.ts#L1040-L1047)).
 `alunduil/projects-v2-sync#49` shows the effect: an `alunduil-hook-fix[bot]`
 commit merged by `renovate[bot]` with no review.
