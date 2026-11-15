@@ -150,8 +150,8 @@ jobs:
           docker build --tag ansible-stand-in ansible
           docker run --detach --name ansible-stand-in ansible-stand-in
 
-      # Extra vars outrank the inventory, so this reaches the container through
-      # the real inventory's hosts.
+      # Extra vars outrank inventory vars, so the real inventory's host
+      # resolves to the container.
       - name: Run the playbook in check mode
         run: >-
           just nanopi-neo3 --check --diff

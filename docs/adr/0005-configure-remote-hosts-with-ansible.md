@@ -47,16 +47,9 @@ Ansible covers remote general-purpose hosts, starting with the NanoPi-NEO3
 
 ### Connection
 
-The workstation is the control machine. Ansible calls the `ssh` binary, so the
-inventory supplies what `tailscale ssh` would otherwise handle:
-
-- `tailscale nc` makes the connection, because the workstation's resolver can't
-  resolve tailnet names.
-- Tailscale's own known-hosts file supplies the host keys, so no operator
-  accepts a key by hand. It lists each host under its fully qualified name with
-  a trailing dot, so `ansible_host` uses that form.
-
-Tailscale SSH authenticates the operator, so there's no separate key to manage.
+The workstation is the control machine. Ansible calls plain `ssh`, so the
+inventory connects through `tailscale nc` and trusts Tailscale's known-hosts
+file. No operator accepts a host key by hand.
 
 ### Tool versions
 
@@ -64,12 +57,10 @@ Tailscale SSH authenticates the operator, so there's no separate key to manage.
 
 - This repo's `mise.toml` pins it for CI and the devcontainer, following #579.
 - alunduil/alunduil-chezmoi#1137 pins it on the workstation, because operator
-  runs use the host in the same way as `just bootstrap`.
+  runs use the host's tools, as `just bootstrap` does.
 
 The mise registry only offers `ansible-core` through `pypi:`, so this repo's pin
-departs from #579's preference for `core` and `aqua`. The `pypi:` install needs
-`python` and `uv` pinned beside it in `mise.toml`. `ansible-core` 2.22 needs
-Python 3.13 or later on the control machine.
+departs from #579's preference for `core` and `aqua`.
 
 `ansible/requirements.yml` pins collections. Renovate tracks those pins and
 the tools in `mise.toml`.
@@ -98,17 +89,10 @@ Bad / accepted:
   catch architecture-specific failures.
 - Only the workstation can run a playbook against a host. A scheduled drift
   check would need CI to reach the tailnet.
-
 - The tailnet's SSH rule uses `action: check`, so a run hangs with no prompt when
-  the operator's login has lapsed. Running `tailscale ssh` first shows the login
-  URL, and runs connect once the operator completes it.
+  the operator's login has lapsed.
 
 ### Open questions
 
 - The SSH rule targets `autogroup:self`, which may stop matching once #514 tags
   the NanoPi-NEO3. That change may need an explicit SSH rule.
-
-## More Information
-
-The decision and scaffolding are tracked in #668. #671 adds the NanoPi-NEO3's
-configuration and supersedes ADR 0002's configuration script.

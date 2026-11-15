@@ -74,7 +74,6 @@ truenas:
     terraform -chdir=terraform/truenas init
     terraform -chdir=terraform/truenas apply
 
-# Arguments pass through to ansible-playbook, e.g. --check --diff.
 [doc("Configure the NanoPi-NEO3 with Ansible over the tailnet.")]
 [positional-arguments]
 nanopi-neo3 *args:
