@@ -10,20 +10,62 @@
 # carrying accesspolicies:write. terraform/alunduil/ authenticates to the stack,
 # and granting it policy-write would let a pull request rewrite any policy here,
 # including the ones gating its own plan.
+#
+# One token per collector, so rotating or revoking one host leaves the others
+# pushing.
 locals {
   # Policy and token carry one name so the Cloud Portal shows which token came
-  # from which policy.
-  grafana_alloy_push_name = "alunduil-infrastructure-alloy-push"
+  # from which policy. truenas keeps the names it had before this became a map,
+  # because changing a policy's name or a secret's ID replaces it.
+  grafana_alloy_push = {
+    truenas = {
+      name         = "alunduil-infrastructure-alloy-push"
+      display_name = "alunduil-infrastructure alloy push"
+      secret_id    = "grafana-alloy-push-token"
+      # Traces and profiles are absent because nothing sends them.
+      scopes = ["logs:write", "metrics:write"]
+    }
+    nanopi-neo3 = {
+      name         = "alunduil-infrastructure-alloy-push-nanopi-neo3"
+      display_name = "alunduil-infrastructure alloy push (nanopi-neo3)"
+      secret_id    = "grafana-alloy-push-token-nanopi-neo3"
+      # The same token authenticates the box's remotecfg block to Fleet
+      # Management, so the host holds a single Grafana credential.
+      scopes = ["fleet-management:read", "logs:write", "metrics:write"]
+    }
+  }
+}
+
+moved {
+  from = grafana_cloud_access_policy.alloy_push
+  to   = grafana_cloud_access_policy.alloy_push["truenas"]
+}
+
+moved {
+  from = grafana_cloud_access_policy_token.alloy_push
+  to   = grafana_cloud_access_policy_token.alloy_push["truenas"]
+}
+
+moved {
+  from = google_secret_manager_secret.grafana_alloy_push_token
+  to   = google_secret_manager_secret.grafana_alloy_push_token["truenas"]
+}
+
+moved {
+  from = google_secret_manager_secret_version.grafana_alloy_push_token
+  to   = google_secret_manager_secret_version.grafana_alloy_push_token["truenas"]
 }
 
 resource "grafana_cloud_access_policy" "alloy_push" {
-  region       = data.grafana_cloud_stack.this.region_slug
-  name         = local.grafana_alloy_push_name
-  display_name = "alunduil-infrastructure alloy push"
+  for_each = local.grafana_alloy_push
 
-  # Write-only: alloy ships logs and metrics and reads neither back, so there is
-  # no RO/RW split. Traces and profiles are absent because nothing sends them.
-  scopes = ["logs:write", "metrics:write"]
+  region       = data.grafana_cloud_stack.this.region_slug
+  name         = each.value.name
+  display_name = each.value.display_name
+
+  # Write-only for telemetry: alloy reads no logs or metrics back, so there is
+  # no RO/RW split.
+  scopes = each.value.scopes
 
   realm {
     type       = "stack"
@@ -35,9 +77,11 @@ resource "grafana_cloud_access_policy" "alloy_push" {
 # one. Rotation is a bootstrap re-run, which replaces the token and the Secret
 # Manager version together.
 resource "grafana_cloud_access_policy_token" "alloy_push" {
+  for_each = local.grafana_alloy_push
+
   region           = data.grafana_cloud_stack.this.region_slug
-  access_policy_id = grafana_cloud_access_policy.alloy_push.policy_id
-  name             = local.grafana_alloy_push_name
+  access_policy_id = grafana_cloud_access_policy.alloy_push[each.key].policy_id
+  name             = each.value.name
 }
 
 # Secret Manager is the publication channel rather than a bootstrap output: this
@@ -47,11 +91,13 @@ resource "grafana_cloud_access_policy_token" "alloy_push" {
 # one to at least one deployer. Nothing in terraform/alunduil/ resolves this
 # value — pipeline contents carry the literal string sys.env("GCLOUD_RW_API_KEY")
 # — so a CI binding would grant plan and apply log and metric write for nothing.
-# The consumer is the alloy container on A-01, a P-4 an operator configures from
+# An operator delivers each token to its host from
 # docs/how-to/configure-alloy-push-credential.md.
 resource "google_secret_manager_secret" "grafana_alloy_push_token" {
+  for_each = local.grafana_alloy_push
+
   project   = google_project.env.project_id
-  secret_id = "grafana-alloy-push-token"
+  secret_id = each.value.secret_id
 
   replication {
     auto {}
@@ -61,6 +107,8 @@ resource "google_secret_manager_secret" "grafana_alloy_push_token" {
 }
 
 resource "google_secret_manager_secret_version" "grafana_alloy_push_token" {
-  secret      = google_secret_manager_secret.grafana_alloy_push_token.id
-  secret_data = grafana_cloud_access_policy_token.alloy_push.token
+  for_each = local.grafana_alloy_push
+
+  secret      = google_secret_manager_secret.grafana_alloy_push_token[each.key].id
+  secret_data = grafana_cloud_access_policy_token.alloy_push[each.key].token
 }

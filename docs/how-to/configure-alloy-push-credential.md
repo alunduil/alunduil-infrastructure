@@ -5,8 +5,8 @@
 
 Fleet Management sends a collector the text of its pipelines and lets the
 collector evaluate them, so the credential a pipeline pushes with can never
-travel inside one. Terraform creates the token (C-22) and stores it in Secret
-Manager. You put it on the collector by hand, under the name
+travel inside one. Terraform creates a token per collector and stores it in
+Secret Manager. You put it on the collector by hand, under the name
 `GCLOUD_RW_API_KEY`. Grafana's generated `self_monitoring_*` pipelines have that
 name hardcoded, so no other name works.
 
@@ -15,16 +15,20 @@ rotates the token.
 
 ## Prerequisites
 
-- `just bootstrap` applied, so the secret holds a version.
-- `gcloud` available, authenticated as an identity that can read the
-  `grafana-alloy-push-token` secret. The deployer service accounts
-  can't read it.
+- `just bootstrap` applied, so the collector's secret holds a version.
+- `gcloud` available, authenticated as an identity that can read that
+  secret. The deployer service accounts can't read it.
 
 ## Read the token
 
+Each collector has its own secret:
+
+- TrueNAS: `grafana-alloy-push-token`
+- NanoPi-NEO3: `grafana-alloy-push-token-nanopi-neo3`
+
 ```sh
 gcloud secrets versions access latest \
-  --secret=grafana-alloy-push-token --project=alunduil
+  --secret=<secret> --project=alunduil
 ```
 
 ## Set it on the collector
