@@ -192,9 +192,10 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # Gates renovate.json's lock file maintenance automerge, since Renovate
-  # waits for every check. Keep it out of the required checks so a person
-  # can still merge a plan that changes something.
+  # Gates renovate.json's lock file maintenance automerge. Renovate waits
+  # only for required checks, so this one is required; on every other
+  # branch it skips and passes. Merging a lock file plan that changes
+  # something takes the admin bypass.
   lock-file-plan:
     name: Confirm lock file maintenance plans no changes
     needs: plan
