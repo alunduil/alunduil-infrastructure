@@ -16,4 +16,4 @@ Records (MADR) for substantive records).
 | [0003](0003-run-hooks-with-prek.md) | Run hooks with prek instead of pre-commit |
 | [0004](0004-approve-each-release-before-it-publishes.md) | Approve each release before it publishes |
 | [0005](0005-configure-remote-hosts-with-ansible.md) | Configure remote hosts with Ansible over the tailnet |
-| [0006](0006-configure-the-nanopi-neo3-with-ansible.md) | Configure the NanoPi-NEO3 with Ansible |
+| [0006](0006-bake-only-ssh-access-into-the-nanopi-neo3-image.md) | Bake only SSH access into the NanoPi-NEO3 image |

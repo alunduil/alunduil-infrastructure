@@ -4,7 +4,8 @@
 # Build the NanoPi-NEO3 recovery image with Armbian's build framework
 
 - Status: Accepted; "Configuring the box after boot" superseded by
-  [0006](0006-configure-the-nanopi-neo3-with-ansible.md)
+  [0005](0005-configure-remote-hosts-with-ansible.md), "What the image carries"
+  superseded by [0006](0006-bake-only-ssh-access-into-the-nanopi-neo3-image.md)
 - Date: 2026-09-12
 
 ## Context and Problem Statement
