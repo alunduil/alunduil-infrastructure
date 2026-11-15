@@ -23,7 +23,7 @@ The rows come from reading configuration, workflows, and GitHub's documentation.
 records the platform behaviour that the planned tag ruleset and default-branch
 check rely on. It also records which commits an actor without `Workflows` can
 tag. [Release controls by
-actor](release-controls-by-actor.md) maps that behaviour to each actor. Nobody has tried
+actor](release-controls-by-actor.md) maps the recorded behaviour to each actor. Nobody has tried
 an attack against a managed repository.
 
 Out of scope:

@@ -83,9 +83,7 @@ Tested: [#1065, test 3](https://github.com/alunduil/alunduil-infrastructure/issu
 
 Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
 
-## The `Workflows` permission
-
-### Tagging without `Workflows`
+## Tagging without `Workflows`
 
 An actor holding `Contents` write but not `Workflows` can tag a commit only
 when the workflow files of that commit already exist on some branch:
@@ -145,9 +143,7 @@ lists `pull_request_review` among the events whose checks count, and says
 Tested, for the head-commit attachment: [#1065, test
 5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
 
-## Commit verification
-
-### Bot commit signing
+## Bot commit signing
 
 GitHub signs an API commit from a GitHub App or bot only when that App or bot
 authenticates the request and the request sets no custom author, committer, or signature.

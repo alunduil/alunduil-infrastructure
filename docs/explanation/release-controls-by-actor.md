@@ -37,13 +37,14 @@ routes include creating a Release with a new tag. The App and admin-role
 bypass entries exempt their actors on every tested route.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
-default branch. GitHub runs the release workflow from the tagged commit, so a
-tag on a commit whose workflow lacks the check publishes unchecked.
+default branch. GitHub runs the release workflow from the tagged commit, so
+when the workflow in that commit lacks the check, it publishes the tag
+unchecked.
 
 ## What withholding `Workflows` stops
 
 Withholding `Workflows` doesn't stop an actor tagging a commit whose workflow
-lacks the default-branch check. An actor without `Workflows` [can tag any
+lacks the default-branch check. An actor without `Workflows` [can tag a
 commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
@@ -62,11 +63,17 @@ them. Review gates their merges.
 The tag ruleset refuses the hook-fix App's release tags, because no bypass
 entry names it.
 
-The required job planned in #1057 stops a hook-fix commit reaching a default
-branch until the operator approves it. Without the job, Renovate merges such commits
-unreviewed: in `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
-`alunduil-hook-fix[bot]` commit with no review. The job relies on four
-behaviours:
+The required job planned in #1057 would stop a hook-fix commit reaching a
+default branch until the operator approves it. Without the job, Renovate
+automerges a branch carrying hook-fix commits. Renovate [treats a branch as
+unmodified when the author email of every commit is in
+`gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection),
+and the shared preset lists the hook-fix App's email there
+([`renovate-config@a67936f`, `default.json:12-14`](https://github.com/alunduil/renovate-config/blob/a67936f66c9a2dfa4d38f99a64822e19ee35474f/default.json#L12-L14)).
+In `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
+`alunduil-hook-fix[bot]` commit with no review.
+
+The job would rely on three behaviours:
 
 - [A failed run keeps the check
   failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check),
@@ -78,12 +85,6 @@ behaviours:
 - [GitHub signs an API commit from a bot only when the bot sends it with no
   custom author](../reference/release-control-behaviour.md#bot-commit-signing),
   so another key can't forge a verified `renovate[bot]` commit.
-- [Renovate treats a branch as unmodified when the author email of every
-  commit is in
-  `gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection).
-  The shared preset lists the hook-fix App's email there
-  ([`renovate-config@a67936f`, `default.json:12-14`](https://github.com/alunduil/renovate-config/blob/a67936f66c9a2dfa4d38f99a64822e19ee35474f/default.json#L12-L14)),
-  so Renovate automerges a branch carrying hook-fix commits.
 
 ### Renovate (P-6)
 
@@ -131,7 +132,7 @@ it, so it can create release tags despite the ruleset. If C-32 holds
 `Administration` write, it [can also add a bypass entry or delete the
 ruleset](../reference/release-control-behaviour.md#ruleset-edits-by-account-tokens).
 The register lists its scope as `Unverified`. The ruleset can't stop C-32, so
-issue #738 removes the token.
+issue #738 tracks removing the token.
 
 C-13 is a classic token. No test or source shows whether the admin role's
 bypass exempts a classic token ([not
