@@ -21,7 +21,7 @@ reachability](credential-reachability.md).
 The rows come from reading configuration, workflows, and GitHub's documentation.
 [Release control behaviour](../reference/release-control-behaviour.md)
 records the platform behaviour that the planned tag ruleset and default-branch
-check rely on. It also records which commits an actor without `Workflows` can
+check rely on. That reference also records which commits an actor without `Workflows` can
 tag. [Release controls by
 actor](release-controls-by-actor.md) maps the recorded behaviour to each actor. Nobody has tried
 an attack against a managed repository.

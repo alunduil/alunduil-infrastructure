@@ -35,8 +35,8 @@ entry,
 on [all three tested
 routes](../reference/release-control-behaviour.md#tag-creation-routes). The
 routes include creating a Release with a new tag. On every tested route, the
-release App's bypass entry exempts the App, and the admin role's exempts a
-fine-grained token acting as the account.
+release App's bypass entry exempts the App, and the admin role's bypass entry
+exempts a fine-grained token acting as the account.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
 default branch. GitHub runs the release workflow from the tagged commit, so a
