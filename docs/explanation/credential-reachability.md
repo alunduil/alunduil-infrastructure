@@ -16,8 +16,10 @@ leak spreads. It assumes the
 node here.
 
 The graphs draw what an actor could obtain, including paths that have never
-run. The edges come from reading configuration. Some have run in normal use,
-but none has been tested as an attack.
+run. The edges come from reading configuration. Some have run in normal use.
+Issue #1065 tested the tag and `Workflows` behaviour behind the tagging edges,
+and [release control behaviour](../reference/release-control-behaviour.md)
+records the results. The rest haven't been tested as an attack.
 
 Out of scope:
 
@@ -192,7 +194,12 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch.
+reach the registries without passing through a default branch. Without
+`Workflows`, as with C-25, the workflow files of the tagged commit [must
+already exist on some
+branch](../reference/release-control-behaviour.md#without-it-an-actor-tags-only-commits-whose-workflow-files-exist-on-a-branch).
+Any `renovate/**` branch that changes a workflow meets that, so the edge
+stands.
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating

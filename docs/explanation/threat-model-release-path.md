@@ -19,8 +19,11 @@ register](../reference/asset-register.md) and [credential
 reachability](credential-reachability.md).
 
 The rows come from reading configuration, workflows, and GitHub's documentation.
-Nobody has tried these attacks, and #1065 tests what the planned controls
-assume.
+Issue #1065 tested what the planned tag, check, and `Workflows` controls
+assume. [Release control behaviour](../reference/release-control-behaviour.md)
+records the results, and [release controls by
+actor](release-controls-by-actor.md) maps them to each actor. The attacks
+themselves haven't been tried against a managed repository.
 
 Out of scope:
 
@@ -67,9 +70,13 @@ The App's design follows:
 Three limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  workflow check refuses that only because the App lacks `Workflows`
-  permission, so `zfs-replicate#827` and `network-arbitrary#172` have to carry
-  the check.
+  workflow check refuses that, so `zfs-replicate#827` and
+  `network-arbitrary#172` have to carry the check. The check runs from the
+  tagged commit, and lacking `Workflows` stops the App from writing a commit
+  without it, not from tagging one. The App [can tag any commit whose workflow
+  files exist on some
+  branch](../reference/release-control-behaviour.md#without-it-an-actor-tags-only-commits-whose-workflow-files-exist-on-a-branch),
+  including a branch where an actor with `workflows` write removed the check.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
 - Nothing alerts on an unexpected tag or upload until #1064 lands.
