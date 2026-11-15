@@ -221,6 +221,7 @@ resource "github_repository_ruleset" "checks" {
         for_each = concat(
           local.shared_required_checks,
           var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
+          var.required_status_checks.codecov_project_check ? ["codecov/project"] : [],
           var.required_status_checks.contexts,
         )
         content {

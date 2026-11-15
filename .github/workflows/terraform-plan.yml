@@ -34,6 +34,7 @@ jobs:
       # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 2
 
       - id: diff
@@ -42,6 +43,7 @@ jobs:
             terraform/alunduil \
             terraform/modules \
             .github/workflows/terraform-plan.yml \
+            .github/actions/mise \
             .github/actions/terraform-providers \
             scripts/export-terraform-credentials.sh \
             scripts/eval-recording-rules.sh \
@@ -73,11 +75,15 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
+    outputs:
+      resource_changes: ${{ steps.resource-changes.outputs.count }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+      - uses: ./.github/actions/mise
         with:
           install_args: terraform
 
@@ -175,3 +181,33 @@ jobs:
         run: |
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
+
+      # Data sources read during apply change nothing.
+      - id: resource-changes
+        name: Count planned resource changes
+        working-directory: terraform/alunduil
+        run: |
+          count=$(jq '[.resource_changes[]?
+            | select(.mode == "managed" and .change.actions != ["no-op"])]
+            | length' plan.json)
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+
+  # Gates renovate.json's lock file maintenance automerge. Renovate waits
+  # only for required checks, so this one is required. Merging a pull
+  # request whose plan changes something takes the admin bypass.
+  lock-file-plan:
+    name: Confirm lock file maintenance plans no changes
+    needs: plan
+    if: github.head_ref == 'renovate/lock-file-maintenance'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Fail on planned changes
+        env:
+          RESOURCE_CHANGES: ${{ needs.plan.outputs.resource_changes }}
+        run: |
+          if [[ "${RESOURCE_CHANGES}" != 0 ]]; then
+            echo "::error::Merging applies the plan's ${RESOURCE_CHANGES} resource changes."
+            exit 1
+          fi

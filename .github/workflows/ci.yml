@@ -26,9 +26,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Set up Terraform and just
-        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        uses: ./.github/actions/mise
         with:
           install_args: terraform just
 
@@ -38,7 +40,7 @@ jobs:
       - name: Run pre-commit hooks
         uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
         with:
-          prek-version: '0.5.7'
+          prek-version: 'v0.5.10'
         env:
           # no-commit-to-branch is a local guard that fails every push to main.
           SKIP: no-commit-to-branch
@@ -52,7 +54,7 @@ jobs:
       id-token: write
     # A SHA-pinned reusable workflow can't be wrapped.
     # yamllint disable rule:line-length
-    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@33a99d2b00ad89eee1f5a95bd3164c3d60e09265 # main
+    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@a67936f66c9a2dfa4d38f99a64822e19ee35474f # main
     # yamllint enable rule:line-length
     with:
       hook-runner: prek
@@ -75,9 +77,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Set up bats
-        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        uses: ./.github/actions/mise
         with:
           install_args: bats
 
@@ -120,6 +124,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Review dependencies
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
@@ -131,9 +137,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Set up Ansible
-        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        uses: ./.github/actions/mise
         with:
           install_args: python uv ansible-core
 

@@ -25,6 +25,13 @@
 # Every run recomputes every item's Status, so hand moves don't stick, and
 # items from archived repos leave the board.
 #
+# An open issue or PR whose body carries a line
+#
+#   Blocked until: YYYY-MM-DD
+#
+# stays Blocked until that UTC date, then takes its usual column. The
+# latest valid date wins. The sync warns about an invalid date and ignores it.
+#
 # Runs hourly from CI; safe to invoke locally — falls back to ambient
 # `gh` auth when GH_PROJECT_SYNC_TOKEN is unset. The scheduled job can't be
 # reproduced from a PR (the project-sync secret isn't exposed there), so in
@@ -48,7 +55,7 @@ set -Eeuo pipefail
 
 STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backlog" "Closed")
 
-# classify <login> <owned-logins-json>: read a JSON array of
+# classify <login> <owned-logins-json> [today]: read a JSON array of
 # BOARD_ITEMS_QUERY item nodes on stdin and emit one row per item with a
 # content URL:
 #
@@ -56,12 +63,12 @@ STATUSES=("Blocked" "In progress" "Drafts" "Needs me" "Waiting on others" "Backl
 #
 # Fields are split on the ASCII unit separator (0x1f) because `read` merges
 # runs of whitespace separators such as tab, dropping empty fields.
-# want-status is REMOVE for an item whose repo is archived. Only issues can
-# be Blocked: GitHub has no dependencies on PRs. An issue's linked PR is
-# looked up among the board's PRs, so one missing from the board is ignored.
-# Drafts holds PRs only.
+# `today` (YYYY-MM-DD) defaults to the current UTC date. want-status is
+# REMOVE for an item whose repo is archived. Dependencies block only issues:
+# GitHub has none on PRs. An issue's linked PR is looked up among the board's
+# PRs, so one missing from the board is ignored. Drafts holds PRs only.
 classify() {
-  jq -r --arg me "$1" --argjson owned "$2" \
+  jq -r --arg me "$1" --argjson owned "$2" --arg today "${3:-$(date -u +%F)}" \
     --arg filed "${FILED_BY_FIELD_NAME}" --arg status "${STATUS_FIELD_NAME}" '
     def mine: .author.login == $me;
     def owned: .repository.owner.login as $o | $owned | index($o) != null;
@@ -80,9 +87,22 @@ classify() {
       else "Needs me"
       end;
     def issue_column: pr_column | if . == "Drafts" then "In progress" else . end;
+    # strptime accepts 2026-02-30 and 2026-6-1, but only a real YYYY-MM-DD
+    # date formats back unchanged.
+    def is_date: (. + "T00:00:00Z" | try (fromdateiso8601 | todate[:10]) catch null) == .;
+    def warn($message): $message + "\n" | stderr | empty;
+    def blocked_until:
+      .url as $url
+      | [(.body // "") | splits("\r?\n") | select(startswith("Blocked until:"))
+         | (ltrimstr("Blocked until: ") | sub("\\s+$"; "")) as $date
+         | if $date | is_date then $date
+           else warn("warning: ignoring \"" + . + "\" on " + $url)
+           end]
+      | max;
     def column($prs):
       if .repository.isArchived then "REMOVE"
       elif .state != "OPEN" then "Closed"
+      elif blocked_until > $today then "Blocked"
       elif .__typename == "PullRequest" then pr_column
       elif .issueDependenciesSummary.blockedBy > 0 then "Blocked"
       else [.closedByPullRequestsReferences.nodes[]? | select(mine) | $prs[.url] // empty] | first // "Backlog"
@@ -145,7 +165,7 @@ BOARD_ITEMS_QUERY='
             content {
               __typename
               ... on Issue {
-                url state author { __typename login }
+                url state body author { __typename login }
                 repository { isArchived owner { login } }
                 issueDependenciesSummary { blockedBy }
                 closedByPullRequestsReferences(first: 5, includeClosedPrs: false) {
@@ -153,7 +173,7 @@ BOARD_ITEMS_QUERY='
                 }
               }
               ... on PullRequest {
-                url state isDraft author { __typename login }
+                url state body isDraft author { __typename login }
                 repository { isArchived owner { login } }
                 reviewDecision mergeable
                 statusCheckRollup { state }

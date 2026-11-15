@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 locals {
+  # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
+  # must report on every pull request, so these run on pull requests too.
+  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+
   # An input an entry leaves unset takes the module's default.
   #
   # deploy matches the repository's row in the Repositories table of
@@ -17,8 +21,10 @@ locals {
           "Validate chezmoi source",
           "Validate zellij config",
           "Validate telemetry config",
+          "Verify systemd units",
           "Check prose",
           "Run pinned tools",
+          "Bootstrap a fresh Debian host",
         ]
         renovate_automerge = true
       }
@@ -28,9 +34,14 @@ locals {
     "alunduil-infrastructure" = {
       required_status_checks = {
         ci_results_check = true
-        # A failed detect job skips the plan, and a skipped job passes.
-        contexts = ["Detect Terraform changes", "Plan Terraform changes"]
-        # renovate.json holds back every update that would trigger an apply.
+        contexts = [
+          # A failed detect job skips the plan, and a skipped job passes.
+          "Detect Terraform changes",
+          "Plan Terraform changes",
+          "Confirm lock file maintenance plans no changes",
+        ]
+        # renovate.json holds back every update that would trigger an apply,
+        # except lock file maintenance whose plan changes nothing.
         renovate_automerge = true
       }
       # The Hourly Inbox sync reads GH_PROJECT_SYNC_TOKEN from this
@@ -76,12 +87,14 @@ locals {
       description = "Collection+JSON Tools for Haskell"
       topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = ["Check links", "Prune stale pull requests", "Check GHC matrix drift"]
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        renovate_automerge    = true
       }
-      environments = { hackage = { deployment_tags = ["v*"] } }
-      deploy       = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
+      admin_only_updates = true
+      environments       = { hackage = { deployment_tags = ["v*"] } }
+      deploy             = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
     }
 
     "git-worktree-poi" = {
@@ -101,11 +114,13 @@ locals {
       description = "Arbitrary Instances for Network Types"
       topics      = ["haskell-library", "haskell", "network", "quickcheck"]
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = ["Prune stale pull requests", "Check GHC matrix drift"]
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = local.haskell_scheduled_checks
+        renovate_automerge    = true
       }
-      environments = { hackage = { deployment_tags = ["v*"] } }
+      admin_only_updates = true
+      environments       = { hackage = { deployment_tags = ["v*"] } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -134,17 +149,23 @@ locals {
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
-      deploy      = { class = "merge" }
+      # Requires no test job. Its presets are data, which the pre-commit check
+      # validates.
+      deploy = { class = "merge" }
     }
 
     "siren-json.hs" = {
       description = "Siren+JSON Tools for Haskell"
       topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
       required_status_checks = {
-        ci_results_check = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        renovate_automerge    = true
       }
-      environments = { hackage = {} }
-      deploy       = { class = "release" }
+      admin_only_updates = true
+      environments       = { hackage = {} }
+      deploy             = { class = "release" }
     }
 
     "woodland-generators" = {
@@ -163,9 +184,10 @@ locals {
         "generator",
         "typescript",
       ]
-      # Codecov's upload legs and commit statuses aren't required.
+      # Codecov's upload legs aren't required.
       required_status_checks = {
-        ci_results_check = true
+        ci_results_check      = true
+        codecov_project_check = true
         contexts = [
           "Build every package",
           "Enforce Conventional Commits",
@@ -204,16 +226,14 @@ locals {
       topics         = ["zfs", "replication", "snapshots"]
       default_branch = "master"
       required_status_checks = {
-        ci_results_check   = true
-        contexts           = ["Validate PR title"]
-        renovate_automerge = true
+        ci_results_check      = true
+        codecov_project_check = true
+        contexts              = ["Validate PR title"]
+        renovate_automerge    = true
       }
       # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
       # non-owner pull request but Renovate's.
       require_code_owner_review = true
-      # Deviates from the baseline (admin-only on): write collaborators merge
-      # pull requests here too.
-      admin_only_updates = false
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.

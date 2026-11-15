@@ -24,13 +24,16 @@ Install the tools CI uses with `mise install`, or open the repository
 in its devcontainer, which runs it for you. Then run `prek install`
 to enable the commit hooks.
 
-The three operator entrypoints:
+The four operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
+- `just truenas`—`terraform apply` on the TrueNAS configuration,
+  which no workflow runs. See
+  [docs/how-to/apply-terraform-to-truenas.md](docs/how-to/apply-terraform-to-truenas.md).
 - `just projects`—Projects v2 board fields, after editing a spec in
   `github/projects/`. Needs only a `gh` login with the `project` scope.
 
@@ -63,6 +66,8 @@ How-to guides for credentials:
 How-to guides for hosts and services:
 
 - [Set the alloy push credential on the collector](docs/how-to/configure-alloy-push-credential.md)
+- [Apply Terraform to TrueNAS](docs/how-to/apply-terraform-to-truenas.md)
+- [Set the ACME token on TrueNAS](docs/how-to/configure-truenas-acme-token.md)
 - [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
 - [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)
 - [Configure the Google Takeout backup on TrueNAS](docs/how-to/configure-truenas-takeout-backup.md)
@@ -78,6 +83,10 @@ Explanation:
 
 - [Credential reachability](docs/explanation/credential-reachability.md): why a
   leak of one credential can spread beyond what it was granted
+- [Release path data flow](docs/explanation/release-path-data-flow.md): how a
+  commit becomes a published package, and what crosses each trust boundary
+- [Release path threat model](docs/explanation/threat-model-release-path.md):
+  what can go wrong on that path, and where the release App fits
 
 Decisions:
 

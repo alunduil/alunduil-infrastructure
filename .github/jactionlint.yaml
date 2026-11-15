@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+profile: correctness
+
+ignores:
+  - rule: deprecated-action-input
+    uses: actions/create-github-app-token
+    reason: client-id needs a new secret per deployer (#1183)

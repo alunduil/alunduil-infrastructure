@@ -46,7 +46,8 @@ runs:
       shell: bash
       env:
         MIRROR: ${{ steps.mirror.outputs.dir }}
-      run: |
+      # No workflow input reaches the GITHUB_ENV write.
+      run: |  # zizmor: ignore[github-env]
         config="$RUNNER_TEMP/terraformrc"
         cat > "$config" <<EOF
         provider_installation {

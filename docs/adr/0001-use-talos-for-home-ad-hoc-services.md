@@ -120,8 +120,8 @@ from, and its storage and ingress ecosystems are the deepest here.
 Within that family, k3s and k0s are reasonable distributions, but they
 leave a general-purpose Linux host to own and patch per node. Talos
 removes that surface—immutable, API-managed, atomic image-based
-upgrades, no host to hand-patch—which neutralizes the day-2 tax that
-is the usual reason to reject small Kubernetes at a homelab's staffing
+upgrades, no host to hand-patch—which neutralizes the day-2 tax
+that's the usual reason to reject small Kubernetes at a homelab's staffing
 level of one person, part-time.
 
 ### Migration sketch (reversible)
