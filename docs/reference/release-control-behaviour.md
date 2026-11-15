@@ -62,7 +62,7 @@ repository exempts nothing.
 Tested: [#1065, tests 2 and
 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
-### Ruleset edits by admin tokens
+### Ruleset edits by account tokens
 
 A fine-grained token acting as the account, with `Administration` write, can
 add a bypass entry to a ruleset and delete the ruleset.
@@ -143,10 +143,11 @@ Tested, for the head-commit attachment: [#1065, test
 
 ### Bot commit signing
 
-GitHub signs an API commit from a bot only when the request is authenticated
-as that App or bot and sets no custom author, committer, or signature. The
-GraphQL `createCommitOnBranch` mutation can't set an author or committer, and
-its commits take the identity of whoever owns the credential that made the
+GitHub signs an API commit from a bot only when that App or bot authenticates
+the request and the request sets no custom author, committer, or signature.
+
+The GraphQL `createCommitOnBranch` mutation can't set an author or committer.
+Its commits take the identity of whoever owns the credential that made the
 request.
 
 Documented: [About commit signature
@@ -193,4 +194,3 @@ No test or source covers these:
 - Whether the tag ruleset refuses `GITHUB_TOKEN`.
 - Whether a re-run started by `GITHUB_TOKEN` works on a pull request from a
   fork.
-- Behaviour on organization-owned repositories.
