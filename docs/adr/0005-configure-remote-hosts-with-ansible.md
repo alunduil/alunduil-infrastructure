@@ -53,9 +53,11 @@ file. No operator accepts a host key by hand.
 
 ### Tool versions
 
-`ansible-core` is pinned twice, because two environments need it:
+`ansible-core` is pinned in each environment that runs it:
 
 - This repo's `mise.toml` pins it for CI and the devcontainer, following #579.
+- The `ansible-lint` hook pins it for its own environment. A Renovate group bumps
+  it with `mise.toml`.
 - alunduil/alunduil-chezmoi#1137 pins it on the workstation, because operator
   runs use the host's tools, as `just bootstrap` does.
 
@@ -68,8 +70,9 @@ the tools in `mise.toml`.
 ### Sensors
 
 - `ansible-lint` runs as a prek hook.
-- A CI job runs the playbook with `--check` against a Debian 12 container
-  standing in for the NanoPi-NEO3, through the real inventory.
+- A CI job runs the playbook with `--check` through the real inventory against
+  a container matching the NanoPi-NEO3's Debian point release and
+  architecture, emulated with QEMU.
 
 ### Consequences
 
@@ -80,13 +83,14 @@ Good:
 
 Bad / accepted:
 
-- The two `ansible-core` pins can differ between Renovate bumps.
+- The workstation's `ansible-core` pin can differ from this repo's between
+  Renovate bumps.
 - `mise.toml` and `mise.lock` are on `terraform-apply.yml`'s paths, so each
   tool bump waits for review and triggers an apply on merge.
 - `mise lock` needs a real Python ahead of the mise shims on `PATH` to resolve
   the `pypi:` tool: `mise exec python uv -- mise lock`.
-- The stand-in container is x86-64 and the NanoPi-NEO3 is arm64, so the job can't
-  catch architecture-specific failures.
+- Renovate moves the stand-in's Debian point release and apt moves the
+  NanoPi-NEO3's, so the two can drift apart.
 - Only the workstation can run a playbook against a host. A scheduled drift
   check would need CI to reach the tailnet.
 - The tailnet's SSH rule uses `action: check`, so a run hangs with no prompt when
