@@ -80,7 +80,7 @@ Tested: [#1065, test 3](https://github.com/alunduil/alunduil-infrastructure/issu
 
 - The `pull_request` bypass mode applies to branch rulesets only, so a tag
   ruleset's bypass is `always` or `exempt`.
-- `OrganizationAdmin` isn't available on personal repositories.
+- `OrganizationAdmin` isn't available on personal-account repositories.
 
 Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
 
