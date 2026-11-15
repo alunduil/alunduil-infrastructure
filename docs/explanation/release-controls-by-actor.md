@@ -30,11 +30,11 @@ Out of scope:
 
 ## What the two controls stop
 
-The tag ruleset refuses a matching tag from an App or fine-grained token
-without a bypass entry, on [all three tested
+The tag ruleset refuses a matching tag from any actor without a bypass entry,
+on [all three tested
 routes](../reference/release-control-behaviour.md#tag-creation-routes). The
-routes include creating a Release with a new tag. A bypass entry exempts its
-actor on every tested route.
+routes include creating a Release with a new tag. The App and admin-role
+bypass entries exempt their actors on every tested route.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
 default branch. GitHub runs the release workflow from the tagged commit, so a
@@ -48,7 +48,7 @@ commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
 write can push a branch whose release workflow lacks the check. The check
-stops an actor only while no such branch exists.
+stops an actor without `Workflows` only while no such branch exists.
 
 ## Actors
 
@@ -60,12 +60,10 @@ them. Review gates their merges.
 ### Hook fix (P-5, using C-25)
 
 The tag ruleset refuses the hook-fix App's release tags, because no bypass
-entry names it. Lacking `Workflows` doesn't stop the App tagging a commit
-whose release workflow lacks the default-branch check ([what withholding
-`Workflows` stops](#what-withholding-workflows-stops)).
+entry names it.
 
-The required job in #1057 stops a hook-fix commit reaching a default branch
-until the operator approves it. Without the job, Renovate merges such commits
+The required job planned in #1057 stops a hook-fix commit reaching a default
+branch until the operator approves it. Without the job, Renovate merges such commits
 unreviewed: in `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
 `alunduil-hook-fix[bot]` commit with no review. The job relies on four
 behaviours:
@@ -73,15 +71,18 @@ behaviours:
 - [A failed run keeps the check
   failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check),
   so a second job with the same name can't pass it.
-- [Re-running the failed run clears the
+- [A passing re-run of the failed run clears the
   failure](../reference/release-control-behaviour.md#re-running-a-failed-run),
   so a review-triggered workflow can re-run the job after approval without
   another credential.
 - [GitHub signs an API commit from a bot only when the bot sends it with no
   custom author](../reference/release-control-behaviour.md#bot-commit-signing),
   so another key can't forge a verified `renovate[bot]` commit.
-- [Renovate ignores commits whose author email is in
-  `gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection),
+- [Renovate treats a branch as unmodified when the author email of every
+  commit is in
+  `gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection).
+  The shared preset lists the hook-fix App's email there
+  ([`renovate-config@a67936f`, `default.json:12-14`](https://github.com/alunduil/renovate-config/blob/a67936f66c9a2dfa4d38f99a64822e19ee35474f/default.json#L12-L14)),
   so Renovate automerges a branch carrying hook-fix commits.
 
 ### Renovate (P-6)
@@ -93,16 +94,17 @@ The tag ruleset has no bypass entry for it.
 Renovate raises a re-pointed action tag as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
 unless `digestOneAndOnly` is set and another update is present. The rules that
-govern digest updates therefore govern moved tags. `matchFileNames` [tests
-only the upgrade's
+govern digest updates therefore govern moved tags.
+
+`matchFileNames` [tests only the upgrade's
 files](../reference/release-control-behaviour.md#matchfilenames-scope), so a
 path rule can't hold back a later commit on the same branch.
 
 ### Claude App (P-8)
 
 The tag ruleset refuses the Claude App's release tags, because no bypass entry
-names it. Withholding `Workflows` isn't an option, because the App holds
-`Workflows` write. The operator accepts its other routes ([credential
+names it. The App holds `Workflows` write, so withholding `Workflows` doesn't
+limit it. The operator accepts its other routes ([credential
 reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
 
 ### Release App (P-12)
@@ -112,8 +114,8 @@ ruleset gives it a bypass entry [by App
 ID](../reference/release-control-behaviour.md#app-bypass), beside the admin
 role's. The entry exempts the App on all three tested routes, so the ruleset
 doesn't limit which commit the App tags. Only the default-branch check stops a
-leaked key, and only [while no branch carries a release workflow without
-it](#what-withholding-workflows-stops).
+leaked key, and only [while no branch carries a release workflow without the
+check](#what-withholding-workflows-stops).
 
 ### `GITHUB_TOKEN` (P-11)
 

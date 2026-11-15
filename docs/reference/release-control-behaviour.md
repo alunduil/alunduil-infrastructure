@@ -42,7 +42,13 @@ non-bypass actor on all three routes:
 
 `POST /releases` succeeds with a tag name outside the pattern.
 
-Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
+Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
+with an App and a fine-grained token.
+
+Documented: [Available rules for
+rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
+says "only users with bypass permissions can create branches or tags whose
+name matches the pattern you specify."
 
 ### App bypass
 
