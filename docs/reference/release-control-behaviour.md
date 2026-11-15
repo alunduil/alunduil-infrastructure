@@ -5,8 +5,8 @@
 
 What GitHub and Renovate do in the cases the release path's controls depend
 on, and how each behaviour is known. [Release controls by
-actor](../explanation/release-controls-by-actor.md) explains which control
-holds which actor.
+actor](../explanation/release-controls-by-actor.md) maps these behaviours to
+actors.
 
 Verified 2026-11-15.
 
@@ -40,16 +40,16 @@ non-bypass actor on all three routes:
   creations being restricted`
 - `git push`: `GH013: Repository rule violations found`
 
-A tag name outside the pattern succeeds through `POST /releases`. The other
-routes are untested with one.
+`POST /releases` succeeds with a tag name outside the pattern. No test tried a
+non-matching name on the other routes.
 
 Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
 ### App bypass
 
 A bypass entry with `actor_type` `Integration` and `actor_id` set to the App
-ID exempts that App on all three routes. A fine-grained token acting as the
-admin, not listed, is refused on all three.
+ID exempts that App on all three routes. With only that entry, the ruleset
+refuses a fine-grained token acting as the admin on all three.
 
 Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
@@ -57,8 +57,8 @@ Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issu
 
 A personal-account repository accepts `actor_type` `RepositoryRole` with
 `actor_id` 5, the admin role. A fine-grained token created by the admin then
-creates matching tags on all three routes. Without that entry the same token
-is refused: owning the repository exempts nothing.
+creates matching tags on all three routes. Without that entry the ruleset
+refuses the same token, because owning the repository exempts nothing.
 
 Tested: [#1065, tests 2 and
 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
@@ -85,13 +85,13 @@ Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
 An actor holding `Contents` write but not `Workflows` can tag a commit only
 when the workflow files of that commit already exist on some branch:
 
-- A commit whose `.github/workflows/` differs from the default branch's but
-  matches another branch's head is tagged on all three routes.
-- A commit whose workflow files exist on no branch, because its branch was
-  deleted, is refused. Both APIs return `403 Resource not accessible by
-  integration`, and `git push` returns `refusing to allow a GitHub App to
-  create or update workflow ... without workflows permission`.
-- A new commit adding a workflow can't be created either: `POST /git/trees`
+- The actor can tag, on all three routes, a commit whose `.github/workflows/`
+  differs from the default branch's but matches another branch's head.
+- GitHub refuses a tag on a commit whose workflow files exist on no branch,
+  such as the head of a deleted branch. Both APIs return `403 Resource not
+  accessible by integration`, and `git push` returns `refusing to allow a
+  GitHub App to create or update workflow ... without workflows permission`.
+- The actor can't create a commit that adds a workflow: `POST /git/trees`
   returns `403`.
 
 Tested: [#1065, test 4](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
@@ -110,8 +110,8 @@ note compares against the default branch instead, which the test contradicts.
 
 A failed run of a required job keeps the check failing on that commit. A
 later passing run of a job with the same name, from another event and in
-another check suite, doesn't clear it. The merge is refused with `Required
-status check "Review gate" is failing.`
+another check suite, doesn't clear it. GitHub refuses the merge with
+`Required status check "Review gate" is failing.`
 
 Tested: [#1065, test 5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
 
@@ -160,8 +160,8 @@ and the `createCommitOnBranch`
 ### Moved tags behind digest pins
 
 For `uses: owner/action@<sha> # v7`, a re-pointed `v7` tag produces a
-`digest` update. With `digestOneAndOnly` set and another update present, no
-digest update is added.
+`digest` update. With `digestOneAndOnly` set and another update present,
+Renovate adds no digest update.
 
 Source:
 [`extract.ts:145-146`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/modules/manager/github-actions/extract.ts#L145-L146),
@@ -178,7 +178,7 @@ Source: [`files.ts:24-30`](https://github.com/renovatebot/renovate/blob/da966432
 ### Modified-branch detection
 
 Renovate treats a branch as unmodified when the author email of every commit
-is in `gitIgnoredAuthors`, so it keeps automerging the branch.
+is in `gitIgnoredAuthors`, and keeps automerging it.
 
 Source:
 [`git/index.ts:1040-1047`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/git/index.ts#L1040-L1047).

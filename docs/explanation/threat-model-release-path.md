@@ -22,7 +22,8 @@ The rows come from reading configuration, workflows, and GitHub's documentation.
 [Release control behaviour](../reference/release-control-behaviour.md)
 records the tested platform behaviour the planned tag, check, and `Workflows`
 controls rely on. [Release controls by actor](release-controls-by-actor.md)
-maps it to each actor. No attack has been tried against a managed repository.
+maps it to each actor. Nobody has tried an attack against a managed
+repository.
 
 Out of scope:
 
@@ -72,7 +73,7 @@ Three limits remain:
   workflow check refuses that, so `zfs-replicate#827` and
   `network-arbitrary#172` have to carry the check. Lacking `Workflows`, the App
   can still tag a commit without the check ([release controls by
-  actor](release-controls-by-actor.md#why-no-single-control-holds-everyone)).
+  actor](release-controls-by-actor.md#what-the-two-controls-stop)).
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
 - Nothing alerts on an unexpected tag or upload until #1064 lands.
@@ -124,7 +125,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1064 | Not Started | — |
-| Operator | Spoofing | A stolen C-13 or C-32 acts as the account. C-32 bypasses every ruleset, and whether C-13 does isn't established | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
+| Operator | Spoofing | A stolen C-13 or C-32 acts as the account. C-32 bypasses every ruleset. No test or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1064 | Not Started | `woodland-generators` releases report the account as author |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | #1064 compares registry versions with tags | Not Started | — |
