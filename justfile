@@ -74,6 +74,13 @@ truenas:
     terraform -chdir=terraform/truenas init
     terraform -chdir=terraform/truenas apply
 
+# Arguments pass through to ansible-playbook, e.g. --check --diff.
+[doc("Configure the NanoPi-NEO3 with Ansible over the tailnet.")]
+[positional-arguments]
+nanopi-neo3 *args:
+    ansible-galaxy collection install -r ansible/requirements.yml
+    ansible-playbook --inventory ansible/inventory.yml --limit nanopi-neo3 "$@" ansible/site.yml
+
 # Argument list matches the one ci.yml hands kcov, so a local run covers
 # what CI covers.
 [doc("Run bats unit tests for shell helpers.")]

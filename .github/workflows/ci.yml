@@ -143,10 +143,7 @@ jobs:
       - name: Set up Ansible
         uses: ./.github/actions/mise
         with:
-          install_args: python uv ansible-core
-
-      - name: Install collections
-        run: ansible-galaxy collection install -r ansible/requirements.yml
+          install_args: python uv ansible-core just
 
       - name: Start the stand-in host
         run: |
@@ -157,11 +154,9 @@ jobs:
       # the real inventory's hosts.
       - name: Run the playbook in check mode
         run: >-
-          ansible-playbook --check --diff
-          --inventory ansible/inventory.yml
+          just nanopi-neo3 --check --diff
           --extra-vars ansible_connection=community.docker.docker
           --extra-vars ansible_host=ansible-stand-in
-          ansible/site.yml
 
   # The default-branch ruleset requires this check by name, so renaming the
   # job breaks the merge gate.
