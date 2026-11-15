@@ -3,7 +3,8 @@
 
 # Build the NanoPi-NEO3 recovery image with Armbian's build framework
 
-- Status: Accepted
+- Status: Accepted; "Configuring the box after boot" superseded by
+  [0006](0006-configure-the-nanopi-neo3-with-ansible.md)
 - Date: 2026-09-12
 
 ## Context and Problem Statement
