@@ -39,13 +39,14 @@ release App's bypass entry exempts the App, and the admin role's bypass entry
 exempts a fine-grained token acting as the account.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
-default branch. GitHub runs the release workflow from the tagged commit, so a
-workflow in that commit without the check publishes the tag unchecked.
+default branch. GitHub runs the release workflow from the tagged commit, so if
+the release workflow in that commit lacks the check, the workflow publishes
+the tag unchecked.
 
 ## What withholding `Workflows` stops
 
 Withholding `Workflows` lets the default-branch check stop an actor only while
-no branch carries a release workflow without the check. An actor without
+every release workflow on every branch carries the check. An actor without
 `Workflows` [can tag a commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
@@ -94,7 +95,7 @@ reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-acc
 The tag ruleset refuses Renovate's release tags, because no bypass entry names
 it.
 
-Renovate raises a re-pointed action tag as a [`digest`
+Renovate raises a re-pointed tag behind a digest pin as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
 unless `digestOneAndOnly` is set and another update is present. The rules that
 govern digest updates therefore govern re-pointed tags.
@@ -112,13 +113,13 @@ reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-acc
 
 ### Release App (P-12)
 
-The release App is the one actor meant to create release tags, so the tag
-ruleset gives it a bypass entry [by App
+Besides the operator, the release App is the one actor meant to create release
+tags, so the tag ruleset gives it a bypass entry [by App
 ID](../reference/release-control-behaviour.md#app-bypass), beside the admin
 role's. The entry exempts the App, so the ruleset doesn't limit which commit
-the App tags. Only the default-branch check stops a
-leaked key, and only [while no branch carries a release workflow without the
-check](#what-withholding-workflows-stops).
+the App tags. Only the default-branch check stops a leaked App key from
+publishing an off-branch tag, and only [while every release workflow on every
+branch carries the check](#what-withholding-workflows-stops).
 
 ### `GITHUB_TOKEN` (P-11)
 
