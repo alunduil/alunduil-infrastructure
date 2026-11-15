@@ -18,8 +18,8 @@ behaviour](../reference/release-control-behaviour.md).
 
 It also treats two planned controls as in place: the tag ruleset in #1055, and a
 default-branch check in each release workflow (`zfs-replicate#827`,
-`network-arbitrary#172`). Neither exists, so any actor with `Contents` write
-can create a release tag ([credential
+`network-arbitrary#172`). Neither exists. Without the tag ruleset, any actor
+with `Contents` write can create a release tag ([credential
 reachability](credential-reachability.md#tagging)).
 
 Out of scope:
@@ -33,8 +33,8 @@ Out of scope:
 The tag ruleset refuses a matching tag from any actor without a bypass entry,
 on [all three tested
 routes](../reference/release-control-behaviour.md#tag-creation-routes). The
-routes include creating a Release with a new tag. The App and admin-role
-bypass entries exempt their actors on every tested route.
+routes include creating a Release with a new tag. The release App's and the
+admin role's bypass entries exempt their actors on every tested route.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
 default branch. GitHub runs the release workflow from the tagged commit, so a
@@ -43,9 +43,8 @@ workflow in that commit without the check publishes the tag unchecked.
 ## What withholding `Workflows` stops
 
 The default-branch check stops an actor without `Workflows` only while no
-branch carries a release workflow without the check. Withholding `Workflows`
-doesn't stop an actor tagging a commit whose workflow lacks the check. An
-actor without `Workflows` [can tag a commit whose workflow files exist on some
+branch carries a release workflow without the check. An actor without
+`Workflows` [can tag a commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
 write can push a branch whose release workflow lacks the check.
@@ -124,7 +123,8 @@ P-11), so it can't start a release by tagging.
 
 ### Tokens acting as the account (C-13, C-32)
 
-C-32 is a fine-grained token acting as the account, the kind tested. The
+C-32 is a fine-grained token acting as the account, the kind issue #1065
+tested. The
 [admin role's
 bypass](../reference/release-control-behaviour.md#admin-role-bypass) exempts
 it, so it can create release tags despite the ruleset. If C-32 holds

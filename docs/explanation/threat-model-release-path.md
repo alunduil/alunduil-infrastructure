@@ -75,7 +75,8 @@ Three limits remain:
   tag, so
   `zfs-replicate#827` and `network-arbitrary#172` have to carry the check.
   Without `Workflows`, the App can still tag a commit whose release workflow
-  lacks the check ([release controls by
+  lacks the check, while that workflow exists on some branch ([release
+  controls by
   actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).

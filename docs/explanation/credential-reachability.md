@@ -195,8 +195,8 @@ A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
 reach the registries without passing through a default branch. C-25 reaches
-the registries this way even without `Workflows` ([release controls by
-actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
+the registries this way even without `Workflows` ([release control
+behaviour](../reference/release-control-behaviour.md#tagging-without-workflows)).
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
