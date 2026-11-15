@@ -13,6 +13,7 @@ bootstrap: && configure-hook-fix projects
     scripts/configure-git-sync-secrets.sh
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
+    scripts/configure-truenas-secrets.sh
     scripts/configure-github-secrets.sh
 
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]
@@ -59,6 +60,19 @@ alunduil:
     export GITHUB_TOKEN
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
+
+# Credentials: gcloud CLI auth with secretAccessor on truenas-api-key, and
+# gcloud application-default for the GCS backend. Needs a route to TrueNAS.
+[doc("Plan and apply the TrueNAS configuration. No workflow runs this.")]
+truenas:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Assigned before export, so a failed fetch stops here rather than
+    # reaching terraform as an empty key.
+    TRUENAS_API_KEY="$(gcloud secrets versions access latest --secret=truenas-api-key --project=alunduil)"
+    export TRUENAS_API_KEY
+    terraform -chdir=terraform/truenas init
+    terraform -chdir=terraform/truenas apply
 
 # Argument list matches the one ci.yml hands kcov, so a local run covers
 # what CI covers.
