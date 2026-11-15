@@ -32,8 +32,8 @@ Out of scope:
 
 ### Tag creation routes
 
-A tag ruleset with the `creation` rule refuses a matching tag from a
-non-bypass actor on all three routes:
+A tag ruleset with the `creation` rule refuses a matching tag from a user or
+App without a bypass entry, on all three routes:
 
 - `POST /git/refs`: `422 Reference update failed`
 - `POST /releases` with a new `tag_name`: `422`, `Cannot create ref due to
@@ -121,7 +121,7 @@ Tested: [#1065, test 5](https://github.com/alunduil/alunduil-infrastructure/issu
 
 ### Re-running a failed run
 
-Re-running the failed run replaces its check run in the same suite. When the
+Re-running a failed run replaces its check run in the same suite. When the
 re-run passes, GitHub allows the merge. A workflow on `pull_request_review:
 submitted`, with `actions: write`, can start the re-run by calling `POST
 /actions/runs/{id}/rerun-failed-jobs` with `GITHUB_TOKEN`.
@@ -187,7 +187,7 @@ Source:
 
 ## Not established
 
-No test or source covers these:
+No test, documentation, or source covers these:
 
 - Whether a classic personal access token, such as C-13, gets the admin role's
   bypass.

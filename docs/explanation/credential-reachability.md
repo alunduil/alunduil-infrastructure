@@ -223,8 +223,8 @@ else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
-organizations too. No test or source shows whether the admin role's ruleset
-bypass exempts a classic token such as C-13 ([not
+organizations too. No test, documentation, or source shows whether the admin
+role's ruleset bypass exempts a classic token such as C-13 ([not
 established](../reference/release-control-behaviour.md#not-established)). Any
 merge to `main` reaches C-13, because the hourly job runs its script from
 `main`, and no review hold covers that script.

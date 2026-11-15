@@ -30,11 +30,13 @@ Out of scope:
 
 ## What the two controls stop
 
-The tag ruleset refuses a matching tag from any actor without a bypass entry,
+The tag ruleset refuses a matching tag from any user or App without a bypass
+entry,
 on [all three tested
 routes](../reference/release-control-behaviour.md#tag-creation-routes). The
-routes include creating a Release with a new tag. The release App's and the
-admin role's bypass entries exempt their actors on every tested route.
+routes include creating a Release with a new tag. On every tested route, the
+release App's bypass entry exempts the App, and the admin role's exempts a
+fine-grained token acting as the account.
 
 The default-branch check refuses to publish a tag whose commit isn't on the
 default branch. GitHub runs the release workflow from the tagged commit, so a
@@ -42,8 +44,8 @@ workflow in that commit without the check publishes the tag unchecked.
 
 ## What withholding `Workflows` stops
 
-The default-branch check stops an actor without `Workflows` only while no
-branch carries a release workflow without the check. An actor without
+Withholding `Workflows` lets the default-branch check stop an actor only while
+no branch carries a release workflow without the check. An actor without
 `Workflows` [can tag a commit whose workflow files exist on some
 branch](../reference/release-control-behaviour.md#tagging-without-workflows).
 Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
@@ -123,8 +125,8 @@ P-11), so it can't start a release by tagging.
 
 ### Tokens acting as the account (C-13, C-32)
 
-C-32 is a fine-grained token acting as the account, the kind issue #1065
-tested. The
+C-32 is a fine-grained token acting as the account, the kind of token
+tested in #1065. The
 [admin role's
 bypass](../reference/release-control-behaviour.md#admin-role-bypass) exempts
 it, so it can create release tags despite the ruleset. If C-32 holds
@@ -133,7 +135,7 @@ ruleset](../reference/release-control-behaviour.md#ruleset-edits-by-account-toke
 The register lists its scope as `Unverified`. The ruleset can't stop C-32, so
 issue #738 tracks removing the token.
 
-C-13 is a classic token. No test or source shows whether the admin role's
-bypass exempts a classic token ([not
+C-13 is a classic token. No test, documentation, or source shows whether the
+admin role's bypass exempts a classic token ([not
 established](../reference/release-control-behaviour.md#not-established)), so
 issues #1076 and #1069 shouldn't assume either answer.
