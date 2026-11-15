@@ -21,7 +21,8 @@ reachability](credential-reachability.md).
 The rows come from reading configuration, workflows, and GitHub's documentation.
 [Release control behaviour](../reference/release-control-behaviour.md)
 records the platform behaviour that the planned tag ruleset and default-branch
-check rely on, and what withholding `Workflows` stops. [Release controls by
+check rely on. It also records which commits an actor without `Workflows` can
+tag. [Release controls by
 actor](release-controls-by-actor.md) maps it to each actor. Nobody has tried
 an attack against a managed repository.
 
@@ -70,7 +71,7 @@ The App's design follows:
 Three limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  default-branch check in the release workflow refuses that, so
+  default-branch check in the release workflow refuses to publish such a tag, so
   `zfs-replicate#827` and `network-arbitrary#172` have to carry the check.
   Lacking `Workflows`, the App can still tag a commit whose release workflow
   lacks the check ([release controls by

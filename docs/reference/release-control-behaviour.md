@@ -110,7 +110,7 @@ note.
 
 A failed run of a required job keeps the check failing on that commit. A
 later passing run of a job with the same name, from another event and in
-another check suite, doesn't clear it. GitHub refuses the merge with
+another check suite, doesn't clear the failure. GitHub refuses the merge with
 `Required status check "Review gate" is failing.`
 
 Tested: [#1065, test 5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
@@ -143,8 +143,8 @@ Tested, for the head-commit attachment: [#1065, test
 
 ### Bot commit signing
 
-GitHub signs an API commit from a bot only when that App or bot authenticates
-the request and the request sets no custom author, committer, or signature.
+GitHub signs an API commit from a GitHub App or bot only when that App or bot
+authenticates the request and the request sets no custom author, committer, or signature.
 
 The GraphQL `createCommitOnBranch` mutation can't set an author or committer.
 Its commits take the identity of whoever owns the credential that made the

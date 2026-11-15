@@ -194,8 +194,8 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch. C-25 keeps
-this edge without `Workflows` ([release controls by
+reach the registries without passing through a default branch. C-25 reaches
+the registries this way even without `Workflows` ([release controls by
 actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
@@ -224,7 +224,7 @@ else.
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
 organizations too. No test or source shows whether the admin role's ruleset
-bypass exempts a classic token ([not
+bypass exempts a classic token such as C-13 ([not
 established](../reference/release-control-behaviour.md#not-established)). Any
 merge to `main` reaches C-13, because the hourly job runs its script from
 `main`, and no review hold covers that script.

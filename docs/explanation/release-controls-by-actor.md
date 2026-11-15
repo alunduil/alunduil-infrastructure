@@ -16,7 +16,7 @@ register](../reference/asset-register.md), [credential
 reachability](credential-reachability.md), and [release control
 behaviour](../reference/release-control-behaviour.md).
 
-It also assumes two planned controls: the tag ruleset in #1055, and a
+It also treats two planned controls as in place: the tag ruleset in #1055, and a
 default-branch check in each release workflow (`zfs-replicate#827`,
 `network-arbitrary#172`). Neither exists, so any actor with `Contents` write
 can create a release tag ([credential
@@ -65,7 +65,7 @@ whose release workflow lacks the default-branch check ([what withholding
 `Workflows` stops](#what-withholding-workflows-stops)).
 
 The required job in #1057 stops a hook-fix commit reaching a default branch
-until the operator approves it. Without it, Renovate merges such commits
+until the operator approves it. Without the job, Renovate merges such commits
 unreviewed: in `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
 `alunduil-hook-fix[bot]` commit with no review. The job relies on four
 behaviours:
@@ -88,10 +88,11 @@ behaviours:
 
 The operator accepts Renovate's access ([credential
 reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
-The tag ruleset has no bypass entry for it. Renovate raises a re-pointed
-action tag as a [`digest`
+The tag ruleset has no bypass entry for it.
+
+Renovate raises a re-pointed action tag as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
-unless `digestOneAndOnly` drops it beside another update. The rules that
+unless `digestOneAndOnly` is set and another update is present. The rules that
 govern digest updates therefore govern moved tags. `matchFileNames` [tests
 only the upgrade's
 files](../reference/release-control-behaviour.md#matchfilenames-scope), so a
