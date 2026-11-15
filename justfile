@@ -62,8 +62,8 @@ alunduil:
     terraform -chdir=terraform/alunduil apply
 
 # Credentials: gcloud CLI auth with secretAccessor on truenas-api-key, and
-# gcloud application-default for the GCS backend. Needs a route to A-01.
-[doc("Plan and apply A-01's TrueNAS configuration. No workflow runs this.")]
+# gcloud application-default for the GCS backend. Needs a route to TrueNAS.
+[doc("Plan and apply the TrueNAS configuration. No workflow runs this.")]
 truenas:
     #!/usr/bin/env bash
     set -euo pipefail

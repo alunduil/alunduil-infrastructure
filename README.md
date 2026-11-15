@@ -31,7 +31,7 @@ The four operator entrypoints:
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
-- `just truenas`—`terraform apply` on A-01's TrueNAS configuration,
+- `just truenas`—`terraform apply` on the TrueNAS configuration,
   which no workflow runs. See
   [docs/how-to/apply-terraform-to-truenas.md](docs/how-to/apply-terraform-to-truenas.md).
 - `just projects`—Projects v2 board fields, after editing a spec in

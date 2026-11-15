@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Populates A-01's API key in the Secret Manager shell
+# Populates the TrueNAS API key in the Secret Manager shell
 # terraform/bootstrap/truenas.tf declares. Supplying TRUENAS_API_KEY rotates
 # it.
 
@@ -35,5 +35,5 @@ fi
 
 command -v gcloud >/dev/null || die "gcloud CLI not found in PATH"
 
-ensure_secret truenas-api-key "A-01's TrueNAS API key" \
+ensure_secret truenas-api-key "TrueNAS API key" \
   "${TRUENAS_API_KEY:-}" check_no_whitespace

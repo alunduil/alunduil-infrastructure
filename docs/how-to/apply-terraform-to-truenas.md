@@ -3,7 +3,7 @@
 
 # Apply Terraform to TrueNAS
 
-`just truenas` plans and applies `terraform/truenas/` against A-01's API.
+`just truenas` plans and applies `terraform/truenas/` against the TrueNAS API.
 No workflow runs it, so a change there takes effect only when you run the
 recipe. It authenticates with an API key (C-36) that you create in the
 TrueNAS web UI and store in Secret Manager.
@@ -45,10 +45,10 @@ just truenas
 
 Terraform shows the plan and waits for `yes` before applying. A plan reporting
 `No changes` with no error means the key authenticates and the configuration
-matches A-01.
+matches TrueNAS.
 
 ## Recover from a bad apply
 
-If an apply cuts A-01's tailnet path, sign in to the web UI on the home network
-at `https://192.168.68.63` and revert the change there. Revert it in
+If an apply cuts the tailnet path to TrueNAS, sign in to the web UI on the
+home network at `https://192.168.68.63` and revert the change there. Revert it in
 `terraform/truenas/` too, or the next `just truenas` reapplies it.
