@@ -89,7 +89,7 @@ Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
 An actor holding `Contents` write but not `Workflows` can tag a commit only
 when the workflow files of that commit already exist on some branch:
 
-- The actor can tag, on all three routes, a commit whose `.github/workflows/`
+- On all three routes, the actor can tag a commit whose `.github/workflows/`
   differs from the default branch's but matches another branch's head.
 - GitHub refuses a tag on a commit whose workflow files exist on no branch,
   such as the head of a deleted branch. `POST /git/refs` and `POST /releases`

@@ -84,7 +84,8 @@ The job would rely on three behaviours:
   another credential.
 - [GitHub signs an API commit from a bot only when the bot sends it with no
   custom author](../reference/release-control-behaviour.md#bot-commit-signing),
-  so another key can't forge a verified `renovate[bot]` commit.
+  so a credential other than Renovate's can't forge a verified `renovate[bot]`
+  commit.
 
 ### Renovate (P-6)
 
@@ -96,7 +97,7 @@ it.
 Renovate raises a re-pointed action tag as a [`digest`
 update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
 unless `digestOneAndOnly` is set and another update is present. The rules that
-govern digest updates therefore govern moved tags.
+govern digest updates therefore govern re-pointed tags.
 
 `matchFileNames` [tests only the upgrade's
 files](../reference/release-control-behaviour.md#matchfilenames-scope), so a
