@@ -11,8 +11,7 @@
 # and granting it policy-write would let a pull request rewrite any policy here,
 # including the ones gating its own plan.
 #
-# One token per collector, so rotating or revoking one leaves the others
-# pushing.
+# Rotating or revoking one collector's token leaves the others pushing.
 locals {
   # Policy and token carry one name so the Cloud Portal shows which token came
   # from which policy.
@@ -24,13 +23,13 @@ locals {
 
   grafana_alloy_collectors = {
     truenas = local.grafana_alloy_push_scopes
-    # The same token authenticates the box's remotecfg block to Fleet
-    # Management, so the box holds a single Grafana credential.
+    # The box's remotecfg block authenticates to Fleet Management with this
+    # token too, so the box holds one Grafana credential.
     nanopi-neo3 = concat(["fleet-management:read"], local.grafana_alloy_push_scopes)
   }
 
-  # truenas predates per-collector tokens and keeps its unsuffixed names,
-  # because changing a policy's name or a secret's ID replaces it.
+  # Renaming a policy or a secret replaces it, and the collector's token with
+  # it, so truenas's names carry no suffix.
   grafana_alloy_collector_suffixes = merge(
     { for collector in keys(local.grafana_alloy_collectors) : collector => "-${collector}" },
     { truenas = "" },

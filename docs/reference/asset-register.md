@@ -652,9 +652,8 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
   stack realm
-- Consumer: none yet. Alloy on A-05 is to hold it as `GCLOUD_RW_API_KEY`,
-  for its Fleet Management connection and its pipelines. No deployer reads it
-- Grants: nothing until A-05 holds it, then P-4
+- Consumer: none
+- Grants: nothing until A-05 holds it
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
 - Tracked by: #671

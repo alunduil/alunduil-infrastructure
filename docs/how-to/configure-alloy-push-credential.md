@@ -21,7 +21,7 @@ rotates the token.
 
 ## Read the token
 
-Each collector has its own secret:
+Replace `<secret>` with the collector's secret:
 
 - TrueNAS: `grafana-alloy-push-token`
 - NanoPi-NEO3: `grafana-alloy-push-token-nanopi-neo3`
