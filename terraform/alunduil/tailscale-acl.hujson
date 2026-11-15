@@ -9,8 +9,9 @@
 	},
 
 	"tagOwners": {
-		// Ephemeral Terraform runners, joined by the plan and apply workflows.
-		"tag:ci": ["autogroup:admin"],
+		// Ephemeral runners for the Terraform plan and apply workflows. The tag
+		// grants A-01's API, so other CI jobs take a tag of their own.
+		"tag:terraform": ["autogroup:admin"],
 	},
 
 	"grants": [
@@ -18,7 +19,7 @@
 		// autogroup:member and get only the grants naming their tag.
 		{"src": ["autogroup:member"], "dst": ["*"], "ip": ["*"]},
 
-		{"src": ["tag:ci"], "dst": ["truenas-lan"], "ip": ["tcp:443"]},
+		{"src": ["tag:terraform"], "dst": ["truenas-lan"], "ip": ["tcp:443"]},
 	],
 
 	"ssh": [
@@ -32,7 +33,7 @@
 
 	"tests": [
 		{
-			"src":    "tag:ci",
+			"src":    "tag:terraform",
 			"accept": ["truenas-lan:443"],
 			"deny": [
 				"truenas-lan:80",
