@@ -15,10 +15,9 @@ Verified 2026-11-15.
 Written for the operator choosing or reviewing a control on the release path.
 It assumes the [asset register](asset-register.md), whose IDs name the actors.
 
-Each entry states the behaviour, then its evidence:
+Evidence labels:
 
-- **Tested**: run in a scratch personal-account repository for #1065. The
-  link goes to the comment recording commands and responses.
+- **Tested**: run in a scratch personal-account repository for #1065.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
@@ -41,8 +40,8 @@ non-bypass actor on all three routes:
   creations being restricted`
 - `git push`: `GH013: Repository rule violations found`
 
-`POST /releases` with a tag name outside the pattern succeeded. The other
-routes weren't tried with a non-matching name.
+A tag name outside the pattern succeeds through `POST /releases`. The other
+routes are untested with one.
 
 Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
@@ -50,7 +49,7 @@ Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issu
 
 A bypass entry with `actor_type` `Integration` and `actor_id` set to the App
 ID exempts that App on all three routes. A fine-grained token acting as the
-admin, not listed, was refused on all three.
+admin, not listed, is refused on all three.
 
 Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
@@ -128,8 +127,7 @@ Tested: [#1065, test 5b](https://github.com/alunduil/alunduil-infrastructure/iss
 ### Review-triggered runs
 
 A `pull_request_review` run's checks count toward required checks, and attach
-to the head commit although `GITHUB_SHA` is the merge commit. Required checks
-must pass on the latest commit.
+to the head commit although `GITHUB_SHA` is the merge commit.
 
 Documented: [Events that trigger
 workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_review)
@@ -165,13 +163,10 @@ For `uses: owner/action@<sha> # v7`, a re-pointed `v7` tag produces a
 `digest` update. With `digestOneAndOnly` set and another update present, no
 digest update is added.
 
-Source: the extractor sets `currentValue` to `v7` and `currentDigest` to the
-SHA
-([`extract.ts:145-146`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/modules/manager/github-actions/extract.ts#L145-L146)).
-Lookup adds `updateType: 'digest'`
-([`lookup/index.ts:594-601`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/index.ts#L594-L601)),
-and keeps it when the tag's commit differs from the pin
-([`utils.ts:94-96`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/utils.ts#L94-L96)).
+Source:
+[`extract.ts:145-146`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/modules/manager/github-actions/extract.ts#L145-L146),
+[`lookup/index.ts:594-601`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/index.ts#L594-L601),
+[`utils.ts:94-96`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/workers/repository/process/lookup/utils.ts#L94-L96).
 
 ### `matchFileNames` scope
 
@@ -185,10 +180,10 @@ Source: [`files.ts:24-30`](https://github.com/renovatebot/renovate/blob/da966432
 Renovate treats a branch as unmodified when the author email of every commit
 is in `gitIgnoredAuthors`, so it keeps automerging the branch.
 
-Source: `isBranchModified`
-([`git/index.ts:1040-1047`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/git/index.ts#L1040-L1047)).
-`alunduil/projects-v2-sync#49` shows the effect: an `alunduil-hook-fix[bot]`
-commit merged by `renovate[bot]` with no review.
+Source:
+[`git/index.ts:1040-1047`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/git/index.ts#L1040-L1047).
+In `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
+`alunduil-hook-fix[bot]` commit with no review.
 
 ## Not established
 

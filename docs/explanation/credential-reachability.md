@@ -17,9 +17,9 @@ node here.
 
 The graphs draw what an actor could obtain, including paths that have never
 run. The edges come from reading configuration. Some have run in normal use.
-Issue #1065 tested the tag and `Workflows` behaviour behind the tagging edges,
-and [release control behaviour](../reference/release-control-behaviour.md)
-records the results. The rest haven't been tested as an attack.
+The tag and `Workflows` behaviour behind the tagging edges is tested, in
+[release control behaviour](../reference/release-control-behaviour.md). No
+other edge has been tested as an attack.
 
 Out of scope:
 
@@ -194,10 +194,9 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch. C-25 lacking
-`Workflows` doesn't remove its edge, for the reason [release controls by
-actor](release-controls-by-actor.md#why-no-single-control-holds-everyone)
-gives.
+reach the registries without passing through a default branch. The C-25 edge
+holds without `Workflows` ([release controls by
+actor](release-controls-by-actor.md#why-no-single-control-holds-everyone)).
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
