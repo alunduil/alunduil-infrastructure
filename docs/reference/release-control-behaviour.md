@@ -15,18 +15,18 @@ Verified 2026-11-15.
 Written for the operator choosing or reviewing a control on the release path.
 It assumes the [asset register](asset-register.md), whose IDs name the actors.
 
-Evidence labels:
+Out of scope:
+
+- How this repository configures these controls. `main.tf` holds that.
+- Organization-owned repositories. Every test ran on a personal account.
+
+## Evidence
 
 - **Tested**: run in a scratch personal-account repository for #1065.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
   [`renovatebot/renovate@da96643`](https://github.com/renovatebot/renovate/tree/da9664321d4d16371084d616d2ac5c57de02e27d).
-
-Out of scope:
-
-- How this repository configures these controls. `main.tf` holds that.
-- Organization-owned repositories. Every test ran on a personal account.
 
 ## Tag rulesets
 
@@ -40,33 +40,32 @@ non-bypass actor on all three routes:
   creations being restricted`
 - `git push`: `GH013: Repository rule violations found`
 
-`POST /releases` succeeds with a tag name outside the pattern. No test tried a
-non-matching name on the other routes.
+`POST /releases` succeeds with a tag name outside the pattern.
 
 Tested: [#1065, test 1](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
 ### App bypass
 
 A bypass entry with `actor_type` `Integration` and `actor_id` set to the App
-ID exempts that App on all three routes. With only that entry, the ruleset
-refuses a fine-grained token acting as the admin on all three.
+ID exempts that App on all three routes.
 
 Tested: [#1065, test 2](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
 ### Admin role bypass
 
-A personal-account repository accepts `actor_type` `RepositoryRole` with
-`actor_id` 5, the admin role. A fine-grained token created by the admin then
-creates matching tags on all three routes. Without that entry the ruleset
-refuses the same token, because owning the repository exempts nothing.
+On a personal-account repository, GitHub accepts a bypass entry with
+`actor_type` `RepositoryRole` and `actor_id` 5, the admin role. A fine-grained
+token acting as the account then creates matching tags on all three routes.
+Without that entry the ruleset refuses the same token, because owning the
+repository exempts nothing.
 
 Tested: [#1065, tests 2 and
 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
 ### Ruleset edits by admin tokens
 
-A fine-grained token acting as the admin, with `Administration` write, can add
-a bypass entry to a ruleset and delete the ruleset.
+A fine-grained token acting as the account, with `Administration` write, can
+add a bypass entry to a ruleset and delete the ruleset.
 
 Tested: [#1065, test 3](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283).
 
@@ -102,7 +101,8 @@ scope](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for
 allows workflow files when "the same file (with both the same path and
 contents) exists on another branch in the same repository." The [Create a
 release](https://docs.github.com/en/rest/releases/releases#create-a-release)
-note compares against the default branch instead, which the test contradicts.
+note compares against the default branch instead. Test 4 contradicts that
+note.
 
 ## Required checks
 
@@ -118,7 +118,7 @@ Tested: [#1065, test 5](https://github.com/alunduil/alunduil-infrastructure/issu
 ### Re-running a failed run
 
 Re-running the failed run replaces its check run in the same suite. When the
-re-run passes, the pull request merges. A workflow on `pull_request_review:
+re-run passes, GitHub allows the merge. A workflow on `pull_request_review:
 submitted`, with `actions: write`, can start the re-run by calling `POST
 /actions/runs/{id}/rerun-failed-jobs` with `GITHUB_TOKEN`.
 
@@ -126,8 +126,8 @@ Tested: [#1065, test 5b](https://github.com/alunduil/alunduil-infrastructure/iss
 
 ### Review-triggered runs
 
-A `pull_request_review` run's checks count toward required checks, and attach
-to the head commit although `GITHUB_SHA` is the merge commit.
+A `pull_request_review` run's checks count toward required checks. They attach
+to the head commit, although `GITHUB_SHA` is the merge commit.
 
 Documented: [Events that trigger
 workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_review)
@@ -136,13 +136,12 @@ checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-request
 lists `pull_request_review` among the events whose checks count, and says
 "Required checks must pass on the latest commit SHA."
 
-Tested: the `pull_request_review` check run in [test
-5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981)
-attached to the head commit.
+Tested, for the head-commit attachment: [#1065, test
+5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
 
 ## Commit verification
 
-### Bot commit verification
+### Bot commit signing
 
 GitHub signs an API commit from a bot only when the request is authenticated
 as that App or bot and sets no custom author, committer, or signature. The
@@ -159,8 +158,8 @@ and the `createCommitOnBranch`
 
 ### Moved tags behind digest pins
 
-For `uses: owner/action@<sha> # v7`, a re-pointed `v7` tag produces a
-`digest` update. With `digestOneAndOnly` set and another update present,
+For `uses: owner/action@<sha> # v7`, Renovate raises a re-pointed `v7` tag as
+a `digest` update. With `digestOneAndOnly` set and another update present,
 Renovate adds no digest update.
 
 Source:
@@ -182,8 +181,6 @@ is in `gitIgnoredAuthors`, and keeps automerging it.
 
 Source:
 [`git/index.ts:1040-1047`](https://github.com/renovatebot/renovate/blob/da9664321d4d16371084d616d2ac5c57de02e27d/lib/util/git/index.ts#L1040-L1047).
-In `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
-`alunduil-hook-fix[bot]` commit with no review.
 
 ## Not established
 
@@ -191,6 +188,9 @@ No test or source covers these:
 
 - Whether a classic personal access token, such as C-13, gets the admin role's
   bypass.
+- Whether `POST /git/refs` and `git push` accept a tag name outside the
+  pattern.
+- Whether the tag ruleset refuses `GITHUB_TOKEN`.
 - Whether a re-run started by `GITHUB_TOKEN` works on a pull request from a
   fork.
 - Behaviour on organization-owned repositories.
