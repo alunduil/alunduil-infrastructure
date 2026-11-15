@@ -145,10 +145,16 @@ jobs:
         with:
           install_args: python uv ansible-core just
 
+      - name: Set up arm64 emulation
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: arm64
+
       - name: Start the stand-in host
         run: |
-          docker build --tag ansible-stand-in ansible
-          docker run --detach --name ansible-stand-in ansible-stand-in
+          docker build --platform linux/arm64 --tag ansible-stand-in ansible
+          docker run --platform linux/arm64 --detach --name ansible-stand-in ansible-stand-in
+          test "$(docker exec ansible-stand-in uname -m)" = aarch64
 
       # Extra vars outrank inventory vars, so the real inventory's host
       # resolves to the container.
