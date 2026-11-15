@@ -124,7 +124,7 @@ branch carries the check](#what-withholding-workflows-stops).
 ### `GITHUB_TOKEN` (P-11)
 
 Tags and Releases that `GITHUB_TOKEN` creates start no workflow (register,
-P-11), so it can't start a release by tagging.
+P-11), so `GITHUB_TOKEN` can't start a release by tagging.
 
 ### Tokens acting as the account (C-13, C-32)
 
