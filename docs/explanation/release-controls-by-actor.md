@@ -77,9 +77,9 @@ In `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
 The job would rely on three behaviours:
 
 - [A failed run keeps the check
-  failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check),
-  so a later passing run of a job with the same name, from another event,
-  doesn't clear the failure.
+  failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check)
+  even after a later passing run of a job with the same name, from another
+  event.
 - [A passing re-run of the failed run clears the
   failure](../reference/release-control-behaviour.md#re-running-a-failed-run),
   so a review-triggered workflow can re-run the job after approval without
@@ -96,7 +96,7 @@ it. The operator accepts Renovate's access ([credential
 reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-accepted)).
 
 Renovate raises a re-pointed tag behind a digest pin as a [`digest`
-update](../reference/release-control-behaviour.md#moved-tags-behind-digest-pins),
+update](../reference/release-control-behaviour.md#re-pointed-tags-behind-digest-pins),
 unless `digestOneAndOnly` is set and another update is present. The rules that
 govern digest updates therefore govern re-pointed tags.
 
@@ -113,9 +113,9 @@ reachability](credential-reachability.md#why-renovate-and-the-claude-app-are-acc
 
 ### Release App (P-12)
 
-Besides the operator, the release App is the one actor meant to create release
-tags, so the tag ruleset gives it a bypass entry [by App
-ID](../reference/release-control-behaviour.md#app-bypass), beside the admin
+The operator and the release App are the two actors meant to create release
+tags, so the tag ruleset gives the App a bypass entry [by App
+ID](../reference/release-control-behaviour.md#app-bypass) alongside the admin
 role's. The entry exempts the App, so the ruleset doesn't limit which commit
 the App tags. Only the default-branch check stops a leaked App key from
 publishing an off-branch tag, and only [while every release workflow on every

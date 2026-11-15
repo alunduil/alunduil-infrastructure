@@ -96,8 +96,9 @@ when the workflow files of that commit already exist on some branch:
   return `403 Resource not accessible by integration`, and `git push`
   returns `refusing to allow a GitHub App to create or update workflow ...
   without workflows permission`.
-- The actor can't create a commit that adds a workflow: `POST /git/trees`
-  returns `403`.
+
+The same actor can't create a commit that adds a workflow: `POST /git/trees`
+returns `403`.
 
 Tested: [#1065, test 4](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
 with an App.
@@ -161,7 +162,7 @@ and the `createCommitOnBranch`
 
 ## Renovate
 
-### Moved tags behind digest pins
+### Re-pointed tags behind digest pins
 
 For `uses: owner/action@<sha> # v7`, Renovate raises a re-pointed `v7` tag as
 a `digest` update. With `digestOneAndOnly` set and another update present,
