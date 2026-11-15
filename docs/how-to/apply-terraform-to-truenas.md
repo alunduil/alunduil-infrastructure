@@ -37,7 +37,7 @@ TRUENAS_API_KEY=<key> scripts/configure-truenas-secrets.sh
 A supplied key replaces the stored one. Revoke the old key in **API Keys**
 after the next `just truenas` succeeds.
 
-## Run the recipe
+## Apply the configuration
 
 ```sh
 just truenas
@@ -50,6 +50,5 @@ matches A-01.
 ## Recover from a bad apply
 
 If an apply cuts A-01's tailnet path, sign in to the web UI on the home network
-at `https://192.168.68.63` and revert the change there. Then fix the
-configuration and run `just truenas` again, so the next plan doesn't reapply
-the change.
+at `https://192.168.68.63` and revert the change there. Revert it in
+`terraform/truenas/` too, or the next `just truenas` reapplies it.

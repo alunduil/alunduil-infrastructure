@@ -5,8 +5,7 @@
 # Secret Manager helpers for the scripts that fill the shells
 # terraform/bootstrap/ declares. Sourced, not run.
 #
-# ensure_secret prompts for a secret and stores it. Re-running prompts only
-# for an empty secret. A supplied value overwrites the stored one, which is how
+# ensure_secret prompts only for an empty secret. A supplied value overwrites the stored one, which is how
 # a credential is rotated. The caller sets SETUP_DOC, the how-to that creates
 # the credential, and may redefine announce_pointer and read_answer after
 # sourcing.

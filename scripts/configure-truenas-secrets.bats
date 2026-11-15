@@ -2,8 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for what configure-truenas-secrets.sh adds to ensure_secret.
-# lib/secret-manager.bats covers when a secret is written.
+# Unit tests for the API key check in configure-truenas-secrets.sh.
 
 setup() {
   # shellcheck source=configure-truenas-secrets.sh disable=SC1091

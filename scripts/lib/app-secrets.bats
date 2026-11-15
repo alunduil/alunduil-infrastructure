@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for app-secrets.sh. secret-manager.bats covers ensure_secret.
+# Unit tests for app-secrets.sh.
 
 # Fixtures below are inputs to the sourced library rather than to this file, so
 # every assignment reads as a dead store from here.

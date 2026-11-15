@@ -639,12 +639,13 @@ Google Cloud's other credentials.
 
 - Kind: TrueNAS API key
 - Scope: its owner's privileges on A-01, an administrator's
-- Consumer: `just truenas` on A-06. No workflow reads it
+- Consumer: `just truenas` on A-06, over TLS it doesn't verify. No workflow
+  reads it
 - Grants: P-1
 - Created by: Operator
 - Source: [`apply-terraform-to-truenas.md`](../how-to/apply-terraform-to-truenas.md),
   stored in the secret `terraform/bootstrap/truenas.tf` declares
-- Tracked by: #1109, which replaces the unverified TLS the recipe connects with
+- Tracked by: #1109
 
 ## Maintenance
 
