@@ -78,7 +78,8 @@ The job would rely on three behaviours:
 
 - [A failed run keeps the check
   failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check),
-  so a second job with the same name can't pass it.
+  so a later passing run of a job with the same name, from another event,
+  doesn't clear the failure.
 - [A passing re-run of the failed run clears the
   failure](../reference/release-control-behaviour.md#re-running-a-failed-run),
   so a review-triggered workflow can re-run the job after approval without
