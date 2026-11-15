@@ -111,12 +111,10 @@ repos:
       - id: renovate-config-validator
         args: [--strict, --no-global]
 
-  # justfile format and parse check
   - repo: local
     hooks:
-      # The PyPI wheel ships a prebuilt binary, where upstream's hooks build
-      # from Go source. jactionlint checks `run:` scripts only when
-      # shellcheck is on PATH, and finds the files it lints itself.
+      # Local so it installs the prebuilt PyPI wheel; upstream's hooks compile
+      # from Go. Without shellcheck on PATH, jactionlint skips `run:` scripts.
       - id: jactionlint
         name: jactionlint
         entry: jactionlint
@@ -125,6 +123,7 @@ repos:
         pass_filenames: false
         files: ^\.github/
 
+      # justfile format and parse check
       - id: just-fmt-check
         name: just --fmt --check
         entry: just --fmt --check
