@@ -34,8 +34,8 @@ locals {
     "alunduil-infrastructure" = {
       required_status_checks = {
         ci_results_check = true
-        # A failed detect job skips the plan, and a skipped job passes.
         contexts = [
+          # A failed detect job skips the plan, and a skipped job passes.
           "Detect Terraform changes",
           "Plan Terraform changes",
           "Confirm lock file maintenance plans no changes",
