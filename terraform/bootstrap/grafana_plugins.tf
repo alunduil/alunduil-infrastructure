@@ -11,12 +11,12 @@
 resource "grafana_cloud_plugin_installation" "gcp_cloud_logging" {
   stack_slug = data.grafana_cloud_stack.this.slug
   slug       = "googlecloud-logging-datasource"
-  version    = "1.7.2"
+  version    = "1.8.1"
 }
 
 # For the data source in terraform/alunduil/grafana_github.tf.
 resource "grafana_cloud_plugin_installation" "github" {
   stack_slug = data.grafana_cloud_stack.this.slug
   slug       = "grafana-github-datasource"
-  version    = "2.9.4"
+  version    = "2.10.0"
 }
