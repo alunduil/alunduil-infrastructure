@@ -647,6 +647,17 @@ Google Cloud's other credentials.
   stored in the secret `terraform/bootstrap/truenas.tf` declares
 - Tracked by: #1109
 
+### C-37: `alunduil-infrastructure-alloy-push-nanopi-neo3`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
+  stack realm
+- Consumer: none
+- Grants: nothing until A-05 holds it
+- Created by: Terraform
+- Source: `terraform/bootstrap/grafana_alloy_push.tf`
+- Tracked by: #671
+
 ## Maintenance
 
 Adding or removing an asset, entry point, dependency, or credential

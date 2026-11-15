@@ -122,9 +122,9 @@ output "grafana_fleet_management_token_secrets" {
   sensitive   = false
 }
 
-output "grafana_alloy_push_token_secret" {
-  value       = google_secret_manager_secret.grafana_alloy_push_token.secret_id
-  description = "Secret Manager short name holding the access-policy token alloy pushes logs and metrics with; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
+output "grafana_alloy_push_token_secrets" {
+  value       = { for collector, secret in google_secret_manager_secret.grafana_alloy_push_token : collector => secret.secret_id }
+  description = "Secret Manager short name of each collector's alloy push token, keyed by collector; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
   sensitive   = false
 }
 
