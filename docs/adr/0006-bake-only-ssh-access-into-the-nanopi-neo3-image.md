@@ -10,23 +10,19 @@
 
 [ADR 0002](0002-build-nanopi-neo3-recovery-image-with-armbian.md) baked
 everything settable without a secret into the NanoPi-NEO3's recovery image,
-including Tailscale, Grafana Alloy and unattended upgrades. One script ran in the
-image build's `chroot` and over SSH afterwards, so the image and the running box
-shared a single description.
+including Tailscale, Grafana Alloy and unattended upgrades. A single script
+configured both the image and the running box.
 
 [ADR 0005](0005-configure-remote-hosts-with-ansible.md) replaced that script
-with an Ansible playbook run from the workstation. This record decides what the
-image carries now that the playbook configures the box.
-
-Neither `userpatches/` nor the script exists yet, so changing the answer
-discards no work.
+with an Ansible playbook run from the workstation, so the image's contents need
+choosing again. Neither `userpatches/` nor the script exists yet, so no work is
+lost.
 
 ## Considered Options
 
-- **Run the playbook in the image's `chroot` too.** This keeps ADR 0002's
-  driver that anything settable without a secret is configured at build time.
-  The role then has to converge without systemd running and without
-  credentials, and gets tested in both contexts.
+- **Run the playbook in the image's `chroot` too.** Anything settable without a
+  secret stays configured at build time. The role must converge without
+  systemd running and without credentials, and needs testing in both contexts.
 - **Bake only what SSH needs.** The playbook does everything else during the
   recovery SSH session, which recovery already needs to supply credentials.
 
@@ -46,14 +42,14 @@ ADR 0002's list of what's deliberately absent stands.
 Good:
 
 - The role runs in one context, against a booted host.
-- The image's five baked settings are ones the playbook doesn't manage, so
-  the two descriptions can't contradict each other.
+- The playbook manages none of the five baked settings, so the image and the
+  playbook can't contradict each other.
 
 Bad / accepted:
 
-- A freshly flashed card does nothing useful until the playbook runs. ADR 0002's
-  recovery already required that SSH session, so recovery gains no step.
+- A freshly flashed card does nothing useful until the playbook runs. Recovery
+  already needed an SSH session to supply credentials, so it gains no step.
 
 ## More Information
 
-The role is tracked in #671, and the image build in #261.
+Issue #671 tracks the role, and #261 the image build.
