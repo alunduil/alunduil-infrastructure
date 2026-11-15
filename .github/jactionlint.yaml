@@ -2,3 +2,8 @@
 # SPDX-License-Identifier: MIT
 ---
 profile: correctness
+
+ignores:
+  - rule: deprecated-action-input
+    uses: actions/create-github-app-token
+    reason: client-id needs a new secret per deployer (#1183)

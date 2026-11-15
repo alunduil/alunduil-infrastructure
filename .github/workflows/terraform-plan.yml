@@ -106,8 +106,6 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          # jactionlint ignore=deprecated-action-input
-          # client-id needs a new secret per deployer (#1183).
           app-id: ${{ env.TERRAFORM_GITHUB_APP_ID }}
           private-key: ${{ env.TERRAFORM_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
