@@ -86,9 +86,15 @@ locals {
     "nanopi-neo3" = local.tailscale_exit_node_routes
   }
 
+  # Old device name => new. Either name resolves to the new key, so renaming
+  # the device in the tailnet and here can land in either order.
+  tailscale_device_renames = {
+    "truenas-scale" = "truenas"
+  }
+
   tailscale_node_ids = {
     for device in data.tailscale_devices.all.devices :
-    split(".", device.name)[0] => device.node_id
+    lookup(local.tailscale_device_renames, split(".", device.name)[0], split(".", device.name)[0]) => device.node_id
   }
 }
 
