@@ -15,14 +15,10 @@ image build's `chroot` and over SSH afterwards, so the image and the running box
 shared a single description.
 
 [ADR 0005](0005-configure-remote-hosts-with-ansible.md) replaced that script
-with an Ansible playbook run from the workstation. That leaves two questions
-ADR 0002 answered for a script:
+with an Ansible playbook run from the workstation. This record decides what the
+image carries now that the playbook configures the box.
 
-- What the image carries, now that the playbook may or may not run at build time.
-- Whether the hourly `rclone` sync of `/etc` and `/home` to Google Drive still
-  has a role. ADR 0002 left that open.
-
-Neither `userpatches/` nor the script exists yet, so changing either answer
+Neither `userpatches/` nor the script exists yet, so changing the answer
 discards no work.
 
 ## Considered Options
@@ -38,8 +34,6 @@ discards no work.
 
 Chosen option: **bake only what SSH needs.**
 
-### What the image carries
-
 Baked in: the operator's public key in root's `authorized_keys`, password
 authentication disabled, the first-login flag cleared, the hostname, and DHCP.
 Tailscale, Grafana Alloy and unattended upgrades move from the image to the
@@ -47,26 +41,18 @@ playbook.
 
 ADR 0002's list of what's deliberately absent stands.
 
-### The backup
-
-The playbook replaces the `rclone` sync as the way to recover the box. The sync
-stops, and its Drive copy is deleted.
-
 ### Consequences
 
 Good:
 
 - The role runs in one context, against a booted host.
-- The image changes only when SSH access does, so a spare card stays current
-  longer.
-- `/etc` stops leaving the box hourly for Google Drive.
+- The image's five baked settings are ones the playbook doesn't manage, so
+  the two descriptions can't contradict each other.
 
 Bad / accepted:
 
 - A freshly flashed card does nothing useful until the playbook runs. ADR 0002's
   recovery already required that SSH session, so recovery gains no step.
-- The box has no backup. Anything on it that the playbook doesn't manage is lost
-  when a card is replaced.
 
 ## More Information
 

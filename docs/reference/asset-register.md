@@ -152,7 +152,6 @@ principals that read or change an asset through Terraform.
   administered remotely from London. Runs alloy, enrolled in Fleet
   Management as collector `NanoPi-NEO3`. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
-  and [ADR 0006](../adr/0006-bake-only-ssh-access-into-the-nanopi-neo3-image.md)
 - Exposed to: T-3, via E-09
 
 ### A-06: `penguin`
