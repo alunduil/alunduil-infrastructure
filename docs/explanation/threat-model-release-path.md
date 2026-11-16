@@ -41,8 +41,8 @@ Each publishing repository gets its own GitHub App, the release App. It opens
 the release pull request and creates the release tag once that pull request
 merges. The App is an identity GitHub hosts, with a registration, an
 installation, and a private key, and nothing of its own to release. The
-release pull request may merge on a schedule, because the last human check is the publish
-environment's approval
+release pull request may merge on a schedule, because the last human check is
+the publish environment's approval
 ([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
 | Candidate | Who creates the tag | Result |
@@ -73,8 +73,7 @@ The App's design follows:
   prerelease after the merge, as `collection-json.hs#409` describes.
 - **Merging the release pull request:** an App gets a merge bypass only where
   its repository's release pull request merges on a schedule, as #797 adds for
-  `woodland-generators`. The publish environment's approval still gates the
-  release.
+  `woodland-generators`.
 
 Three limits remain:
 
@@ -88,37 +87,43 @@ Three limits remain:
   actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- Nothing alerts on an unexpected tag or upload until #1064 lands.
+- Nothing alerts on an unexpected tag or upload until #1064 lands, which
+  release automation waits on.
 
 ## Findings
 
 Every unmitigated row below points to one of these.
 
-A finding closes before a repository's release automation when the automation
-creates its risk, removes the person who would notice it, or the finding
-detects a risk the automation creates. The rest can follow, because
-automation leaves them no worse.
+A finding is needed before a repository's release automation when any of
+these hold:
 
-| Finding | Issue | Closes |
+- The automation creates its risk.
+- The automation removes the person who would notice it.
+- The finding detects a risk the automation creates.
+
+The rest can follow, because automation leaves them no worse.
+
+| Finding | Issue | Needed |
 | --- | --- | --- |
-| Anyone with `Contents` write can create a tag that publishes | #1055 | Before |
-| A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` | Before |
-| Tokens acting as the account bypass the tag rule | #1076, #1069, #738 | After, except #738, which moves `woodland-generators` to its release App |
-| Hook-fix commits reach a default branch unreviewed | #1057 | Before |
-| A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` | Before |
-| A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` | Before |
-| A required check can be satisfied by any App reporting its name | #429 | After |
-| A write collaborator can dispatch a publish on an existing tag | `collection-json.hs#406`, #1077 | After, because #1121's approval stops the publish |
-| Build code shares a job with the Hackage token | `collection-json.hs#454`, `network-arbitrary#172` | Before, because the approval comes before the job runs |
-| Build code shares a job with `Contents` write | `woodland-generators#922` | Before |
-| A build can restore a poisoned cache | #1079 | Before |
-| A Hackage token uploads every package its account can | #1093 | After |
-| Release assets can be replaced | `woodland-generators#915` | Before, because the release App holds `Contents` write |
-| A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After |
-| Nobody is told about an unexpected tag or upload | #1064 | Before, because the release App is a new actor that tags |
-| A published package can't be verified against its build | #1078 | After |
-| `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before |
-| A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Release automation resolves it |
+| Anyone with `Contents` write can create a tag that publishes | #1055 | Before automation |
+| A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` | Before automation |
+| `woodland-generators`' release token acts as the account | #738 | Before automation, which replaces the token with its release App |
+| Other tokens acting as the account bypass the tag rule | #1076, #1069 | After automation |
+| Hook-fix commits reach a default branch unreviewed | #1057 | Before automation |
+| A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` | Before automation |
+| A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` | Before automation |
+| A required check can be satisfied by any App reporting its name | #429 | After automation |
+| A write collaborator can dispatch a publish on an existing tag | `collection-json.hs#406`, #1077 | After automation, since #1121's approval stops the publish |
+| Build code shares a job with the Hackage token | `collection-json.hs#454`, `network-arbitrary#172` | Before automation, since the approval comes before the job runs |
+| Build code shares a job with `Contents` write | `woodland-generators#922` | Before automation |
+| A build can restore a poisoned cache | #1079 | Before automation |
+| A Hackage token uploads every package its account can | #1093 | After automation |
+| Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
+| A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
+| Nobody is told about an unexpected tag or upload | #1064 | Before automation, since the release App is a new actor that tags |
+| A published package can't be verified against its build | #1078 | After automation |
+| `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
+| A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Resolved by automation |
 
 ## Threats
 
@@ -140,7 +145,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Contributor | Spoofing | A stolen account opens a pull request as its owner, which still has to pass review | Low | Rulesets gate the merge | Mitigated | `main.tf`, `github_repository_ruleset.review` |
 | Contributor | Repudiation | A contributor denies a pull request, but it changes nothing until someone merges it | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
-| Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. Four of the five publishing repositories have write collaborators |
+| Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1064 | Not Started | — |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1064 | Not Started | `woodland-generators` releases report the account as author |
