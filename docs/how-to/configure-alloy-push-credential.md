@@ -37,8 +37,8 @@ For alloy running as a TrueNAS app on A-01, add it under **Apps → alloy →
 Edit → Environment Variables** as `GCLOUD_RW_API_KEY`, then save. TrueNAS
 recreates the container, which is the restart alloy needs.
 
-For the NanoPi-NEO3, skip reading the token: the playbook reads it from Secret
-Manager, writes it to the box, and restarts alloy. Run:
+For the NanoPi-NEO3, skip reading the token and run the playbook, which
+delivers it:
 
 ```sh
 just nanopi-neo3

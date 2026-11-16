@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-# Handlers run in the order listed, so units reload before anything restarts.
+# Order matters: systemd reloads units before anything restarts.
 - name: Reload systemd
   ansible.builtin.systemd_service:
     daemon_reload: true

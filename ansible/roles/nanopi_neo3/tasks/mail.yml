@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-# Unattended upgrades mail their reports to root, which Exim relays through
-# Gmail.
+# Unattended upgrades mail their reports to root.
 - name: Relay mail through Gmail
   when: "'exim4-daemon-light' in ansible_facts.packages"
   block:
