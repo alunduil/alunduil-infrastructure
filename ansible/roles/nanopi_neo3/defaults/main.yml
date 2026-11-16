@@ -12,9 +12,10 @@ nanopi_neo3_bootstrap_outputs: >-
 nanopi_neo3_alloy_push_token: >-
   {{ lookup('ansible.builtin.pipe',
      nanopi_neo3_gcloud_read ~ ' grafana-alloy-push-token-nanopi-neo3') }}
+nanopi_neo3_smarthost_store: gmail-app-password-nanopi-neo3
 nanopi_neo3_smarthost_password: >-
   {{ lookup('ansible.builtin.pipe',
-     nanopi_neo3_gcloud_read ~ ' gmail-app-password-nanopi-neo3') }}
+     nanopi_neo3_gcloud_read ~ ' ' ~ nanopi_neo3_smarthost_store) }}
 
 # Terraform's grafana_fleet_management_collector declares this ID.
 nanopi_neo3_fleet_management_collector_id: NanoPi-NEO3

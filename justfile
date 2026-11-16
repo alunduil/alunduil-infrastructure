@@ -14,7 +14,6 @@ bootstrap: && configure-hook-fix projects
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-truenas-secrets.sh
-    scripts/configure-nanopi-neo3-secrets.sh
     scripts/configure-github-secrets.sh
 
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]

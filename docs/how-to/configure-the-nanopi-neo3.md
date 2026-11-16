@@ -7,14 +7,15 @@
 tailnet. No workflow runs it, so a change under `ansible/` takes effect only
 when you run the recipe. It reads two credentials from Secret Manager: the
 Alloy push token (C-37), which bootstrap creates, and a Gmail app password
-(C-38), which you create and store. This guide doesn't cover reaching a box
-that has left the tailnet.
+(C-38), which you create and the run stores. This guide doesn't cover reaching
+a box that has left the tailnet.
 
 ## Prerequisites
 
 - `gcloud` authenticated with read access to the
-  `grafana-alloy-push-token-nanopi-neo3` and `gmail-app-password-nanopi-neo3`
-  secrets, and to `bootstrap-outputs.json` in the state bucket.
+  `grafana-alloy-push-token-nanopi-neo3` secret and to `bootstrap-outputs.json`
+  in the state bucket, and with read and write access to the
+  `gmail-app-password-nanopi-neo3` secret.
 - `just bootstrap` applied, so both secrets exist.
 - A current Tailscale SSH login. Run `tailscale ssh nanopi-neo3 true` and
   complete the browser login it asks for.
@@ -29,16 +30,18 @@ app password from the box.
 2. Name it `nanopi-neo3` and select **Create**.
 3. Copy the password from the dialog that follows.
 
-## Store the app password
+## Rotate the app password
 
-Run `just bootstrap` and paste the password at its prompt. To store or rotate
-it without the rest of the bootstrap:
+A run asks for the password whenever Secret Manager holds no enabled version
+of it. To replace the stored one, disable it, then paste the new password into
+the next `just nanopi-neo3`:
 
 ```sh
-GMAIL_APP_PASSWORD=<password> scripts/configure-nanopi-neo3-secrets.sh
+gcloud secrets versions disable latest \
+  --secret=gmail-app-password-nanopi-neo3 --project=alunduil
 ```
 
-After the next `just nanopi-neo3` succeeds, delete the old password at
+After that run succeeds, delete the old password at
 <https://myaccount.google.com/apppasswords>.
 
 ## Preview the changes
@@ -57,5 +60,6 @@ applied.
 just nanopi-neo3
 ```
 
-If the run asks for the heartbeat URL, copy it from the monitor's page in
-UptimeRobot.
+If the run asks for the Gmail app password, paste the one from
+[Create the app password](#create-the-app-password). If it asks for the
+heartbeat URL, copy it from the monitor's page in UptimeRobot.
