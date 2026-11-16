@@ -39,7 +39,8 @@ The five operator entrypoints:
 - `just nanopi-neo3`—Ansible configuration of the NanoPi-NEO3 over
   the tailnet. Add `--check --diff` to preview. If it hangs while
   connecting, run `tailscale ssh nanopi-neo3 true` and complete the
-  browser login it asks for.
+  browser login it asks for. See
+  [docs/how-to/configure-the-nanopi-neo3.md](docs/how-to/configure-the-nanopi-neo3.md).
 
 ## Documentation
 
@@ -60,6 +61,7 @@ How-to guides for hosts and services:
 
 - [Set the alloy push credential on the collector](docs/how-to/configure-alloy-push-credential.md)
 - [Apply Terraform to TrueNAS](docs/how-to/apply-terraform-to-truenas.md)
+- [Configure the NanoPi-NEO3](docs/how-to/configure-the-nanopi-neo3.md)
 - [Set the ACME token on TrueNAS](docs/how-to/configure-truenas-acme-token.md)
 - [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
 - [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)

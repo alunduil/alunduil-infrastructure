@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-15.
+Verified 2026-11-16.
 
 ## Scope
 
@@ -150,7 +150,8 @@ principals that read or change an asset through Terraform.
 - Description: Tailscale exit node presenting a US address. Sits in
   the American Midwest in a household that isn't alunduil's, and is
   administered remotely from London. Runs alloy, enrolled in Fleet
-  Management as collector `NanoPi-NEO3`. Recovery is
+  Management as collector `NanoPi-NEO3`. Configured by the playbook in
+  `ansible/`. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Exposed to: T-3, via E-09
 
@@ -258,7 +259,7 @@ vendor.
 | ID | Service | What leaves |
 | --- | --- | --- |
 | D-01 | Nabu Casa | A-02's backups, and its remote interface traffic |
-| D-02 | Google Drive | A-01's backups, Takeout archives, A-05's `/home` |
+| D-02 | Google Drive | A-01's backups and Takeout archives |
 | D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
 | D-04 | UptimeRobot | Probes of E-01, heartbeats from A-02 and A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
@@ -267,9 +268,10 @@ vendor.
 | D-08 | Cloudflare (A-08) | Zone configuration, the home address via C-15 |
 | D-09 | GitHub (A-09) | Repositories, CI logs, and Release assets |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
-| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
+| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-05, A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
 | D-13 | PyPI | `zfs-replicate` distributions |
+| D-14 | Gmail | A-05's unattended-upgrade reports, relayed with C-38 |
 
 `woodland-generators` ships through D-09's Release assets, which Foundry
 installs from.
@@ -652,11 +654,24 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
   stack realm
-- Consumer: none
-- Grants: nothing until A-05 holds it
+- Consumer: alloy on A-05, as the `GCLOUD_RW_API_KEY` its `remotecfg` block
+  and Fleet Management pipelines authenticate with. No deployer reads it
+- Grants: P-4
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
-- Tracked by: #671
+
+### C-38: `nanopi-neo3` Gmail app password
+
+- Kind: Google app password
+- Scope: the whole Google account, for clients that sign in with a
+  password. Google offers no narrower scope for an app password
+  (`Unverified`)
+- Consumer: Exim on A-05, relaying through `smtp.gmail.com`. `just nanopi-neo3`
+  on A-06 delivers it. No workflow reads it
+- Grants: P-4
+- Created by: Operator
+- Source: [`configure-the-nanopi-neo3.md`](../how-to/configure-the-nanopi-neo3.md),
+  stored in the secret `terraform/bootstrap/nanopi_neo3.tf` declares
 
 ## Maintenance
 
