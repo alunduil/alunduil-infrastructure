@@ -14,6 +14,7 @@ bootstrap: && configure-hook-fix projects
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
     scripts/configure-truenas-secrets.sh
+    scripts/configure-nanopi-neo3-secrets.sh
     scripts/configure-github-secrets.sh
 
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]
@@ -74,6 +75,8 @@ truenas:
     terraform -chdir=terraform/truenas init
     terraform -chdir=terraform/truenas apply
 
+# Credentials: gcloud CLI auth with secretAccessor on the box's Alloy push token
+# and Gmail app password, and read access to bootstrap-outputs.json.
 [doc("Configure the NanoPi-NEO3 with Ansible over the tailnet.")]
 [positional-arguments]
 nanopi-neo3 *args:
