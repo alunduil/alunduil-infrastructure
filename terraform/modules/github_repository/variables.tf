@@ -143,6 +143,9 @@ variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
     deployment_tags     = optional(list(string), [])
+    reviewers           = optional(list(number), [])
+    prevent_self_review = optional(bool, false)
+    can_admins_bypass   = optional(bool, true)
   }))
   default     = {}
   nullable    = false
@@ -157,6 +160,12 @@ variable "environments" {
     `release: published`, needs a tag pattern. Maps to the environment's
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
+
+    reviewers lists the user IDs, any one of whom must approve a job
+    before it runs in this environment. With none (the default), jobs
+    run without approval. prevent_self_review stops a reviewer approving
+    a run they triggered. can_admins_bypass lets an admin's run skip the
+    approval. Both defaults match GitHub's.
   EOT
 }
 

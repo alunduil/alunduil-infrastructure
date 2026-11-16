@@ -367,6 +367,16 @@ resource "github_repository_environment" "this" {
   repository  = github_repository.this.name
   environment = each.key
 
+  prevent_self_review = each.value.prevent_self_review
+  can_admins_bypass   = each.value.can_admins_bypass
+
+  dynamic "reviewers" {
+    for_each = length(each.value.reviewers) > 0 ? [1] : []
+    content {
+      users = each.value.reviewers
+    }
+  }
+
   dynamic "deployment_branch_policy" {
     for_each = length(concat(each.value.deployment_branches, each.value.deployment_tags)) > 0 ? [1] : []
     content {
