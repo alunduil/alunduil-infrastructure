@@ -221,10 +221,9 @@ locals {
     }
 
     "zfs-replicate" = {
-      description    = "Replicate ZFS snapshots to a remote host over SSH (Python CLI; replication only — it doesn't create snapshots)."
-      homepage_url   = "https://pypi.org/project/zfs-replicate/"
-      topics         = ["zfs", "replication", "snapshots"]
-      default_branch = "master"
+      description  = "Replicate ZFS snapshots to a remote host over SSH (Python CLI; replication only — it doesn't create snapshots)."
+      homepage_url = "https://pypi.org/project/zfs-replicate/"
+      topics       = ["zfs", "replication", "snapshots"]
       required_status_checks = {
         ci_results_check      = true
         codecov_project_check = true
