@@ -367,6 +367,17 @@ resource "github_repository_environment" "this" {
   repository  = github_repository.this.name
   environment = each.key
 
+  # An environment without an approval keeps GitHub's defaults.
+  prevent_self_review = try(each.value.approval.prevent_self_review, false)
+  can_admins_bypass   = try(each.value.approval.can_admins_bypass, true)
+
+  dynamic "reviewers" {
+    for_each = each.value.approval[*]
+    content {
+      users = reviewers.value.reviewers
+    }
+  }
+
   dynamic "deployment_branch_policy" {
     for_each = length(concat(each.value.deployment_branches, each.value.deployment_tags)) > 0 ? [1] : []
     content {
