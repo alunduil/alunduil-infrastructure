@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+- name: Install the Debian packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - exim4-daemon-light
+      - logrotate
+      - unattended-upgrades
+
+# Fetched once: tailscale-archive-keyring takes over its key on install, and a
+# later download would fight dpkg over the file.
+- name: Trust the vendor repositories' signing keys
+  ansible.builtin.uri:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    creates: "{{ item.dest }}"
+    mode: "0644"
+  loop:
+    - url: "https://pkgs.tailscale.com/stable/debian/\
+        {{ ansible_facts.distribution_release }}.noarmor.gpg"
+      dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    - url: https://apt.grafana.com/gpg.key
+      dest: /etc/apt/keyrings/grafana.asc
+  loop_control:
+    label: "{{ item.dest }}"
+
+- name: Add the vendor repositories
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/{{ item.name }}.list
+    content: |
+      deb [signed-by={{ item.key }}] {{ item.uri }} {{ item.suite }} main
+    mode: "0644"
+  loop:
+    - name: tailscale
+      key: /usr/share/keyrings/tailscale-archive-keyring.gpg
+      uri: https://pkgs.tailscale.com/stable/debian
+      suite: "{{ ansible_facts.distribution_release }}"
+    - name: grafana
+      key: /etc/apt/keyrings/grafana.asc
+      uri: https://apt.grafana.com
+      suite: stable
+  loop_control:
+    label: "{{ item.name }}"
+  register: nanopi_neo3_vendor_repositories
+
+# Check mode writes no repository, so apt can't yet see the packages a new one
+# provides.
+- name: Install the vendor packages
+  ansible.builtin.apt:
+    name:
+      - alloy
+      - tailscale
+    update_cache: "{{ nanopi_neo3_vendor_repositories is changed }}"
+  when: not (ansible_check_mode and nanopi_neo3_vendor_repositories is changed)
+
+- name: Read the installed packages
+  ansible.builtin.package_facts:

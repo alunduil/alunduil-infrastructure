@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# Unattended upgrades mail their reports to root, which Exim relays through
+# Gmail.
+- name: Relay mail through Gmail
+  when: "'exim4-daemon-light' in ansible_facts.packages or not ansible_check_mode"
+  block:
+    - name: Configure Exim as a smarthost client
+      ansible.builtin.template:
+        src: "{{ item.name }}.j2"
+        dest: /etc/{{ item.name }}
+        mode: "0644"
+      loop:
+        - name: exim4/update-exim4.conf.conf
+        - name: mailname
+      loop_control:
+        label: "{{ item.name }}"
+      notify: Reload Exim
+
+    - name: Write the Gmail app password
+      ansible.builtin.template:
+        src: exim4/passwd.client.j2
+        dest: /etc/exim4/passwd.client
+        owner: root
+        group: Debian-exim
+        mode: "0640"
+      no_log: true
+      diff: false
+
+    - name: Forward root's mail
+      ansible.builtin.lineinfile:
+        path: /etc/aliases
+        regexp: "^root:"
+        line: "root: {{ nanopi_neo3_mail_address }}"
+
+    - name: Start Exim
+      ansible.builtin.systemd_service:
+        name: exim4
+        enabled: true
+        state: started

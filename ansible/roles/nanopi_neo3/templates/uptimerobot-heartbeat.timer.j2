@@ -1,0 +1,11 @@
+{# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> #}
+{# SPDX-License-Identifier: MIT #}
+[Unit]
+Description=Run UptimeRobot Heartbeat every minute
+
+[Timer]
+OnCalendar=minutely
+Persistent=true
+
+[Install]
+WantedBy=timers.target

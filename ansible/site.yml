@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-- name: Configure remote hosts
-  hosts: all
-  tasks: []
+- name: Configure the NanoPi-NEO3
+  hosts: nanopi-neo3
+  become: true
+  roles:
+    - nanopi_neo3

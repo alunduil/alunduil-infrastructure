@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# The URL is the monitor's only credential, so the box's copy stays the source
+# and the operator supplies it only for a fresh card.
+- name: Read the heartbeat's unit
+  ansible.builtin.slurp:
+    src: /etc/systemd/system/uptimerobot-heartbeat.service
+  register: nanopi_neo3_heartbeat_unit
+  failed_when: false
+
+- name: Ask for the heartbeat URL
+  ansible.builtin.pause:
+    prompt: UptimeRobot heartbeat URL
+  register: nanopi_neo3_heartbeat_prompt
+  when:
+    - nanopi_neo3_heartbeat_url is not defined
+    - nanopi_neo3_heartbeat_unit.content is not defined
+    - not ansible_check_mode
+
+- name: Choose the heartbeat URL
+  ansible.builtin.set_fact:
+    nanopi_neo3_heartbeat_url: >-
+      {{ nanopi_neo3_heartbeat_unit.content | b64decode
+         | regex_search('https://heartbeat\.uptimerobot\.com/[^"\s]+')
+         if nanopi_neo3_heartbeat_unit.content is defined
+         else nanopi_neo3_heartbeat_prompt.user_input }}
+  when:
+    - nanopi_neo3_heartbeat_url is not defined
+    - nanopi_neo3_heartbeat_unit.content is defined or not ansible_check_mode
+
+- name: Send the heartbeat every minute
+  when: nanopi_neo3_heartbeat_url is defined
+  block:
+    - name: Install the heartbeat's units
+      ansible.builtin.template:
+        src: uptimerobot-heartbeat.{{ item }}.j2
+        dest: /etc/systemd/system/uptimerobot-heartbeat.{{ item }}
+        mode: "0644"
+      loop:
+        - service
+        - timer
+      register: nanopi_neo3_heartbeat_units
+      notify: Reload systemd
+
+    - name: Reload systemd before starting the heartbeat
+      ansible.builtin.meta: flush_handlers
+
+    - name: Start the heartbeat
+      ansible.builtin.systemd_service:
+        name: uptimerobot-heartbeat.timer
+        enabled: true
+        state: started
+      when: not (ansible_check_mode and nanopi_neo3_heartbeat_units is changed)

@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# Fleet Management serves the pipelines. The collector opts in to each one
+# Terraform declares by setting the attribute of the same name.
+- name: Collect telemetry with Alloy
+  when: "'alloy' in ansible_facts.packages or not ansible_check_mode"
+  block:
+    - name: Look for an inline password in Alloy's configuration
+      ansible.builtin.command: grep -Eq 'password\s*=\s*"' /etc/alloy/config.alloy
+      register: nanopi_neo3_alloy_inline_password
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Write the Alloy push token
+      ansible.builtin.template:
+        src: alloy/credentials.env.j2
+        dest: /etc/alloy/credentials.env
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      diff: false
+      notify: Restart Alloy
+
+    # A diff of a configuration still holding an inline password would print
+    # it.
+    - name: Point Alloy at Fleet Management
+      ansible.builtin.template:
+        src: alloy/config.alloy.j2
+        dest: /etc/alloy/config.alloy
+        mode: "0644"
+      diff: "{{ nanopi_neo3_alloy_inline_password.rc != 0 }}"
+      notify: Restart Alloy
+
+    - name: Remove the drop-in holding the token inline
+      ansible.builtin.file:
+        path: /etc/systemd/system/alloy.service.d/env.conf
+        state: absent
+      notify:
+        - Reload systemd
+        - Restart Alloy
+
+    - name: Create Alloy's drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/alloy.service.d
+        state: directory
+        mode: "0755"
+
+    # Alloy exits if its first Fleet Management fetch fails, and systemd's
+    # default start limit then gives up on it for good.
+    - name: Configure Alloy's unit
+      ansible.builtin.template:
+        src: alloy/{{ item }}.j2
+        dest: /etc/systemd/system/alloy.service.d/{{ item }}
+        mode: "0644"
+      loop:
+        - credentials.conf
+        - restart.conf
+      notify:
+        - Reload systemd
+        - Restart Alloy
+
+    - name: Start Alloy
+      ansible.builtin.systemd_service:
+        name: alloy
+        enabled: true
+        state: started
