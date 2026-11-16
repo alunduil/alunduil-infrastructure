@@ -8,8 +8,7 @@ What can go wrong between a commit and a published package, and where #556's
 release App belongs. Registry uploads can't be
 recalled, so this model weighs who can start one above everything else.
 
-Verified 2026-11-06. The operator reviewed every position, finding, and
-priority on 2026-11-16 (#1097).
+Verified 2026-11-06.
 
 ## Scope
 
@@ -39,9 +38,7 @@ Out of scope:
 
 Each publishing repository gets its own GitHub App, the release App. It opens
 the release pull request and creates the release tag once that pull request
-merges. The App is an identity GitHub hosts, with a registration, an
-installation, and a private key, and nothing of its own to release. The
-release pull request may merge on a schedule, because the last human check is
+merges. The release pull request may merge on a schedule, because the last human check is
 the publish environment's approval
 ([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
@@ -87,27 +84,27 @@ Three limits remain:
   actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- Nothing alerts on an unexpected tag or upload until #1064 lands, which
-  release automation waits on.
+- Nothing alerts on an unexpected tag or upload until #1064 lands. Release
+  automation waits for it.
 
 ## Findings
 
 Every unmitigated row below points to one of these.
 
-A finding is needed before a repository's release automation when any of
+A finding's fix lands before a repository's release automation when any of
 these hold:
 
 - The automation creates its risk.
 - The automation removes the person who would notice it.
-- The finding detects a risk the automation creates.
+- The fix detects a risk the automation creates.
 
 The rest can follow, because automation leaves them no worse.
 
-| Finding | Issue | Needed |
+| Finding | Issue | Fix lands |
 | --- | --- | --- |
 | Anyone with `Contents` write can create a tag that publishes | #1055 | Before automation |
 | A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` | Before automation |
-| `woodland-generators`' release token acts as the account | #738 | Before automation, which replaces the token with its release App |
+| `woodland-generators`' release token acts as the account | #738 | With automation. The release App replaces the token |
 | Other tokens acting as the account bypass the tag rule | #1076, #1069 | After automation |
 | Hook-fix commits reach a default branch unreviewed | #1057 | Before automation |
 | A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` | Before automation |
@@ -174,7 +171,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Repository commits | Tampering | Someone rewrites or deletes the default branch | High | `default` blocks force pushes and deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Repository commits | Repudiation | A key holder can set any commit author, and Renovate compares only the email | Medium | #1057 | Not Started | — |
 | Repository commits | Information Disclosure | A secret is committed to a public repository | Medium | Push protection and secret scanning | Mitigated | `main.tf`, `github_repository.this` `security_and_analysis` |
-| Repository commits | Denial of Service | Someone deletes the default branch, whose history clones and pull requests still hold | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
+| Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
 | Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1064 | Not Started | — |
