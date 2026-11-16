@@ -66,7 +66,7 @@ from.
 | P-9 | Codecov | Codecov's App, ID 254, on every repository | Codecov |
 | P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
-| P-12 | Release App | Planned in #556, not created | P-10 |
+| P-12 | Release App | One App per repository, by hand. #556, none yet | P-10 |
 
 The vendor Apps hold these permissions:
 
