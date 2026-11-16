@@ -9,25 +9,25 @@
   register: nanopi_neo3_heartbeat_unit
   failed_when: false
 
+- name: Take the heartbeat URL from its unit
+  ansible.builtin.set_fact:
+    nanopi_neo3_heartbeat_url: >-
+      {{ nanopi_neo3_heartbeat_unit.content | b64decode
+         | regex_search('https://heartbeat\.uptimerobot\.com/[^"\s]+') }}
+  when:
+    - nanopi_neo3_heartbeat_url is not defined
+    - nanopi_neo3_heartbeat_unit.content is defined
+
 - name: Ask for the heartbeat URL
   ansible.builtin.pause:
     prompt: UptimeRobot heartbeat URL
   register: nanopi_neo3_heartbeat_prompt
-  when:
-    - nanopi_neo3_heartbeat_url is not defined
-    - nanopi_neo3_heartbeat_unit.content is not defined
-    - not ansible_check_mode
+  when: nanopi_neo3_heartbeat_url is not defined and not ansible_check_mode
 
-- name: Choose the heartbeat URL
+- name: Take the heartbeat URL the operator typed
   ansible.builtin.set_fact:
-    nanopi_neo3_heartbeat_url: >-
-      {{ nanopi_neo3_heartbeat_unit.content | b64decode
-         | regex_search('https://heartbeat\.uptimerobot\.com/[^"\s]+')
-         if nanopi_neo3_heartbeat_unit.content is defined
-         else nanopi_neo3_heartbeat_prompt.user_input }}
-  when:
-    - nanopi_neo3_heartbeat_url is not defined
-    - nanopi_neo3_heartbeat_unit.content is defined or not ansible_check_mode
+    nanopi_neo3_heartbeat_url: "{{ nanopi_neo3_heartbeat_prompt.user_input }}"
+  when: nanopi_neo3_heartbeat_prompt.user_input is defined
 
 - name: Check the heartbeat URL
   ansible.builtin.assert:

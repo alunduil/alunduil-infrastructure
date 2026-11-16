@@ -4,18 +4,16 @@
 # Unattended upgrades mail their reports to root, which Exim relays through
 # Gmail.
 - name: Relay mail through Gmail
-  when: "'exim4-daemon-light' in ansible_facts.packages or not ansible_check_mode"
+  when: "'exim4-daemon-light' in ansible_facts.packages"
   block:
     - name: Configure Exim as a smarthost client
       ansible.builtin.template:
-        src: "{{ item.name }}.j2"
-        dest: /etc/{{ item.name }}
+        src: "{{ item }}.j2"
+        dest: /etc/{{ item }}
         mode: "0644"
       loop:
-        - name: exim4/update-exim4.conf.conf
-        - name: mailname
-      loop_control:
-        label: "{{ item.name }}"
+        - exim4/update-exim4.conf.conf
+        - mailname
       notify: Reload Exim
 
     - name: Write the Gmail app password

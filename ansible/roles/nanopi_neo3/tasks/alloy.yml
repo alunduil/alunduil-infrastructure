@@ -4,19 +4,8 @@
 # Fleet Management serves the pipelines. The collector opts in to each one
 # Terraform declares by setting the attribute of the same name.
 - name: Collect telemetry with Alloy
-  when: "'alloy' in ansible_facts.packages or not ansible_check_mode"
+  when: "'alloy' in ansible_facts.packages"
   block:
-    - name: Look for an inline password in Alloy's configuration
-      ansible.builtin.command: grep -Eq 'password\s*=\s*"' /etc/alloy/config.alloy
-      register: nanopi_neo3_alloy_inline_password
-      changed_when: false
-      failed_when: false
-      check_mode: false
-
-    - name: Read the bootstrap outputs once
-      ansible.builtin.set_fact:
-        nanopi_neo3_bootstrap_outputs: "{{ nanopi_neo3_bootstrap_outputs }}"
-
     - name: Write the Alloy push token
       ansible.builtin.template:
         src: alloy/credentials.env.j2
@@ -27,6 +16,17 @@
       no_log: true
       diff: false
       notify: Restart Alloy
+
+    - name: Read the bootstrap outputs once
+      ansible.builtin.set_fact:
+        nanopi_neo3_bootstrap_outputs: "{{ nanopi_neo3_bootstrap_outputs }}"
+
+    - name: Look for an inline password in Alloy's configuration
+      ansible.builtin.command: grep -Eq 'password\s*=\s*"' /etc/alloy/config.alloy
+      register: nanopi_neo3_alloy_inline_password
+      changed_when: false
+      failed_when: false
+      check_mode: false
 
     # A diff of a configuration still holding an inline password would print
     # it.
