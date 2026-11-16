@@ -367,13 +367,14 @@ resource "github_repository_environment" "this" {
   repository  = github_repository.this.name
   environment = each.key
 
-  prevent_self_review = each.value.prevent_self_review
-  can_admins_bypass   = each.value.can_admins_bypass
+  # Without an approval, GitHub's defaults.
+  prevent_self_review = try(each.value.approval.prevent_self_review, false)
+  can_admins_bypass   = try(each.value.approval.can_admins_bypass, true)
 
   dynamic "reviewers" {
-    for_each = length(each.value.reviewers) > 0 ? [1] : []
+    for_each = each.value.approval[*]
     content {
-      users = each.value.reviewers
+      users = reviewers.value.reviewers
     }
   }
 
