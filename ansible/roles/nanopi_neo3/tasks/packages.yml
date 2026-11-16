@@ -3,11 +3,14 @@
 ---
 - name: Install the Debian packages
   ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
     name:
       - ca-certificates
       - curl
       - exim4-daemon-light
       - logrotate
+      - procps
       - unattended-upgrades
 
 # Fetched once: tailscale-archive-keyring takes over its key on install, and a
@@ -46,6 +49,13 @@
     label: "{{ item.name }}"
   register: nanopi_neo3_vendor_repositories
 
+# Every run, so a run retried after a failed install still sees a repository
+# the earlier run added.
+- name: Refresh apt's package lists
+  ansible.builtin.apt:
+    update_cache: true
+  changed_when: false
+
 # Check mode writes no repository, so apt can't yet see the packages a new one
 # provides.
 - name: Install the vendor packages
@@ -53,7 +63,6 @@
     name:
       - alloy
       - tailscale
-    update_cache: "{{ nanopi_neo3_vendor_repositories is changed }}"
   when: not (ansible_check_mode and nanopi_neo3_vendor_repositories is changed)
 
 - name: Read the installed packages

@@ -29,6 +29,15 @@
     - nanopi_neo3_heartbeat_url is not defined
     - nanopi_neo3_heartbeat_unit.content is defined or not ansible_check_mode
 
+- name: Check the heartbeat URL
+  ansible.builtin.assert:
+    that: nanopi_neo3_heartbeat_url | string is match('https://')
+    fail_msg: >-
+      No heartbeat URL: none was given, or the existing unit's didn't parse.
+      Set nanopi_neo3_heartbeat_url to the monitor's URL.
+    quiet: true
+  when: nanopi_neo3_heartbeat_url is defined
+
 - name: Send the heartbeat every minute
   when: nanopi_neo3_heartbeat_url is defined
   block:

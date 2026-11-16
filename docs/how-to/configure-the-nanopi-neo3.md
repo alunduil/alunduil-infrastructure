@@ -57,6 +57,5 @@ applied.
 just nanopi-neo3
 ```
 
-On a freshly flashed card, the run asks for a Tailscale auth key and the
-UptimeRobot heartbeat URL. Create the key in the Tailscale admin console. The
-URL is on the monitor's page in UptimeRobot.
+If the box has no heartbeat unit, the run asks for the UptimeRobot heartbeat
+URL, which is on the monitor's page in UptimeRobot.

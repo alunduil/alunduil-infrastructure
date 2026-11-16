@@ -19,12 +19,20 @@
         enabled: true
         state: started
 
+    # A freshly started daemon reports Starting before it settles, and reading
+    # that as logged out would re-register the node.
     - name: Read Tailscale's state
       ansible.builtin.command: tailscale status --json
       register: nanopi_neo3_tailscale_status
       changed_when: false
       failed_when: false
       check_mode: false
+      retries: 10
+      delay: 3
+      until: >-
+        nanopi_neo3_tailscale_status.rc != 0
+        or (nanopi_neo3_tailscale_status.stdout | from_json).BackendState
+           not in ['NoState', 'Starting']
 
     - name: Decide whether Tailscale needs logging in
       ansible.builtin.set_fact:
@@ -44,7 +52,7 @@
         argv:
           - tailscale
           - up
-          - --auth-key={{ nanopi_neo3_tailscale_auth_key.user_input }}
+          - --auth-key={{ nanopi_neo3_tailscale_auth_key.user_input | default('') }}
           - --advertise-exit-node
           - --ssh
       changed_when: true
@@ -65,5 +73,6 @@
         - nanopi_neo3_tailscale_running
         - >-
           not (nanopi_neo3_tailscale_prefs.stdout | from_json).RunSSH
-          or '0.0.0.0/0' not in (nanopi_neo3_tailscale_prefs.stdout | from_json).AdvertiseRoutes
-          or '::/0' not in (nanopi_neo3_tailscale_prefs.stdout | from_json).AdvertiseRoutes
+          or ['0.0.0.0/0', '::/0']
+             | difference((nanopi_neo3_tailscale_prefs.stdout | from_json).AdvertiseRoutes or [])
+             | length > 0
