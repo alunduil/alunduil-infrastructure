@@ -163,11 +163,9 @@ variable "environments" {
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
 
-    approval makes a job wait until one of its reviewers (user IDs)
-    approves it. Without approval (the default), jobs run unapproved.
-    prevent_self_review stops a reviewer approving a run they triggered.
-    can_admins_bypass lets an admin's run skip the approval, so it
-    defaults to false.
+    approval makes a job wait until one of its reviewers, listed by user
+    ID, approves it. can_admins_bypass defaults to false, because an
+    approval an admin can bypass doesn't hold for runs an admin starts.
   EOT
 }
 

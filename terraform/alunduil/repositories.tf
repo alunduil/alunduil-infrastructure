@@ -101,10 +101,10 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      # The candidate upload runs in its own environment, holding the same
-      # token, so a release asks for one approval: on publish.
       environments = {
-        hackage             = { deployment_tags = ["v*"], approval = local.publish_approval }
+        hackage = { deployment_tags = ["v*"], approval = local.publish_approval }
+        # Holds the same token as hackage, without an approval, so the
+        # candidate upload doesn't wait.
         "hackage-candidate" = { deployment_tags = ["v*"] }
       }
       deploy = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }

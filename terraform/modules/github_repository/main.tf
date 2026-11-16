@@ -367,7 +367,7 @@ resource "github_repository_environment" "this" {
   repository  = github_repository.this.name
   environment = each.key
 
-  # Without an approval, GitHub's defaults.
+  # An environment without an approval keeps GitHub's defaults.
   prevent_self_review = try(each.value.approval.prevent_self_review, false)
   can_admins_bypass   = try(each.value.approval.can_admins_bypass, true)
 
