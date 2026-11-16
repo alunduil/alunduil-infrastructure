@@ -154,7 +154,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Foundry world | Repudiation | A world takes no action the path depends on | — | — | Not Applicable | `woodland-generators` `release.yml`, job `verify-release` |
 | 1.0 Merge pull request | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
 | 1.0 Merge pull request | Tampering | A hook-fix commit lands on a default branch unreviewed | High | #1057 | Not Started | `main.tf`, `github_repository_ruleset.renovate` |
-| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval (#1121, #1122), and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `renovate_automerge` |
+| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval, which #1122 extends to asset releases, and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `publish_approval` and `renovate_automerge` |
 | 1.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 1.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 1.0 Merge pull request | Denial of Service | A pull request opened by P-11 runs no workflows, so required checks never report | Medium | #556 | Not Started | `main.tf`, `github_workflow_repository_permissions` |
@@ -210,12 +210,12 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Build artifacts | Repudiation | Nothing proves which run produced an artifact once it expires | Low | #1078 | Not Started | — |
 | Build artifacts | Information Disclosure | An artifact holds only the package, which is public | — | — | Not Applicable | `zfs-replicate` `release.yml`, job `build` |
 | Build artifacts | Denial of Service | An expired artifact fails `Find candidate run`, and a new version recovers | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | #1055, and the publish environment's approval (#1121) | Not Started | `main.tf`, `github_repository_environment_deployment_policy` |
+| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | The publish environment's approval. #1055 limits who can create the tag | Mitigated | `terraform/alunduil/repositories.tf`, `publish_approval` |
 | 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, job `publish` |
 | 5.0 Upload package | Repudiation | A Hackage upload names the account, not the run | Medium | #1078 | Not Started | — |
 | 5.0 Upload package | Information Disclosure | `network-arbitrary` passes its key on the command line | Low | `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, step `cabal upload` |
 | 5.0 Upload package | Denial of Service | A registry outage fails the job, and a re-run keeps the tag | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | `collection-json.hs#406`, #1077, and the publish environment's approval (#1121) | Not Started | `collection-json.hs` `release.yml`, job `publish` |
+| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | The publish environment's approval. `collection-json.hs#406` and #1077 remove the dispatch route | Mitigated | `terraform/alunduil/repositories.tf`, `publish_approval` |
 | 5.0 Upload package | Tampering | The release builds the package again after CI and uploads it untested | Medium | `zfs-replicate#848`, `network-arbitrary#172` | Not Started | `zfs-replicate` `release.yml`, job `pypi` needs only `build` |
 | F1 proposed commits | Tampering | GitHub carries this over TLS, so tampering needs a compromise of GitHub | — | — | Not Applicable | register, D-09 |
 | F1 proposed commits | Information Disclosure | Pull requests are public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |

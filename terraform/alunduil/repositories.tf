@@ -1,10 +1,23 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+data "github_user" "operator" {
+  username = "alunduil"
+}
+
 locals {
   # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
   # must report on every pull request, so these run on pull requests too.
   haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+
+  # A registry upload can't be recalled, so the operator approves each one
+  # (ADR 0004). The operator is the only reviewer, so self-review stays
+  # allowed, and an admin's run still waits.
+  publish_approval = {
+    reviewers           = [tonumber(data.github_user.operator.id)]
+    prevent_self_review = false
+    can_admins_bypass   = false
+  }
 
   # An input an entry leaves unset takes the module's default.
   #
@@ -93,8 +106,13 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"] } }
-      deploy             = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
+      # The candidate upload runs in its own environment, holding the same
+      # token, so a release asks for one approval: on publish.
+      environments = {
+        hackage             = merge({ deployment_tags = ["v*"] }, local.publish_approval)
+        "hackage-candidate" = { deployment_tags = ["v*"] }
+      }
+      deploy = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
     }
 
     "git-worktree-poi" = {
@@ -120,7 +138,7 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"] } }
+      environments       = { hackage = merge({ deployment_tags = ["v*"] }, local.publish_approval) }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -164,7 +182,7 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      environments       = { hackage = {} }
+      environments       = { hackage = local.publish_approval }
       deploy             = { class = "release" }
     }
 
@@ -236,7 +254,7 @@ locals {
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.
-      environments = { pypi = { deployment_tags = ["v*.*.*"] } }
+      environments = { pypi = merge({ deployment_tags = ["v*.*.*"] }, local.publish_approval) }
       deploy       = { class = "run", workflow = "release.yml", event = "release" }
     }
   }
