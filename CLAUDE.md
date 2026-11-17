@@ -2,8 +2,9 @@
 <!-- SPDX-License-Identifier: MIT -->
 
 <!--
-Maintainer notes (HTML comments are stripped from Claude's context,
-and other agents never read this file, so they cost no agent tokens):
+Maintainer notes. Claude strips HTML comments from its context;
+Copilot's cloud agent, CLI, and code review also read this file,
+and whether they strip them is undocumented.
 - AGENTS.md is AI-targeted and loaded every session. Optimise for
   tokens; keep under ~75 lines.
 - Add an entry only when an agent has made the same mistake twice
