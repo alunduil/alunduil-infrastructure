@@ -10,7 +10,8 @@
 - **Don't run `terraform apply`.** Merging a PR to `main` triggers
   the apply in CI. `terraform plan` runs in CI on every PR touching
   Terraform and posts its output as a comment; local `just alunduil`
-  is break-glass only.
+  is break-glass only. Approve a merge only once the plan comment
+  looks right — merging applies it.
 - **Follow-ups land in a new session and a new PR.** A merged PR
   is done — don't keep iterating on it for adjacent work.
 
@@ -81,8 +82,6 @@ in a scoped PR ships infra the reviewer didn't ask for.
   block a commit, warnings don't. New terms go in `accept.txt` under
   `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
   casing for product names.
-- Approve a merge only once the plan comment looks right — merging
-  applies it.
 
 ## Agent configuration
 
