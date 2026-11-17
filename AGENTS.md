@@ -5,37 +5,31 @@
 
 ## Contribution flow
 
-- **Open draft PRs only.** Don't push to `main`; don't merge your
-  own PRs. alunduil reviews and merges.
-- **Don't run `terraform apply`.** Merging a PR to `main` triggers
-  the apply in CI. `terraform plan` runs in CI on every PR touching
-  Terraform and posts its output as a comment; local `just alunduil`
-  is break-glass only. Approve a merge only once the plan comment
-  looks right — merging applies it.
-- **Follow-ups land in a new session and a new PR.** A merged PR
-  is done — don't keep iterating on it for adjacent work.
+- **Open draft PRs only.** alunduil reviews and merges; changes
+  reach `main` only that way.
+- **Leave `terraform apply` to CI.** Merging a PR to `main` applies
+  it. CI posts `terraform plan` as a comment on every PR touching
+  Terraform; local `just alunduil` is break-glass only. Approve a
+  merge only once that plan looks right.
+- **Follow-ups to a merged PR land in a new session and a new PR.**
 
 ## Tooling inventory
 
-Before scripting from first principles or hitting APIs by hand,
-check what's already in place:
+Check these before writing new tooling:
 
-- Helper scripts: `scripts/`. New shell helpers go here, not the
-  repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
+- Helper scripts: `scripts/`, where new shell helpers go.
+  State-bucket bootstrap: `bootstrap-terraform-state.sh`.
 - Estate assets, the trust levels reaching them, entry points, and
   credentials with their consumers: `docs/reference/asset-register.md`,
   cited by ID. Component inventory (models, serial numbers, firmware,
-  location) lives in a private Notion base, not here. Adding or
-  removing an asset updates the register in the same PR.
-- GitHub Projects v2: self-contained module at `github/projects/`
-  (applier `bootstrap.sh` + `*.bats` tests + `*.json`
-  specs + `project.schema.json`), co-located for locality absent a
-  Projects v2 provider. #90 tracks the declarative replacement.
-  Deliberate exception to the `scripts/` rule above — don't move it
-  back.
+  location) lives in a private Notion base. Adding or removing an
+  asset updates the register in the same PR.
+- GitHub Projects v2: `github/projects/` is a self-contained module,
+  since no Terraform provider covers Projects v2. It is an intended
+  exception to the `scripts/` rule; keep it there.
 - Remote host configuration: `ansible/`, decided in ADR 0005.
-- Renovate (`renovate.json`) handles dependency PRs; extend the
-  config rather than pinning by hand.
+- Renovate (`renovate.json`) handles dependency PRs; new pins go in
+  its config.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
   `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
@@ -43,13 +37,13 @@ check what's already in place:
 
 ## Scope discipline
 
-`terraform apply` runs in CI on merge to `main`, so an unrelated edit
-in a scoped PR ships infra the reviewer didn't ask for.
+Merging applies, so an unrelated edit ships infra the reviewer didn't
+ask for.
 
 - Confirm scope doesn't overlap sibling or linked issues before
   opening the PR; ask if uncertain.
 - An issue blocked by unshipped prerequisites: propose deferral
-  with a `blocked-by` edge rather than write code ahead of them.
+  with a `blocked-by` edge.
 - Revert incidental edits (formatting, drive-by tweaks) before
   requesting review.
 
@@ -62,27 +56,29 @@ in a scoped PR ships infra the reviewer didn't ask for.
   `terraform/alunduil/repositories.tf` via the `github_repository`
   module. Assume a repo setting lives there before treating it as
   manual.
-- Adding a new repo to the org: create it with `gh` (confirm first;
-  the CI App can't create user repos), then land the
-  `repositories.tf` map entry plus an adoption `import` block in one
-  draft PR. Leave inputs at their module defaults unset. A follow-up
-  removes the `import` after apply.
+- Adding a new repo to the org: create it with `gh` after
+  confirming, since the CI App can't create user repos. Then land
+  the `repositories.tf` map entry and an adoption `import` block in
+  one draft PR, omitting inputs that match the module defaults. A
+  follow-up PR removes the `import` after apply.
 
 ## Gotchas
 
 - `alunduil.com` DNS is on Cloudflare, not Cloud DNS. Run
-  `dig NS alunduil.com` before treating a TF DNS resource as
+  `dig NS alunduil.com` before treating a Terraform DNS resource as
   authoritative.
 - Hooks in `.pre-commit-config.yaml` run under `prek` and must pass.
-  Run `prek install` once per clone. New files need SPDX headers —
-  REUSE flags missing ones.
-- `vale` lints prose. Full style set on README and `docs/`; spelling,
-  casing, and inclusive language everywhere else, plus wordiness and
-  banned terms on agent-read Markdown (`AGENTS.md`, `CLAUDE.md`,
-  `.claude/**`); a new agent-read file joins that `.vale.ini`
-  section. Errors block a commit, warnings don't. New terms go in
-  `accept.txt` under `.vale/styles/config/vocabularies/`, `(?i)` for
-  common nouns, exact casing for product names.
+  Run `prek install` once per clone. New files need SPDX headers;
+  the REUSE hook rejects files without them.
+- `vale` lints prose. Errors block a commit; warnings don't.
+  - README and `docs/`: the full style set.
+  - Agent-read Markdown (`AGENTS.md`, `CLAUDE.md`, `.claude/**`):
+    spelling, casing, inclusive language, wordiness, and banned
+    terms. A new agent-read file joins this `.vale.ini` section.
+  - Everything else: spelling, casing, and inclusive language.
+  - New terms go in `accept.txt` under
+    `.vale/styles/config/vocabularies/`: `(?i)` for common nouns,
+    exact casing for product names.
 
 ## Agent configuration
 
