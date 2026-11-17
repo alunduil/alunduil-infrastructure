@@ -10,8 +10,6 @@ and other agents never read this file, so they cost no agent tokens):
   or a non-obvious convention bit a session.
 - Prefer pointers (README §..., file:line) over copies of content
   that already lives elsewhere.
-- Rules every agent needs go in AGENTS.md; this file holds only
-  what is true of Claude Code alone.
 - Human-facing context lives in [README](README.md); no
   CONTRIBUTING.md (single maintainer; outside contributions are
   not solicited).
