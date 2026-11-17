@@ -86,7 +86,7 @@ Nygard's
 # Terms the en_US dictionary lacks
 (?i)ADR
 (?i)ADRs
-(?i)agentic
+(?i)agent(ic|s)?
 (?i)APIs
 (?i)automerg(e|es|ing)
 (?i)config

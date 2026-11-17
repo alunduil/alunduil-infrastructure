@@ -1,20 +1,7 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-<!--
-Maintainer notes (HTML comments are stripped from Claude's context):
-- AI-targeted, loaded every session. Optimise for tokens; keep
-  under ~75 lines.
-- Add an entry only when Claude has made the same mistake twice
-  or a non-obvious convention bit a session.
-- Prefer pointers (README §..., file:line) over copies of content
-  that already lives elsewhere.
-- Human-facing context lives in [README](README.md); no
-  CONTRIBUTING.md (single maintainer; outside contributions are
-  not solicited).
--->
-
-# alunduil-infrastructure — Claude guide
+# alunduil-infrastructure — agent guide
 
 ## Contribution flow
 
@@ -48,12 +35,11 @@ check what's already in place:
 - Remote host configuration: `ansible/`, decided in ADR 0005.
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
-- Adding a new repo to the org? The `scaffold-repo` skill
-  (`.claude/skills/scaffold-repo/`) drives it end to end: classifies each
-  `github_repository` input as shared/archetype/specific against the
-  existing `repositories.tf`, creates the repo via `gh` (confirmed) so
-  Terraform can adopt it, and lands the repositories map entry plus the
-  adoption `import` in one draft PR.
+- Adding a new repo to the org: create it with `gh` (confirm first;
+  the CI App can't create user repos), then land the
+  `repositories.tf` map entry plus an adoption `import` block in one
+  draft PR. Leave inputs at their module defaults unset. A follow-up
+  removes the `import` after apply.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
   `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
@@ -91,9 +77,18 @@ in a scoped PR ships infra the reviewer didn't ask for.
   REUSE flags missing ones.
 - `vale` lints prose. Full style set on README and `docs/`; spelling,
   casing, and inclusive language everywhere else, plus wordiness and
-  banned terms on `CLAUDE.md` and `.claude/**`. Errors block a commit,
-  warnings don't. New terms go in `accept.txt` under
+  banned terms on `AGENTS.md`, `CLAUDE.md`, and `.claude/**`. Errors
+  block a commit, warnings don't. New terms go in `accept.txt` under
   `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
   casing for product names.
 - Approve a merge only once the plan comment looks right — merging
   applies it.
+
+## Agent configuration
+
+- This file holds every rule an agent needs, whatever the tool.
+- A tool that doesn't read `AGENTS.md` gets the thinnest config
+  that points at it — an import or a filename setting — plus only
+  what is true of that tool alone. `CLAUDE.md` is the model.
+- New agent-read Markdown joins the AI-instruction section of
+  `.vale.ini`.
