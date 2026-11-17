@@ -69,7 +69,7 @@ ask for.
   authoritative.
 - Hooks in `.pre-commit-config.yaml` run under `prek` and must pass.
   Run `prek install` once per clone. New files need SPDX headers;
-  the REUSE hook rejects files without them.
+  `reuse lint` rejects files without them.
 - `vale` lints prose. Errors block a commit; warnings don't.
   - README and `docs/`: the full style set.
   - Agent-read Markdown (`AGENTS.md`, `CLAUDE.md`, `.claude/**`):
