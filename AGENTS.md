@@ -78,8 +78,9 @@ in a scoped PR ships infra the reviewer didn't ask for.
   REUSE flags missing ones.
 - `vale` lints prose. Full style set on README and `docs/`; spelling,
   casing, and inclusive language everywhere else, plus wordiness and
-  banned terms on `AGENTS.md`, `CLAUDE.md`, and `.claude/**`. Errors
-  block a commit, warnings don't. New terms go in `accept.txt` under
+  banned terms on agent-read Markdown (`AGENTS.md`, `CLAUDE.md`,
+  `.claude/**`); a new agent-read file joins that `.vale.ini`
+  section. Errors block a commit, warnings don't. New terms go in `accept.txt` under
   `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
   casing for product names.
 
@@ -89,5 +90,3 @@ in a scoped PR ships infra the reviewer didn't ask for.
 - A tool that doesn't read `AGENTS.md` gets the thinnest config
   that points at it — an import or a filename setting — plus only
   what is true of that tool alone. `CLAUDE.md` is the model.
-- New agent-read Markdown joins the AI-instruction section of
-  `.vale.ini`.
