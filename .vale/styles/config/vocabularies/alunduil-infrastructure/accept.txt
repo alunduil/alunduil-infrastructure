@@ -86,7 +86,7 @@ Nygard's
 # Terms the en_US dictionary lacks
 (?i)ADR
 (?i)ADRs
-(?i)agent(ic|s)?
+(?i)agentic
 (?i)APIs
 (?i)automerg(e|es|ing)
 (?i)config
@@ -132,3 +132,6 @@ Nygard's
 (?i)vuln
 (?i)worktree
 (?i)worktrees
+
+# Correct terms Microsoft.Terms would substitute
+(?i)agents?
