@@ -132,3 +132,6 @@ Nygard's
 (?i)vuln
 (?i)worktree
 (?i)worktrees
+
+# Terms Microsoft.Terms would wrongly substitute
+(?i)agents?
