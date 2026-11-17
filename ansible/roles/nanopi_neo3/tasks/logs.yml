@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# The journal is persistent and Alloy ships it, so rsyslog's text files only
+# duplicate it.
+- name: Remove rsyslog
+  ansible.builtin.apt:
+    name: rsyslog
+    state: absent
+    purge: true
+
+- name: Remove rsyslog's text logs
+  ansible.builtin.file:
+    path: /var/log/{{ item }}
+    state: absent
+  loop:
+    - auth.log
+    - cron.log
+    - daemon.log
+    - debug
+    - kern.log
+    - mail.err
+    - mail.info
+    - mail.log
+    - mail.warn
+    - messages
+    - syslog
+    - user.log

@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# The backup goes first: it uploads /etc to Google Drive hourly, so it must stop
+# before any credential below reaches /etc.
+- name: Remove the Drive backup
+  ansible.builtin.import_tasks: backup.yml
+
+- name: Install packages
+  ansible.builtin.import_tasks: packages.yml
+
+- name: Keep logs in the journal only
+  ansible.builtin.import_tasks: logs.yml
+
+- name: Configure unattended upgrades
+  ansible.builtin.import_tasks: upgrades.yml
+
+- name: Configure mail
+  ansible.builtin.import_tasks: mail.yml
+
+- name: Configure Tailscale
+  ansible.builtin.import_tasks: tailscale.yml
+
+- name: Configure Alloy
+  ansible.builtin.import_tasks: alloy.yml
+
+- name: Configure the UptimeRobot heartbeat
+  ansible.builtin.import_tasks: heartbeat.yml

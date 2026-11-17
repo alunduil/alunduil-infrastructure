@@ -74,6 +74,8 @@ truenas:
     terraform -chdir=terraform/truenas init
     terraform -chdir=terraform/truenas apply
 
+# Credentials: gcloud CLI auth with secretAccessor on the box's Alloy push token
+# and Gmail app password, and read access to bootstrap-outputs.json.
 [doc("Configure the NanoPi-NEO3 with Ansible over the tailnet.")]
 [positional-arguments]
 nanopi-neo3 *args:

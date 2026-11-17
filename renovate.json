@@ -43,6 +43,12 @@
       "groupName": "ansible-core"
     },
     {
+      "description": "The Ansible stand-in runs the NanoPi-NEO3's Debian major release, which apt never changes, so only point releases reach it",
+      "matchFileNames": ["ansible/Dockerfile"],
+      "matchDepNames": ["debian"],
+      "allowedVersions": "<13"
+    },
+    {
       "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
       "matchDepNames": ["mise"],
       "groupName": "mise"

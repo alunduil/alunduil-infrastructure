@@ -1,0 +1,91 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# Unattended upgrades mail their reports to root.
+- name: Relay mail through Gmail
+  when: "'exim4-daemon-light' in ansible_facts.packages"
+  vars:
+    nanopi_neo3_smarthost_stored: >-
+      {{ nanopi_neo3_smarthost_version.stdout | default('') == 'ENABLED' }}
+    # Google displays the password in groups of four, and Exim needs it
+    # unbroken.
+    nanopi_neo3_smarthost_typed: >-
+      {{ nanopi_neo3_smarthost_prompt.user_input | default('') | replace(' ', '') }}
+  block:
+    - name: Configure Exim as a smarthost client
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: /etc/{{ item }}
+        mode: "0644"
+      loop:
+        - exim4/update-exim4.conf.conf
+        - mailname
+      notify: Reload Exim
+
+    # Secret Manager holds the password, so a replacement card gets the same
+    # one. A missing or disabled latest version means it needs supplying.
+    - name: Look for a stored Gmail app password
+      ansible.builtin.command:
+        argv:
+          - gcloud
+          - secrets
+          - versions
+          - describe
+          - latest
+          - --project={{ nanopi_neo3_gcp_project }}
+          - --secret={{ nanopi_neo3_smarthost_store }}
+          - --format=value(state)
+      delegate_to: localhost
+      become: false
+      register: nanopi_neo3_smarthost_version
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Ask for the Gmail app password
+      ansible.builtin.pause:
+        prompt: Gmail app password for the NanoPi-NEO3
+        echo: false
+      register: nanopi_neo3_smarthost_prompt
+      when: not nanopi_neo3_smarthost_stored and not ansible_check_mode
+
+    - name: Store the Gmail app password
+      ansible.builtin.command:
+        argv:
+          - gcloud
+          - secrets
+          - versions
+          - add
+          - --project={{ nanopi_neo3_gcp_project }}
+          - --data-file=-
+          - "{{ nanopi_neo3_smarthost_store }}"
+        stdin: "{{ nanopi_neo3_smarthost_typed }}"
+        stdin_add_newline: false
+      delegate_to: localhost
+      become: false
+      changed_when: true
+      no_log: true
+      when: nanopi_neo3_smarthost_typed | length > 0
+
+    - name: Write the Gmail app password
+      ansible.builtin.template:
+        src: exim4/passwd.client.j2
+        dest: /etc/exim4/passwd.client
+        owner: root
+        group: Debian-exim
+        mode: "0640"
+      no_log: true
+      diff: false
+      when: nanopi_neo3_smarthost_stored or nanopi_neo3_smarthost_typed | length > 0
+
+    - name: Forward root's mail
+      ansible.builtin.lineinfile:
+        path: /etc/aliases
+        regexp: "^root:"
+        line: "root: {{ nanopi_neo3_mail_address }}"
+
+    - name: Start Exim
+      ansible.builtin.systemd_service:
+        name: exim4
+        enabled: true
+        state: started

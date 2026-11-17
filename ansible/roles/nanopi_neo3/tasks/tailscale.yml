@@ -1,0 +1,75 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+- name: Forward packets for exit-node traffic
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-tailscale.conf
+    content: |
+      net.ipv4.ip_forward = 1
+      net.ipv6.conf.all.forwarding = 1
+    mode: "0644"
+  notify: Apply sysctl settings
+
+- name: Join the tailnet as an exit node
+  when: "'tailscale' in ansible_facts.packages"
+  vars:
+    nanopi_neo3_tailscale_backend: >-
+      {{ (nanopi_neo3_tailscale_status.stdout | from_json).BackendState
+         if nanopi_neo3_tailscale_status.rc == 0 else 'Unreachable' }}
+    nanopi_neo3_tailscale_logged_in: "{{ nanopi_neo3_tailscale_backend == 'Running' }}"
+  block:
+    - name: Start Tailscale
+      ansible.builtin.systemd_service:
+        name: tailscaled
+        enabled: true
+        state: started
+
+    # A freshly started daemon reports Starting before it settles, and reading
+    # that as logged out would re-register the node.
+    - name: Read Tailscale's state
+      ansible.builtin.command: tailscale status --json
+      register: nanopi_neo3_tailscale_status
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      retries: 10
+      delay: 3
+      until: nanopi_neo3_tailscale_backend not in ['NoState', 'Starting']
+
+    - name: Ask for a Tailscale auth key
+      ansible.builtin.pause:
+        prompt: Tailscale auth key
+        echo: false
+      register: nanopi_neo3_tailscale_auth_key
+      when: not nanopi_neo3_tailscale_logged_in and not ansible_check_mode
+
+    - name: Log in to Tailscale
+      ansible.builtin.command:
+        argv:
+          - tailscale
+          - up
+          - --auth-key={{ nanopi_neo3_tailscale_auth_key.user_input | default('') }}
+          - --advertise-exit-node
+          - --ssh
+      changed_when: true
+      no_log: true
+      when: not nanopi_neo3_tailscale_logged_in
+
+    - name: Read Tailscale's preferences
+      ansible.builtin.command: tailscale debug prefs
+      register: nanopi_neo3_tailscale_prefs
+      changed_when: false
+      check_mode: false
+      when: nanopi_neo3_tailscale_logged_in
+
+    - name: Advertise the exit node and Tailscale SSH
+      ansible.builtin.command: tailscale set --advertise-exit-node --ssh
+      changed_when: true
+      vars:
+        nanopi_neo3_tailscale_preferences: "{{ nanopi_neo3_tailscale_prefs.stdout | from_json }}"
+        nanopi_neo3_exit_node_advertised: >-
+          {{ nanopi_neo3_tailscale_preferences.RunSSH
+             and ['0.0.0.0/0', '::/0']
+                 | difference(nanopi_neo3_tailscale_preferences.AdvertiseRoutes or [])
+                 | length == 0 }}
+      when: nanopi_neo3_tailscale_logged_in and not nanopi_neo3_exit_node_advertised
