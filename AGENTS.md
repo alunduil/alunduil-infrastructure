@@ -36,11 +36,6 @@ check what's already in place:
 - Remote host configuration: `ansible/`, decided in ADR 0005.
 - Renovate (`renovate.json`) handles dependency PRs; extend the
   config rather than pinning by hand.
-- Adding a new repo to the org: create it with `gh` (confirm first;
-  the CI App can't create user repos), then land the
-  `repositories.tf` map entry plus an adoption `import` block in one
-  draft PR. Leave inputs at their module defaults unset. A follow-up
-  removes the `import` after apply.
 - Credentials: `docs/how-to/bootstrap.md` names the env vars the
   bootstrap needs; the Cloudflare scopes live in
   `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
@@ -67,6 +62,11 @@ in a scoped PR ships infra the reviewer didn't ask for.
   `terraform/alunduil/repositories.tf` via the `github_repository`
   module. Assume a repo setting lives there before treating it as
   manual.
+- Adding a new repo to the org: create it with `gh` (confirm first;
+  the CI App can't create user repos), then land the
+  `repositories.tf` map entry plus an adoption `import` block in one
+  draft PR. Leave inputs at their module defaults unset. A follow-up
+  removes the `import` after apply.
 
 ## Gotchas
 
