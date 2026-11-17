@@ -2,9 +2,8 @@
 <!-- SPDX-License-Identifier: MIT -->
 
 <!--
-Maintainer notes. Claude strips HTML comments from its context;
-Copilot's cloud agent, CLI, and code review also read this file,
-and whether they strip them is undocumented.
+Maintainer notes. Claude strips HTML comments, but Copilot also
+reads this file and may not, so keep this block short.
 - AGENTS.md is AI-targeted and loaded every session. Optimise for
   tokens; keep under ~75 lines.
 - Add an entry only when an agent has made the same mistake twice

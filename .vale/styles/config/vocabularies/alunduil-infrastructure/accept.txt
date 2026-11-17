@@ -133,5 +133,5 @@ Nygard's
 (?i)worktree
 (?i)worktrees
 
-# Correct terms Microsoft.Terms would substitute
+# Terms Microsoft.Terms would wrongly substitute
 (?i)agents?
