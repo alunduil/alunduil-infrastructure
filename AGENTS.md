@@ -80,9 +80,9 @@ in a scoped PR ships infra the reviewer didn't ask for.
   casing, and inclusive language everywhere else, plus wordiness and
   banned terms on agent-read Markdown (`AGENTS.md`, `CLAUDE.md`,
   `.claude/**`); a new agent-read file joins that `.vale.ini`
-  section. Errors block a commit, warnings don't. New terms go in `accept.txt` under
-  `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
-  casing for product names.
+  section. Errors block a commit, warnings don't. New terms go in
+  `accept.txt` under `.vale/styles/config/vocabularies/`, `(?i)` for
+  common nouns, exact casing for product names.
 
 ## Agent configuration
 
