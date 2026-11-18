@@ -181,6 +181,11 @@ locals {
       deploy             = { class = "release" }
     }
 
+    "vale-styles" = {
+      description = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
+      topics      = ["vale", "vale-style", "prose-linting", "style-guide"]
+    }
+
     "woodland-generators" = {
       description = "Foundry VTT module for generating Root: The Tabletop RPG content inside a live world."
       # Both Foundry spellings are carried deliberately: the upstream
@@ -276,66 +281,6 @@ module "repository" {
 }
 
 import {
-  to = module.repository["renovate-config"].github_repository.this
-  id = "renovate-config"
-}
-
-moved {
-  from = module.alunduil_chezmoi
-  to   = module.repository["alunduil-chezmoi"]
-}
-
-moved {
-  from = module.alunduil_infrastructure
-  to   = module.repository["alunduil-infrastructure"]
-}
-
-moved {
-  from = module.blog_alunduil_com
-  to   = module.repository["blog.alunduil.com"]
-}
-
-moved {
-  from = module.collection_json_hs
-  to   = module.repository["collection-json.hs"]
-}
-
-moved {
-  from = module.git_worktree_poi
-  to   = module.repository["git-worktree-poi"]
-}
-
-moved {
-  from = module.network_arbitrary
-  to   = module.repository["network-arbitrary"]
-}
-
-moved {
-  from = module.projects_v2_sync
-  to   = module.repository["projects-v2-sync"]
-}
-
-moved {
-  from = module.renovate_config
-  to   = module.repository["renovate-config"]
-}
-
-moved {
-  from = module.siren_json_hs
-  to   = module.repository["siren-json.hs"]
-}
-
-moved {
-  from = module.woodland_generators
-  to   = module.repository["woodland-generators"]
-}
-
-moved {
-  from = module.zellij_claude_pair
-  to   = module.repository["zellij-claude-pair"]
-}
-
-moved {
-  from = module.zfs_replicate
-  to   = module.repository["zfs-replicate"]
+  to = module.repository["vale-styles"].github_repository.this
+  id = "vale-styles"
 }
