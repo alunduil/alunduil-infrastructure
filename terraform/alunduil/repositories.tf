@@ -225,7 +225,7 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      # release-please tags as <component>@<version>.
+      # release-please names each tag <component>@<version>.
       environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
       deploy       = { class = "release" }
     }
