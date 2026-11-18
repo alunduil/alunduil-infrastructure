@@ -10,8 +10,8 @@ locals {
   # must report on every pull request, so these run on pull requests too.
   haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
 
-  # A registry upload can't be recalled, so the operator approves each one
-  # (ADR 0004).
+  # A registry upload or an attached release asset can't be recalled, so the
+  # operator approves each one (ADR 0004).
   publish_approval = { reviewers = [tonumber(data.github_user.operator.id)] }
 
   # An input an entry leaves unset takes the module's default.
@@ -225,7 +225,9 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      deploy = { class = "release" }
+      # release-please names each tag <component>@<version>.
+      environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy       = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -236,6 +238,7 @@ locals {
         contexts           = ["Enforce Conventional Commits"]
         renovate_automerge = true
       }
+      environments = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
     }
 
     "zfs-replicate" = {
