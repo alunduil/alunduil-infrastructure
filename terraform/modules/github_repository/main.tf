@@ -338,6 +338,8 @@ locals {
     "j178/prek-action@*",
     "JasonEtco/create-an-issue@*",
     "jdx/mise-action@*",
+    "Kleidukos/get-tested@*",
+    "Kleidukos/get-tested/setup-get-tested@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
     "pnpm/action-setup@*",
