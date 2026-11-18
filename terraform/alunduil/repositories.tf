@@ -10,8 +10,8 @@ locals {
   # must report on every pull request, so these run on pull requests too.
   haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
 
-  # A registry upload can't be recalled, so the operator approves each one
-  # (ADR 0004).
+  # A registry upload or an attached release asset can't be recalled, so the
+  # operator approves each one (ADR 0004).
   publish_approval = { reviewers = [tonumber(data.github_user.operator.id)] }
 
   # An input an entry leaves unset takes the module's default.
