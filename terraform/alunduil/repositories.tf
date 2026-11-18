@@ -20,6 +20,12 @@ locals {
   # docs/reference/delivery-metrics.md. A repository without one records no
   # DORA metrics. A run without an event matches any event.
   repositories = {
+    "agent-plugins" = {
+      description = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
+      topics      = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
+      deploy      = { class = "merge" }
+    }
+
     "alunduil-chezmoi" = {
       description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
       topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
@@ -89,12 +95,6 @@ locals {
       }
       allowed_action_patterns = ["withastro/action@*"]
       deploy                  = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
-    }
-
-    "claude-plugins" = {
-      description = "Install alunduil's Claude Code skills and hooks on any host by adding this plugin marketplace with /plugin marketplace add."
-      topics      = ["claude-code", "claude-code-plugins", "claude-code-marketplace"]
-      deploy      = { class = "merge" }
     }
 
     "collection-json.hs" = {
@@ -301,6 +301,6 @@ import {
 }
 
 import {
-  to = module.repository["claude-plugins"].github_repository.this
-  id = "claude-plugins"
+  to = module.repository["agent-plugins"].github_repository.this
+  id = "agent-plugins"
 }
