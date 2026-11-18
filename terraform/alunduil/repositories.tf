@@ -91,6 +91,12 @@ locals {
       deploy                  = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
     }
 
+    "claude-plugins" = {
+      description = "Install alunduil's Claude Code skills and hooks on any host by adding this plugin marketplace with /plugin marketplace add."
+      topics      = ["claude-code", "claude-code-plugins", "claude-code-marketplace"]
+      deploy      = { class = "merge" }
+    }
+
     "collection-json.hs" = {
       description = "Collection+JSON Tools for Haskell"
       topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
@@ -292,4 +298,9 @@ module "repository" {
 import {
   to = module.repository["vale-styles"].github_repository.this
   id = "vale-styles"
+}
+
+import {
+  to = module.repository["claude-plugins"].github_repository.this
+  id = "claude-plugins"
 }
