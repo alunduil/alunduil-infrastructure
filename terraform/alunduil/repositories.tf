@@ -100,7 +100,8 @@ locals {
         contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
         renovate_automerge    = true
       }
-      admin_only_updates = true
+      admin_only_updates   = true
+      release_tag_patterns = ["v*"]
       environments = {
         hackage = { deployment_tags = ["v*"], approval = local.publish_approval }
         # Holds the same token as hackage, without an approval, so the
@@ -132,8 +133,9 @@ locals {
         contexts              = local.haskell_scheduled_checks
         renovate_automerge    = true
       }
-      admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
+      admin_only_updates   = true
+      release_tag_patterns = ["v*"]
+      environments         = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -176,9 +178,10 @@ locals {
         contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
         renovate_automerge    = true
       }
-      admin_only_updates = true
-      environments       = { hackage = { approval = local.publish_approval } }
-      deploy             = { class = "release" }
+      admin_only_updates   = true
+      release_tag_patterns = ["v*"]
+      environments         = { hackage = { approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "vale-styles" = {
@@ -225,9 +228,11 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      # release-please names each tag <component>@<version>.
-      environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
-      deploy       = { class = "release" }
+      # release-please names each tag <component>@<version>. The
+      # woodland-generators-v* tags have no environment using them.
+      release_tag_patterns = ["foundry-module@*", "woodland-generators-v*"]
+      environments         = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -238,7 +243,8 @@ locals {
         contexts           = ["Enforce Conventional Commits"]
         renovate_automerge = true
       }
-      environments = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
+      release_tag_patterns = ["v*"]
+      environments         = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
     }
 
     "zfs-replicate" = {
@@ -257,8 +263,9 @@ locals {
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.
-      environments = { pypi = { deployment_tags = ["v*.*.*"], approval = local.publish_approval } }
-      deploy       = { class = "run", workflow = "release.yml", event = "release" }
+      release_tag_patterns = ["v*.*.*"]
+      environments         = { pypi = { deployment_tags = ["v*.*.*"], approval = local.publish_approval } }
+      deploy               = { class = "run", workflow = "release.yml", event = "release" }
     }
   }
 }
@@ -281,6 +288,7 @@ module "repository" {
   environments              = lookup(each.value, "environments", null)
   pages                     = lookup(each.value, "pages", null)
   allowed_action_patterns   = lookup(each.value, "allowed_action_patterns", null)
+  release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
 }
 
 import {

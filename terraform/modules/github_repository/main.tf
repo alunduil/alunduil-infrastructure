@@ -304,6 +304,36 @@ resource "github_repository_ruleset" "immutable_tags" {
   }
 }
 
+# An environment's deployment_tags check a tag's name, not who created it, so
+# this ruleset is what limits release tags to named actors. It stays apart from
+# immutable-tags so that a release App can bypass this ruleset without also
+# bypassing immutability.
+resource "github_repository_ruleset" "release_tags" {
+  count = length(var.release_tag_patterns) > 0 ? 1 : 0
+
+  name        = "release-tags"
+  repository  = github_repository.this.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = [for pattern in var.release_tag_patterns : "refs/tags/${pattern}"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
+  }
+
+  rules {
+    creation = true
+  }
+}
+
 # Load-bearing for Renovate, not just for the GitHub UI: Renovate's
 # vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
 # and goes quiet if the feed is off.
