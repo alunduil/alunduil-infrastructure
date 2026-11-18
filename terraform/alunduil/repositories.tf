@@ -177,8 +177,11 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      environments       = { hackage = { approval = local.publish_approval } }
-      deploy             = { class = "release" }
+      # The hackage environment isn't scoped to tags, so its release tags are
+      # listed here.
+      release_tag_patterns = ["v*"]
+      environments         = { hackage = { approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "vale-styles" = {
@@ -225,9 +228,11 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      # release-please names each tag <component>@<version>.
-      environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
-      deploy       = { class = "release" }
+      # release-please names each tag <component>@<version>. No environment
+      # publishes from the woodland-generators-v* tags.
+      release_tag_patterns = ["woodland-generators-v*"]
+      environments         = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -281,6 +286,7 @@ module "repository" {
   environments              = lookup(each.value, "environments", null)
   pages                     = lookup(each.value, "pages", null)
   allowed_action_patterns   = lookup(each.value, "allowed_action_patterns", null)
+  release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
 }
 
 import {
