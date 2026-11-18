@@ -305,18 +305,16 @@ resource "github_repository_ruleset" "immutable_tags" {
 }
 
 locals {
-  # Deriving from deployment_tags keeps every publish environment's tags
-  # covered without restating them.
   release_tag_patterns = distinct(concat(
     flatten([for env in var.environments : env.deployment_tags]),
     var.release_tag_patterns,
   ))
 }
 
-# An environment's deployment_tags check a tag's name, not who created it, so
-# this ruleset is what limits release tags to named actors. It stays apart from
-# immutable-tags so that a release App can bypass this ruleset without also
-# bypassing immutability.
+# An environment's deployment_tags match a tag's name, not its creator, so only
+# this ruleset limits who can create a release tag. Bypass actors are per
+# ruleset, so keeping it apart from immutable-tags lets an actor create release
+# tags without also being able to move or delete them.
 resource "github_repository_ruleset" "release_tags" {
   count = length(local.release_tag_patterns) > 0 ? 1 : 0
 

@@ -177,8 +177,8 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      # Its release workflow doesn't exist yet, so no environment scopes the
-      # tags it will publish from.
+      # The hackage environment isn't scoped to tags, so its release tags are
+      # listed here.
       release_tag_patterns = ["v*"]
       environments         = { hackage = { approval = local.publish_approval } }
       deploy               = { class = "release" }
