@@ -176,18 +176,9 @@ variable "release_tag_patterns" {
   description = <<-EOT
     Tag name patterns, such as "v*", that only the repository admin can
     create, whether by push, the refs API, or publishing a release. Every
-    pattern in an environment's deployment_tags must appear here, or that
-    environment's tags stay open to any write collaborator.
+    environment's deployment_tags are already restricted, so list only
+    release tags no environment scopes to.
   EOT
-
-  validation {
-    condition = alltrue(flatten([
-      for env in var.environments : [
-        for pattern in env.deployment_tags : contains(var.release_tag_patterns, pattern)
-      ]
-    ]))
-    error_message = "Every environment's deployment_tags pattern must also be in release_tag_patterns."
-  }
 }
 
 variable "pages" {

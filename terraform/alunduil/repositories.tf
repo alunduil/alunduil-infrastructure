@@ -100,8 +100,7 @@ locals {
         contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
         renovate_automerge    = true
       }
-      admin_only_updates   = true
-      release_tag_patterns = ["v*"]
+      admin_only_updates = true
       environments = {
         hackage = { deployment_tags = ["v*"], approval = local.publish_approval }
         # Holds the same token as hackage, without an approval, so the
@@ -133,9 +132,8 @@ locals {
         contexts              = local.haskell_scheduled_checks
         renovate_automerge    = true
       }
-      admin_only_updates   = true
-      release_tag_patterns = ["v*"]
-      environments         = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
+      admin_only_updates = true
+      environments       = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -178,7 +176,9 @@ locals {
         contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
         renovate_automerge    = true
       }
-      admin_only_updates   = true
+      admin_only_updates = true
+      # Its release workflow doesn't exist yet, so no environment scopes the
+      # tags it will publish from.
       release_tag_patterns = ["v*"]
       environments         = { hackage = { approval = local.publish_approval } }
       deploy               = { class = "release" }
@@ -228,9 +228,9 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      # release-please names each tag <component>@<version>. The
-      # woodland-generators-v* tags have no environment using them.
-      release_tag_patterns = ["foundry-module@*", "woodland-generators-v*"]
+      # release-please names each tag <component>@<version>. No environment
+      # publishes from the woodland-generators-v* tags.
+      release_tag_patterns = ["woodland-generators-v*"]
       environments         = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
       deploy               = { class = "release" }
     }
@@ -243,8 +243,7 @@ locals {
         contexts           = ["Enforce Conventional Commits"]
         renovate_automerge = true
       }
-      release_tag_patterns = ["v*"]
-      environments         = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
+      environments = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
     }
 
     "zfs-replicate" = {
@@ -263,9 +262,8 @@ locals {
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.
-      release_tag_patterns = ["v*.*.*"]
-      environments         = { pypi = { deployment_tags = ["v*.*.*"], approval = local.publish_approval } }
-      deploy               = { class = "run", workflow = "release.yml", event = "release" }
+      environments = { pypi = { deployment_tags = ["v*.*.*"], approval = local.publish_approval } }
+      deploy       = { class = "run", workflow = "release.yml", event = "release" }
     }
   }
 }

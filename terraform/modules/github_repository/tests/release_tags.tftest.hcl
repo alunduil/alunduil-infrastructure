@@ -12,31 +12,28 @@ variables {
   name = "example"
 }
 
-run "uncovered_deployment_tag_fails_plan" {
-  command = plan
-
-  variables {
-    release_tag_patterns = ["v*"]
-    environments         = { pypi = { deployment_tags = ["v*.*.*"] } }
-  }
-
-  expect_failures = [var.release_tag_patterns]
-}
-
 run "patterns_restrict_tag_creation" {
   command = plan
 
   variables {
     release_tag_patterns = ["v*.*.*", "woodland-generators-v*"]
-    environments         = { pypi = { deployment_tags = ["v*.*.*"] } }
+    environments = {
+      pypi    = { deployment_tags = ["v*.*.*"] }
+      release = { deployment_tags = ["foundry-module@*"] }
+    }
   }
 
   assert {
     condition = (
-      github_repository_ruleset.release_tags[0].conditions[0].ref_name[0].include
-      == tolist(["refs/tags/v*.*.*", "refs/tags/woodland-generators-v*"])
+      toset(github_repository_ruleset.release_tags[0].conditions[0].ref_name[0].include)
+      == toset(["refs/tags/v*.*.*", "refs/tags/foundry-module@*", "refs/tags/woodland-generators-v*"])
     )
-    error_message = "The ruleset must cover exactly the given tag patterns."
+    error_message = "The ruleset must cover every environment's deployment_tags and release_tag_patterns."
+  }
+
+  assert {
+    condition     = length(github_repository_ruleset.release_tags[0].conditions[0].ref_name[0].include) == 3
+    error_message = "A pattern listed twice must appear once."
   }
 
   assert {
