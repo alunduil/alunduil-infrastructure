@@ -87,3 +87,8 @@ nanopi-neo3 *args:
 [doc("Run bats unit tests for shell helpers.")]
 test:
     bats --recursive github/projects scripts
+
+[doc("Run Terraform module tests against a mocked provider.")]
+test-terraform:
+    terraform -chdir=terraform/modules/github_repository init -backend=false -input=false
+    terraform -chdir=terraform/modules/github_repository test
