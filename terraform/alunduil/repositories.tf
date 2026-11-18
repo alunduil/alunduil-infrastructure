@@ -181,6 +181,11 @@ locals {
       deploy             = { class = "release" }
     }
 
+    "vale-styles" = {
+      description = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
+      topics      = ["vale", "vale-style", "prose-linting", "style-guide"]
+    }
+
     "woodland-generators" = {
       description = "Foundry VTT module for generating Root: The Tabletop RPG content inside a live world."
       # Both Foundry spellings are carried deliberately: the upstream
@@ -278,6 +283,11 @@ module "repository" {
 import {
   to = module.repository["renovate-config"].github_repository.this
   id = "renovate-config"
+}
+
+import {
+  to = module.repository["vale-styles"].github_repository.this
+  id = "vale-styles"
 }
 
 moved {
