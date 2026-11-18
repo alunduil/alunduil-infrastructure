@@ -225,7 +225,9 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      deploy = { class = "release" }
+      # release-please tags as <component>@<version>.
+      environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy       = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -236,6 +238,7 @@ locals {
         contexts           = ["Enforce Conventional Commits"]
         renovate_automerge = true
       }
+      environments = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
     }
 
     "zfs-replicate" = {
