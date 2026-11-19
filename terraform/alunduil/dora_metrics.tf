@@ -11,7 +11,14 @@ locals {
   dora_window_seconds   = 30 * 86400
   dora_interval_seconds = 3600
 
-  dora_missed_evaluations = 3
+  dora_missed_evaluations     = 3
+  dora_alert_interval_seconds = 300
+
+  # The absence window catches one missed evaluation and the pending period
+  # counts the rest. A new repository's first evaluation lands within an
+  # interval of its rule group's creation, clearing pending before it fires.
+  dora_absence_window_seconds = local.dora_interval_seconds + local.dora_alert_interval_seconds
+  dora_pending_seconds        = (local.dora_missed_evaluations - 1) * local.dora_interval_seconds
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
@@ -170,20 +177,15 @@ data "grafana_data_source" "prometheus" {
 # dora_deploys records both outcomes every evaluation, even with no deploys,
 # so its absence means the repository's rules failed. A median series is
 # also absent while the window has nothing to measure.
-#
-# The expression catches one missed evaluation and the pending period
-# counts the rest. A repository's first evaluation lands within an interval
-# of its rule group's creation, so a new repository clears pending before it
-# fires, while one whose rules never record still fires.
 resource "grafana_rule_group" "dora_recording" {
   name             = "Alerts"
   folder_uid       = grafana_folder.dora.uid
-  interval_seconds = 300
+  interval_seconds = local.dora_alert_interval_seconds
 
   rule {
     name           = "DORA rules stopped recording"
     condition      = "C"
-    for            = "${(local.dora_missed_evaluations - 1) * local.dora_interval_seconds}s"
+    for            = "${local.dora_pending_seconds}s"
     no_data_state  = "OK"
     exec_err_state = "Error"
     labels         = { severity = "warning" }
@@ -204,7 +206,7 @@ resource "grafana_rule_group" "dora_recording" {
         # result, so each failing repository fires its own alert.
         expr = join(" or ", [
           for name in local.dora_repositories :
-          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_interval_seconds + 300}s])"
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_absence_window_seconds}s])"
         ])
       })
     }
