@@ -6,9 +6,15 @@ data "github_user" "operator" {
 }
 
 locals {
-  # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
-  # must report on every pull request, so these run on pull requests too.
-  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC series drift"]
+  haskell_required_status_checks = {
+    ci_results_check      = true
+    codecov_project_check = true
+    # Jobs from the Haskell libraries' daily.yml and weekly.yml. Those
+    # workflows also run on pull requests, because a required check must
+    # report on every pull request.
+    contexts           = ["Prune stale pull requests", "Check GHC series drift", "Check links"]
+    renovate_automerge = true
+  }
 
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
@@ -98,15 +104,10 @@ locals {
     }
 
     "collection-json.hs" = {
-      description = "Collection+JSON Tools for Haskell"
-      topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
-        renovate_automerge    = true
-      }
-      admin_only_updates = true
+      description            = "Collection+JSON Tools for Haskell"
+      topics                 = ["haskell-library", "collection-json", "haskell", "hypermedia"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
       environments = {
         hackage = { deployment_tags = ["v*"], approval = local.publish_approval }
         # Holds the same token as hackage, without an approval, so the
@@ -130,16 +131,11 @@ locals {
     }
 
     "network-arbitrary" = {
-      description = "Arbitrary Instances for Network Types"
-      topics      = ["haskell-library", "haskell", "network", "quickcheck"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = local.haskell_scheduled_checks
-        renovate_automerge    = true
-      }
-      admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
+      description            = "Arbitrary Instances for Network Types"
+      topics                 = ["haskell-library", "haskell", "network", "quickcheck"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
+      environments           = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -174,15 +170,10 @@ locals {
     }
 
     "siren-json.hs" = {
-      description = "Siren+JSON Tools for Haskell"
-      topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
-        renovate_automerge    = true
-      }
-      admin_only_updates = true
+      description            = "Siren+JSON Tools for Haskell"
+      topics                 = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
       # The hackage environment isn't scoped to tags, so its release tags are
       # listed here.
       release_tag_patterns = ["v*"]
