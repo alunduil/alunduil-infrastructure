@@ -153,14 +153,14 @@ Tested, for the head-commit attachment: [#1065, test
 
 ## Custom deployment protection rules
 
-A GitHub App subscribed to `deployment_protection_rule`, with `Deployments`
-write and `Actions` read, can be enabled as a rule on an environment. Each job
+An admin can enable a GitHub App subscribed to `deployment_protection_rule`,
+with `Deployments` write and `Actions` read, as a rule on an environment. Each job
 that targets the environment then waits for the App to approve or reject it,
 through `POST /repos/{owner}/{repo}/actions/runs/{run_id}/deployment_protection_rule`.
 
 ### Visibility
 
-The rule is enforced on a public personal-account repository. On a private
+GitHub enforces the rule on a public personal-account repository. On a private
 one, GitHub accepts and lists the rule but doesn't enforce it: jobs run at
 once and the App receives no webhook.
 
