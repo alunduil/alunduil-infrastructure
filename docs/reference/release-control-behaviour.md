@@ -149,10 +149,11 @@ Tested, for the head-commit attachment: [#1065, test
 
 ## Custom deployment protection rules
 
-An admin can enable a GitHub App subscribed to `deployment_protection_rule`,
-with `Deployments` write and `Actions` read, as a rule on an environment. Each job
-that targets the environment then waits for the App to approve or reject it,
-through `POST /repos/{owner}/{repo}/actions/runs/{run_id}/deployment_protection_rule`.
+A GitHub App with `Deployments` write and `Actions` read that subscribes to
+`deployment_protection_rule` can guard an environment. An admin enables it per
+environment. Each job that targets the environment then waits until the App
+approves or rejects it with `POST
+/repos/{owner}/{repo}/actions/runs/{run_id}/deployment_protection_rule`.
 
 ### Visibility
 
@@ -175,8 +176,8 @@ Tested: [#1174, hypothesis
 
 A rejected job fails before its first step, so it never reads the
 environment's secrets. The rule binds whatever workflow the tagged commit
-carries. A job in that commit that names no environment, or another
-environment, gets none of this environment's secrets.
+carries. A job that names no environment, or another environment, gets none
+of this environment's secrets.
 
 Tested: [#1174, hypotheses 3 and
 4](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341),
@@ -185,8 +186,7 @@ with tags created by the admin and by an App.
 ### Runs from App-created tags
 
 A tag an App creates with `POST /git/refs` starts the workflows that run on
-tag pushes, with the App as the run's actor. The rule gates that run like any
-other.
+tag pushes, with the App as the run's actor. The rule gates that run.
 
 Tested: [#1174, hypothesis
 3](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
@@ -211,8 +211,8 @@ reviewer](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuec
 ### Admin bypass
 
 With `can_admins_bypass` set to `true`, the run page offers an admin **Start
-all waiting jobs**, which starts the job without the App's approval. GitHub
-records it as a `skipped` approval. `POST
+all waiting jobs**. The button starts the job without the App's approval, and
+GitHub records a `skipped` approval. `POST
 /actions/runs/{id}/pending_deployments` from an admin's token returns `422 No
 pending deployment requests to approve or reject`.
 
@@ -221,8 +221,9 @@ bypass](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecom
 
 ### Environment updates
 
-`PUT /repos/{owner}/{repo}/environments/{name}`, the call Terraform's
-`github_repository_environment` makes, leaves an enabled rule in place.
+Updating an environment with `PUT /repos/{owner}/{repo}/environments/{name}`
+leaves an enabled rule in place, so a Terraform apply that changes the
+environment keeps the rule.
 
 Tested: [#1174, environment
 updates](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004735308).

@@ -79,7 +79,7 @@ Four limits remain:
   tagged commit chooses the workflow ([release controls by
   actor](release-controls-by-actor.md#why-the-check-lives-on-the-environment)).
   The [release gate](release-controls-by-actor.md#what-the-two-controls-stop)
-  (#1251) checks from the publish environment instead.
+  (#1251) checks from the publish environment.
 - Whoever holds the release gate's key, or can change its code, can approve
   an off-branch publish. They still need a release tag and the operator's
   approval, except on `collection-json.hs`'s `hackage-candidate`, which has no

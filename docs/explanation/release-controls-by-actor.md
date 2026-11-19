@@ -46,14 +46,13 @@ the gate](../reference/release-control-behaviour.md#admin-bypass).
 
 ## Why the check lives on the environment
 
-Withholding `Workflows` doesn't keep an actor away from a release workflow
-without a default-branch step. An actor without `Workflows` [can tag a commit
-whose workflow files exist on some
-branch](../reference/release-control-behaviour.md#tagging-without-workflows).
-Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
-write can push a branch whose release workflow lacks the step. A check inside
-the release workflow therefore can't stop an off-branch release, and the
-release gate checks from the environment instead.
+An actor without `Workflows` can still start a release workflow that lacks a
+default-branch step. It [can tag a commit whose workflow files exist on some
+branch](../reference/release-control-behaviour.md#tagging-without-workflows),
+and Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
+write can push such a branch. A check inside the release workflow therefore
+can't stop an off-branch release. The release gate checks from the
+environment.
 
 ## Actors
 
@@ -123,7 +122,7 @@ role's. The entry exempts the App, so the ruleset doesn't limit which commit
 the App tags. Only the release gate stops a leaked App key from publishing an
 off-branch tag. A tag the App creates [starts the release
 workflow](../reference/release-control-behaviour.md#runs-from-app-created-tags),
-and the gate rejects that run as it would any other.
+and the gate rejects that run.
 
 ### `GITHUB_TOKEN` (P-11)
 
