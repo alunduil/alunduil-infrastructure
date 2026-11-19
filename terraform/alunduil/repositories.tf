@@ -8,7 +8,7 @@ data "github_user" "operator" {
 locals {
   # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
   # must report on every pull request, so these run on pull requests too.
-  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC series drift"]
 
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
@@ -20,6 +20,12 @@ locals {
   # docs/reference/delivery-metrics.md. A repository without one records no
   # DORA metrics. A run without an event matches any event.
   repositories = {
+    "agent-plugins" = {
+      description = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
+      topics      = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
+      deploy      = { class = "merge" }
+    }
+
     "alunduil-chezmoi" = {
       description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
       topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
@@ -177,8 +183,11 @@ locals {
         renovate_automerge    = true
       }
       admin_only_updates = true
-      environments       = { hackage = { approval = local.publish_approval } }
-      deploy             = { class = "release" }
+      # The hackage environment isn't scoped to tags, so its release tags are
+      # listed here.
+      release_tag_patterns = ["v*"]
+      environments         = { hackage = { approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "vale-styles" = {
@@ -225,9 +234,11 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      # release-please names each tag <component>@<version>.
-      environments = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
-      deploy       = { class = "release" }
+      # release-please names each tag <component>@<version>. No environment
+      # publishes from the woodland-generators-v* tags.
+      release_tag_patterns = ["woodland-generators-v*"]
+      environments         = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -281,9 +292,15 @@ module "repository" {
   environments              = lookup(each.value, "environments", null)
   pages                     = lookup(each.value, "pages", null)
   allowed_action_patterns   = lookup(each.value, "allowed_action_patterns", null)
+  release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
 }
 
 import {
   to = module.repository["vale-styles"].github_repository.this
   id = "vale-styles"
+}
+
+import {
+  to = module.repository["agent-plugins"].github_repository.this
+  id = "agent-plugins"
 }

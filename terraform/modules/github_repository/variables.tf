@@ -169,6 +169,18 @@ variable "environments" {
   EOT
 }
 
+variable "release_tag_patterns" {
+  type        = list(string)
+  default     = []
+  nullable    = false
+  description = <<-EOT
+    Tag name patterns, such as "v*", that only the repository admin can
+    create, whether by push, the refs API, or publishing a release.
+    Patterns in any environment's deployment_tags are restricted too, so
+    list only the others.
+  EOT
+}
+
 variable "pages" {
   type = object({
     cname          = optional(string)

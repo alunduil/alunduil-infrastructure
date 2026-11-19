@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/terraform-providers
 
       - name: Run pre-commit hooks
-        uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+        uses: j178/prek-action@7b101f8338a08d2bd6fdb3625e4e7692428763a3 # v3.1.1
         with:
           prek-version: 'v0.5.10'
         env:
@@ -54,7 +54,7 @@ jobs:
       id-token: write
     # A SHA-pinned reusable workflow can't be wrapped.
     # yamllint disable rule:line-length
-    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@22405f0ee1f12dd84f9656f83c2a77cd55c6d618 # main
+    uses: alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml@9254b2f23fe548386a75265b839e4d005c7a7b36 # main
     # yamllint enable rule:line-length
     with:
       hook-runner: prek
@@ -116,6 +116,27 @@ jobs:
           disable_search: true
           flags: bats
 
+  terraform-test:
+    name: Test Terraform modules
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform and just
+        uses: ./.github/actions/mise
+        with:
+          install_args: terraform just
+
+      - name: Set up Terraform providers
+        uses: ./.github/actions/terraform-providers
+
+      - name: Run module tests
+        run: just test-terraform
+
   dependency-review:
     name: Review dependencies
     if: github.event_name == 'pull_request'
@@ -173,6 +194,7 @@ jobs:
     needs:
       - pre-commit
       - bats
+      - terraform-test
       - ansible-check
       - dependency-review
     if: always()
