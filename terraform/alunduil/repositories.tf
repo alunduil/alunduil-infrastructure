@@ -20,6 +20,12 @@ locals {
   # docs/reference/delivery-metrics.md. A repository without one records no
   # DORA metrics. A run without an event matches any event.
   repositories = {
+    "agent-plugins" = {
+      description = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
+      topics      = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
+      deploy      = { class = "merge" }
+    }
+
     "alunduil-chezmoi" = {
       description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
       topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
@@ -292,4 +298,9 @@ module "repository" {
 import {
   to = module.repository["vale-styles"].github_repository.this
   id = "vale-styles"
+}
+
+import {
+  to = module.repository["agent-plugins"].github_repository.this
+  id = "agent-plugins"
 }
