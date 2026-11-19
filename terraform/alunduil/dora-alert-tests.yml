@@ -1,0 +1,55 @@
+---
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# Timelines for the DORA rules stopped recording alert. Each starts when the
+# repository joins the alert. scripts/test-dora-alert.sh supplies the rule
+# and evaluation interval from a Terraform plan.
+tests:
+  - name: An existing repository fires after three missed evaluations
+    interval: 1h
+    input_series:
+      - series: 'dora_deploys{repository="example"}'
+        values: 1x3
+    alert_rule_test:
+      - alertname: DORA rules stopped recording
+        eval_time: 6h
+        exp_alerts: []
+      - alertname: DORA rules stopped recording
+        eval_time: 6h10m
+        exp_alerts:
+          - exp_labels: {repository: example, severity: warning}
+
+  - name: An existing repository recovering after two missed evaluations never fires
+    interval: 1h
+    input_series:
+      - series: 'dora_deploys{repository="example"}'
+        values: 1x3 _ _ 1
+    alert_rule_test:
+      - alertname: DORA rules stopped recording
+        eval_time: 6h10m
+        exp_alerts: []
+
+  - name: A new repository recording within the hour never fires
+    interval: 5m
+    input_series:
+      - series: 'dora_deploys{repository="example"}'
+        values: _x11 1 _x11 1 _x11 1
+    alert_rule_test:
+      - alertname: DORA rules stopped recording
+        eval_time: 30m
+        exp_alerts: []
+      - alertname: DORA rules stopped recording
+        eval_time: 2h10m
+        exp_alerts: []
+
+  - name: A new repository that never records fires after two hours
+    input_series: []
+    alert_rule_test:
+      - alertname: DORA rules stopped recording
+        eval_time: 1h55m
+        exp_alerts: []
+      - alertname: DORA rules stopped recording
+        eval_time: 2h05m
+        exp_alerts:
+          - exp_labels: {repository: example, severity: warning}
