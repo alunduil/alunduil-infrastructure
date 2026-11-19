@@ -8,7 +8,7 @@ data "github_user" "operator" {
 locals {
   # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
   # must report on every pull request, so these run on pull requests too.
-  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC series drift"]
+  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC series drift", "Check links"]
 
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
@@ -103,7 +103,7 @@ locals {
       required_status_checks = {
         ci_results_check      = true
         codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        contexts              = local.haskell_scheduled_checks
         renovate_automerge    = true
       }
       admin_only_updates = true
@@ -179,7 +179,7 @@ locals {
       required_status_checks = {
         ci_results_check      = true
         codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
+        contexts              = local.haskell_scheduled_checks
         renovate_automerge    = true
       }
       admin_only_updates = true
