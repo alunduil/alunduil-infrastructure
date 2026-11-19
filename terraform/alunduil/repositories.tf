@@ -9,9 +9,9 @@ locals {
   haskell_required_status_checks = {
     ci_results_check      = true
     codecov_project_check = true
-    # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required
-    # check must report on every pull request, so these run on pull requests
-    # too.
+    # Jobs from the Haskell libraries' daily.yml and weekly.yml. Those
+    # workflows also run on pull requests, because a required check must
+    # report on every pull request.
     contexts           = ["Prune stale pull requests", "Check GHC series drift", "Check links"]
     renovate_automerge = true
   }
