@@ -14,9 +14,9 @@ locals {
   dora_missed_evaluations     = 3
   dora_alert_interval_seconds = 300
 
-  # The absence window catches one missed evaluation and the pending period
-  # counts the rest. A new repository's first evaluation lands within an
-  # interval of its rule group's creation, clearing pending before it fires.
+  # A new repository records nothing until its rule group first evaluates,
+  # up to an interval after creation. A short absence window followed by a
+  # pending period gives that evaluation time to land before the alert fires.
   dora_absence_window_seconds = local.dora_interval_seconds + local.dora_alert_interval_seconds
   dora_pending_seconds        = (local.dora_missed_evaluations - 1) * local.dora_interval_seconds
 
