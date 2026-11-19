@@ -8,7 +8,7 @@ on, and how each behaviour is known. [Release controls by
 actor](../explanation/release-controls-by-actor.md) maps these behaviours to
 actors.
 
-Verified 2026-11-15.
+Verified 2026-11-19.
 
 ## Scope
 
@@ -22,7 +22,8 @@ Out of scope:
 
 ## Evidence
 
-- **Tested**: run in a scratch personal-account repository for #1065.
+- **Tested**: run in a scratch personal-account repository for #1065 and
+  #1174.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
@@ -146,6 +147,87 @@ lists `pull_request_review` among the events whose checks count, and says
 Tested, for the head-commit attachment: [#1065, test
 5](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6883231981).
 
+## Custom deployment protection rules
+
+A GitHub App with `Deployments` write and `Actions` read that subscribes to
+`deployment_protection_rule` can guard an environment. An admin enables it per
+environment. Each job that targets the environment then waits until the App
+approves or rejects it with `POST
+/repos/{owner}/{repo}/actions/runs/{run_id}/deployment_protection_rule`.
+
+### Visibility
+
+GitHub enforces the rule on a public personal-account repository. On a private
+one, GitHub accepts and lists the rule but doesn't enforce it: jobs run at
+once and the App receives no webhook.
+
+Tested: [#1174, hypothesis
+1](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
+
+### Webhook payload
+
+The `requested` webhook carries the run's `sha`, `ref`, `environment`, and
+`deployment_callback_url`.
+
+Tested: [#1174, hypothesis
+2](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
+
+### Rejection
+
+A rejected job fails before its first step, so it never reads the
+environment's secrets. The rule binds whatever workflow the tagged commit
+carries. A job that names no environment, or another environment, gets none
+of this environment's secrets.
+
+Tested: [#1174, hypotheses 3 and
+4](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341),
+with tags created by the admin and by an App.
+
+### Runs from App-created tags
+
+A tag an App creates with `POST /git/refs` starts the workflows that run on
+tag pushes, with the App as the run's actor. The rule gates that run.
+
+Tested: [#1174, hypothesis
+3](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
+
+### Unanswered requests
+
+A job the App never answers keeps waiting. One unanswered run was still
+waiting after 11.5 hours.
+
+Tested: [#1174, hypothesis
+5](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004497003).
+
+### Required reviewers
+
+On an environment with both the rule and a required reviewer, a job starts
+only once both approve. A rejection from the App fails the job even after the
+reviewer approved it.
+
+Tested: [#1174, stacking with a required
+reviewer](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004735308).
+
+### Admin bypass
+
+With `can_admins_bypass` set to `true`, the run page offers an admin **Start
+all waiting jobs**. The button starts the job without the App's approval, and
+GitHub records a `skipped` approval. `POST
+/actions/runs/{id}/pending_deployments` from an admin's token returns `422 No
+pending deployment requests to approve or reject`.
+
+Tested: [#1174, admin
+bypass](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004735308).
+
+### Environment updates
+
+Updating an environment with `PUT /repos/{owner}/{repo}/environments/{name}`
+leaves an enabled rule in place, so a Terraform apply that changes the
+environment keeps the rule.
+
+Tested: [#1174, environment
+updates](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004735308).
+
 ## Bot commit signing
 
 GitHub signs an API commit from a GitHub App or bot only when that App or bot
@@ -199,3 +281,5 @@ No test, documentation, or source covers these:
 - Whether the tag ruleset refuses `GITHUB_TOKEN`.
 - Whether a re-run started by `GITHUB_TOKEN` works on a pull request from a
   fork.
+- How long a job waits on an unanswered custom deployment protection rule
+  before it times out, and how the run then ends.

@@ -6,7 +6,7 @@
 Which control stops each actor from starting an unreviewed release, and which
 established behaviour that control relies on.
 
-Verified 2026-11-15.
+Verified 2026-11-19.
 
 ## Scope
 
@@ -16,11 +16,8 @@ register](../reference/asset-register.md), [credential
 reachability](credential-reachability.md), and [release control
 behaviour](../reference/release-control-behaviour.md).
 
-It also treats two planned controls as in place: the tag ruleset in #1055, and a
-default-branch check in each release workflow (`zfs-replicate#827`,
-`network-arbitrary#172`). Neither exists. Without the tag ruleset, any actor
-with `Contents` write can create a release tag ([credential
-reachability](credential-reachability.md#tagging)).
+It also treats the planned [release gate](#what-the-two-controls-stop) (#1251)
+as in place.
 
 Out of scope:
 
@@ -38,19 +35,24 @@ routes include creating a Release with a new tag. On every tested route, the
 release App's bypass entry exempts the App, and the admin role's bypass entry
 exempts a fine-grained token acting as the account.
 
-The default-branch check refuses to publish a tag whose commit isn't on the
-default branch. GitHub runs the release workflow from the tagged commit, so if
-the release workflow in that commit lacks the check, the workflow publishes
-the tag unchecked.
+The release gate is a GitHub App, set as a custom deployment protection rule
+on each publish environment. It refuses to start a publish job whose commit
+isn't on the default branch. A [rejected job fails before its first
+step](../reference/release-control-behaviour.md#rejection), so it never reads
+the publish credential. The rule lives on the environment, so it binds
+whatever workflow the tagged commit carries. It binds the operator only while
+`can_admins_bypass` is `false`, because an [admin bypass starts the job without
+the gate](../reference/release-control-behaviour.md#admin-bypass).
 
-## What withholding `Workflows` stops
+## Why the check lives on the environment
 
-Withholding `Workflows` lets the default-branch check stop an actor only while
-every release workflow on every branch carries the check. An actor without
-`Workflows` [can tag a commit whose workflow files exist on some
-branch](../reference/release-control-behaviour.md#tagging-without-workflows).
-Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
-write can push a branch whose release workflow lacks the check.
+An actor without `Workflows` can still start a release workflow that lacks a
+default-branch step. It [can tag a commit whose workflow files exist on some
+branch](../reference/release-control-behaviour.md#tagging-without-workflows),
+and Renovate (P-6), the Claude App (P-8), and any other actor with `Workflows`
+write can push such a branch. A check inside the release workflow therefore
+can't stop an off-branch release. The release gate checks from the
+environment.
 
 ## Actors
 
@@ -117,9 +119,10 @@ The operator and the release App are the two actors meant to create release
 tags, so the tag ruleset gives the App a bypass entry [by App
 ID](../reference/release-control-behaviour.md#app-bypass) alongside the admin
 role's. The entry exempts the App, so the ruleset doesn't limit which commit
-the App tags. Only the default-branch check stops a leaked App key from
-publishing an off-branch tag, and only [while every release workflow on every
-branch carries the check](#what-withholding-workflows-stops).
+the App tags. Only the release gate stops a leaked App key from publishing an
+off-branch tag. A tag the App creates [starts the release
+workflow](../reference/release-control-behaviour.md#runs-from-app-created-tags),
+and the gate rejects that run.
 
 ### `GITHUB_TOKEN` (P-11)
 
