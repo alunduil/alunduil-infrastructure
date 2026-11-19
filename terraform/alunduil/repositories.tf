@@ -302,8 +302,8 @@ module "repository" {
 }
 
 locals {
-  # Repositories created with gh and awaiting adoption. Drop a name once its
-  # adopting apply has landed on main.
+  # Repositories created with gh that Terraform hasn't imported yet. Drop a
+  # name once the apply on main has imported it.
   adopted_repositories = toset(["agent-plugins", "release-gate", "vale-styles"])
 }
 

@@ -69,12 +69,9 @@ Two hard rules:
    `--add-readme` is required: it seeds a commit on `main` so
    `github_branch_default` has a branch to point at. Empty repo → apply
    fails setting the default branch.
-2. Add the map entry, and add `"<name>"` to `local.adopted_repositories`
-   beside the module. The `import` block there iterates that set (import
-   blocks are not permitted in child modules).
-
-   Repository resource only — a fresh repo has no `default` ruleset, so the
-   module creates it. Don't import the ruleset.
+2. Add the map entry, and add `"<name>"` to `local.adopted_repositories`.
+   A fresh repo has no `default` ruleset, so the module creates it. Don't
+   import the ruleset.
 
 ## Path B — adopt an existing untracked repo
 
@@ -100,9 +97,9 @@ Two hard rules:
 1. `prek run` → commit → push → draft PR; the body notes the import(s)
    adopt on first apply and are removed afterward.
 2. File a follow-up issue (`issue-create` skill) to drop the name from
-   `local.adopted_repositories`, and any ruleset `import` block — they can't
-   go until apply puts the resource in state, post-merge. Link it from the
-   PR body.
+   `local.adopted_repositories` and delete any ruleset `import` block.
+   Neither can go until the post-merge apply puts the resource in state.
+   Link the issue from the PR body.
 
 ## Out-of-Terraform notes (whichever apply)
 

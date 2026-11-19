@@ -57,9 +57,9 @@ ask for.
   module. Assume a repo setting lives there before treating it as
   manual.
 - Adding a new repo to the org: create it with `gh` after
-  confirming, since the CI App can't create user repos. Then land
-  the `repositories.tf` map entry and its name in
-  `local.adopted_repositories` in one draft PR, omitting inputs that
+  confirming, since the CI App can't create user repos. Then open
+  one draft PR that adds the repo's `repositories.tf` map entry and
+  adds its name to `local.adopted_repositories`. Omit inputs that
   match the module defaults. A follow-up PR drops the name after
   apply.
 
