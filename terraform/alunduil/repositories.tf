@@ -8,7 +8,7 @@ data "github_user" "operator" {
 locals {
   # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
   # must report on every pull request, so these run on pull requests too.
-  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC series drift"]
 
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
