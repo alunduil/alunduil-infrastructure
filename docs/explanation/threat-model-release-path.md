@@ -72,17 +72,16 @@ The App's design follows:
   its repository's release pull request merges on a schedule, as #797 adds for
   `woodland-generators`.
 
-Three limits remain:
+Four limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
   check inside the release workflow can't refuse such a tag, because the
   tagged commit chooses the workflow ([release controls by
-  actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
-  #1251 puts the check on the publish environment instead: a release gate App
-  approves a publish job only when its commit is on the default branch
-  ([behaviour](../reference/release-control-behaviour.md#custom-deployment-protection-rules)).
-  Whoever holds the gate's key, or can change its code, can then approve an
-  off-branch publish. They still need a release tag and the operator's
+  actor](release-controls-by-actor.md#why-the-check-lives-on-the-environment)).
+  The [release gate](release-controls-by-actor.md#what-the-two-controls-stop)
+  (#1251) checks from the publish environment instead.
+- Whoever holds the release gate's key, or can change its code, can approve
+  an off-branch publish. They still need a release tag and the operator's
   approval, except on `collection-json.hs`'s `hackage-candidate`, which has no
   approval.
 - Per-repository Apps don't separate the Hackage packages, because each token

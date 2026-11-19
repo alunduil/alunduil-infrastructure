@@ -101,12 +101,8 @@ when the workflow files of that commit already exist on some branch:
 The same actor can't create a commit that adds a workflow: `POST /git/trees`
 returns `403`.
 
-A tag an App creates with `POST /git/refs` starts the workflows that run on
-tag pushes, with the App as the run's actor.
-
 Tested: [#1065, test 4](https://github.com/alunduil/alunduil-infrastructure/issues/1065#issuecomment-6892951283),
-with an App. The workflow trigger: [#1174, hypothesis
-3](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
+with an App.
 
 Documented: the [`workflow`
 scope](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps)
@@ -186,6 +182,15 @@ Tested: [#1174, hypotheses 3 and
 4](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341),
 with tags created by the admin and by an App.
 
+### Runs from App-created tags
+
+A tag an App creates with `POST /git/refs` starts the workflows that run on
+tag pushes, with the App as the run's actor. The rule gates that run like any
+other.
+
+Tested: [#1174, hypothesis
+3](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341).
+
 ### Unanswered requests
 
 A job the App never answers keeps waiting. One unanswered run was still
@@ -219,9 +224,8 @@ bypass](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecom
 `PUT /repos/{owner}/{repo}/environments/{name}`, the call Terraform's
 `github_repository_environment` makes, leaves an enabled rule in place.
 
-Tested: during [#1174's
-runs](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-6992373341),
-the rule stayed enabled through several environment updates.
+Tested: [#1174, environment
+updates](https://github.com/alunduil/alunduil-infrastructure/issues/1174#issuecomment-7004735308).
 
 ## Bot commit signing
 

@@ -16,10 +16,8 @@ register](../reference/asset-register.md), [credential
 reachability](credential-reachability.md), and [release control
 behaviour](../reference/release-control-behaviour.md).
 
-It also treats the release gate as in place. The gate is a GitHub App, set as
-a custom deployment protection rule on each publish environment, that approves
-a publish job only when its commit is on the default branch (#1251). It
-doesn't exist yet.
+It also treats the planned [release gate](#what-the-two-controls-stop) (#1251)
+as in place.
 
 Out of scope:
 
@@ -37,15 +35,16 @@ routes include creating a Release with a new tag. On every tested route, the
 release App's bypass entry exempts the App, and the admin role's bypass entry
 exempts a fine-grained token acting as the account.
 
-The release gate refuses to start a publish job whose commit isn't on the
-default branch. A [rejected job fails before its first
+The release gate is a GitHub App, set as a custom deployment protection rule
+on each publish environment. It refuses to start a publish job whose commit
+isn't on the default branch. A [rejected job fails before its first
 step](../reference/release-control-behaviour.md#rejection), so it never reads
 the publish credential. The rule lives on the environment, so it binds
 whatever workflow the tagged commit carries. It binds the operator only while
 `can_admins_bypass` is `false`, because an [admin bypass starts the job without
 the gate](../reference/release-control-behaviour.md#admin-bypass).
 
-## What withholding `Workflows` stops
+## Why the check lives on the environment
 
 Withholding `Workflows` doesn't keep an actor away from a release workflow
 without a default-branch step. An actor without `Workflows` [can tag a commit
@@ -123,7 +122,7 @@ ID](../reference/release-control-behaviour.md#app-bypass) alongside the admin
 role's. The entry exempts the App, so the ruleset doesn't limit which commit
 the App tags. Only the release gate stops a leaked App key from publishing an
 off-branch tag. A tag the App creates [starts the release
-workflow](../reference/release-control-behaviour.md#tagging-without-workflows),
+workflow](../reference/release-control-behaviour.md#runs-from-app-created-tags),
 and the gate rejects that run as it would any other.
 
 ### `GITHUB_TOKEN` (P-11)
