@@ -32,8 +32,9 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  # Kept free of module outputs: the alert rule reads it, and a new resource
-  # depending on module.repository cycles with the module's check block.
+  # The DORA locals read config, never module outputs. A rule depending on
+  # module.repository cycles with the module's check block whenever that
+  # repository is imported in the same plan.
   dora_repositories = [
     for name, repo in local.repositories : name
     if lookup(repo, "deploy", null) != null
@@ -43,7 +44,7 @@ locals {
     for name in local.dora_repositories : name => merge(
       { workflow = "", branch = "", event = "" },
       local.repositories[name].deploy,
-      { default_branch = module.repository[name].default_branch },
+      { default_branch = lookup(local.repositories[name], "default_branch", "main") },
     )
   }
 
