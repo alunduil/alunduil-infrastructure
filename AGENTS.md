@@ -58,9 +58,10 @@ ask for.
   manual.
 - Adding a new repo to the org: create it with `gh` after
   confirming, since the CI App can't create user repos. Then land
-  the `repositories.tf` map entry and an adoption `import` block in
-  one draft PR, omitting inputs that match the module defaults. A
-  follow-up PR removes the `import` after apply.
+  the `repositories.tf` map entry and its name in
+  `local.adopted_repositories` in one draft PR, omitting inputs that
+  match the module defaults. A follow-up PR drops the name after
+  apply.
 
 ## Gotchas
 

@@ -301,17 +301,14 @@ module "repository" {
   release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
 }
 
-import {
-  to = module.repository["vale-styles"].github_repository.this
-  id = "vale-styles"
+locals {
+  # Repositories created with gh and awaiting adoption. Drop a name once its
+  # adopting apply has landed on main.
+  adopted_repositories = toset(["agent-plugins", "release-gate", "vale-styles"])
 }
 
 import {
-  to = module.repository["agent-plugins"].github_repository.this
-  id = "agent-plugins"
-}
-
-import {
-  to = module.repository["release-gate"].github_repository.this
-  id = "release-gate"
+  for_each = local.adopted_repositories
+  to       = module.repository[each.key].github_repository.this
+  id       = each.key
 }
