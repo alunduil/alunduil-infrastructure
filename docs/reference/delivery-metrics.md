@@ -112,7 +112,6 @@ ships nothing.
 | --- | --- | --- | --- |
 | `alunduil-infrastructure` | Run | `Terraform Apply` | branch `main` |
 | `blog.alunduil.com` | Run | `CD` | branch `main`, event `push` |
-| `release-gate` | Run | `CD` | branch `main`, event `push` |
 | `collection-json.hs` | Run | `Release` | event `workflow_dispatch` |
 | `network-arbitrary` | Run | `Release` | event `release` |
 | `zfs-replicate` | Run | `Release` | event `release` |
@@ -122,6 +121,7 @@ ships nothing.
 | `alunduil-chezmoi` | Merge | — | — |
 | `agent-plugins` | Merge | — | — |
 | `projects-v2-sync` | No deploy | — | — |
+| `release-gate` | No deploy | — | — |
 | `zellij-claude-pair` | No deploy | — | — |
 | `git-worktree-poi` | No deploy | — | — |
 

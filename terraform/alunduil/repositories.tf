@@ -168,7 +168,6 @@ locals {
     "release-gate" = {
       description = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
       topics      = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
-      deploy      = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
     }
 
     "renovate-config" = {
