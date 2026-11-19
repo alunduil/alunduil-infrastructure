@@ -121,6 +121,7 @@ ships nothing.
 | `alunduil-chezmoi` | Merge | — | — |
 | `agent-plugins` | Merge | — | — |
 | `projects-v2-sync` | No deploy | — | — |
+| `release-gate` | No deploy | — | — |
 | `zellij-claude-pair` | No deploy | — | — |
 | `git-worktree-poi` | No deploy | — | — |
 

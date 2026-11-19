@@ -161,6 +161,11 @@ locals {
       require_code_owner_review = true
     }
 
+    "release-gate" = {
+      description = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
+      topics      = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
+    }
+
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
@@ -286,12 +291,14 @@ module "repository" {
   release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
 }
 
-import {
-  to = module.repository["vale-styles"].github_repository.this
-  id = "vale-styles"
+locals {
+  # Repositories created with gh that Terraform hasn't imported yet. Drop a
+  # name once the apply on main has imported it.
+  adopted_repositories = toset(["agent-plugins", "release-gate", "vale-styles"])
 }
 
 import {
-  to = module.repository["agent-plugins"].github_repository.this
-  id = "agent-plugins"
+  for_each = local.adopted_repositories
+  to       = module.repository[each.key].github_repository.this
+  id       = each.key
 }
