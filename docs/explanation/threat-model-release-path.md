@@ -20,8 +20,8 @@ reachability](credential-reachability.md).
 
 The rows come from reading configuration, workflows, and GitHub's documentation.
 [Release control behaviour](../reference/release-control-behaviour.md)
-records the platform behaviour that the planned tag ruleset and default-branch
-check rely on. That reference also records which commits an actor without `Workflows` can
+records the platform behaviour that the tag ruleset and the planned release
+gate rely on. That reference also records which commits an actor without `Workflows` can
 tag. [Release controls by
 actor](release-controls-by-actor.md) maps the recorded behaviour to each actor. Nobody has tried
 an attack against a managed repository.
@@ -75,13 +75,16 @@ The App's design follows:
 Three limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  default-branch check in the release workflow would refuse to publish such a
-  tag, so each release workflow has to carry the check (`zfs-replicate#827`,
-  `network-arbitrary#172`).
-  Without `Workflows`, the App can still tag a commit whose release workflow
-  lacks the check, as long as that workflow exists on some branch ([release
-  controls by
+  check inside the release workflow can't refuse such a tag, because the
+  tagged commit chooses the workflow ([release controls by
   actor](release-controls-by-actor.md#what-withholding-workflows-stops)).
+  #1251 puts the check on the publish environment instead: a release gate App
+  approves a publish job only when its commit is on the default branch
+  ([behaviour](../reference/release-control-behaviour.md#custom-deployment-protection-rules)).
+  Whoever holds the gate's key, or can change its code, can then approve an
+  off-branch publish. They still need a release tag and the operator's
+  approval, except on `collection-json.hs`'s `hackage-candidate`, which has no
+  approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
 - Nothing alerts on an unexpected tag or upload until #1064 lands. Release
@@ -103,7 +106,7 @@ The rest can follow, because automation leaves them no worse.
 | Finding | Issue | Fix lands |
 | --- | --- | --- |
 | Anyone with `Contents` write can create a tag that publishes | #1055 | Before automation |
-| A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` | Before automation |
+| A release workflow accepts a tag that isn't on the default branch | #1251 | Before automation |
 | `woodland-generators`' release token acts as the account | #738 | With automation. The release App replaces the token |
 | Other tokens acting as the account bypass the tag rule | #1076, #1069 | After automation |
 | Hook-fix commits reach a default branch unreviewed | #1057 | Before automation |
@@ -160,14 +163,14 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 1.0 Merge pull request | Denial of Service | A pull request opened by P-11 runs no workflows, so required checks never report | Medium | #556 | Not Started | `main.tf`, `github_workflow_repository_permissions` |
 | 1.0 Merge pull request | Elevation of Privilege | A write collaborator merges past review | Medium | `admin-only` and `review`. On `zfs-replicate`, Code Owner review | Mitigated | `main.tf`, `github_repository_ruleset.admin_only` |
 | 3.0 Create tag or Release | Spoofing | GitHub treats whoever presents a valid credential as its owner, which the Write actor and Operator rows cover | — | — | Not Applicable | register, D-09 |
-| 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
+| 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, #1251 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Tampering | Someone moves or deletes a published tag | High | `immutable-tags` | Mitigated | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Repudiation | No record names who created a tag | Medium | #1064 | Not Started | — |
 | 3.0 Create tag or Release | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 3.0 Create tag or Release | Denial of Service | A failed smoke test leaves a tag only the admin can delete, which may burn the version | Medium | `collection-json.hs#161` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Denial of Service | A write actor creates a future version's tag on a junk commit, and immutability keeps it there | Low | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Elevation of Privilege | Tag creation gives a write actor the publish that review denies them | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
-| Repository commits | Tampering | An unreviewed commit on a side branch becomes a release through a tag | High | #1055, `zfs-replicate#827` | Not Started | `zfs-replicate` `release.yml`, job `build` |
+| Repository commits | Tampering | An unreviewed commit on a side branch becomes a release through a tag | High | #1055, #1251 | Not Started | `zfs-replicate` `release.yml`, job `build` |
 | Repository commits | Tampering | Someone rewrites or deletes the default branch | High | `default` blocks force pushes and deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Repository commits | Repudiation | A key holder can set any commit author, and Renovate compares only the email | Medium | #1057 | Not Started | — |
 | Repository commits | Information Disclosure | A secret is committed to a public repository | Medium | Push protection and secret scanning | Mitigated | `main.tf`, `github_repository.this` `security_and_analysis` |
@@ -211,7 +214,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Build artifacts | Information Disclosure | An artifact holds only the package, which is public | — | — | Not Applicable | `zfs-replicate` `release.yml`, job `build` |
 | Build artifacts | Denial of Service | An expired artifact fails `Find candidate run`, and a new version recovers | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
 | 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | The publish environment's approval. #1055 limits who can create the tag | Mitigated | `terraform/alunduil/repositories.tf`, `publish_approval` |
-| 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, job `publish` |
+| 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | #1251 | Not Started | `network-arbitrary` `release.yml`, job `publish` |
 | 5.0 Upload package | Repudiation | A Hackage upload names the account, not the run | Medium | #1078 | Not Started | — |
 | 5.0 Upload package | Information Disclosure | `network-arbitrary` passes its key on the command line | Low | `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, step `cabal upload` |
 | 5.0 Upload package | Denial of Service | A registry outage fails the job, and a re-run keeps the tag | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
@@ -253,7 +256,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F12 release ref | Tampering | A re-run reuses the event payload, so stale Release data could steer it | Low | `metadata` reads the Release live | Mitigated | `collection-json.hs` `release.yml`, job `metadata` |
 | F12 release ref | Information Disclosure | The ref names a public tag | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F12 release ref | Denial of Service | A GitHub outage delays a release and loses nothing | — | — | Not Applicable | register, D-09 |
-| F13 source and workflow | Tampering | The tag selects the workflow that runs, so a writer able to change workflows can remove its checks | High | #1055 | Not Started | `collection-json.hs` `release.yml`, step `Require the tag on main` |
+| F13 source and workflow | Tampering | The tag selects the workflow that runs, so a writer able to change workflows can remove its checks | High | #1055, #1251 | Not Started | `collection-json.hs` `release.yml`, step `Require the tag on main` |
 | F13 source and workflow | Information Disclosure | The source is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F13 source and workflow | Denial of Service | A GitHub outage delays a release and loses nothing | — | — | Not Applicable | register, D-09 |
 | F14 dispatched ref | Tampering | The dispatcher picks the ref, and the environment checks only its name | High | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, `on.workflow_dispatch` |
