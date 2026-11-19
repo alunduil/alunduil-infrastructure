@@ -165,6 +165,12 @@ locals {
       require_code_owner_review = true
     }
 
+    "release-gate" = {
+      description = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
+      topics      = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
+      deploy      = { class = "run", workflow = "cd.yml", branch = "main", event = "push" }
+    }
+
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
@@ -303,4 +309,9 @@ import {
 import {
   to = module.repository["agent-plugins"].github_repository.this
   id = "agent-plugins"
+}
+
+import {
+  to = module.repository["release-gate"].github_repository.this
+  id = "release-gate"
 }

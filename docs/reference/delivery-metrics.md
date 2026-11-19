@@ -112,6 +112,7 @@ ships nothing.
 | --- | --- | --- | --- |
 | `alunduil-infrastructure` | Run | `Terraform Apply` | branch `main` |
 | `blog.alunduil.com` | Run | `CD` | branch `main`, event `push` |
+| `release-gate` | Run | `CD` | branch `main`, event `push` |
 | `collection-json.hs` | Run | `Release` | event `workflow_dispatch` |
 | `network-arbitrary` | Run | `Release` | event `release` |
 | `zfs-replicate` | Run | `Release` | event `release` |
