@@ -170,6 +170,11 @@ data "grafana_data_source" "prometheus" {
 # dora_deploys records both outcomes every evaluation, even with no deploys,
 # so its absence means the repository's rules failed. A median series is
 # also absent while the window has nothing to measure.
+#
+# The expression catches one missed evaluation and the pending period
+# counts the rest. A repository's first evaluation lands within an interval
+# of its rule group's creation, so a new repository clears pending before it
+# fires, while one whose rules never record still fires.
 resource "grafana_rule_group" "dora_recording" {
   name             = "Alerts"
   folder_uid       = grafana_folder.dora.uid
@@ -178,7 +183,7 @@ resource "grafana_rule_group" "dora_recording" {
   rule {
     name           = "DORA rules stopped recording"
     condition      = "C"
-    for            = "0s"
+    for            = "${(local.dora_missed_evaluations - 1) * local.dora_interval_seconds}s"
     no_data_state  = "OK"
     exec_err_state = "Error"
     labels         = { severity = "warning" }
@@ -199,7 +204,7 @@ resource "grafana_rule_group" "dora_recording" {
         # result, so each failing repository fires its own alert.
         expr = join(" or ", [
           for name in local.dora_repositories :
-          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_missed_evaluations * local.dora_interval_seconds}s])"
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_interval_seconds + 300}s])"
         ])
       })
     }
