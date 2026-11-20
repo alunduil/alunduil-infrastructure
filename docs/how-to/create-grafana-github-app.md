@@ -17,9 +17,9 @@ through it.
    - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck **Active**.
-   - Leave the user-authorization checkboxes under `Callback URL` at
-     their defaults. This App authenticates as an installation, not a
-     user.
+   - Leave **Identifying and authorizing users** and **Post
+     installation** empty, with their checkboxes at the defaults. This
+     App authenticates as an installation, not a user.
    - Repository permissions (everything else **No access**):
      - `Actions: Read-only`
      - `Contents: Read-only`

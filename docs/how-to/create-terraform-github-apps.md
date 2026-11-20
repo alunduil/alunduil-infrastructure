@@ -25,8 +25,9 @@ Create each App at <https://github.com/settings/apps/new> with:
 - **`Homepage URL`** (required): the repo,
   `https://github.com/alunduil/alunduil-infrastructure`.
 - **Webhook**: uncheck **Active**.
-- Leave the user-authorization checkboxes under `Callback URL` at their
-  defaults. Both Apps authenticate as an installation, not a user.
+- Leave **Identifying and authorizing users** and **Post installation**
+  empty, with their checkboxes at the defaults. Both Apps authenticate as
+  an installation, not a user.
 - Where can this GitHub App be installed: **Only on this account**. A
   leaked key reaches every account that installs the App.
 - Repository permissions (everything else **No access**):
