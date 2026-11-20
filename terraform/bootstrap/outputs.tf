@@ -161,19 +161,19 @@ output "release_gate_reader_email" {
 }
 
 output "release_gate_app_private_key_secret" {
-  value       = google_secret_manager_secret.release_gate_app_private_key.secret_id
+  value       = google_secret_manager_secret.release_gate["app_private_key"].secret_id
   description = "Secret Manager short name holding the release gate App's private key; populated by scripts/configure-release-gate-secrets.sh"
   sensitive   = false
 }
 
 output "release_gate_webhook_secret_secret" {
-  value       = google_secret_manager_secret.release_gate_webhook_secret.secret_id
+  value       = google_secret_manager_secret.release_gate["webhook_secret"].secret_id
   description = "Secret Manager short name holding the release gate App's webhook secret"
   sensitive   = false
 }
 
 output "cloudflare_api_token_release_gate_deploy_secret" {
-  value       = google_secret_manager_secret.cloudflare_api_token_release_gate_deploy.secret_id
+  value       = google_secret_manager_secret.release_gate["deploy_token"].secret_id
   description = "Secret Manager short name holding the Cloudflare token the release gate's deploy workflow deploys its Worker with"
   sensitive   = false
 }

@@ -13,11 +13,23 @@ locals {
   release_gate_wif_principal       = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.release_gate.workload_identity_pool_id}/attribute.repository/${local.release_gate_repository}"
 }
 
-# Empty shell. scripts/configure-release-gate-secrets.sh adds the version after
-# this layer applies, so the private key never reaches this layer's state.
-resource "google_secret_manager_secret" "release_gate_app_private_key" {
+# Secret Manager names, not values.
+locals {
+  release_gate_secrets = {
+    app_private_key = "release-gate-app-private-key"             # pragma: allowlist secret
+    webhook_secret  = "release-gate-webhook-secret"              # pragma: allowlist secret
+    deploy_token    = "cloudflare-api-token-release-gate-deploy" # pragma: allowlist secret
+  }
+}
+
+# The App's private key has no version here.
+# scripts/configure-release-gate-secrets.sh adds it after this layer applies,
+# so the key never reaches this layer's state.
+resource "google_secret_manager_secret" "release_gate" {
+  for_each = local.release_gate_secrets
+
   project   = google_project.env.project_id
-  secret_id = "release-gate-app-private-key"
+  secret_id = each.value
 
   replication {
     auto {}
@@ -33,19 +45,8 @@ resource "random_password" "release_gate_webhook_secret" {
   special = false
 }
 
-resource "google_secret_manager_secret" "release_gate_webhook_secret" {
-  project   = google_project.env.project_id
-  secret_id = "release-gate-webhook-secret"
-
-  replication {
-    auto {}
-  }
-
-  depends_on = [google_project_service.secretmanager]
-}
-
 resource "google_secret_manager_secret_version" "release_gate_webhook_secret" {
-  secret      = google_secret_manager_secret.release_gate_webhook_secret.id
+  secret      = google_secret_manager_secret.release_gate["webhook_secret"].id
   secret_data = random_password.release_gate_webhook_secret.result
 }
 
@@ -68,19 +69,8 @@ resource "cloudflare_api_token" "release_gate_deploy" {
   }]
 }
 
-resource "google_secret_manager_secret" "cloudflare_api_token_release_gate_deploy" {
-  project   = google_project.env.project_id
-  secret_id = "cloudflare-api-token-release-gate-deploy"
-
-  replication {
-    auto {}
-  }
-
-  depends_on = [google_project_service.secretmanager]
-}
-
 resource "google_secret_manager_secret_version" "cloudflare_api_token_release_gate_deploy" {
-  secret      = google_secret_manager_secret.cloudflare_api_token_release_gate_deploy.id
+  secret      = google_secret_manager_secret.release_gate["deploy_token"].id
   secret_data = cloudflare_api_token.release_gate_deploy.value
 }
 
@@ -143,11 +133,7 @@ resource "google_service_account_iam_member" "release_gate_reader" {
 
 # The reader holds no project IAM; these grants are its entire authority.
 resource "google_secret_manager_secret_iam_member" "release_gate_reader" {
-  for_each = {
-    app_private_key = google_secret_manager_secret.release_gate_app_private_key
-    webhook_secret  = google_secret_manager_secret.release_gate_webhook_secret
-    deploy_token    = google_secret_manager_secret.cloudflare_api_token_release_gate_deploy
-  }
+  for_each = google_secret_manager_secret.release_gate
 
   project   = each.value.project
   secret_id = each.value.secret_id
