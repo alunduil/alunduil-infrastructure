@@ -53,6 +53,7 @@ How-to guides for credentials:
 - [Create the Grafana Git Sync credentials](docs/how-to/create-grafana-git-sync-token.md)
 - [Create the Grafana GitHub data source App](docs/how-to/create-grafana-github-app.md)
 - [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
+- [Create the release gate GitHub App](docs/how-to/create-release-gate-github-app.md)
 - [Create the GitHub Projects sync token](docs/how-to/create-github-project-sync-token.md)
 - [Create the Tailscale trust credentials](docs/how-to/create-tailscale-trust-credential.md)
 - [Create the blog's Web Analytics site](docs/how-to/create-web-analytics-site.md)
