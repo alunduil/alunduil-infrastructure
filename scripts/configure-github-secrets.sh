@@ -75,6 +75,17 @@ set_secret() {
   gh secret set "${name}" "${target[@]}" --body "${value}"
 }
 
+# Sets each NAME VALUE pair that follows the repo.
+set_secrets() {
+  local repo="$1"
+  shift
+
+  while (($# >= 2)); do
+    set_secret "$1" "$2" "${repo}"
+    shift 2
+  done
+}
+
 ensure_environment() {
   gh api -X PUT "repos/{owner}/{repo}/environments/${ENVIRONMENT}" \
     --input - >/dev/null <<'JSON'
@@ -155,31 +166,21 @@ for name in "${!SECRETS[@]}"; do
   set_secret "${name}" "${SECRETS[${name}]}"
 done
 
-declare -A BLOG_SECRETS=(
-  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${BLOG_WIF_PROVIDER}"
-  [GCP_SERVICE_ACCOUNT_EMAIL]="${BLOG_SA_EMAIL}"
-  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_MANAGER_ID}"
-)
-
 # Derived from terraform outputs, so a pool or service account recreated here
-# reaches the blog on the next run; a stale value there fails the token
-# exchange without failing the build. The drift check below stays scoped to
-# this repo: these are the only names we own there.
-for name in "${!BLOG_SECRETS[@]}"; do
-  set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
-done
+# reaches the other repos on the next run; a stale value there fails the token
+# exchange without failing their workflows. The drift check below stays scoped
+# to this repo: these are the only names we own there.
+set_secrets "${BLOG_REPO}" \
+  GCP_WORKLOAD_IDENTITY_PROVIDER "${BLOG_WIF_PROVIDER}" \
+  GCP_SERVICE_ACCOUNT_EMAIL "${BLOG_SA_EMAIL}" \
+  CLOUDFLARE_ANALYTICS_SECRET_NAME "${BLOG_SECRET_MANAGER_ID}"
 
-declare -A RELEASE_GATE_SECRETS=(
-  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${RELEASE_GATE_WIF_PROVIDER}"
-  [GCP_SERVICE_ACCOUNT_EMAIL]="${RELEASE_GATE_SA_EMAIL}"
-  [APP_PRIVATE_KEY_SECRET_NAME]="${RELEASE_GATE_APP_KEY_ID}"
-  [WEBHOOK_SECRET_SECRET_NAME]="${RELEASE_GATE_WEBHOOK_ID}"
-  [CLOUDFLARE_API_TOKEN_SECRET_NAME]="${RELEASE_GATE_DEPLOY_TOKEN_ID}"
-)
-
-for name in "${!RELEASE_GATE_SECRETS[@]}"; do
-  set_secret "${name}" "${RELEASE_GATE_SECRETS[${name}]}" "${RELEASE_GATE_REPO}"
-done
+set_secrets "${RELEASE_GATE_REPO}" \
+  GCP_WORKLOAD_IDENTITY_PROVIDER "${RELEASE_GATE_WIF_PROVIDER}" \
+  GCP_SERVICE_ACCOUNT_EMAIL "${RELEASE_GATE_SA_EMAIL}" \
+  APP_PRIVATE_KEY_SECRET_NAME "${RELEASE_GATE_APP_KEY_ID}" \
+  WEBHOOK_SECRET_SECRET_NAME "${RELEASE_GATE_WEBHOOK_ID}" \
+  CLOUDFLARE_API_TOKEN_SECRET_NAME "${RELEASE_GATE_DEPLOY_TOKEN_ID}"
 
 ensure_environment
 if [[ "${GH_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
