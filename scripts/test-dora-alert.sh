@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 set -euo pipefail
 
-# Runs the DORA rules stopped recording alert, as a Terraform plan renders
-# it, through promtool against the timelines in
-# terraform/alunduil/dora-alert-tests.yml.
+# Tests the "DORA rules stopped recording" alert from a Terraform plan
+# against the timelines in terraform/alunduil/dora-alert-tests.yml.
 #
 # Usage: scripts/test-dora-alert.sh <plan.json>
 
@@ -13,8 +12,8 @@ ALERT_GROUP='.planned_values.root_module.resources[] | select(.address == "grafa
 
 # Reads `terraform show -json` output on stdin and prints the alert as a
 # Prometheus rule file. Every repository's term must match, so a repository
-# named example stands in for all of them. Grafana's threshold stage passes
-# absent_over_time's 1 through, so the expression alone decides firing.
+# named example stands in for all of them. The rule file drops Grafana's
+# threshold stage: it fires above 0, and absent_over_time returns 1.
 alert_rule_file() {
   jq -e "${ALERT_GROUP}"'
     | .rule[0] as $rule

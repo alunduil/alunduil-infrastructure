@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Timelines for the DORA rules stopped recording alert. Each starts when the
+# Timelines for the "DORA rules stopped recording" alert. Each starts when the
 # repository joins the alert. scripts/test-dora-alert.sh supplies the rule
 # and evaluation interval from a Terraform plan.
 tests:
@@ -20,7 +20,7 @@ tests:
         exp_alerts:
           - exp_labels: {repository: example, severity: warning}
 
-  - name: An existing repository recovering after two missed evaluations never fires
+  - name: An existing repository that recovers after two missed evaluations doesn't fire
     interval: 1h
     input_series:
       - series: 'dora_deploys{repository="example"}'
@@ -30,7 +30,7 @@ tests:
         eval_time: 6h10m
         exp_alerts: []
 
-  - name: A new repository recording within the hour never fires
+  - name: A new repository that records within the hour doesn't fire
     interval: 5m
     input_series:
       - series: 'dora_deploys{repository="example"}'
