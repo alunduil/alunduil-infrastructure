@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Configures the GitHub Actions secrets the CI workflows consume, here and
-# in blog.alunduil.com. Re-running is a no-op.
+# Configures the GitHub Actions secrets the CI workflows consume, here, in
+# blog.alunduil.com, and in release-gate. Re-running is a no-op.
 
 set -euo pipefail
 
@@ -15,6 +15,10 @@ ENVIRONMENT="project-sync"
 # blog.alunduil.com's Pages build federates into this project to read its
 # Cloudflare analytics token, so its identifiers are configured here too.
 BLOG_REPO="alunduil/blog.alunduil.com"
+
+# release-gate's deploy workflow federates in the same way, to read the gate's
+# App key, webhook secret, and Worker deploy token.
+RELEASE_GATE_REPO="alunduil/release-gate"
 
 # existing_env_secrets is populated by the executable body (from
 # `gh secret list`) before these run; the bats suite sets it directly.
@@ -126,6 +130,11 @@ RW_SA_EMAIL="$(tf_output github_deployer_rw_email)"
 BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
 BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
 BLOG_SECRET_MANAGER_ID="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
+RELEASE_GATE_WIF_PROVIDER="$(tf_output release_gate_workload_identity_provider)"
+RELEASE_GATE_SA_EMAIL="$(tf_output release_gate_reader_email)"
+RELEASE_GATE_APP_KEY_ID="$(tf_output release_gate_app_private_key_secret)"
+RELEASE_GATE_WEBHOOK_ID="$(tf_output release_gate_webhook_secret_secret)"
+RELEASE_GATE_DEPLOY_TOKEN_ID="$(tf_output cloudflare_api_token_release_gate_deploy_secret)"
 
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
 
@@ -158,6 +167,18 @@ declare -A BLOG_SECRETS=(
 # this repo: these are the only names we own there.
 for name in "${!BLOG_SECRETS[@]}"; do
   set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
+done
+
+declare -A RELEASE_GATE_SECRETS=(
+  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${RELEASE_GATE_WIF_PROVIDER}"
+  [GCP_SERVICE_ACCOUNT_EMAIL]="${RELEASE_GATE_SA_EMAIL}"
+  [APP_PRIVATE_KEY_SECRET_NAME]="${RELEASE_GATE_APP_KEY_ID}"
+  [WEBHOOK_SECRET_SECRET_NAME]="${RELEASE_GATE_WEBHOOK_ID}"
+  [CLOUDFLARE_API_TOKEN_SECRET_NAME]="${RELEASE_GATE_DEPLOY_TOKEN_ID}"
+)
+
+for name in "${!RELEASE_GATE_SECRETS[@]}"; do
+  set_secret "${name}" "${RELEASE_GATE_SECRETS[${name}]}" "${RELEASE_GATE_REPO}"
 done
 
 ensure_environment

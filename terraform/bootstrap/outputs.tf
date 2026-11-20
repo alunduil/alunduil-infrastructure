@@ -145,3 +145,35 @@ output "tailscale_client_id_secrets" {
   description = "Secret Manager short names holding the Tailscale trust credential client IDs, read-only for plan and read-write for apply; populated by scripts/configure-tailscale-secrets.sh and fetched via `gcloud secrets versions access`"
   sensitive   = false
 }
+
+# configure-github-secrets.sh publishes these to alunduil/release-gate as Actions
+# secrets; its deploy workflow reads them by name.
+output "release_gate_workload_identity_provider" {
+  value       = google_iam_workload_identity_pool_provider.release_gate.name
+  description = "Full resource name of the release gate's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/release-gate/providers/github-provider"
+  sensitive   = false
+}
+
+output "release_gate_reader_email" {
+  value       = google_service_account.release_gate_reader.email
+  description = "Email of the service account the release gate's deploy workflow impersonates"
+  sensitive   = false
+}
+
+output "release_gate_app_private_key_secret" {
+  value       = google_secret_manager_secret.release_gate_app_private_key.secret_id
+  description = "Secret Manager short name holding the release gate App's private key; populated by scripts/configure-release-gate-secrets.sh"
+  sensitive   = false
+}
+
+output "release_gate_webhook_secret_secret" {
+  value       = google_secret_manager_secret.release_gate_webhook_secret.secret_id
+  description = "Secret Manager short name holding the release gate App's webhook secret"
+  sensitive   = false
+}
+
+output "cloudflare_api_token_release_gate_deploy_secret" {
+  value       = google_secret_manager_secret.cloudflare_api_token_release_gate_deploy.secret_id
+  description = "Secret Manager short name holding the Cloudflare token the release gate's deploy workflow deploys its Worker with"
+  sensitive   = false
+}
