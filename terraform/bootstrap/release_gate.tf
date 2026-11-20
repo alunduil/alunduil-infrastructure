@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The release gate's credentials, read only by alunduil/release-gate's deploy
-# workflow on main. Its Worker approves publish deployments, so whoever reads
-# these can approve an off-branch run.
+# Only alunduil/release-gate's deploy workflow on main reads these credentials.
+# Its Worker approves publish deployments, so a reader can approve an
+# off-branch run.
 
-# The provider's condition and the reader's binding have to name the same
-# workflow, and a disagreement between them fails the exchange silently.
+# A mismatch between the provider's condition and the reader's binding fails
+# the exchange silently.
 locals {
   release_gate_repository          = "alunduil/release-gate"
   release_gate_deploy_workflow_ref = "${local.release_gate_repository}/.github/workflows/deploy.yml@refs/heads/main"
@@ -22,9 +22,8 @@ locals {
   }
 }
 
-# The App's private key has no version here.
-# scripts/configure-release-gate-secrets.sh adds it after this layer applies,
-# so the key never reaches this layer's state.
+# scripts/configure-release-gate-secrets.sh adds the App key's version after
+# this layer applies, so the key never reaches this layer's state.
 resource "google_secret_manager_secret" "release_gate" {
   for_each = local.release_gate_secrets
 
@@ -38,8 +37,7 @@ resource "google_secret_manager_secret" "release_gate" {
   depends_on = [google_project_service.secretmanager]
 }
 
-# GitHub only stores this secret, so the operator copies it into the App's
-# webhook settings.
+# The operator copies this into the App's webhook settings.
 resource "random_password" "release_gate_webhook_secret" {
   length  = 64
   special = false
@@ -100,7 +98,7 @@ resource "google_iam_workload_identity_pool_provider" "release_gate" {
   }
 
   # Pinned to the workflow and branch, so another workflow on main, or this one
-  # on a pull request branch, can't read the App's key. Renaming or moving
+  # on a pull request branch, can't read these secrets. Renaming or moving
   # deploy.yml revokes access.
   attribute_condition = "assertion.job_workflow_ref == '${local.release_gate_deploy_workflow_ref}'"
 

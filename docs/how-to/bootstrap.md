@@ -76,9 +76,9 @@ the prompts, or press Enter at each to defer until the App exists.
 It also prompts for the release gate App's private key, and stores it in
 Secret Manager. Later runs skip it. Set `RELEASE_GATE_APP_PRIVATE_KEY_FILE`
 to answer without the prompt, or press Enter to defer until the App exists.
-The apply generates the App's webhook secret; [set the webhook
+After the apply, [set the webhook
 secret](create-release-gate-github-app.md#set-the-webhook-secret) in the
-App once it finishes.
+App.
 
 The blog's Pages build needs wiring to the federation once, in
 `blog.alunduil.com`.

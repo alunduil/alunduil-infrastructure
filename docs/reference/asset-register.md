@@ -677,8 +677,7 @@ Google Cloud's other credentials.
 ### C-39: Release gate GitHub App
 
 - Kind: GitHub App private key
-- Scope: `Deployments` write and `Actions` read on every repository, and the
-  `deployment_protection_rule` event
+- Scope: `Deployments` write and `Actions` read on every repository
 - Consumer: none. The `release-gate` workload identity pool's provider admits
   only `deploy.yml` on `main` in `release-gate`, which that repository
   doesn't have

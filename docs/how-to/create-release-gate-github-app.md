@@ -4,9 +4,9 @@
 # Create the release gate GitHub App
 
 The release gate answers GitHub's deployment protection rule from a
-Cloudflare Worker. This App is the identity it answers as. Keep it
-separate from every per-repository release App: its key approves
-deployments, so it shouldn't also be able to create the tags they run from.
+Cloudflare Worker. This App is the identity it answers as. Register it
+for this alone: its key approves deployments, so it shouldn't also be
+able to create the tags they run from.
 
 1. Create at <https://github.com/settings/apps/new> with:
    - **GitHub App name**: `alunduil-release-gate`.
@@ -53,9 +53,8 @@ just configure-release-gate
 
 ## Set the webhook secret
 
-`just bootstrap` generates the webhook secret. GitHub only accepts it
-through the App's settings, so copy it there once the bootstrap apply
-finishes, and again whenever bootstrap replaces it:
+`just bootstrap` generates the webhook secret. Copy it into the App after
+the bootstrap apply, and again whenever bootstrap replaces it:
 
 ```sh
 gcloud secrets versions access latest --secret=release-gate-webhook-secret --project=alunduil

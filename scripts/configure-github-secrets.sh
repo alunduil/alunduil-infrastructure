@@ -167,9 +167,9 @@ for name in "${!SECRETS[@]}"; do
 done
 
 # Derived from terraform outputs, so a pool or service account recreated here
-# reaches the other repos on the next run; a stale value there fails the token
-# exchange without failing their workflows. The drift check below stays scoped
-# to this repo: these are the only names we own there.
+# reaches the other repos on the next run. A stale value fails the token
+# exchange, which the blog's build doesn't surface. The drift check below stays
+# scoped to this repo: these are the only names we own there.
 set_secrets "${BLOG_REPO}" \
   GCP_WORKLOAD_IDENTITY_PROVIDER "${BLOG_WIF_PROVIDER}" \
   GCP_SERVICE_ACCOUNT_EMAIL "${BLOG_SA_EMAIL}" \
