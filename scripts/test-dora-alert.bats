@@ -12,8 +12,10 @@ setup() {
 
 # A plan holding the alert, with one absence term per argument.
 plan() {
-  local expr
-  expr="$(printf '%s\n' "$@" | jq -Rsr 'split("\n")[:-1] | join(" or ")')"
+  local expr="$1" term
+  for term in "${@:2}"; do
+    expr+=" or ${term}"
+  done
   jq -n --arg expr "${expr}" '{planned_values: {root_module: {resources: [
     {address: "grafana_rule_group.other", values: {}},
     {address: "grafana_rule_group.dora_recording", values: {

@@ -9,16 +9,14 @@ set -euo pipefail
 #
 # Usage: scripts/test-dora-alert.sh <plan.json>
 
-TESTS="${TESTS:-$(dirname "$0")/../terraform/alunduil/dora-alert-tests.yml}"
-
-ALERT='.planned_values.root_module.resources[] | select(.address == "grafana_rule_group.dora_recording") | .values'
+ALERT_GROUP='.planned_values.root_module.resources[] | select(.address == "grafana_rule_group.dora_recording") | .values'
 
 # Reads `terraform show -json` output on stdin and prints the alert as a
 # Prometheus rule file. Every repository's term must match, so a repository
 # named example stands in for all of them. Grafana's threshold stage passes
 # absent_over_time's 1 through, so the expression alone decides firing.
 alert_rule_file() {
-  jq -e "${ALERT}"'
+  jq -e "${ALERT_GROUP}"'
     | .rule[0] as $rule
     | [$rule.data[] | select(.ref_id == "A") | .model | fromjson | .expr
       | splits(" or ") | gsub("repository=\"[^\"]*\""; "repository=\"example\"")]
@@ -33,7 +31,7 @@ alert_rule_file() {
 # Reads `terraform show -json` output on stdin and prints the alert group's
 # evaluation interval as a duration.
 evaluation_interval() {
-  jq -er "${ALERT}"' | "\(.interval_seconds)s"'
+  jq -er "${ALERT_GROUP}"' | "\(.interval_seconds)s"'
 }
 
 # Skip the executable body when sourced (e.g. by test-dora-alert.bats).
@@ -49,7 +47,7 @@ trap 'rm -rf "${work}"' EXIT
 
 alert_rule_file <"${plan}" >"${work}/rules.json"
 {
-  cat "${TESTS}"
+  cat "$(dirname "$0")/../terraform/alunduil/dora-alert-tests.yml"
   echo "rule_files: [rules.json]"
   echo "evaluation_interval: $(evaluation_interval <"${plan}")"
 } >"${work}/tests.yml"
