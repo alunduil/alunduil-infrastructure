@@ -18,14 +18,15 @@ able to create the tags they run from.
      `https://<worker>.<subdomain>.workers.dev`. Workers & Pages in the
      Cloudflare dashboard shows the account's subdomain. Leave **Webhook
      secret** empty for now.
-   - Leave the user-authorization checkboxes under `Callback URL` at
-     their defaults. This App authenticates as an installation, not a
-     user.
+   - Leave **Identifying and authorizing users** and **Post
+     installation** empty, with their checkboxes at the defaults. This
+     App authenticates as an installation, not a user.
    - Repository permissions (everything else **No access**):
      - `Actions: Read-only`
      - `Deployments: Read and write`
      - `Metadata: Read-only` (granted automatically)
-   - **Subscribe to events**: `Deployment protection rule` only.
+   - **Subscribe to events**: `Deployment protection rule` only. It
+     appears once `Deployments` is set.
    - Where can this GitHub App be installed: **Only on this account**.
 2. On the App's **General** page: note the **App ID**, then under
    **Private keys** generate and download one (`.pem`). GitHub only
