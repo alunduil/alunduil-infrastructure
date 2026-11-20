@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Configures the GitHub Actions secrets the CI workflows consume, here and
-# in blog.alunduil.com. Re-running is a no-op.
+# Configures the GitHub Actions secrets the CI workflows consume, here, in
+# blog.alunduil.com, and in release-gate. Re-running is a no-op.
 
 set -euo pipefail
 
@@ -15,6 +15,10 @@ ENVIRONMENT="project-sync"
 # blog.alunduil.com's Pages build federates into this project to read its
 # Cloudflare analytics token, so its identifiers are configured here too.
 BLOG_REPO="alunduil/blog.alunduil.com"
+
+# release-gate's deploy workflow federates in the same way, to read the gate's
+# App key, webhook secret, and Worker deploy token.
+RELEASE_GATE_REPO="alunduil/release-gate"
 
 # existing_env_secrets is populated by the executable body (from
 # `gh secret list`) before these run; the bats suite sets it directly.
@@ -69,6 +73,17 @@ set_secret() {
 
   echo "Setting secret: ${name}${label}"
   gh secret set "${name}" "${target[@]}" --body "${value}"
+}
+
+# Sets each NAME VALUE pair that follows the repo.
+set_secrets() {
+  local repo="$1"
+  shift
+
+  while (($# >= 2)); do
+    set_secret "$1" "$2" "${repo}"
+    shift 2
+  done
 }
 
 ensure_environment() {
@@ -126,6 +141,11 @@ RW_SA_EMAIL="$(tf_output github_deployer_rw_email)"
 BLOG_WIF_PROVIDER="$(tf_output blog_analytics_workload_identity_provider)"
 BLOG_SA_EMAIL="$(tf_output blog_analytics_reader_email)"
 BLOG_SECRET_MANAGER_ID="$(tf_output cloudflare_api_token_blog_analytics_ro_secret)"
+RELEASE_GATE_WIF_PROVIDER="$(tf_output release_gate_workload_identity_provider)"
+RELEASE_GATE_SA_EMAIL="$(tf_output release_gate_reader_email)"
+RELEASE_GATE_APP_KEY_ID="$(tf_output release_gate_app_private_key_secret)"
+RELEASE_GATE_WEBHOOK_ID="$(tf_output release_gate_webhook_secret_secret)"
+RELEASE_GATE_DEPLOY_TOKEN_ID="$(tf_output cloudflare_api_token_release_gate_deploy_secret)"
 
 existing_env_secrets="$(gh secret list --env "${ENVIRONMENT}" --json name --jq '.[].name' 2>/dev/null || true)"
 
@@ -146,19 +166,21 @@ for name in "${!SECRETS[@]}"; do
   set_secret "${name}" "${SECRETS[${name}]}"
 done
 
-declare -A BLOG_SECRETS=(
-  [GCP_WORKLOAD_IDENTITY_PROVIDER]="${BLOG_WIF_PROVIDER}"
-  [GCP_SERVICE_ACCOUNT_EMAIL]="${BLOG_SA_EMAIL}"
-  [CLOUDFLARE_ANALYTICS_SECRET_NAME]="${BLOG_SECRET_MANAGER_ID}"
-)
-
 # Derived from terraform outputs, so a pool or service account recreated here
-# reaches the blog on the next run; a stale value there fails the token
-# exchange without failing the build. The drift check below stays scoped to
-# this repo: these are the only names we own there.
-for name in "${!BLOG_SECRETS[@]}"; do
-  set_secret "${name}" "${BLOG_SECRETS[${name}]}" "${BLOG_REPO}"
-done
+# reaches the other repos on the next run. A stale value fails the token
+# exchange, which the blog's build doesn't surface. The drift check below stays
+# scoped to this repo: these are the only names we own there.
+set_secrets "${BLOG_REPO}" \
+  GCP_WORKLOAD_IDENTITY_PROVIDER "${BLOG_WIF_PROVIDER}" \
+  GCP_SERVICE_ACCOUNT_EMAIL "${BLOG_SA_EMAIL}" \
+  CLOUDFLARE_ANALYTICS_SECRET_NAME "${BLOG_SECRET_MANAGER_ID}"
+
+set_secrets "${RELEASE_GATE_REPO}" \
+  GCP_WORKLOAD_IDENTITY_PROVIDER "${RELEASE_GATE_WIF_PROVIDER}" \
+  GCP_SERVICE_ACCOUNT_EMAIL "${RELEASE_GATE_SA_EMAIL}" \
+  APP_PRIVATE_KEY_SECRET_NAME "${RELEASE_GATE_APP_KEY_ID}" \
+  WEBHOOK_SECRET_SECRET_NAME "${RELEASE_GATE_WEBHOOK_ID}" \
+  CLOUDFLARE_API_TOKEN_SECRET_NAME "${RELEASE_GATE_DEPLOY_TOKEN_ID}"
 
 ensure_environment
 if [[ "${GH_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then

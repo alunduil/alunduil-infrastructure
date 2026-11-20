@@ -5,7 +5,7 @@
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here, blog.alunduil.com) → Projects v2 board fields.")]
-bootstrap: && configure-hook-fix projects
+bootstrap: && configure-hook-fix configure-release-gate projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
@@ -19,6 +19,10 @@ bootstrap: && configure-hook-fix projects
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]
 configure-hook-fix:
     scripts/configure-hook-fix-secrets.sh
+
+[doc("Store the release gate App's private key in Secret Manager.")]
+configure-release-gate:
+    scripts/configure-release-gate-secrets.sh
 
 [doc("Apply the Projects v2 board fields declared in github/projects/*.json.")]
 projects:

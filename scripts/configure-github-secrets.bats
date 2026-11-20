@@ -60,3 +60,11 @@ gh() { echo "gh $*"; }
   [[ ${output} == *"--repo owner/other"* ]]
   [[ ${output} == *"--body sa@example.test"* ]]
 }
+
+# --- set_secrets ----------------------------------------------------------
+
+@test "set_secrets writes each pair to the given repo" {
+  run set_secrets "owner/other" FIRST one SECOND two
+  [[ ${output} == *"gh secret set FIRST --repo owner/other --body one"* ]]
+  [[ ${output} == *"gh secret set SECOND --repo owner/other --body two"* ]]
+}

@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-16.
+Verified 2026-11-20.
 
 ## Scope
 
@@ -67,6 +67,7 @@ from.
 | P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
 | P-12 | Release App | One per repository, planned in #556, none yet | P-10 |
+| P-13 | Release gate | C-39's App, on every repository | A pending deployment |
 
 The vendor Apps hold these permissions:
 
@@ -672,6 +673,41 @@ Google Cloud's other credentials.
 - Created by: Operator
 - Source: [`configure-the-nanopi-neo3.md`](../how-to/configure-the-nanopi-neo3.md),
   stored in the secret `terraform/bootstrap/nanopi_neo3.tf` declares
+
+### C-39: Release gate GitHub App
+
+- Kind: GitHub App private key
+- Scope: `Deployments` write and `Actions` read on every repository
+- Consumer: none. The `release-gate` workload identity pool's provider admits
+  only `deploy.yml` on `main` in `release-gate`, which that repository
+  doesn't have
+- Grants: P-13
+- Created by: Operator
+- Source: [`create-release-gate-github-app.md`](../how-to/create-release-gate-github-app.md),
+  stored in the secret `terraform/bootstrap/release_gate.tf` declares
+- Tracked by: #1248
+
+### C-40: Release gate webhook secret
+
+- Kind: GitHub App webhook secret
+- Scope: signs C-39's webhook deliveries, so whoever holds it can forge one
+- Consumer: none, for the same reason as C-39. The operator copies it into
+  the App's settings
+- Grants: nothing until a workflow reads it
+- Created by: Terraform
+- Source: `terraform/bootstrap/release_gate.tf`
+- Tracked by: #1248
+
+### C-41: `release-gate Worker deploy`
+
+- Kind: Cloudflare API token
+- Scope: Workers Scripts Write on the account holding `alunduil.com`, so it
+  can replace every Worker in the account
+- Consumer: none, for the same reason as C-39
+- Grants: nothing until a workflow reads it
+- Created by: Terraform
+- Source: `terraform/bootstrap/release_gate.tf`
+- Tracked by: #1248
 
 ## Maintenance
 
