@@ -11,7 +11,14 @@ locals {
   dora_window_seconds   = 30 * 86400
   dora_interval_seconds = 3600
 
-  dora_missed_evaluations = 3
+  dora_missed_evaluations     = 3
+  dora_alert_interval_seconds = 300
+
+  # A new repository records nothing until its rule group first evaluates,
+  # up to an interval after creation. A short absence window followed by a
+  # pending period gives that evaluation time to land before the alert fires.
+  dora_absence_window_seconds = local.dora_interval_seconds + local.dora_alert_interval_seconds
+  dora_pending_seconds        = (local.dora_missed_evaluations - 1) * local.dora_interval_seconds
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
@@ -173,12 +180,12 @@ data "grafana_data_source" "prometheus" {
 resource "grafana_rule_group" "dora_recording" {
   name             = "Alerts"
   folder_uid       = grafana_folder.dora.uid
-  interval_seconds = 300
+  interval_seconds = local.dora_alert_interval_seconds
 
   rule {
     name           = "DORA rules stopped recording"
     condition      = "C"
-    for            = "0s"
+    for            = "${local.dora_pending_seconds}s"
     no_data_state  = "OK"
     exec_err_state = "Error"
     labels         = { severity = "warning" }
@@ -199,7 +206,7 @@ resource "grafana_rule_group" "dora_recording" {
         # result, so each failing repository fires its own alert.
         expr = join(" or ", [
           for name in local.dora_repositories :
-          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_missed_evaluations * local.dora_interval_seconds}s])"
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_absence_window_seconds}s])"
         ])
       })
     }

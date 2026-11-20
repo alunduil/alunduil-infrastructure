@@ -47,6 +47,7 @@ jobs:
             .github/actions/terraform-providers \
             scripts/export-terraform-credentials.sh \
             scripts/eval-recording-rules.sh \
+            scripts/test-dora-alert.sh \
             mise.toml \
             mise.lock
           then
@@ -85,7 +86,7 @@ jobs:
 
       - uses: ./.github/actions/mise
         with:
-          install_args: terraform
+          install_args: terraform promtool
 
       - uses: ./.github/actions/terraform-providers
 
@@ -181,6 +182,10 @@ jobs:
         run: |
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
+
+      - name: Test the DORA alert's timelines
+        working-directory: terraform/alunduil
+        run: ../../scripts/test-dora-alert.sh plan.json
 
       # Data sources read during apply change nothing.
       - id: resource-changes
