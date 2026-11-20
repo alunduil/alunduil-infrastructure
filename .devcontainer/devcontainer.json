@@ -24,5 +24,8 @@
     "PATH": "/home/vscode/.local/share/mise/shims:${containerEnv:PATH}",
     "CLAUDE_CODE_OAUTH_TOKEN": "${localEnv:CLAUDE_CODE_OAUTH_TOKEN}"
   },
-  "postCreateCommand": "sudo chown vscode:vscode \"$CLAUDE_CONFIG_DIR\" && mise install"
+  "postCreateCommand": {
+    "claude-config": "sudo chown vscode:vscode \"$CLAUDE_CONFIG_DIR\"",
+    "mise": "mise install"
+  }
 }
