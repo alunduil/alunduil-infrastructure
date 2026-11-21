@@ -50,7 +50,7 @@ flowchart LR
   writer -->|"F4 created branch"| system
   renovate -->|"F16 merge request"| system
   operator -->|"F17 review decision"| system
-  writer -->|"F19 renovate-config change"| system
+  writer -->|"F19 shared config change"| system
   operator -->|"F20 operator preset change"| system
 ```
 
@@ -85,7 +85,7 @@ flowchart LR
   operator["Operator"]
 
   subgraph config["renovate-config: every repository reads its default branch"]
-    config_commits[("renovate-config commits")]
+    config_commits[("Shared config commits")]
   end
 
   subgraph repo["Calling repository: rulesets decide who changes these"]
@@ -130,14 +130,14 @@ flowchart LR
   renovate -->|"F16 merge request [P-6 pull_request bypass]"| merge
   operator -->|"F17 review decision [admin role]"| merge
   merge -->|"F18 merged commit"| default
-  writer -->|"F19 renovate-config change [Contents and Workflows write]"| config_commits
+  writer -->|"F19 shared config change [Contents and Workflows write]"| config_commits
   operator -->|"F20 operator preset change [admin role]"| config_commits
 ```
 
 Flows F2, F5, F7, F8, F9, F11, F12, F13, F14, F15, and F19 cross a boundary.
 A job holds nothing until one of these flows gives it something.
 
-A merge in `renovate-config` is also 5.0, with `renovate-config commits` as
+A merge in `renovate-config` is also 5.0, with `Shared config commits` as
 its default branch. F19 and F20 draw it as a direct change, because that
 repository has no `admin-only` ruleset and its `review` ruleset requires no
 approval.

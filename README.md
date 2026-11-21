@@ -83,6 +83,11 @@ Explanation:
   commit becomes a published package, and what crosses each trust boundary
 - [Release path threat model](docs/explanation/threat-model-release-path.md):
   what can go wrong on that path, and where the release App fits
+- [Renovate path data flow](docs/explanation/renovate-data-flow.md): how a
+  dependency update becomes a merged commit, and what crosses each trust
+  boundary
+- [Renovate path threat model](docs/explanation/threat-model-renovate.md):
+  what can go wrong on that path, and where the self-test App fits
 
 Decisions:
 
