@@ -10,10 +10,12 @@ locals {
     "hook-fix-app-private-key",
   ])
 
+  hook_fix_repository = "alunduil/renovate-config"
+
   # Bot user IDs, which survive a rename of the login: renovate[bot] and
   # alunduil-hook-fix-selftest[bot].
-  hook_fix_renovate_actor_id = "29139614"
-  hook_fix_selftest_actor_id = "359652970"
+  hook_fix_renovate_run = "assertion.actor_id == '29139614'"
+  hook_fix_selftest_run = "(assertion.repository == '${local.hook_fix_repository}' && assertion.actor_id == '359652970')"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
@@ -48,13 +50,13 @@ module "hook_fix_reader" {
   }
 
   caller = {
-    workflow            = "alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml"
+    workflow            = "${local.hook_fix_repository}/.github/workflows/fix-renovate-hooks.yml"
     principal_attribute = "repository_owner"
   }
 
   # The self-test's pull requests in renovate-config are the one other caller.
   extra_conditions = [
-    "(assertion.actor_id == '${local.hook_fix_renovate_actor_id}' || (assertion.repository == 'alunduil/renovate-config' && assertion.actor_id == '${local.hook_fix_selftest_actor_id}'))",
+    "(${local.hook_fix_renovate_run} || ${local.hook_fix_selftest_run})",
     "assertion.event_name == 'pull_request'",
   ]
 
