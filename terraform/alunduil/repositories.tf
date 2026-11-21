@@ -175,8 +175,8 @@ locals {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
       required_status_checks = {
-        # Runs fix-renovate-hooks.yml end to end when a pull request changes
-        # it, so an action bump that breaks callers can't merge.
+        # Renovate merges here without review, and a broken
+        # fix-renovate-hooks.yml breaks every repository that calls it.
         contexts           = ["Report the hook-fix self-test", "Enforce Conventional Commits"]
         renovate_automerge = true
       }
