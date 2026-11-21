@@ -174,15 +174,15 @@ locals {
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
-      # Every repository reads its Renovate policy from this default branch.
-      admin_only_updates = true
       required_status_checks = {
         # Runs fix-renovate-hooks.yml end to end when a pull request changes
         # it, so an action bump that breaks callers can't merge.
         contexts           = ["Report the hook-fix self-test", "Enforce Conventional Commits"]
         renovate_automerge = true
       }
-      deploy = { class = "merge" }
+      # Every repository reads its Renovate policy from this default branch.
+      admin_only_updates = true
+      deploy             = { class = "merge" }
     }
 
     "siren-json.hs" = {
