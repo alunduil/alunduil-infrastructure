@@ -16,6 +16,10 @@ locals {
     renovate_automerge = true
   }
 
+  # A repository holding only a README has no test job to require, and a
+  # required check that never reports blocks every merge.
+  readme_only_required_status_checks = {}
+
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
   publish_approval = { reviewers = [tonumber(data.github_user.operator.id)] }
@@ -27,10 +31,10 @@ locals {
   # DORA metrics. A run without an event matches any event.
   repositories = {
     "agent-plugins" = {
-      description = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
-      topics      = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
-      # Requires no test job while the repository holds only a README.
-      deploy = { class = "merge" }
+      description            = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
+      topics                 = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
+      required_status_checks = local.readme_only_required_status_checks
+      deploy                 = { class = "merge" }
     }
 
     "alunduil-chezmoi" = {
@@ -163,9 +167,9 @@ locals {
     }
 
     "release-gate" = {
-      description = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
-      topics      = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
-      # Requires no test job while the repository holds only a README.
+      description            = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
+      topics                 = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
+      required_status_checks = local.readme_only_required_status_checks
     }
 
     "renovate-config" = {
@@ -191,9 +195,9 @@ locals {
     }
 
     "vale-styles" = {
-      description = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
-      topics      = ["vale", "vale-style", "prose-linting", "style-guide"]
-      # Requires no test job while the repository holds only a README.
+      description            = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
+      topics                 = ["vale", "vale-style", "prose-linting", "style-guide"]
+      required_status_checks = local.readme_only_required_status_checks
     }
 
     "woodland-generators" = {
