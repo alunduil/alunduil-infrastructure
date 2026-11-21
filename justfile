@@ -5,7 +5,7 @@
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here, blog.alunduil.com) → Projects v2 board fields.")]
-bootstrap: && configure-hook-fix configure-hook-fix-selftest projects
+bootstrap: && configure-hook-fix configure-hook-fix-selftest configure-release-gate projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
@@ -13,6 +13,7 @@ bootstrap: && configure-hook-fix configure-hook-fix-selftest projects
     scripts/configure-git-sync-secrets.sh
     scripts/configure-grafana-github-secrets.sh
     scripts/configure-tailscale-secrets.sh
+    scripts/configure-truenas-secrets.sh
     scripts/configure-github-secrets.sh
 
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]
@@ -22,6 +23,10 @@ configure-hook-fix:
 [doc("Store the hook-fix self-test App's ID and private key in Secret Manager.")]
 configure-hook-fix-selftest:
     scripts/configure-hook-fix-selftest-secrets.sh
+
+[doc("Store the release gate App's private key in Secret Manager.")]
+configure-release-gate:
+    scripts/configure-release-gate-secrets.sh
 
 [doc("Apply the Projects v2 board fields declared in github/projects/*.json.")]
 projects:
@@ -64,8 +69,34 @@ alunduil:
     terraform -chdir=terraform/alunduil init
     terraform -chdir=terraform/alunduil apply
 
+# Credentials: gcloud CLI auth with secretAccessor on truenas-api-key, and
+# gcloud application-default for the GCS backend. Needs a route to TrueNAS.
+[doc("Plan and apply the TrueNAS configuration. No workflow runs this.")]
+truenas:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Assigned before export, so a failed fetch stops here rather than
+    # reaching terraform as an empty key.
+    TRUENAS_API_KEY="$(gcloud secrets versions access latest --secret=truenas-api-key --project=alunduil)"
+    export TRUENAS_API_KEY
+    terraform -chdir=terraform/truenas init
+    terraform -chdir=terraform/truenas apply
+
+# Credentials: gcloud CLI auth with secretAccessor on the box's Alloy push token
+# and Gmail app password, and read access to bootstrap-outputs.json.
+[doc("Configure the NanoPi-NEO3 with Ansible over the tailnet.")]
+[positional-arguments]
+nanopi-neo3 *args:
+    ansible-galaxy collection install -r ansible/requirements.yml
+    ansible-playbook --inventory ansible/inventory.yml --limit nanopi-neo3 "$@" ansible/site.yml
+
 # Argument list matches the one ci.yml hands kcov, so a local run covers
 # what CI covers.
 [doc("Run bats unit tests for shell helpers.")]
 test:
     bats --recursive github/projects scripts
+
+[doc("Run Terraform module tests against a mocked provider.")]
+test-terraform:
+    terraform -chdir=terraform/modules/github_repository init -backend=false -input=false
+    terraform -chdir=terraform/modules/github_repository test

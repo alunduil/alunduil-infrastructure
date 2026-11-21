@@ -2,10 +2,11 @@
 <!-- SPDX-License-Identifier: MIT -->
 
 <!--
-Maintainer notes (HTML comments are stripped from Claude's context):
-- AI-targeted, loaded every session. Optimise for tokens; keep
-  under ~75 lines.
-- Add an entry only when Claude has made the same mistake twice
+Maintainer notes. Claude strips HTML comments, but Copilot also
+reads this file and may not, so keep this block short.
+- AGENTS.md is AI-targeted and loaded every session. Optimise for
+  tokens; keep under ~75 lines.
+- Add an entry only when an agent has made the same mistake twice
   or a non-obvious convention bit a session.
 - Prefer pointers (README §..., file:line) over copies of content
   that already lives elsewhere.
@@ -14,85 +15,11 @@ Maintainer notes (HTML comments are stripped from Claude's context):
   not solicited).
 -->
 
-# alunduil-infrastructure — Claude guide
+# Claude Code instructions for alunduil-infrastructure
 
-## Contribution flow
+@AGENTS.md
 
-- **Open draft PRs only.** Don't push to `main`; don't merge your
-  own PRs. alunduil reviews and merges.
-- **Don't run `terraform apply`.** Merging a PR to `main` triggers
-  the apply in CI. `terraform plan` runs in CI on every PR touching
-  Terraform and posts its output as a comment; local `just alunduil`
-  is break-glass only.
-- **Follow-ups land in a new session and a new PR.** A merged PR
-  is done — don't keep iterating on it for adjacent work.
+## Claude Code skills
 
-## Tooling inventory
-
-Before scripting from first principles or hitting APIs by hand,
-check what's already in place:
-
-- Helper scripts: `scripts/`. New shell helpers go here, not the
-  repo root. State-bucket bootstrap: `bootstrap-terraform-state.sh`.
-- Estate assets, the trust levels reaching them, entry points, and
-  credentials with their consumers: `docs/reference/asset-register.md`,
-  cited by ID. Component inventory (models, serial numbers, firmware,
-  location) lives in a private Notion base, not here. Adding or
-  removing an asset updates the register in the same PR.
-- GitHub Projects v2: self-contained module at `github/projects/`
-  (applier `bootstrap.sh` + `*.bats` tests + `*.json`
-  specs + `project.schema.json`), co-located for locality absent a
-  Projects v2 provider. #90 tracks the declarative replacement.
-  Deliberate exception to the `scripts/` rule above — don't move it
-  back.
-- Renovate (`renovate.json`) handles dependency PRs; extend the
-  config rather than pinning by hand.
-- Adding a new repo to the org? The `scaffold-repo` skill
-  (`.claude/skills/scaffold-repo/`) drives it end to end: classifies each
-  `github_repository` input as shared/archetype/specific against the
-  existing `repositories.tf`, creates the repo via `gh` (confirmed) so
-  Terraform can adopt it, and lands the repositories map entry plus the
-  adoption `import` in one draft PR.
-- Credentials: `docs/how-to/bootstrap.md` names the env vars the
-  bootstrap needs; the Cloudflare scopes live in
-  `docs/how-to/create-bootstrap-cloudflare-token.md`. Don't enumerate
-  token paths in committed files.
-
-## Scope discipline
-
-`terraform apply` runs in CI on merge to `main`, so an unrelated edit
-in a scoped PR ships infra the reviewer didn't ask for.
-
-- Confirm scope doesn't overlap sibling or linked issues before
-  opening the PR; ask if uncertain.
-- An issue blocked by unshipped prerequisites: propose deferral
-  with a `blocked-by` edge rather than write code ahead of them.
-- Revert incidental edits (formatting, drive-by tweaks) before
-  requesting review.
-
-## Layout
-
-- Terraform: `terraform/alunduil/`. One environment (personal infra;
-  no dev/prod split).
-- Repository settings — default branch, protection ruleset, Pages,
-  topics, environments — are declarative in
-  `terraform/alunduil/repositories.tf` via the `github_repository`
-  module. Assume a repo setting lives there before treating it as
-  manual.
-
-## Gotchas
-
-- `alunduil.com` DNS is on Cloudflare, not Cloud DNS. Run
-  `dig NS alunduil.com` before treating a TF DNS resource as
-  authoritative.
-- Hooks in `.pre-commit-config.yaml` run under `prek` and must pass.
-  Run `prek install` once per clone. New files need SPDX headers —
-  REUSE flags missing ones.
-- `vale` lints prose. Full style set on README and `docs/`; spelling,
-  casing, and inclusive language everywhere else, plus wordiness and
-  banned terms on `CLAUDE.md` and `.claude/**`. Errors block a commit,
-  warnings don't. New terms go in `accept.txt` under
-  `.vale/styles/config/vocabularies/`, `(?i)` for common nouns, exact
-  casing for product names.
-- Approve a merge only once the plan comment looks right — merging
-  applies it.
+- Adding a new repo to the org: run the `scaffold-repo` skill.
+- Reviewing the estate's health: run the `estate-review` skill.

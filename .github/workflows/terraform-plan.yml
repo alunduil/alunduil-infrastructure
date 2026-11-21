@@ -34,6 +34,7 @@ jobs:
       # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 2
 
       - id: diff
@@ -46,6 +47,7 @@ jobs:
             .github/actions/terraform-providers \
             scripts/export-terraform-credentials.sh \
             scripts/eval-recording-rules.sh \
+            scripts/test-dora-alert.sh \
             mise.toml \
             mise.lock
           then
@@ -79,10 +81,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - uses: ./.github/actions/mise
         with:
-          install_args: terraform
+          install_args: terraform promtool
 
       - uses: ./.github/actions/terraform-providers
 
@@ -179,6 +183,10 @@ jobs:
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
 
+      - name: Test the DORA alert's timelines
+        working-directory: terraform/alunduil
+        run: ../../scripts/test-dora-alert.sh plan.json
+
       # Data sources read during apply change nothing.
       - id: resource-changes
         name: Count planned resource changes
@@ -189,9 +197,9 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # Gates renovate.json's lock file maintenance automerge, since Renovate
-  # waits for every check. Keep it out of the required checks so a person
-  # can still merge a plan that changes something.
+  # Gates renovate.json's lock file maintenance automerge. Renovate waits
+  # only for required checks, so this one is required. Merging a pull
+  # request whose plan changes something takes the admin bypass.
   lock-file-plan:
     name: Confirm lock file maintenance plans no changes
     needs: plan

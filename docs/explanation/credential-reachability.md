@@ -6,7 +6,7 @@
 Why a leak of one credential can spread beyond what it was granted, and which
 controls limit that.
 
-Verified 2026-11-04.
+Verified 2026-11-20.
 
 ## Scope
 
@@ -16,8 +16,10 @@ leak spreads. It assumes the
 node here.
 
 The graphs draw what an actor could obtain, including paths that have never
-run. The edges come from reading configuration. Some have run in normal use,
-but none has been tested as an attack.
+run. The edges come from reading configuration. Some have run in normal use.
+[Release control behaviour](../reference/release-control-behaviour.md)
+records tests of tag rulesets and of tagging without `Workflows`.
+Nobody has tested any edge as an attack.
 
 Out of scope:
 
@@ -54,10 +56,11 @@ issue tracking that path.
 
 The graphs leave out what connects to nothing:
 
-- C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, C-24, and C-35
-  have no
-  edge apart from P-1 and the host that consumes them.
-- C-34 has no edge because nothing reads it.
+- C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, C-24, C-35,
+  C-36, and C-37 have no edge apart from P-1 and the host that consumes them.
+- C-34, C-39, C-40, and C-41 have no edge because nothing reads them.
+- C-38 has no mapped edge, but it signs in to the whole Google account that
+  receives A-05's mail. What that account's mail can reset is `Unverified`.
 - C-33 and the Codecov App (P-9) lead nowhere further, though any P-7 on a
   repository holding a C-33 token can read it.
 
@@ -72,7 +75,7 @@ flowchart LR
   p6["P-6 Renovate"]
   p8["P-8 Claude App"]
   c25["C-25 Hook-fix App"]
-  c36["C-36 Self-test App"]
+  c42["C-42 Self-test App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
   c13["C-13 Projects token"]
@@ -110,8 +113,8 @@ flowchart LR
   c25 -->|"creates, #1055"| tag
   c25 -->|"replaces, woodland-generators#915"| assets
   c10 -->|"pushes"| pr
-  c36 -->|"pushes a renovate-config branch whose workflow reads"| c25
-  c36 -->|"creates in renovate-config, #1055"| tag
+  c42 -->|"opens a self-test pull request whose run reads"| c25
+  c42 -->|"creates in renovate-config, #1055"| tag
 
   branch -->|"Renovate automerges, #1057"| infra
   branch -->|"Renovate automerges, #1057"| other
@@ -195,7 +198,9 @@ controls stops them:
 A release needs no merge, because the workflow at a tag runs from whatever
 commit the tag names. `Contents` write is enough to create one, which is how
 write collaborators (P-7), the Claude App (P-8), and the hook-fix key (C-25)
-reach the registries without passing through a default branch.
+reach the registries without passing through a default branch. C-25 reaches
+the registries this way even without `Workflows` ([release control
+behaviour](../reference/release-control-behaviour.md#tagging-without-workflows)).
 
 No ruleset or environment rule stops a new tag. Branch rulesets don't cover
 tags, and `immutable-tags` blocks updating and deleting a tag but not creating
@@ -222,9 +227,11 @@ else.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
-organizations too, and it bypasses rulesets as the admin role does. Any merge
-to `main` reaches it, because the hourly job runs its script from `main`, and
-no review hold covers that script.
+organizations too. No test, documentation, or source shows whether the admin
+role's ruleset bypass exempts a classic token such as C-13 ([not
+established](../reference/release-control-behaviour.md#not-established)). Any
+merge to `main` reaches C-13, because the hourly job runs its script from
+`main`, and no review hold covers that script.
 
 ## Why Renovate and the Claude App are accepted
 
@@ -238,12 +245,21 @@ package versions these repositories run, so restricting the App further gains
 little. Hook-fix differs because it runs third-party code and commits the
 output, which needs no compromise at Mend.
 
-A path existing only through P-6 therefore needs no fix of its own. For
-example, anything able to push workflow changes to a `renovate-config` branch
-can read C-25, because its provider admits any ref of
-`fix-renovate-hooks.yml`. C-36's provider admits any ref of
-`hook-fix-selftest.yml` the same way. Renovate can push there, but neither key
-gives it anything it lacks.
+A path existing only through P-6 therefore needs no fix of its own. C-25 is
+one. Its provider admits only Renovate's pull request runs, and C-25 gives
+Renovate nothing it lacks.
+
+Each of those runs calls the commit of `fix-renovate-hooks.yml` that its
+repository's default branch pins. Whoever merges into that branch chooses the
+code that reads C-25. #1282 covers callers with write collaborators.
+`admin-only` covers `renovate-config`, whose commits reach every caller.
+
+The self-test App (C-42) is the one exception. Its pull request runs in
+`renovate-config` also read C-25, and they call the branch's own copy of the
+workflow. C-42 can't write workflows, so that copy comes from a commit already
+in `renovate-config`. The [Renovate threat
+model](threat-model-renovate.md#where-the-self-test-app-fits) records the
+unresolved case where that copy differs from the default branch's.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.

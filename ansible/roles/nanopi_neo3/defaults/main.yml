@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# Lookups run on the control machine, under the operator's gcloud login, and
+# only when a task uses the value.
+nanopi_neo3_gcp_project: alunduil
+nanopi_neo3_gcloud_read: >-
+  gcloud secrets versions access latest --project {{ nanopi_neo3_gcp_project }} --secret
+nanopi_neo3_bootstrap_outputs: >-
+  {{ lookup('ansible.builtin.pipe',
+     'gcloud storage cat gs://alunduil-tfstate/bootstrap-outputs.json') | from_json }}
+nanopi_neo3_alloy_push_token: >-
+  {{ lookup('ansible.builtin.pipe',
+     nanopi_neo3_gcloud_read ~ ' grafana-alloy-push-token-nanopi-neo3') }}
+nanopi_neo3_smarthost_store: gmail-app-password-nanopi-neo3
+nanopi_neo3_smarthost_password: >-
+  {{ lookup('ansible.builtin.pipe',
+     nanopi_neo3_gcloud_read ~ ' ' ~ nanopi_neo3_smarthost_store) }}
+
+# Terraform's grafana_fleet_management_collector declares this ID.
+nanopi_neo3_fleet_management_collector_id: NanoPi-NEO3
+nanopi_neo3_mail_address: alunduil@gmail.com

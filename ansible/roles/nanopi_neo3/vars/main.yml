@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+nanopi_neo3_vendor_repositories:
+  - name: tailscale
+    uri: https://pkgs.tailscale.com/stable/debian
+    suite: "{{ ansible_facts.distribution_release }}"
+    key_url: "https://pkgs.tailscale.com/stable/debian/\
+      {{ ansible_facts.distribution_release }}.noarmor.gpg"
+    keyring: /usr/share/keyrings/tailscale-archive-keyring.gpg
+  - name: grafana
+    uri: https://apt.grafana.com
+    suite: stable
+    key_url: https://apt.grafana.com/gpg.key
+    keyring: /etc/apt/keyrings/grafana.asc

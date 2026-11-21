@@ -143,6 +143,11 @@ variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
     deployment_tags     = optional(list(string), [])
+    approval = optional(object({
+      reviewers           = list(number)
+      prevent_self_review = optional(bool, false)
+      can_admins_bypass   = optional(bool, false)
+    }))
   }))
   default     = {}
   nullable    = false
@@ -157,6 +162,22 @@ variable "environments" {
     `release: published`, needs a tag pattern. Maps to the environment's
     deployment branch policy (Settings → Environments → Deployment
     branches and tags), and is unrelated to branch protection / rulesets.
+
+    approval makes a job wait until one of its reviewers, listed by user
+    ID, approves it. can_admins_bypass defaults to false, because an
+    approval an admin can bypass doesn't hold for runs an admin starts.
+  EOT
+}
+
+variable "release_tag_patterns" {
+  type        = list(string)
+  default     = []
+  nullable    = false
+  description = <<-EOT
+    Tag name patterns, such as "v*", that only the repository admin can
+    create, whether by push, the refs API, or publishing a release.
+    Patterns in any environment's deployment_tags are restricted too, so
+    list only the others.
   EOT
 }
 

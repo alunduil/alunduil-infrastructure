@@ -33,6 +33,7 @@ Netdata
 Mosquitto
 Zigbee
 Zigbee2MQTT
+Exim
 Nabu Casa
 MagicDNS
 mDNS
@@ -131,3 +132,6 @@ Nygard's
 (?i)vuln
 (?i)worktree
 (?i)worktrees
+
+# Terms Microsoft.Terms would wrongly substitute
+(?i)agents?

@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-14.
+Verified 2026-11-21.
 
 ## Scope
 
@@ -66,8 +66,9 @@ from.
 | P-9 | Codecov | Codecov's App, ID 254, on every repository | Codecov |
 | P-10 | Release workflow | A job in `release.yml` | E-13, E-14, E-15, a merge |
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
-| P-12 | Release App | Planned in #556, not created | P-10 |
-| P-13 | Hook-fix self-test | C-36's token in Actions | A `renovate-config` PR |
+| P-12 | Release App | One per repository, planned in #556, none yet | P-10 |
+| P-13 | Release gate | C-39's App, on every repository | A pending deployment |
+| P-14 | Hook-fix self-test | C-42's token in Actions | A `renovate-config` PR |
 
 The vendor Apps hold these permissions:
 
@@ -119,6 +120,7 @@ principals that read or change an asset through Terraform.
   Advertises `192.168.68.0/22` to the tailnet as a subnet router, and
   offers an exit node
 - Exposed to: T-2, via E-05. A-12 carries its only path from T-1
+- Terraform access: P-1, through `just truenas`
 
 ### A-02: `homeassistant`
 
@@ -150,7 +152,8 @@ principals that read or change an asset through Terraform.
 - Description: Tailscale exit node presenting a US address. Sits in
   the American Midwest in a household that isn't alunduil's, and is
   administered remotely from London. Runs alloy, enrolled in Fleet
-  Management as collector `NanoPi-NEO3`. Recovery is
+  Management as collector `NanoPi-NEO3`. Configured by the playbook in
+  `ansible/`. Recovery is
   [ADR 0002](../adr/0002-build-nanopi-neo3-recovery-image-with-armbian.md)
 - Exposed to: T-3, via E-09
 
@@ -258,7 +261,7 @@ vendor.
 | ID | Service | What leaves |
 | --- | --- | --- |
 | D-01 | Nabu Casa | A-02's backups, and its remote interface traffic |
-| D-02 | Google Drive | A-01's backups, Takeout archives, A-05's `/home` |
+| D-02 | Google Drive | A-01's backups and Takeout archives |
 | D-03 | Quad9 | Every DNS query from A-10, and from T-2 via A-04 |
 | D-04 | UptimeRobot | Probes of E-01, heartbeats from A-02 and A-05 |
 | D-05 | Squarespace | Registrar for `alunduil.com`, holding its DS records |
@@ -267,9 +270,10 @@ vendor.
 | D-08 | Cloudflare (A-08) | Zone configuration, the home address via C-15 |
 | D-09 | GitHub (A-09) | Repositories, CI logs, and Release assets |
 | D-10 | Tailscale (A-10) | Node keys and tailnet membership |
-| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-06 |
+| D-11 | Grafana Cloud (A-11) | Telemetry from A-01, A-02, A-03, A-05, A-06 |
 | D-12 | Hackage | Haskell packages, which can't be recalled |
 | D-13 | PyPI | `zfs-replicate` distributions |
+| D-14 | Gmail | A-05's unattended-upgrade reports, relayed with C-38 |
 
 `woodland-generators` ships through D-09's Release assets, which Foundry
 installs from.
@@ -531,7 +535,7 @@ Google Cloud's other credentials.
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads the App's ID and key from Secret
   Manager through the `hook-fix` workload identity pool, whose provider
-  admits any ref of that workflow
+  admits any ref of that workflow in Renovate's pull request runs
 - Grants: P-5
 - Created by: Operator
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
@@ -635,18 +639,89 @@ Google Cloud's other credentials.
 - Source: `terraform/bootstrap/cloudflare_tokens.tf`, set on A-01 from
   [`configure-truenas-acme-token.md`](../how-to/configure-truenas-acme-token.md)
 
-### C-36: Hook-fix self-test GitHub App
+### C-36: `terraform` TrueNAS API key
+
+- Kind: TrueNAS API key
+- Scope: its owner's privileges on A-01, an administrator's
+- Consumer: `just truenas` on A-06, over TLS it doesn't verify. No workflow
+  reads it
+- Grants: P-1
+- Created by: Operator
+- Source: [`apply-terraform-to-truenas.md`](../how-to/apply-terraform-to-truenas.md),
+  stored in the secret `terraform/bootstrap/truenas.tf` declares
+- Tracked by: #1109
+
+### C-37: `alunduil-infrastructure-alloy-push-nanopi-neo3`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
+  stack realm
+- Consumer: alloy on A-05, as the `GCLOUD_RW_API_KEY` its `remotecfg` block
+  and Fleet Management pipelines authenticate with. No deployer reads it
+- Grants: P-4
+- Created by: Terraform
+- Source: `terraform/bootstrap/grafana_alloy_push.tf`
+
+### C-38: `nanopi-neo3` Gmail app password
+
+- Kind: Google app password
+- Scope: the whole Google account, for clients that sign in with a
+  password. Google offers no narrower scope for an app password
+  (`Unverified`)
+- Consumer: Exim on A-05, relaying through `smtp.gmail.com`. `just nanopi-neo3`
+  on A-06 delivers it. No workflow reads it
+- Grants: P-4
+- Created by: Operator
+- Source: [`configure-the-nanopi-neo3.md`](../how-to/configure-the-nanopi-neo3.md),
+  stored in the secret `terraform/bootstrap/nanopi_neo3.tf` declares
+
+### C-39: Release gate GitHub App
+
+- Kind: GitHub App private key
+- Scope: `Deployments` write and `Actions` read on every repository
+- Consumer: none. The `release-gate` workload identity pool's provider admits
+  only `deploy.yml` on `main` in `release-gate`, which that repository
+  doesn't have
+- Grants: P-13
+- Created by: Operator
+- Source: [`create-release-gate-github-app.md`](../how-to/create-release-gate-github-app.md),
+  stored in the secret `terraform/bootstrap/release_gate.tf` declares
+- Tracked by: #1248
+
+### C-40: Release gate webhook secret
+
+- Kind: GitHub App webhook secret
+- Scope: signs C-39's webhook deliveries, so whoever holds it can forge one
+- Consumer: none, for the same reason as C-39. The operator copies it into
+  the App's settings
+- Grants: nothing until a workflow reads it
+- Created by: Terraform
+- Source: `terraform/bootstrap/release_gate.tf`
+- Tracked by: #1248
+
+### C-41: `release-gate Worker deploy`
+
+- Kind: Cloudflare API token
+- Scope: Workers Scripts Write on the account holding `alunduil.com`, so it
+  can replace every Worker in the account
+- Consumer: none, for the same reason as C-39
+- Grants: nothing until a workflow reads it
+- Created by: Terraform
+- Source: `terraform/bootstrap/release_gate.tf`
+- Tracked by: #1248
+
+### C-42: Hook-fix self-test GitHub App
 
 - Kind: GitHub App ID and private key
-- Scope: `Contents`, `Pull requests`, and `Workflows` write, installed
-  only on `renovate-config`. Its pushes start workflows there, and it
-  can create tags and Releases
+- Scope: `Contents` and `Pull requests` write on `renovate-config`, without
+  `Workflows`. Its pushes start workflows there, and it can create tags and
+  Releases. `admin-only` keeps it off the default branch
 - Consumer: `hook-fix-selftest.yml` in `renovate-config`, which opens
   `renovate/hook-fix-selftest-*` pull requests to test
   `fix-renovate-hooks.yml`. It reads the App's ID and key from Secret
   Manager through the `hook-fix-selftest` workload identity pool, whose
   provider admits any ref of that workflow
-- Grants: P-13
+- Grants: P-14
 - Created by: Operator
 - Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
 

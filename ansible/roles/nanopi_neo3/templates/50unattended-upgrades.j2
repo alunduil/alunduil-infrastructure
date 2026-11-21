@@ -1,0 +1,12 @@
+{# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> #}
+{# SPDX-License-Identifier: MIT #}
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Debian,codename=${distro_codename},label=Debian";
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+        "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+        "origin=Tailscale,label=Tailscale";
+        // Grafana's repository publishes no origin of its own.
+        "site=apt.grafana.com";
+};
+Unattended-Upgrade::Mail "{{ nanopi_neo3_mail_address }}";
+Unattended-Upgrade::Automatic-Reboot "true";

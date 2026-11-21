@@ -1,10 +1,27 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+data "github_user" "operator" {
+  username = "alunduil"
+}
+
 locals {
-  # Jobs in the Haskell libraries' daily.yml and weekly.yml. A required check
-  # must report on every pull request, so these run on pull requests too.
-  haskell_scheduled_checks = ["Prune stale pull requests", "Check GHC matrix drift"]
+  haskell_required_status_checks = {
+    ci_results_check      = true
+    codecov_project_check = true
+    # Jobs from the Haskell libraries' daily.yml and weekly.yml. Those
+    # workflows also run on pull requests, because a required check must
+    # report on every pull request.
+    contexts           = ["Prune stale pull requests", "Check GHC series drift", "Check links"]
+    renovate_automerge = true
+  }
+
+  # A README-only repository has no test job to require.
+  readme_only_required_status_checks = {}
+
+  # A registry upload or an attached release asset can't be recalled, so the
+  # operator approves each one (ADR 0004).
+  publish_approval = { reviewers = [tonumber(data.github_user.operator.id)] }
 
   # An input an entry leaves unset takes the module's default.
   #
@@ -12,6 +29,13 @@ locals {
   # docs/reference/delivery-metrics.md. A repository without one records no
   # DORA metrics. A run without an event matches any event.
   repositories = {
+    "agent-plugins" = {
+      description            = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
+      topics                 = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
+      required_status_checks = local.readme_only_required_status_checks
+      deploy                 = { class = "merge" }
+    }
+
     "alunduil-chezmoi" = {
       description = "Personal chezmoi-managed dotfiles and host config: bootstrap a fresh host from bare OS to a working setup in one command."
       topics      = ["chezmoi", "dotfiles", "debian", "crostini", "claude-code"]
@@ -21,6 +45,7 @@ locals {
           "Validate chezmoi source",
           "Validate zellij config",
           "Validate telemetry config",
+          "Verify systemd units",
           "Check prose",
           "Run pinned tools",
           "Bootstrap a fresh Debian host",
@@ -33,8 +58,12 @@ locals {
     "alunduil-infrastructure" = {
       required_status_checks = {
         ci_results_check = true
-        # A failed detect job skips the plan, and a skipped job passes.
-        contexts = ["Detect Terraform changes", "Plan Terraform changes"]
+        contexts = [
+          # A failed detect job skips the plan, and a skipped job passes.
+          "Detect Terraform changes",
+          "Plan Terraform changes",
+          "Confirm lock file maintenance plans no changes",
+        ]
         # renovate.json holds back every update that would trigger an apply,
         # except lock file maintenance whose plan changes nothing.
         renovate_automerge = true
@@ -79,17 +108,17 @@ locals {
     }
 
     "collection-json.hs" = {
-      description = "Collection+JSON Tools for Haskell"
-      topics      = ["haskell-library", "collection-json", "haskell", "hypermedia"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
-        renovate_automerge    = true
+      description            = "Collection+JSON Tools for Haskell"
+      topics                 = ["haskell-library", "collection-json", "haskell", "hypermedia"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
+      environments = {
+        hackage = { deployment_tags = ["v*"], approval = local.publish_approval }
+        # Holds the same token as hackage, without an approval, so the
+        # candidate upload doesn't wait.
+        "hackage-candidate" = { deployment_tags = ["v*"] }
       }
-      admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"] } }
-      deploy             = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
+      deploy = { class = "run", workflow = "release.yml", event = "workflow_dispatch" }
     }
 
     "git-worktree-poi" = {
@@ -106,16 +135,11 @@ locals {
     }
 
     "network-arbitrary" = {
-      description = "Arbitrary Instances for Network Types"
-      topics      = ["haskell-library", "haskell", "network", "quickcheck"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = local.haskell_scheduled_checks
-        renovate_automerge    = true
-      }
-      admin_only_updates = true
-      environments       = { hackage = { deployment_tags = ["v*"] } }
+      description            = "Arbitrary Instances for Network Types"
+      topics                 = ["haskell-library", "haskell", "network", "quickcheck"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
+      environments           = { hackage = { deployment_tags = ["v*"], approval = local.publish_approval } }
       # create-pull-request is nested in haskell-bounds-bump-action.
       allowed_action_patterns = [
         "nomeata/haskell-bounds-bump-action@*",
@@ -141,24 +165,38 @@ locals {
       require_code_owner_review = true
     }
 
+    "release-gate" = {
+      description            = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
+      topics                 = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
+      required_status_checks = local.readme_only_required_status_checks
+    }
+
     "renovate-config" = {
       description = "Shared Renovate preset for any repo's renovate.json, and a reusable workflow that pushes hook fixes to Renovate branches."
       topics      = ["renovate", "renovate-config", "dependency-management"]
-      deploy      = { class = "merge" }
+      # Every repository reads its Renovate policy from this default branch.
+      admin_only_updates = true
+      # Requires no test job. Its presets are data, which the pre-commit check
+      # validates.
+      deploy = { class = "merge" }
     }
 
     "siren-json.hs" = {
-      description = "Siren+JSON Tools for Haskell"
-      topics      = ["haskell-library", "haskell", "siren-json", "hypermedia"]
-      required_status_checks = {
-        ci_results_check      = true
-        codecov_project_check = true
-        contexts              = concat(local.haskell_scheduled_checks, ["Check links"])
-        renovate_automerge    = true
-      }
-      admin_only_updates = true
-      environments       = { hackage = {} }
-      deploy             = { class = "release" }
+      description            = "Siren+JSON Tools for Haskell"
+      topics                 = ["haskell-library", "haskell", "siren-json", "hypermedia"]
+      required_status_checks = local.haskell_required_status_checks
+      admin_only_updates     = true
+      # The hackage environment isn't scoped to tags, so its release tags are
+      # listed here.
+      release_tag_patterns = ["v*"]
+      environments         = { hackage = { approval = local.publish_approval } }
+      deploy               = { class = "release" }
+    }
+
+    "vale-styles" = {
+      description            = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
+      topics                 = ["vale", "vale-style", "prose-linting", "style-guide"]
+      required_status_checks = local.readme_only_required_status_checks
     }
 
     "woodland-generators" = {
@@ -200,7 +238,11 @@ locals {
         owner      = "League-of-Foundry-Developers"
         repository = "FoundryVTT-Module-Template"
       }
-      deploy = { class = "release" }
+      # release-please names each tag <component>@<version>. No environment
+      # publishes from the woodland-generators-v* tags.
+      release_tag_patterns = ["woodland-generators-v*"]
+      environments         = { release = { deployment_tags = ["foundry-module@*"], approval = local.publish_approval } }
+      deploy               = { class = "release" }
     }
 
     "zellij-claude-pair" = {
@@ -211,13 +253,13 @@ locals {
         contexts           = ["Enforce Conventional Commits"]
         renovate_automerge = true
       }
+      environments = { release = { deployment_tags = ["v*"], approval = local.publish_approval } }
     }
 
     "zfs-replicate" = {
-      description    = "Replicate ZFS snapshots to a remote host over SSH (Python CLI; replication only — it doesn't create snapshots)."
-      homepage_url   = "https://pypi.org/project/zfs-replicate/"
-      topics         = ["zfs", "replication", "snapshots"]
-      default_branch = "master"
+      description  = "Replicate ZFS snapshots to a remote host over SSH (Python CLI; replication only — it doesn't create snapshots)."
+      homepage_url = "https://pypi.org/project/zfs-replicate/"
+      topics       = ["zfs", "replication", "snapshots"]
       required_status_checks = {
         ci_results_check      = true
         codecov_project_check = true
@@ -230,7 +272,7 @@ locals {
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.
-      environments = { pypi = { deployment_tags = ["v*.*.*"] } }
+      environments = { pypi = { deployment_tags = ["v*.*.*"], approval = local.publish_approval } }
       deploy       = { class = "run", workflow = "release.yml", event = "release" }
     }
   }
@@ -254,69 +296,17 @@ module "repository" {
   environments              = lookup(each.value, "environments", null)
   pages                     = lookup(each.value, "pages", null)
   allowed_action_patterns   = lookup(each.value, "allowed_action_patterns", null)
+  release_tag_patterns      = lookup(each.value, "release_tag_patterns", null)
+}
+
+locals {
+  # Repositories created with gh that Terraform hasn't imported yet. Drop a
+  # name once the apply on main has imported it.
+  adopted_repositories = toset(["agent-plugins", "release-gate", "vale-styles"])
 }
 
 import {
-  to = module.repository["renovate-config"].github_repository.this
-  id = "renovate-config"
-}
-
-moved {
-  from = module.alunduil_chezmoi
-  to   = module.repository["alunduil-chezmoi"]
-}
-
-moved {
-  from = module.alunduil_infrastructure
-  to   = module.repository["alunduil-infrastructure"]
-}
-
-moved {
-  from = module.blog_alunduil_com
-  to   = module.repository["blog.alunduil.com"]
-}
-
-moved {
-  from = module.collection_json_hs
-  to   = module.repository["collection-json.hs"]
-}
-
-moved {
-  from = module.git_worktree_poi
-  to   = module.repository["git-worktree-poi"]
-}
-
-moved {
-  from = module.network_arbitrary
-  to   = module.repository["network-arbitrary"]
-}
-
-moved {
-  from = module.projects_v2_sync
-  to   = module.repository["projects-v2-sync"]
-}
-
-moved {
-  from = module.renovate_config
-  to   = module.repository["renovate-config"]
-}
-
-moved {
-  from = module.siren_json_hs
-  to   = module.repository["siren-json.hs"]
-}
-
-moved {
-  from = module.woodland_generators
-  to   = module.repository["woodland-generators"]
-}
-
-moved {
-  from = module.zellij_claude_pair
-  to   = module.repository["zellij-claude-pair"]
-}
-
-moved {
-  from = module.zfs_replicate
-  to   = module.repository["zfs-replicate"]
+  for_each = local.adopted_repositories
+  to       = module.repository[each.key].github_repository.this
+  id       = each.key
 }

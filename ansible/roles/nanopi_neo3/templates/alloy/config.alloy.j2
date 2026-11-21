@@ -1,0 +1,13 @@
+{# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> #}
+{# SPDX-License-Identifier: MIT #}
+remotecfg {
+	url            = "{{ nanopi_neo3_bootstrap_outputs.grafana_fleet_management_url }}"
+	id             = "{{ nanopi_neo3_fleet_management_collector_id }}"
+	poll_frequency = "60s"
+	attributes     = {"journal_logs" = "true", "node_metrics" = "true"}
+
+	basic_auth {
+		username = "{{ nanopi_neo3_bootstrap_outputs.grafana_fleet_management_user_id }}"
+		password = sys.env("GCLOUD_RW_API_KEY")
+	}
+}

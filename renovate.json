@@ -38,6 +38,23 @@
       "groupName": "prek"
     },
     {
+      "description": "ansible-lint's hook and mise.toml pin the same ansible-core, so one pull request bumps both",
+      "matchDepNames": ["ansible-core"],
+      "groupName": "ansible-core"
+    },
+    {
+      "description": "The Ansible stand-in runs the NanoPi-NEO3's Debian major release, which apt never changes, so only point releases reach it",
+      "matchFileNames": ["ansible/Dockerfile"],
+      "matchDepNames": ["debian"],
+      "allowedVersions": "<13"
+    },
+    {
+      "description": "mise never builds ansible-core's dependencies from source, and PyYAML publishes no Python 3.15 wheels, so ansible-core can't install on 3.15 until they ship",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["python"],
+      "allowedVersions": "<3.15"
+    },
+    {
       "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
       "matchDepNames": ["mise"],
       "groupName": "mise"

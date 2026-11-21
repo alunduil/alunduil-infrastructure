@@ -45,10 +45,10 @@ resource "google_iam_workload_identity_pool_provider" "this" {
     "attribute.${var.caller.principal_attribute}" = "assertion.${var.caller.principal_attribute}"
   }
 
-  attribute_condition = join(" && ", [
+  attribute_condition = join(" && ", concat([
     "assertion.${var.caller.principal_attribute} == '${local.principal_value}'",
     local.ref_clause,
-  ])
+  ], var.extra_conditions))
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"

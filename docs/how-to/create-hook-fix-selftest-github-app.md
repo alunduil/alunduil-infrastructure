@@ -19,17 +19,16 @@ can open them.
    - **`Homepage URL`** (required): the repo,
      `https://github.com/alunduil/alunduil-infrastructure`.
    - **Webhook**: uncheck **Active**.
-   - Leave the user-authorization checkboxes under `Callback URL` at
-     their defaults. This App authenticates as an installation, not a
-     user.
+   - Leave **Identifying and authorizing users** and **Post
+     installation** empty, with their checkboxes at the defaults. This
+     App authenticates as an installation, not a user.
    - Repository permissions (everything else **No access**):
      - `Contents: Read and write`
      - `Pull requests: Read and write`
-     - `Workflows: Read and write`
      - `Metadata: Read-only` (granted automatically)
 
-     `Workflows` lets the self-test plant a fault under
-     `.github/workflows/`, the case the hook-fix App must fail to push.
+     Leave `Workflows` at **No access**. With it, a leaked key could push
+     a changed `fix-renovate-hooks.yml` and read the hook-fix App's key.
    - Where can this GitHub App be installed: **Only on this account**.
 2. On the App's **General** page: note the **App ID**, then under
    **Private keys** generate and download one (`.pem`). GitHub only

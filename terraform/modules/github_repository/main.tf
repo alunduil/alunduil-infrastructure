@@ -304,6 +304,43 @@ resource "github_repository_ruleset" "immutable_tags" {
   }
 }
 
+locals {
+  release_tag_patterns = distinct(concat(
+    flatten([for env in var.environments : env.deployment_tags]),
+    var.release_tag_patterns,
+  ))
+}
+
+# An environment's deployment_tags match a tag's name, not its creator, so only
+# this ruleset limits who can create a release tag. Bypass actors are per
+# ruleset, so keeping it apart from immutable-tags lets an actor create release
+# tags without also being able to move or delete them.
+resource "github_repository_ruleset" "release_tags" {
+  count = length(local.release_tag_patterns) > 0 ? 1 : 0
+
+  name        = "release-tags"
+  repository  = github_repository.this.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = [for pattern in local.release_tag_patterns : "refs/tags/${pattern}"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = local.admin_bypass_actor.bypass_mode
+  }
+
+  rules {
+    creation = true
+  }
+}
+
 # Load-bearing for Renovate, not just for the GitHub UI: Renovate's
 # vulnerabilityAlerts handling reads this advisory feed to raise its fix PRs,
 # and goes quiet if the feed is off.
@@ -338,6 +375,8 @@ locals {
     "j178/prek-action@*",
     "JasonEtco/create-an-issue@*",
     "jdx/mise-action@*",
+    "Kleidukos/get-tested@*",
+    "Kleidukos/get-tested/setup-get-tested@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
     "pnpm/action-setup@*",
@@ -366,6 +405,17 @@ resource "github_repository_environment" "this" {
 
   repository  = github_repository.this.name
   environment = each.key
+
+  # An environment without an approval keeps GitHub's defaults.
+  prevent_self_review = try(each.value.approval.prevent_self_review, false)
+  can_admins_bypass   = try(each.value.approval.can_admins_bypass, true)
+
+  dynamic "reviewers" {
+    for_each = each.value.approval[*]
+    content {
+      users = reviewers.value.reviewers
+    }
+  }
 
   dynamic "deployment_branch_policy" {
     for_each = length(concat(each.value.deployment_branches, each.value.deployment_tags)) > 0 ? [1] : []

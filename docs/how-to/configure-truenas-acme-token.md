@@ -6,7 +6,7 @@
 TrueNAS renews its web UI certificate, `truenas.alunduil.com`, through a
 DNS-01 challenge on Cloudflare. Terraform creates the Cloudflare token (C-35)
 and stores it in Secret Manager. You put it in TrueNAS's ACME DNS
-authenticator by hand, because nothing here configures TrueNAS.
+authenticator by hand, because nothing here configures the authenticator.
 
 Run this after the first `just bootstrap` that creates the token, and after
 any bootstrap re-run that replaces it.

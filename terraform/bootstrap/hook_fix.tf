@@ -9,6 +9,9 @@ locals {
     "hook-fix-app-id",
     "hook-fix-app-private-key",
   ])
+
+  # renovate[bot]'s user ID, which survives a rename of the login.
+  hook_fix_renovate_actor_id = "29139614"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
@@ -27,8 +30,9 @@ resource "google_secret_manager_secret" "hook_fix_app" {
 }
 
 # job_workflow_ref names the called workflow at the SHA its caller pins, so
-# only a prefix can match. That admits every ref of the file in renovate-config,
-# branches included. Callers are other repositories, hence the owner principal.
+# only a prefix can match. Nobody but Renovate can change a workflow on its
+# branches, so its pull request runs call the SHA a default branch pins.
+# Callers are other repositories, hence the owner principal.
 module "hook_fix_reader" {
   source = "../modules/workflow_secret_reader"
 
@@ -45,6 +49,11 @@ module "hook_fix_reader" {
     workflow            = "alunduil/renovate-config/.github/workflows/fix-renovate-hooks.yml"
     principal_attribute = "repository_owner"
   }
+
+  extra_conditions = [
+    "assertion.actor_id == '${local.hook_fix_renovate_actor_id}'",
+    "assertion.event_name == 'pull_request'",
+  ]
 
   service_account = {
     account_id   = "hook-fix-reader"

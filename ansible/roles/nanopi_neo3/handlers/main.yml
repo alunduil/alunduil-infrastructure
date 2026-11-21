@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+# Order matters: systemd reloads units before anything restarts.
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Apply sysctl settings
+  ansible.builtin.command: sysctl --load /etc/sysctl.d/99-tailscale.conf
+  changed_when: true
+
+- name: Regenerate Exim's configuration
+  ansible.builtin.command: update-exim4.conf
+  changed_when: true
+  listen: Reload Exim
+
+- name: Restart Exim
+  ansible.builtin.systemd_service:
+    name: exim4
+    state: restarted
+  listen: Reload Exim
+
+- name: Restart Alloy
+  ansible.builtin.systemd_service:
+    name: alloy
+    state: restarted

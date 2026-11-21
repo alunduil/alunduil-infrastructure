@@ -39,6 +39,13 @@ variable "caller" {
   }
 }
 
+variable "extra_conditions" {
+  type        = list(string)
+  default     = []
+  nullable    = false
+  description = "CEL clauses the provider also requires, such as an actor or event."
+}
+
 variable "service_account" {
   type = object({
     account_id   = string

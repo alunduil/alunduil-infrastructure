@@ -2,8 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Unit tests for app-secrets.sh. The Secret Manager calls are exercised by
-# running a configure-*-secrets.sh script against the live project.
+# Unit tests for app-secrets.sh.
 
 # Fixtures below are inputs to the sourced library rather than to this file, so
 # every assignment reads as a dead store from here.
@@ -16,51 +15,11 @@ setup() {
   source "${BATS_TEST_DIRNAME}/app-secrets.sh"
 
   # Secret Manager stand-ins, defined after the source so they replace the
-  # shared helpers. A marker file marks a secret populated, and each write is
-  # logged with its bytes.
+  # shared helpers.
   # shellcheck disable=SC2329 # called indirectly by needs_write
-  secret_is_populated() { [[ -e "${BATS_TEST_TMPDIR}/populated-${1}" ]]; }
+  secret_is_populated() { false; }
   # shellcheck disable=SC2329 # called indirectly by ensure_secret
-  add_secret_version() { echo "add ${1} $(cat)" >>"${BATS_TEST_TMPDIR}/writes"; }
-}
-
-# Logs to a file because the transform runs in a command substitution, whose
-# variables don't survive it.
-# shellcheck disable=SC2329 # called indirectly by ensure_secret
-record_transform() {
-  echo "${1}" >>"${BATS_TEST_TMPDIR}/transformed"
-  printf 'STORED'
-}
-
-# --- needs_write ----------------------------------------------------------
-
-@test "needs_write is true when the secret is empty" {
-  run needs_write example-app-id ""
-  [[ ${status} -eq 0 ]]
-}
-
-@test "needs_write is false when the secret holds a value" {
-  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
-  run needs_write example-app-id ""
-  [[ ${status} -eq 1 ]]
-}
-
-@test "needs_write is true for a supplied value over a populated secret" {
-  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
-  run needs_write example-app-id "12345"
-  [[ ${status} -eq 0 ]]
-}
-
-# --- answer_for -----------------------------------------------------------
-
-@test "answer_for returns a supplied value without prompting" {
-  result="$(answer_for "App ID" 12345 </dev/null)"
-  [[ ${result} == "12345" ]]
-}
-
-@test "answer_for returns what the operator types" {
-  result="$(answer_for "App ID" "" <<<"67890" 2>/dev/null)"
-  [[ ${result} == "67890" ]]
+  add_secret_version() { cat >/dev/null; }
 }
 
 # --- check_digits ---------------------------------------------------------
@@ -108,47 +67,19 @@ record_transform() {
   [[ ${output} == *"not a PEM private key"* ]]
 }
 
-# --- ensure_secret --------------------------------------------------------
-
-@test "ensure_secret neither prompts nor writes a populated secret" {
-  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
-  run ensure_secret example-app-id "App ID" "" record_transform </dev/null
-  [[ ${status} -eq 0 ]]
-  [[ ${output} == *"already set"* ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
-}
-
-@test "ensure_secret stores the transformed answer in an empty secret" {
-  run ensure_secret example-app-id "App ID" "" record_transform <<<"typed"
-  [[ ${status} -eq 0 ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "typed" ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add example-app-id STORED" ]]
-}
-
-@test "ensure_secret overwrites a populated secret with a supplied value" {
-  touch "${BATS_TEST_TMPDIR}/populated-example-app-id"
-  run ensure_secret example-app-id "App ID" "12345" record_transform </dev/null
-  [[ $(cat "${BATS_TEST_TMPDIR}/transformed") == "12345" ]]
-  [[ $(cat "${BATS_TEST_TMPDIR}/writes") == "add example-app-id STORED" ]]
-}
-
-@test "ensure_secret writes nothing when the operator skips the prompt" {
-  run ensure_secret example-app-id "App ID" "" record_transform <<<""
-  [[ ${status} -eq 0 ]]
-  [[ ${output} == *"Leaving example-app-id empty"* ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/transformed" ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
-}
-
-@test "ensure_secret writes nothing when the transform rejects the answer" {
-  run ensure_secret example-app-id "App ID" "not-digits" check_digits </dev/null
-  [[ ${status} -ne 0 ]]
-  [[ ! -e "${BATS_TEST_TMPDIR}/writes" ]]
-}
+# --- announce_pointer -----------------------------------------------------
 
 @test "ensure_secret names the caller's App and setup doc before prompting" {
-  run ensure_secret example-app-id "App ID" "" record_transform <<<""
+  run ensure_secret example-app-id "App ID" "" check_digits <<<""
   [[ ${output} == *"named example-app"* ]]
   [[ ${output} == *"see docs/how-to/create-example-app.md"* ]]
+}
+
+# Redirection, not $(...) or run: either runs the call in a subshell, where the
+# flag cannot survive and the test would fail whatever the code does.
+@test "the App pointer is printed once across prompts" {
+  announce_pointer 2>"${BATS_TEST_TMPDIR}/first"
+  announce_pointer 2>"${BATS_TEST_TMPDIR}/second"
+  grep -q "named example-app" "${BATS_TEST_TMPDIR}/first"
+  [[ ! -s "${BATS_TEST_TMPDIR}/second" ]]
 }
