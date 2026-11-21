@@ -259,7 +259,8 @@ The self-test App (C-42) is the one exception. Its pull request runs in
 workflow. C-42 can't write workflows, so that copy comes from a commit already
 in `renovate-config`. The [Renovate threat
 model](threat-model-renovate.md#where-the-self-test-app-fits) records the
-unresolved case where that copy differs from the default branch's.
+unresolved case where that copy differs from the default branch's, which #1289
+checks.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.
