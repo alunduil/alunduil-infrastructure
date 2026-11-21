@@ -5,9 +5,10 @@
 # Renovate path threat model
 
 What can go wrong between a dependency release and a merged commit on a
-default branch, and what the self-test App #1159 may hold. Hook fixes and
-automerge both put commits on a default branch with nobody looking, so this
-model weighs who can write to a Renovate branch above everything else.
+default branch, and which permissions the self-test App (#1159) may hold.
+Hook fixes and automerge both put commits on a default branch with nobody
+looking, so this model weighs who can write to a Renovate branch above
+everything else.
 
 Verified 2026-11-21.
 
@@ -43,7 +44,7 @@ requests in `renovate-config` and checks what `fix-renovate-hooks.yml` does
 with them. It needs its own App, because events from `GITHUB_TOKEN` start no
 workflow and the hook-fix workflow skips the hook-fix App's own events.
 
-The App's design follows:
+The App needs:
 
 - **Permissions:** `Contents` and `Pull requests` write, without `Workflows`.
   `Workflows` write would let a leaked key push a changed
@@ -52,30 +53,26 @@ The App's design follows:
   `renovate-config#24` can cover with bats instead.
 - **Installation:** `renovate-config` only.
 - **Its own provider:** a prefix match on `hook-fix-selftest.yml` in
-  `renovate-config`, as #1160 drafts. The self-test runs on pull requests, and
-  #1038 makes it a required check, so its provider has to admit any branch's
-  copy. Without `Workflows`, and with #1268 keeping it off the default branch,
-  the key adds nothing beyond opening pull requests and pushing branches in
-  `renovate-config`.
-- **The hook-fix provider:** once #1267 limits it to runs Renovate starts, it
-  also admits the self-test App's runs, in `renovate-config` only.
+  `renovate-config`. The self-test runs on pull requests, so its provider has
+  to admit any branch's copy. Without `Workflows`, and with #1268 keeping it
+  off the default branch, the key adds nothing beyond opening pull requests
+  and pushing branches in `renovate-config`.
+- **The hook-fix provider:** admits the self-test App's runs in
+  `renovate-config` alongside Renovate's, as part of #1267.
 - **The default branch:** #1268 lands first. With `Pull requests` write and
   no `admin-only` ruleset, the key could merge its own pull request into the
   branch every repository's Renovate policy comes from.
 
-One limit remains. A key with `Contents` write can create a self-test branch at
-any commit already in `renovate-config`. #1267's exception would then admit
-that commit's copy of the hook-fix workflow. Nothing records whether GitHub
+A key with `Contents` write can still create a self-test branch at any commit
+already in `renovate-config`. #1267's exception would then admit that
+commit's copy of the hook-fix workflow. Nobody has checked whether GitHub
 refuses such a branch without `Workflows` when its workflow files differ from
-the default branch's. If it doesn't, a copy someone with `Workflows` pushed,
-such as P-8, reads C-25 through the self-test's exception.
-
-The draft App in #1160 has `Workflows` write, so that needs to change before it
-merges.
+the default branch's. If GitHub allows it, the key can point a branch at a
+commit P-8 pushed, and that commit's copy of the workflow reads C-25.
 
 ## Findings
 
-Every unmitigated row below points to one of these.
+Each unmitigated row cites one of these issues.
 
 | Finding | Issue |
 | --- | --- |

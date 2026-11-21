@@ -20,7 +20,7 @@ level_0_diagram() {
 }
 
 # Mermaid's node shape carries the element type: entities are `id["…"]`,
-# processes `id("…")`, and stores `id[("…")]`. The delimiters are regex.
+# processes `id("…")`, and stores `id[("…")]`. open and close are regexes.
 node_labels() {
   local diagram="$1" open="$2" close="$3"
   level_0_diagram "${diagram}" \

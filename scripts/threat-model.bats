@@ -14,8 +14,7 @@ setup() {
   )
 }
 
-# Runs check, given a diagram and model path, for every pair, and fails
-# naming each model whose check printed anything.
+# check takes a diagram path and a model path, and prints the rows at fault.
 each_threat_model() {
   local message="$1" check="$2" pair diagram model found failed=0
   for pair in "${threat_models[@]}"; do

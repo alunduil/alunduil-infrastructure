@@ -14,7 +14,7 @@ Verified 2026-11-21.
 Written for the operator deciding who may write to a Renovate branch or read
 the hook-fix key. It assumes the [asset
 register](../reference/asset-register.md), whose IDs appear here. The
-self-test App #1159 plans appears only in the threat model.
+self-test App that #1159 plans appears only in the threat model.
 
 The diagrams cover:
 
@@ -59,9 +59,6 @@ The entities group principals that face the same threats:
 | Dependency source | Registries and upstream repositories |
 | Write actor | P-7 and P-8 |
 | Operator | P-1 |
-
-Renovate (P-6) is a process here rather than an entity, because the update
-it proposes is the data this path carries.
 
 ## Level 0
 
@@ -171,8 +168,7 @@ Each repository uses part of the diagram:
   and `collection-json.hs` and `siren-json.hs` one each. Every other
   repository here has only the operator, so its Write actor is P-8 alone.
 - `renovate-config` neither sets `renovate_automerge` nor calls the
-  workflow. #1038 plans both.
+  workflow.
 
-The hook-fix App's token covers only the calling repository, because the push
-job names no other. Its key isn't limited that way: C-25 is installed on
-every repository.
+The hook-fix App's token covers only the calling repository. Its key, C-25,
+covers every repository, because the App is installed on all of them.
