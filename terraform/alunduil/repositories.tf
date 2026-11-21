@@ -29,7 +29,8 @@ locals {
     "agent-plugins" = {
       description = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
       topics      = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
-      deploy      = { class = "merge" }
+      # Requires no test job while the repository holds only a README.
+      deploy = { class = "merge" }
     }
 
     "alunduil-chezmoi" = {
@@ -164,6 +165,7 @@ locals {
     "release-gate" = {
       description = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
       topics      = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
+      # Requires no test job while the repository holds only a README.
     }
 
     "renovate-config" = {
@@ -191,6 +193,7 @@ locals {
     "vale-styles" = {
       description = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
       topics      = ["vale", "vale-style", "prose-linting", "style-guide"]
+      # Requires no test job while the repository holds only a README.
     }
 
     "woodland-generators" = {
