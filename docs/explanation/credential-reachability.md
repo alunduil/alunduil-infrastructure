@@ -248,8 +248,8 @@ Renovate nothing it lacks.
 
 Each of those runs calls the commit of `fix-renovate-hooks.yml` that its
 repository's default branch pins. Whoever merges into that branch chooses the
-code that reads C-25. #1282 covers callers with write collaborators, and #1268
-covers `renovate-config`, whose commits reach every caller.
+code that reads C-25. #1282 covers callers with write collaborators.
+`admin-only` covers `renovate-config`, whose commits reach every caller.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.
