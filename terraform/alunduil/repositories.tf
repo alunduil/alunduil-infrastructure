@@ -16,8 +16,7 @@ locals {
     renovate_automerge = true
   }
 
-  # A repository holding only a README has no test job to require, and a
-  # required check that never reports blocks every merge.
+  # A README-only repository has no test job to require.
   readme_only_required_status_checks = {}
 
   # A registry upload or an attached release asset can't be recalled, so the
