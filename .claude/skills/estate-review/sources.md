@@ -57,7 +57,11 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
 - The middleware keeps only its latest 1,000 jobs, a few days at the
   15-minute cloud-sync cadence. Say where coverage starts. Results of
   rsync and certificate jobs don't survive there; alerts and Loki carry them.
-- Report jobs RUNNING for more than a day.
+- Report jobs RUNNING for more than a day, and the WAITING jobs queued
+  behind them.
+- A job carries no task ID, so report its start time to the second. Loki's
+  cron lines in that minute, `midclt call cloudsync.sync <id>`, name the
+  task.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
@@ -193,6 +197,6 @@ signed out: ask alunduil to sign in. Report offline devices, except the
 Chromecast, which joins only when alunduil needs a nonstandard exit node.
 Report node keys expiring within the due-soon horizon or already expired,
 and whether both exit nodes and `homeassistant` are online. List these
-expired or expiring keys under working: offline phones, tablets and
-Chromebooks, which renew at their next sign-in, and `penguin`, the
+expired or expiring keys under working: phones, tablets, Chromebooks and
+`RogXboxAllyX`, which renew at their next sign-in, and `penguin`, the
 workstation, which alunduil renews from the CLI.
