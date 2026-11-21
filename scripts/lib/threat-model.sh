@@ -92,5 +92,6 @@ incomplete_rows() {
     if (status == "Mitigated" && (mitigation == none || evidence == none)) print
     if (status == "Not Applicable" && evidence == none) print
     if (status == "Not Started" && mitigation == none) print
+    if (status !~ /^(Mitigated|Not Applicable|Not Started)$/) print
   }'
 }

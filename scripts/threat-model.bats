@@ -42,6 +42,6 @@ incomplete_fields() {
   each_threat_model "not in the diagram for" extra_rows
 }
 
-@test "a row claiming a status has the fields that status requires" {
+@test "each row has a known status and the fields that status requires" {
   each_threat_model "row missing a required field in" incomplete_fields
 }
