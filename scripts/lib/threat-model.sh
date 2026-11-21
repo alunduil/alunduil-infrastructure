@@ -4,7 +4,6 @@
 #
 # Joins a threat model to its data flow diagram on element names, because a
 # missing element-and-category row is indistinguishable from an oversight.
-# Callers set `diagram` and `model` to the two documents' paths.
 
 # STRIDE-per-element: the categories each element type is subject to.
 entity_categories=(Spoofing Repudiation)
@@ -15,26 +14,24 @@ store_categories=(Tampering Repudiation "Information Disclosure"
 flow_categories=(Tampering "Information Disclosure" "Denial of Service")
 
 level_0_diagram() {
-  local fence='```'
-  sed -n '/^## Level 0/,/^## /p' "${diagram:?}" \
+  local diagram="$1" fence='```'
+  sed -n '/^## Level 0/,/^## /p' "${diagram}" \
     | sed -n "/^${fence}mermaid/,/^${fence}\$/p"
 }
 
-entities() {
-  level_0_diagram | sed -nE 's/^ +[a-z_]+\["([^"]+)"\]$/\1/p'
-}
-
-processes() {
-  level_0_diagram | sed -nE 's/^ +[a-z_]+\("([^"]+)"\)$/\1/p'
-}
-
-stores() {
-  level_0_diagram | sed -nE 's/^ +[a-z_]+\[\("([^"]+)"\)\]$/\1/p'
+# Mermaid's node shape carries the element type: entities are `id["…"]`,
+# processes `id("…")`, and stores `id[("…")]`. The delimiters are regex.
+node_labels() {
+  local diagram="$1" open="$2" close="$3"
+  level_0_diagram "${diagram}" \
+    | sed -nE "s/^ +[a-z_]+${open}\"([^\"]+)\"${close}\$/\\1/p"
 }
 
 # A flow's label ends where its bracketed credential starts.
 flows() {
-  level_0_diagram | grep -oE '\|"F[0-9]+ [^"[]+' | sed -E 's/^\|"//; s/ +$//'
+  local diagram="$1"
+  level_0_diagram "${diagram}" \
+    | grep -oE '\|"F[0-9]+ [^"[]+' | sed -E 's/^\|"//; s/ +$//'
 }
 
 with_categories() {
@@ -47,45 +44,53 @@ with_categories() {
 }
 
 required_rows() {
+  local diagram="$1"
   {
-    entities | with_categories "${entity_categories[@]}"
-    processes | with_categories "${process_categories[@]}"
-    stores | with_categories "${store_categories[@]}"
-    flows | with_categories "${flow_categories[@]}"
+    node_labels "${diagram}" '\[' '\]' \
+      | with_categories "${entity_categories[@]}"
+    node_labels "${diagram}" '\(' '\)' \
+      | with_categories "${process_categories[@]}"
+    node_labels "${diagram}" '\[\(' '\)\]' \
+      | with_categories "${store_categories[@]}"
+    flows "${diagram}" | with_categories "${flow_categories[@]}"
   } | sort -u
 }
 
 level_0_table() {
-  sed -n '/^### Level 0/,$p' "${model:?}" \
+  local model="$1"
+  sed -n '/^### Level 0/,$p' "${model}" \
     | grep -E '^\| ' | grep -vE '^\| (Element|---) '
 }
 
 model_rows() {
-  level_0_table | awk -F' \\| ' '{ sub(/^\| /, "", $1); print $1 "\t" $2 }' \
-    | sort -u
+  local model="$1"
+  level_0_table "${model}" \
+    | awk -F' \\| ' '{ sub(/^\| /, "", $1); print $1 "\t" $2 }' | sort -u
 }
 
 missing_rows() {
-  local required
-  required="$(required_rows)"
+  local diagram="$1" model="$2" required
+  required="$(required_rows "${diagram}")"
   # An empty parse would pass vacuously.
   [[ -n ${required} ]] || {
     printf 'no elements parsed from %s\n' "${diagram}" >&2
     return 1
   }
-  comm -23 <(printf '%s\n' "${required}") <(model_rows)
+  comm -23 <(printf '%s\n' "${required}") <(model_rows "${model}")
 }
 
 extra_rows() {
-  comm -13 <(required_rows) <(model_rows)
+  local diagram="$1" model="$2"
+  comm -13 <(required_rows "${diagram}") <(model_rows "${model}")
 }
 
 incomplete_rows() {
-  level_0_table | awk -F' \\| ' '{
+  local model="$1"
+  level_0_table "${model}" | awk -F' \\| ' -v none='—' '{
     mitigation = $5; status = $6; evidence = $7
     sub(/ \|$/, "", evidence)
-    if (status == "Mitigated" && (mitigation == "—" || evidence == "—")) print
-    if (status == "Not Applicable" && evidence == "—") print
-    if (status == "Not Started" && mitigation == "—") print
+    if (status == "Mitigated" && (mitigation == none || evidence == none)) print
+    if (status == "Not Applicable" && evidence == none) print
+    if (status == "Not Started" && mitigation == none) print
   }'
 }
