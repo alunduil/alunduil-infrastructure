@@ -5,7 +5,7 @@
 # Cloudflare tokens are created by hand, so every run needs a fresh pair — see
 # docs/how-to/bootstrap.md.
 [doc("Manual surface: state bucket → bootstrap layer → App credentials → CI secrets (here, blog.alunduil.com) → Projects v2 board fields.")]
-bootstrap: && configure-hook-fix configure-release-gate projects
+bootstrap: && configure-hook-fix configure-hook-fix-selftest configure-release-gate projects
     scripts/bootstrap-terraform-state.sh
     terraform -chdir=terraform/bootstrap init
     terraform -chdir=terraform/bootstrap apply
@@ -19,6 +19,10 @@ bootstrap: && configure-hook-fix configure-release-gate projects
 [doc("Store the hook-fix App's ID and private key in Secret Manager.")]
 configure-hook-fix:
     scripts/configure-hook-fix-secrets.sh
+
+[doc("Store the hook-fix self-test App's ID and private key in Secret Manager.")]
+configure-hook-fix-selftest:
+    scripts/configure-hook-fix-selftest-secrets.sh
 
 [doc("Store the release gate App's private key in Secret Manager.")]
 configure-release-gate:
@@ -96,3 +100,5 @@ test:
 test-terraform:
     terraform -chdir=terraform/modules/github_repository init -backend=false -input=false
     terraform -chdir=terraform/modules/github_repository test
+    terraform -chdir=terraform/modules/workflow_secret_reader init -backend=false -input=false
+    terraform -chdir=terraform/modules/workflow_secret_reader test

@@ -10,12 +10,11 @@ locals {
     "hook-fix-app-private-key",
   ])
 
-  hook_fix_owner         = "alunduil"
-  hook_fix_workflow      = "${local.hook_fix_owner}/renovate-config/.github/workflows/fix-renovate-hooks.yml"
-  hook_fix_wif_principal = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id}/attribute.repository_owner/${local.hook_fix_owner}"
+  hook_fix_repository = "alunduil/renovate-config"
 
-  # renovate[bot]'s user ID, which survives a rename of the login.
-  hook_fix_renovate_actor_id = "29139614"
+  # Matched by bot user ID, which survives a rename of the login.
+  hook_fix_renovate_run = "assertion.actor_id == '29139614'"
+  hook_fix_selftest_run = "(assertion.repository == '${local.hook_fix_repository}' && assertion.actor_id == '359652970')"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
@@ -33,74 +32,65 @@ resource "google_secret_manager_secret" "hook_fix_app" {
   depends_on = [google_project_service.secretmanager]
 }
 
-# Its own pool. principalSet paths are pool-scoped, so no `github` binding can
-# match a calling repository's token.
-resource "google_iam_workload_identity_pool" "hook_fix" {
-  project                   = google_project.env.project_id
-  workload_identity_pool_id = "hook-fix"
-  display_name              = "Hook fix"
-  description               = "Workload Identity Pool for the reusable hook-fix workflow"
-  disabled                  = false
+# job_workflow_ref names the called workflow at the SHA its caller pins, so
+# only a prefix can match. Only Renovate changes workflows on Renovate's
+# branches, so its runs call the SHA their default branch pins. Callers are
+# other repositories, so the principal is their owner.
+module "hook_fix_reader" {
+  source = "../modules/workflow_secret_reader"
 
-  depends_on = [google_project_service.sts]
-}
+  project_id = google_project.env.project_id
 
-resource "google_iam_workload_identity_pool_provider" "hook_fix" {
-  project                            = google_project.env.project_id
-  workload_identity_pool_id          = google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-provider"
-  display_name                       = "GitHub"
-  description                        = "OIDC provider for the reusable hook-fix workflow"
-  disabled                           = false
-
-  attribute_mapping = {
-    "google.subject"             = "assertion.sub"
-    "attribute.repository_owner" = "assertion.repository_owner"
+  pool = {
+    id                   = "hook-fix"
+    display_name         = "Hook fix"
+    description          = "Workload Identity Pool for the reusable hook-fix workflow"
+    provider_description = "OIDC provider for the reusable hook-fix workflow"
   }
 
-  # job_workflow_ref names the called workflow at the SHA its caller pins, so
-  # only a prefix can match. Nobody but Renovate can change a workflow on its
-  # branches, so its pull request runs call the SHA a default branch pins.
-  attribute_condition = join(" && ", [
-    "assertion.repository_owner == '${local.hook_fix_owner}'",
-    "assertion.job_workflow_ref.startsWith('${local.hook_fix_workflow}@')",
-    "assertion.actor_id == '${local.hook_fix_renovate_actor_id}'",
+  caller = {
+    workflow            = "${local.hook_fix_repository}/.github/workflows/fix-renovate-hooks.yml"
+    principal_attribute = "repository_owner"
+  }
+
+  # The self-test App's runs call their branch's own copy of the workflow.
+  extra_conditions = [
+    "(${local.hook_fix_renovate_run} || ${local.hook_fix_selftest_run})",
     "assertion.event_name == 'pull_request'",
-  ])
+  ]
 
-  oidc {
-    issuer_uri = "https://token.actions.githubusercontent.com"
+  service_account = {
+    account_id   = "hook-fix-reader"
+    display_name = "Hook-fix App Reader"
+    description  = "Identity the reusable hook-fix workflow federates into to read the hook-fix App's credentials"
   }
+
+  secret_ids = [for secret in google_secret_manager_secret.hook_fix_app : secret.secret_id]
+
+  depends_on = [google_project_service.sts, google_project_service.iam]
 }
 
-resource "google_service_account" "hook_fix_reader" {
-  project      = google_project.env.project_id
-  account_id   = "hook-fix-reader"
-  display_name = "Hook-fix App Reader"
-  description  = "Identity the reusable hook-fix workflow federates into to read the hook-fix App's credentials"
-
-  depends_on = [google_project_service.iam]
+moved {
+  from = google_iam_workload_identity_pool.hook_fix
+  to   = module.hook_fix_reader.google_iam_workload_identity_pool.this
 }
 
-resource "google_service_account_iam_member" "hook_fix_reader" {
-  for_each = toset([
-    "roles/iam.workloadIdentityUser",
-    "roles/iam.serviceAccountTokenCreator",
-  ])
-
-  service_account_id = google_service_account.hook_fix_reader.name
-  role               = each.key
-  member             = local.hook_fix_wif_principal
-
-  depends_on = [google_iam_workload_identity_pool_provider.hook_fix]
+moved {
+  from = google_iam_workload_identity_pool_provider.hook_fix
+  to   = module.hook_fix_reader.google_iam_workload_identity_pool_provider.this
 }
 
-# The reader holds no project IAM; these grants are its entire authority.
-resource "google_secret_manager_secret_iam_member" "hook_fix_app_reader" {
-  for_each = google_secret_manager_secret.hook_fix_app
+moved {
+  from = google_service_account.hook_fix_reader
+  to   = module.hook_fix_reader.google_service_account.reader
+}
 
-  project   = each.value.project
-  secret_id = each.value.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.hook_fix_reader.email}"
+moved {
+  from = google_service_account_iam_member.hook_fix_reader
+  to   = module.hook_fix_reader.google_service_account_iam_member.reader
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.hook_fix_app_reader
+  to   = module.hook_fix_reader.google_secret_manager_secret_iam_member.reader
 }

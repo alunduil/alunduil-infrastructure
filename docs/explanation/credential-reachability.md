@@ -75,6 +75,7 @@ flowchart LR
   p6["P-6 Renovate"]
   p8["P-8 Claude App"]
   c25["C-25 Hook-fix App"]
+  c42["C-42 Self-test App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
   c13["C-13 Projects token"]
@@ -112,6 +113,8 @@ flowchart LR
   c25 -->|"creates, #1055"| tag
   c25 -->|"replaces, woodland-generators#915"| assets
   c10 -->|"pushes"| pr
+  c42 -->|"opens a self-test pull request whose run reads"| c25
+  c42 -->|"creates in renovate-config, #1055"| tag
 
   branch -->|"Renovate automerges, #1057"| infra
   branch -->|"Renovate automerges, #1057"| other
@@ -250,6 +253,12 @@ Each of those runs calls the commit of `fix-renovate-hooks.yml` that its
 repository's default branch pins. Whoever merges into that branch chooses the
 code that reads C-25. #1282 covers callers with write collaborators.
 `admin-only` covers `renovate-config`, whose commits reach every caller.
+
+The self-test App (C-42) is the one exception. Its pull request runs in
+`renovate-config` also read C-25, and they call the branch's own copy of the
+workflow. C-42 can't write workflows, so that copy comes from a commit already
+in `renovate-config`. #1289 checks whether it can differ from the default
+branch's.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.

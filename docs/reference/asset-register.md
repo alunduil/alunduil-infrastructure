@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-20.
+Verified 2026-11-21.
 
 ## Scope
 
@@ -68,6 +68,7 @@ from.
 | P-11 | `GITHUB_TOKEN` | Actions' token for one job | Any workflow run |
 | P-12 | Release App | One per repository, planned in #556, none yet | P-10 |
 | P-13 | Release gate | C-39's App, on every repository | A pending deployment |
+| P-14 | Hook-fix self-test | C-42's token in Actions | A `renovate-config` PR |
 
 The vendor Apps hold these permissions:
 
@@ -534,7 +535,8 @@ Google Cloud's other credentials.
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads the App's ID and key from Secret
   Manager through the `hook-fix` workload identity pool, whose provider
-  admits any ref of that workflow in Renovate's pull request runs
+  admits any ref of that workflow in pull request runs by Renovate, or by
+  the self-test App in `renovate-config`
 - Grants: P-5
 - Created by: Operator
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)
@@ -708,6 +710,21 @@ Google Cloud's other credentials.
 - Created by: Terraform
 - Source: `terraform/bootstrap/release_gate.tf`
 - Tracked by: #1248
+
+### C-42: Hook-fix self-test GitHub App
+
+- Kind: GitHub App ID and private key
+- Scope: `Contents` and `Pull requests` write on `renovate-config`, without
+  `Workflows`. Its pushes start workflows there, and it can create tags and
+  Releases. `admin-only` keeps it off the default branch
+- Consumer: `hook-fix-selftest.yml` in `renovate-config`, which opens
+  `renovate/hook-fix-selftest-*` pull requests to test
+  `fix-renovate-hooks.yml`. It reads the App's ID and key from Secret
+  Manager through the `hook-fix-selftest` workload identity pool, whose
+  provider admits any ref of that workflow
+- Grants: P-14
+- Created by: Operator
+- Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
 
 ## Maintenance
 

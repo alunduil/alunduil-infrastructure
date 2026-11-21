@@ -5,14 +5,6 @@
 # Its Worker approves publish deployments, so a reader can approve an
 # off-branch run.
 
-# A mismatch between the provider's condition and the reader's binding fails
-# the exchange silently.
-locals {
-  release_gate_repository          = "alunduil/release-gate"
-  release_gate_deploy_workflow_ref = "${local.release_gate_repository}/.github/workflows/deploy.yml@refs/heads/main"
-  release_gate_wif_principal       = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.release_gate.workload_identity_pool_id}/attribute.repository/${local.release_gate_repository}"
-}
-
 # Secret Manager names, not values.
 locals {
   release_gate_secrets = {
@@ -72,69 +64,69 @@ resource "google_secret_manager_secret_version" "cloudflare_api_token_release_ga
   secret_data = cloudflare_api_token.release_gate_deploy.value
 }
 
-# Its own pool. principalSet paths are pool-scoped, so no `github` binding can
-# match a token from this repository.
-resource "google_iam_workload_identity_pool" "release_gate" {
-  project                   = google_project.env.project_id
-  workload_identity_pool_id = "release-gate"
-  display_name              = "Release gate"
-  description               = "Workload Identity Pool for the release gate's deploy workflow"
-  disabled                  = false
+# Pinned to the workflow and branch, so another workflow on main, or this one
+# on a pull request branch, can't read these secrets. Renaming or moving
+# deploy.yml revokes access.
+module "release_gate_reader" {
+  source = "../modules/workflow_secret_reader"
 
-  depends_on = [google_project_service.sts]
-}
+  project_id = google_project.env.project_id
 
-resource "google_iam_workload_identity_pool_provider" "release_gate" {
-  project                            = google_project.env.project_id
-  workload_identity_pool_id          = google_iam_workload_identity_pool.release_gate.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-provider"
-  display_name                       = "GitHub"
-  description                        = "OIDC provider for the release gate's deploy workflow"
-  disabled                           = false
-
-  attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
+  pool = {
+    id                   = "release-gate"
+    display_name         = "Release gate"
+    description          = "Workload Identity Pool for the release gate's deploy workflow"
+    provider_description = "OIDC provider for the release gate's deploy workflow"
   }
 
-  # Pinned to the workflow and branch, so another workflow on main, or this one
-  # on a pull request branch, can't read these secrets. Renaming or moving
-  # deploy.yml revokes access.
-  attribute_condition = "assertion.job_workflow_ref == '${local.release_gate_deploy_workflow_ref}'"
-
-  oidc {
-    issuer_uri = "https://token.actions.githubusercontent.com"
+  caller = {
+    workflow            = "alunduil/release-gate/.github/workflows/deploy.yml"
+    ref                 = "refs/heads/main"
+    principal_attribute = "repository"
   }
+
+  service_account = {
+    account_id   = "release-gate-reader"
+    display_name = "Release Gate Reader"
+    description  = "Identity the release gate's deploy workflow federates into to read the gate's credentials"
+  }
+
+  secret_ids = [for secret in google_secret_manager_secret.release_gate : secret.secret_id]
+
+  depends_on = [google_project_service.sts, google_project_service.iam]
 }
 
-resource "google_service_account" "release_gate_reader" {
-  project      = google_project.env.project_id
-  account_id   = "release-gate-reader"
-  display_name = "Release Gate Reader"
-  description  = "Identity the release gate's deploy workflow federates into to read the gate's credentials"
-
-  depends_on = [google_project_service.iam]
+moved {
+  from = google_iam_workload_identity_pool.release_gate
+  to   = module.release_gate_reader.google_iam_workload_identity_pool.this
 }
 
-resource "google_service_account_iam_member" "release_gate_reader" {
-  for_each = toset([
-    "roles/iam.workloadIdentityUser",
-    "roles/iam.serviceAccountTokenCreator",
-  ])
-
-  service_account_id = google_service_account.release_gate_reader.name
-  role               = each.key
-  member             = local.release_gate_wif_principal
-
-  depends_on = [google_iam_workload_identity_pool_provider.release_gate]
+moved {
+  from = google_iam_workload_identity_pool_provider.release_gate
+  to   = module.release_gate_reader.google_iam_workload_identity_pool_provider.this
 }
 
-# The reader holds no project IAM; these grants are its entire authority.
-resource "google_secret_manager_secret_iam_member" "release_gate_reader" {
-  for_each = google_secret_manager_secret.release_gate
+moved {
+  from = google_service_account.release_gate_reader
+  to   = module.release_gate_reader.google_service_account.reader
+}
 
-  project   = each.value.project
-  secret_id = each.value.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.release_gate_reader.email}"
+moved {
+  from = google_service_account_iam_member.release_gate_reader
+  to   = module.release_gate_reader.google_service_account_iam_member.reader
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.release_gate_reader["app_private_key"]
+  to   = module.release_gate_reader.google_secret_manager_secret_iam_member.reader["release-gate-app-private-key"]
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.release_gate_reader["webhook_secret"]
+  to   = module.release_gate_reader.google_secret_manager_secret_iam_member.reader["release-gate-webhook-secret"]
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.release_gate_reader["deploy_token"]
+  to   = module.release_gate_reader.google_secret_manager_secret_iam_member.reader["cloudflare-api-token-release-gate-deploy"]
 }
