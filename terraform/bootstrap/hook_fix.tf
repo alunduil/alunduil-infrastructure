@@ -10,11 +10,12 @@ locals {
     "hook-fix-app-private-key",
   ])
 
-  hook_fix_owner    = "alunduil"
-  hook_fix_workflow = "${local.hook_fix_owner}/renovate-config/.github/workflows/fix-renovate-hooks.yml"
-  # renovate[bot]'s user ID. The ID survives a rename of the login.
+  hook_fix_owner         = "alunduil"
+  hook_fix_workflow      = "${local.hook_fix_owner}/renovate-config/.github/workflows/fix-renovate-hooks.yml"
+  hook_fix_wif_principal = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id}/attribute.repository_owner/${local.hook_fix_owner}"
+
+  # renovate[bot]'s user ID, which survives a rename of the login.
   hook_fix_renovate_actor_id = "29139614"
-  hook_fix_wif_principal     = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id}/attribute.repository_owner/${local.hook_fix_owner}"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
@@ -58,10 +59,9 @@ resource "google_iam_workload_identity_pool_provider" "hook_fix" {
   }
 
   # job_workflow_ref names the called workflow at the SHA its caller pins, so
-  # only a prefix can match, and the caller chooses which commit runs. Only a
-  # pull request run Renovate started is admitted, because Renovate's branches
-  # carry the default branch's pin and nobody else can push to them. The
-  # self-test App (#1159) will need its own exception here.
+  # only a prefix can match, and the caller chooses which commit runs. A
+  # Renovate branch carries its default branch's pin and nobody else can push
+  # to it, so a run Renovate started calls a commit a default branch chose.
   attribute_condition = join(" && ", [
     "assertion.repository_owner == '${local.hook_fix_owner}'",
     "assertion.job_workflow_ref.startsWith('${local.hook_fix_workflow}@')",
