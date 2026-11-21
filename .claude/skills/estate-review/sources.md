@@ -48,9 +48,9 @@ Probe: `list-monitors`.
 
 Covers A-01, A-12 and D-02's backups. Call only these MCP tools: `system_info`,
 `list_alerts`, `query_jobs` (filter by state FAILED and ABORTED, then by
-RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
-`update_status`, `query_boot_environments`, `get_system_metrics`,
-`get_disk_metrics`. Probe: `system_info`.
+RUNNING and WAITING), `query_pools`, `get_scrub_status`, `query_apps`,
+`check_updates`, `update_status`, `query_boot_environments`,
+`get_system_metrics`, `get_disk_metrics`. Probe: `system_info`.
 
 - `query_snapshots` stays off the list: it never finishes on this box's
   CPU.
@@ -59,9 +59,8 @@ RUNNING), `query_pools`, `get_scrub_status`, `query_apps`, `check_updates`,
   rsync and certificate jobs don't survive there; alerts and Loki carry them.
 - Report jobs RUNNING for more than a day, and the WAITING jobs queued
   behind them.
-- A job carries no task ID, so report its start time to the second. Loki's
-  cron lines in that minute, `midclt call cloudsync.sync <id>`, name the
-  task.
+- A job carries no task ID, so report each one's start time to the second.
+  The review names its task from Grafana Cloud's cron lines.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
@@ -92,9 +91,10 @@ Probe: an instant query for `up{job="truenas"}` through
 
 What ships where:
 
-- TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit;
-  Prometheus `up{job="truenas"}`, `alloy_build_info`, and Netdata
-  scraped by alloy.
+- TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit.
+  Its `midclt call cloudsync.sync <id>` cron lines name the task each
+  `cloudsync.sync` job runs. Prometheus `up{job="truenas"}`,
+  `alloy_build_info`, and Netdata scraped by alloy.
 - Home Assistant: Loki `{hostname="homeassistant"}`; Prometheus `hass_*`.
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
 - penguin: Loki `{host="penguin"}`; Prometheus `integrations/unix`.
@@ -197,6 +197,8 @@ signed out: ask alunduil to sign in. Report offline devices, except the
 Chromecast, which joins only when alunduil needs a nonstandard exit node.
 Report node keys expiring within the due-soon horizon or already expired,
 and whether both exit nodes and `homeassistant` are online. List these
-expired or expiring keys under working: phones, tablets, Chromebooks and
-`RogXboxAllyX`, which renew at their next sign-in, and `penguin`, the
-workstation, which alunduil renews from the CLI.
+expired or expiring keys under working:
+
+- Phones, tablets, Chromebooks, and `RogXboxAllyX`, the Windows handheld.
+  They renew at their next sign-in.
+- `penguin`, the workstation, which alunduil renews from the CLI.
