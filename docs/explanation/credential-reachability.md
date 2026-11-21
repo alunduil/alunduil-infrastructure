@@ -242,11 +242,12 @@ package versions these repositories run, so restricting the App further gains
 little. Hook-fix differs because it runs third-party code and commits the
 output, which needs no compromise at Mend.
 
-A path existing only through P-6 therefore needs no fix of its own. For
-example, anything able to push workflow changes to a `renovate-config` branch
-can read C-25, because its provider admits any ref of
-`fix-renovate-hooks.yml`. Renovate can push there, but C-25 gives it nothing it
-lacks.
+A path existing only through P-6 therefore needs no fix of its own. C-25 is
+one: its provider admits only pull request runs that Renovate started, and
+C-25 gives Renovate nothing it lacks. Such a run calls whichever commit of
+`fix-renovate-hooks.yml` the calling repository's default branch pins, so
+whoever lands a change there or on `renovate-config`'s default branch (#1268)
+chooses the code that reads C-25.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.
