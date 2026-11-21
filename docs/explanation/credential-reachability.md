@@ -257,10 +257,8 @@ code that reads C-25. #1282 covers callers with write collaborators.
 The self-test App (C-42) is the one exception. Its pull request runs in
 `renovate-config` also read C-25, and they call the branch's own copy of the
 workflow. C-42 can't write workflows, so that copy comes from a commit already
-in `renovate-config`. The [Renovate threat
-model](threat-model-renovate.md#where-the-self-test-app-fits) records the
-unresolved case where that copy differs from the default branch's, which #1289
-checks.
+in `renovate-config`. #1289 checks whether it can differ from the default
+branch's.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.

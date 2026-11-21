@@ -3,16 +3,16 @@
 
 # Create the hook-fix self-test GitHub App
 
-Opens the throwaway `renovate/hook-fix-selftest-*` pull requests that
-`renovate-config`'s self-test runs `fix-renovate-hooks.yml` against.
+Opens the throwaway `renovate/hook-fix-selftest-*` pull requests on which
+`renovate-config`'s self-test runs `fix-renovate-hooks.yml`.
 Events from `GITHUB_TOKEN` don't start workflows, and
 `fix-renovate-hooks.yml` skips the hook-fix App's own events, so neither
 can open them.
 
 1. Create at <https://github.com/settings/apps/new> with:
-   - **GitHub App name**: `alunduil-hook-fix-selftest`. A pull request's
-     timeline credits it to `alunduil-hook-fix-selftest[bot]`, which
-     tells a reviewer it's a test. Renaming it means renaming `APP_NAME`
+   - **GitHub App name**: `alunduil-hook-fix-selftest`. Its pull requests
+     show `alunduil-hook-fix-selftest[bot]` as their author, which tells a
+     reviewer they're tests. Renaming it means renaming `APP_NAME`
      in `scripts/configure-hook-fix-selftest-secrets.sh` too.
    - **Description**: `Opens throwaway pull requests in renovate-config
      that test the hook-fix workflow end to end.`

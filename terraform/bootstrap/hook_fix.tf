@@ -12,8 +12,7 @@ locals {
 
   hook_fix_repository = "alunduil/renovate-config"
 
-  # Bot user IDs, which survive a rename of the login: renovate[bot] and
-  # alunduil-hook-fix-selftest[bot].
+  # Matched by bot user ID, which survives a rename of the login.
   hook_fix_renovate_run = "assertion.actor_id == '29139614'"
   hook_fix_selftest_run = "(assertion.repository == '${local.hook_fix_repository}' && assertion.actor_id == '359652970')"
 }
@@ -34,9 +33,9 @@ resource "google_secret_manager_secret" "hook_fix_app" {
 }
 
 # job_workflow_ref names the called workflow at the SHA its caller pins, so
-# only a prefix can match. Nobody but Renovate can change a workflow on its
-# branches, so its pull request runs call the SHA a default branch pins.
-# Callers are other repositories, hence the owner principal.
+# only a prefix can match. Only Renovate changes workflows on Renovate's
+# branches, so its runs call the SHA their default branch pins. Callers are
+# other repositories, so the principal is their owner.
 module "hook_fix_reader" {
   source = "../modules/workflow_secret_reader"
 
@@ -54,7 +53,7 @@ module "hook_fix_reader" {
     principal_attribute = "repository_owner"
   }
 
-  # The self-test's pull requests in renovate-config are the one other caller.
+  # The self-test App's runs call their branch's own copy of the workflow.
   extra_conditions = [
     "(${local.hook_fix_renovate_run} || ${local.hook_fix_selftest_run})",
     "assertion.event_name == 'pull_request'",

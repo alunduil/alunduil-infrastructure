@@ -23,9 +23,11 @@ variable "caller" {
     principal_attribute = string
   })
   description = <<-EOT
-    The one workflow admitted. workflow is owner/repo/.github/workflows/<file>;
-    ref null admits any ref. principal_attribute is repository, or
-    repository_owner for a reusable workflow that other repositories call.
+    The one workflow admitted:
+    - workflow: owner/repo/.github/workflows/<file>
+    - ref: the exact ref, or null for any ref
+    - principal_attribute: repository, or repository_owner for a reusable
+      workflow that other repositories call
   EOT
 
   validation {
