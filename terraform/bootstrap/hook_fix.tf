@@ -13,6 +13,9 @@ locals {
   hook_fix_owner         = "alunduil"
   hook_fix_workflow      = "${local.hook_fix_owner}/renovate-config/.github/workflows/fix-renovate-hooks.yml"
   hook_fix_wif_principal = "${local.wif_pool_prefix}/${google_iam_workload_identity_pool.hook_fix.workload_identity_pool_id}/attribute.repository_owner/${local.hook_fix_owner}"
+
+  # renovate[bot]'s user ID, which survives a rename of the login.
+  hook_fix_renovate_actor_id = "29139614"
 }
 
 # Empty shells. scripts/configure-hook-fix-secrets.sh adds the versions after
@@ -56,11 +59,13 @@ resource "google_iam_workload_identity_pool_provider" "hook_fix" {
   }
 
   # job_workflow_ref names the called workflow at the SHA its caller pins, so
-  # only a prefix can match. That admits every ref of the file in
-  # renovate-config, branches included.
+  # only a prefix can match. Nobody but Renovate can change a workflow on its
+  # branches, so its pull request runs call the SHA a default branch pins.
   attribute_condition = join(" && ", [
     "assertion.repository_owner == '${local.hook_fix_owner}'",
     "assertion.job_workflow_ref.startsWith('${local.hook_fix_workflow}@')",
+    "assertion.actor_id == '${local.hook_fix_renovate_actor_id}'",
+    "assertion.event_name == 'pull_request'",
   ])
 
   oidc {

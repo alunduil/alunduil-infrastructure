@@ -534,7 +534,7 @@ Google Cloud's other credentials.
 - Consumer: `fix-renovate-hooks.yml` in `renovate-config`, called from
   repos with a `renovate` ruleset. It reads the App's ID and key from Secret
   Manager through the `hook-fix` workload identity pool, whose provider
-  admits any ref of that workflow
+  admits any ref of that workflow in Renovate's pull request runs
 - Grants: P-5
 - Created by: Operator
 - Source: [`create-hook-fix-github-app.md`](../how-to/create-hook-fix-github-app.md)

@@ -57,14 +57,14 @@ The App needs:
   to admit any branch's copy. Without `Workflows`, and with #1268 keeping it
   off the default branch, the key adds nothing beyond opening pull requests
   and pushing branches in `renovate-config`.
-- **The hook-fix provider:** admits the self-test App's runs in
-  `renovate-config` alongside Renovate's, as part of #1267.
+- **The hook-fix provider:** admits only Renovate's runs, so the self-test
+  App's runs in `renovate-config` need an exception.
 - **The default branch:** #1268 lands first. With `Pull requests` write and
   no `admin-only` ruleset, the key could merge its own pull request into the
   branch every repository's Renovate policy comes from.
 
 A key with `Contents` write can still create a self-test branch at any commit
-already in `renovate-config`. #1267's exception would then admit that
+already in `renovate-config`. The self-test exception would then admit that
 commit's copy of the hook-fix workflow. Nobody has checked whether GitHub
 refuses such a branch without `Workflows` when its workflow files differ from
 the default branch's. If GitHub allows it, the key can point a branch at a
@@ -77,11 +77,12 @@ Each unmitigated row cites one of these issues.
 | Finding | Issue |
 | --- | --- |
 | Hook-fix commits reach a default branch unreviewed | #1057 |
-| Any alunduil run of any commit of the hook-fix workflow can read C-25 | #1267 |
 | Anyone able to merge in `renovate-config` changes every repository's Renovate policy | #1268 |
 | A re-pointed third-party tag automerges with no wait | `renovate-config#82` |
 | Hook fixes can edit composite actions | `renovate-config#39` |
 | A write actor can delete a Renovate branch, which drops its update | #1269 |
+| A write actor can create a Renovate branch before Renovate does | #1281 |
+| A push after Code Owner approval merges unreviewed | #1282 |
 | Updated code in a pull request job reaches CI plan's credentials | #1063 |
 | A required check can be satisfied by any App reporting its name | #429 |
 
@@ -107,8 +108,8 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | --- | --- | --- | --- | --- | --- | --- |
 | Dependency source | Spoofing | A stolen maintainer or registry account publishes a release under the real name | High | `minimumReleaseAge` holds a new release three days. `renovate-config#82` for re-pointed tags | Not Started | `default.json`, `minimumReleaseAge` |
 | Dependency source | Repudiation | A registry's record is the only one of who published a version | Low | Each Renovate pull request records the version and digest it took | Mitigated | register, D-09 |
-| Write actor | Spoofing | A stolen collaborator account, or a prompted Claude App session, runs its own copy of the hook-fix workflow and reads C-25 | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
-| Write actor | Repudiation | A write actor creates a `renovate/**` branch, and the hook-fix App commits to it in the App's name | Low | #1267 refuses runs Renovate didn't start | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
+| Write actor | Spoofing | A stolen collaborator account, or a prompted Claude App session, runs its own copy of the hook-fix workflow and reads C-25 | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
+| Write actor | Repudiation | A write actor creates a `renovate/**` branch, and the hook-fix App commits to it in the App's name | Low | The provider refuses the write actor's runs. #1281 for a pull request Renovate opens from that branch | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
 | Operator | Spoofing | A stolen operator session merges or edits the preset | — | — | Not Applicable | Out of scope, #1066 |
 | Operator | Repudiation | The operator denies a change made with their own session | — | — | Not Applicable | register, P-1 |
 | 1.0 Propose update | Spoofing | Another actor claims Renovate's ruleset bypass | High | Rulesets name the App by its ID | Mitigated | `main.tf`, `local.renovate_actor` |
@@ -122,7 +123,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 2.0 Accept push | Repudiation | A pushed commit's author is free text | Medium | #1057 checks for Renovate's signed commits | Not Started | behaviour, Bot commit signing |
 | 2.0 Accept push | Information Disclosure | Branches are public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 2.0 Accept push | Denial of Service | A write actor deletes a Renovate branch, which closes its pull request, and Renovate then skips that update | Medium | #1269 | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
-| 2.0 Accept push | Elevation of Privilege | A write actor creates a `renovate/**` branch, which the ruleset doesn't block, and the hook-fix workflow runs on its pull request | Low | #1267 | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
+| 2.0 Accept push | Elevation of Privilege | A write actor creates a `renovate/**` branch, which the ruleset doesn't block, and the hook-fix workflow runs on its pull request | Medium | The provider refuses the write actor's runs. #1281 for a pull request Renovate opens from that branch | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
 | 3.0 Run checks | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
 | 3.0 Run checks | Tampering | An updated action or hook changes the check it runs in, so it passes itself | Medium | `minimumReleaseAge`, and `renovate-config#82` for re-pointed tags | Not Started | `default.json`, `minimumReleaseAge` |
 | 3.0 Run checks | Repudiation | Run logs record each check, and a merged update stays in history | — | — | Not Applicable | register, D-09 |
@@ -135,17 +136,17 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 4.0 Run hooks | Information Disclosure | Hook code reads a credential | Medium | The job holds no secret or `id-token`, and its read-only token isn't persisted | Mitigated | workflow, job `hooks`, `persist-credentials: false` |
 | 4.0 Run hooks | Denial of Service | A hook loops or hangs | Low | A 15-minute timeout, and the hook-fix App's own pushes skip the job | Mitigated | workflow, job `hooks` |
 | 4.0 Run hooks | Elevation of Privilege | Hook code writes a cache that a more trusted run restores | Medium | A pull request run's cache is scoped to its merge ref, so only that pull request restores it | Mitigated | GitHub's [dependency caching reference](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching), and workflow, step `Install Node`, `cache: pnpm` |
-| 5.0 Push hook fixes | Spoofing | A run Renovate didn't start pushes as C-25 | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
+| 5.0 Push hook fixes | Spoofing | A run Renovate didn't start pushes as C-25 | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | 5.0 Push hook fixes | Tampering | The diff adds, deletes, or re-types a file, moves a submodule, or edits a workflow | High | The job refuses each of these | Mitigated | workflow, steps `Reject fixes that aren't in-place edits` and `Reject fixes to workflow files` |
 | 5.0 Push hook fixes | Tampering | The diff edits a composite action, which a workflow then runs | High | `renovate-config#39` | Not Started | workflow, step `Reject fixes to workflow files` checks only `.github/workflows` |
 | 5.0 Push hook fixes | Repudiation | Hook-fix commits are pushed with git, so GitHub doesn't sign them, and Renovate compares only the author email | Medium | #1057 | Not Started | behaviour, Modified-branch detection |
 | 5.0 Push hook fixes | Information Disclosure | Code from the checkout reads the key | High | The job runs pinned actions and `git`, and nothing from the checkout | Mitigated | workflow, job `push` |
 | 5.0 Push hook fixes | Denial of Service | A branch moves while the push job runs | — | — | Not Applicable | workflow, step `Push fixes` skips a moved branch, and the newer run fixes it |
-| 5.0 Push hook fixes | Elevation of Privilege | Whoever chooses the workflow's commit chooses what the job does with C-25 | High | #1267, `renovate-config#21` | Not Started | `hook_fix.tf`, comment on `attribute_condition` |
-| 6.0 Admit workflow | Spoofing | A token from a fork-only commit, or from a `renovate-config` branch, passes the prefix match | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
+| 5.0 Push hook fixes | Elevation of Privilege | Whoever lands a pin on a calling repository's default branch chooses what the job does with C-25 | High | #1268, #1282 | Not Started | `hook_fix.tf`, comment on `attribute_condition` |
+| 6.0 Admit workflow | Spoofing | A token from a fork-only commit, or from a `renovate-config` branch, passes the prefix match | High | The provider admits only Renovate's pull request runs, which call the default branch's pin | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | 6.0 Admit workflow | Tampering | Changing the condition needs the bootstrap layer, which only the operator applies | — | — | Not Applicable | `docs/how-to/bootstrap.md` |
-| 6.0 Admit workflow | Repudiation | Every admitted run acts as `hook-fix-reader`, so an unexpected read raises the same `Unexpected Data Access` warning as an expected one | Medium | #1267 narrows who is admitted | Not Started | `terraform/alunduil/gcp_observability.tf`, `audit_expected_principal_regex` doesn't list `hook-fix-reader` |
-| 6.0 Admit workflow | Information Disclosure | The condition admits any alunduil repository, event, and actor | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
+| 6.0 Admit workflow | Repudiation | Every admitted run acts as `hook-fix-reader`, so an unexpected read raises the same `Unexpected Data Access` warning as an expected one | Medium | The provider admits only Renovate's pull request runs, so every read is an expected one | Mitigated | `hook_fix.tf`, `attribute_condition` |
+| 6.0 Admit workflow | Information Disclosure | The condition admits any alunduil repository, event, and actor | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | 6.0 Admit workflow | Denial of Service | A Google Cloud outage stops fixes, and the pull request waits | — | — | Not Applicable | workflow, job `push` |
 | 6.0 Admit workflow | Elevation of Privilege | The reader gains more than the App's two secrets | Medium | The reader holds no project role, only accessor on those secrets | Mitigated | `hook_fix.tf`, `hook_fix_app_reader` |
 | 7.0 Merge pull request | Spoofing | GitHub accepts a merge from whoever holds a bypass, which the 1.0 and Operator rows cover | — | — | Not Applicable | `main.tf`, `local.merge_bypass_actors` |
@@ -155,12 +156,12 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 7.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 7.0 Merge pull request | Denial of Service | A failing check holds the update for the operator, which is the rule working | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.checks` |
 | 7.0 Merge pull request | Elevation of Privilege | A write collaborator merges a Renovate pull request past review | Medium | `admin-only` on every repository with write collaborators, except `zfs-replicate`, which requires Code Owner review | Mitigated | `terraform/alunduil/repositories.tf`, `admin_only_updates` and `require_code_owner_review` |
-| 8.0 Update shared config | Spoofing | A stolen collaborator account or a prompted Claude App session pushes to `renovate-config` | High | #1267, #1268 | Not Started | register, P-8 holds `workflows` write |
+| 8.0 Update shared config | Spoofing | A stolen collaborator account or a prompted Claude App session pushes to `renovate-config` | High | #1268 | Not Started | register, P-8 holds `workflows` write |
 | 8.0 Update shared config | Tampering | Anyone able to merge here changes every repository's automerge policy and hook-fix workflow | High | #1268 | Not Started | `terraform/alunduil/repositories.tf`, `renovate-config` sets no `admin_only_updates` |
 | 8.0 Update shared config | Repudiation | A pushed commit's author is free text | Low | #1268 limits who updates the default branch | Not Started | behaviour, Bot commit signing |
 | 8.0 Update shared config | Information Disclosure | The preset and workflow are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 8.0 Update shared config | Denial of Service | A broken preset stops Renovate in every repository until someone fixes it | Low | — | Not Applicable | `renovate-config`'s `.pre-commit-config.yaml` validates the preset, except presets named in `extends` |
-| 8.0 Update shared config | Elevation of Privilege | A write actor's branch copy of the hook-fix workflow reads C-25 | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
+| 8.0 Update shared config | Elevation of Privilege | A write actor's branch copy of the hook-fix workflow reads C-25 | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | Shared config commits | Tampering | Renovate and every caller read the default branch with no review between them | High | #1268 | Not Started | `renovate.json`, `extends` in each repository |
 | Shared config commits | Repudiation | GitHub records each push and merge to the default branch | — | — | Not Applicable | register, D-09 |
 | Shared config commits | Information Disclosure | The preset and workflow are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
@@ -178,8 +179,8 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Fix artifact | Information Disclosure | The diff holds only source from a public repository | — | — | Not Applicable | workflow, step `Capture fixes` |
 | Fix artifact | Denial of Service | A missing artifact fails the push, and the branch keeps Renovate's commit | — | — | Not Applicable | workflow, step `Download fixes` |
 | Hook-fix secrets | Tampering | Adding a version needs project IAM, which reaches everything anyway | — | — | Not Applicable | `scripts/configure-hook-fix-secrets.sh` |
-| Hook-fix secrets | Repudiation | Every read is logged as `hook-fix-reader`, whichever run made it | Medium | #1267 narrows who reads | Not Started | `terraform/alunduil/gcp_observability.tf`, `Unexpected Data Access` |
-| Hook-fix secrets | Information Disclosure | Any admitted run reads the key | High | #1267 | Not Started | `hook_fix.tf`, `hook_fix_app_reader` |
+| Hook-fix secrets | Repudiation | Every read is logged as `hook-fix-reader`, whichever run made it | Medium | The provider admits only Renovate's pull request runs, so every read is an expected one | Mitigated | `hook_fix.tf`, `attribute_condition` |
+| Hook-fix secrets | Information Disclosure | Any admitted run reads the key | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | Hook-fix secrets | Denial of Service | A deleted or disabled version stops fixes, and pull requests wait | — | — | Not Applicable | workflow, step `Read App credentials` |
 | F1 dependency release | Tampering | A re-pointed tag arrives as a digest update, which skips the release-age wait and automerges | High | `renovate-config#82` | Not Started | `default.json`, `packageRules`, and behaviour, Re-pointed tags behind digest pins |
 | F1 dependency release | Information Disclosure | Releases are public | — | — | Not Applicable | register, P-6 |
@@ -208,7 +209,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F9 hooks workflow | Tampering | A new `renovate-config` commit reaches callers as an automerging digest update | Medium | #1268, `renovate-config#21` | Not Started | `.github/workflows/ci.yml`, `uses` and `# main` in each calling repository |
 | F9 hooks workflow | Information Disclosure | The workflow is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F9 hooks workflow | Denial of Service | A broken workflow stops fixes, and Renovate's commit still runs its checks | — | — | Not Applicable | `alunduil-infrastructure`'s `.github/workflows/ci.yml`, job `fix-renovate-hooks` isn't required |
-| F10 push workflow | Tampering | The caller chooses the commit, so a branch or fork commit's copy gets the key | High | #1267 | Not Started | `hook_fix.tf`, `attribute_condition` |
+| F10 push workflow | Tampering | The caller chooses the commit, so a branch or fork commit's copy gets the key | High | The provider admits only Renovate's pull request runs, which call the default branch's pin | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | F10 push workflow | Information Disclosure | The workflow is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F10 push workflow | Denial of Service | A broken workflow stops fixes, and Renovate's commit still runs its checks | — | — | Not Applicable | `alunduil-infrastructure`'s `.github/workflows/ci.yml`, job `fix-renovate-hooks` isn't required |
 | F11 fix diff | Tampering | Hook code chooses the diff | High | The push job's checks, and #1057 | Not Started | workflow, step `Capture fixes` |
