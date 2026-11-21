@@ -87,7 +87,8 @@ Each unmitigated row cites one of these issues.
 ## Threats
 
 Priority ranks what the operator would stop to fix. In the Evidence column,
-`main.tf` is `terraform/modules/github_repository/main.tf`, `hook_fix.tf` is
+`main.tf` is `terraform/modules/github_repository/main.tf`, `repositories.tf`
+is `terraform/alunduil/repositories.tf`, `hook_fix.tf` is
 `terraform/bootstrap/hook_fix.tf`, `register` is
 `docs/reference/asset-register.md`, `behaviour` is
 `docs/reference/release-control-behaviour.md`, and `workflow` and
@@ -153,14 +154,14 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 7.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 7.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 7.0 Merge pull request | Denial of Service | A failing check holds the update for the operator, which is the rule working | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.checks` |
-| 7.0 Merge pull request | Elevation of Privilege | A write collaborator merges a Renovate pull request past review | Medium | `admin-only` on every repository with write collaborators, except `zfs-replicate`, which requires Code Owner review | Mitigated | `terraform/alunduil/repositories.tf`, `admin_only_updates` and `require_code_owner_review` |
-| 8.0 Update shared config | Spoofing | A stolen collaborator account or a prompted Claude App session pushes to `renovate-config` | High | `admin-only` lets only the admin update the default branch | Mitigated | `terraform/alunduil/repositories.tf`, `renovate-config` `admin_only_updates` |
-| 8.0 Update shared config | Tampering | Anyone able to merge here changes every repository's automerge policy and hook-fix workflow | High | `admin-only` lets only the admin update the default branch | Mitigated | `terraform/alunduil/repositories.tf`, `renovate-config` `admin_only_updates` |
+| 7.0 Merge pull request | Elevation of Privilege | A write collaborator merges a Renovate pull request past review | Medium | `admin-only` on every repository with write collaborators, except `zfs-replicate`, which requires Code Owner review | Mitigated | `repositories.tf`, `admin_only_updates` and `require_code_owner_review` |
+| 8.0 Update shared config | Spoofing | A stolen collaborator account or a prompted Claude App session pushes to `renovate-config` | High | `admin-only` lets only the admin update the default branch | Mitigated | `repositories.tf`, `renovate-config` `admin_only_updates` |
+| 8.0 Update shared config | Tampering | Anyone able to merge here changes every repository's automerge policy and hook-fix workflow | High | `admin-only` lets only the admin update the default branch | Mitigated | `repositories.tf`, `renovate-config` `admin_only_updates` |
 | 8.0 Update shared config | Repudiation | A pushed commit's author is free text | Low | `admin-only` limits who updates the default branch | Mitigated | behaviour, Bot commit signing |
 | 8.0 Update shared config | Information Disclosure | The preset and workflow are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 8.0 Update shared config | Denial of Service | A broken preset stops Renovate in every repository until someone fixes it | Low | — | Not Applicable | `renovate-config`'s `.pre-commit-config.yaml` validates the preset, except presets named in `extends` |
 | 8.0 Update shared config | Elevation of Privilege | A write actor's branch copy of the hook-fix workflow reads C-25 | High | The provider admits only Renovate's pull request runs | Mitigated | `hook_fix.tf`, `attribute_condition` |
-| Shared config commits | Tampering | Renovate and every caller read the default branch with no review between them | High | `admin-only` lets only the admin update the default branch | Mitigated | `terraform/alunduil/repositories.tf`, `renovate-config` `admin_only_updates` |
+| Shared config commits | Tampering | Renovate and every caller read the default branch with no review between them | High | `admin-only` lets only the admin update the default branch | Mitigated | `repositories.tf`, `renovate-config` `admin_only_updates` |
 | Shared config commits | Repudiation | GitHub records each push and merge to the default branch | — | — | Not Applicable | register, D-09 |
 | Shared config commits | Information Disclosure | The preset and workflow are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | Shared config commits | Denial of Service | Someone deletes or rewrites the default branch, which every caller's preset reads | Medium | `default` blocks deletion and force pushes | Mitigated | `main.tf`, `github_repository_ruleset.default` |
@@ -183,7 +184,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F1 dependency release | Tampering | A re-pointed tag arrives as a digest update, which skips the release-age wait and automerges | High | `renovate-config#82` | Not Started | `default.json`, `packageRules`, and behaviour, Re-pointed tags behind digest pins |
 | F1 dependency release | Information Disclosure | Releases are public | — | — | Not Applicable | register, P-6 |
 | F1 dependency release | Denial of Service | A registry outage delays an update and loses nothing | — | — | Not Applicable | register, P-6 |
-| F2 shared preset | Tampering | Renovate reads the preset from the default branch on each run, unpinned | High | `admin-only` lets only the admin update the default branch | Mitigated | `terraform/alunduil/repositories.tf`, `renovate-config` `admin_only_updates` |
+| F2 shared preset | Tampering | Renovate reads the preset from the default branch on each run, unpinned | High | `admin-only` lets only the admin update the default branch | Mitigated | `repositories.tf`, `renovate-config` `admin_only_updates` |
 | F2 shared preset | Information Disclosure | The preset is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F2 shared preset | Denial of Service | A GitHub outage delays updates and loses nothing | — | — | Not Applicable | register, D-09 |
 | F3 update commits | Tampering | GitHub carries this over TLS, so tampering needs a compromise of GitHub or Mend | — | — | Not Applicable | register, D-09 |
