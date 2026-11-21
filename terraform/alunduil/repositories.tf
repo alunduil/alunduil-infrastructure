@@ -176,8 +176,12 @@ locals {
       topics      = ["renovate", "renovate-config", "dependency-management"]
       # Every repository reads its Renovate policy from this default branch.
       admin_only_updates = true
-      # Requires no test job. Its presets are data, which the pre-commit check
-      # validates.
+      required_status_checks = {
+        # Runs fix-renovate-hooks.yml end to end when a pull request changes
+        # it, so an action bump that breaks callers can't merge.
+        contexts           = ["Report the hook-fix self-test", "Enforce Conventional Commits"]
+        renovate_automerge = true
+      }
       deploy = { class = "merge" }
     }
 
