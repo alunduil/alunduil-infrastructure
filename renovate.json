@@ -49,7 +49,7 @@
       "allowedVersions": "<13"
     },
     {
-      "description": "mise installs ansible-core's dependencies with uv's --no-build, and PyYAML 6.0.3 publishes no cp315 wheel, so Python 3.15 can't install ansible-core. Lift once PyYAML ships 3.15 wheels",
+      "description": "mise never builds ansible-core's dependencies from source, and PyYAML publishes no Python 3.15 wheels, so ansible-core can't install on 3.15 until they ship",
       "matchManagers": ["mise"],
       "matchDepNames": ["python"],
       "allowedVersions": "<3.15"
