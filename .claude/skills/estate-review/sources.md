@@ -59,8 +59,8 @@ RUNNING and WAITING), `query_pools`, `get_scrub_status`, `query_apps`,
   rsync and certificate jobs don't survive there; alerts and Loki carry them.
 - Report jobs RUNNING for more than a day, and the WAITING jobs queued
   behind them.
-- A job carries no task ID, so report each one's start time to the second.
-  The review names its task from Grafana Cloud's cron lines.
+- Report each job's start time to the second. Jobs carry no task ID, and
+  the start time is what ties a job to its task.
 - The MCP server has no cloud-sync or rsync configuration reader. Job error
   strings are the evidence; the per-task log in the UI holds the detail.
 - A `Software NMI` IPMI alert within minutes of a boot marks a reboot. One
@@ -91,10 +91,11 @@ Probe: an instant query for `up{job="truenas"}` through
 
 What ships where:
 
-- TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit.
-  Its `midclt call cloudsync.sync <id>` cron lines name the task each
-  `cloudsync.sync` job runs. Prometheus `up{job="truenas"}`,
-  `alloy_build_info`, and Netdata scraped by alloy.
+- TrueNAS: Loki `{host="truenas"}`, syslog at info level plus audit,
+  including the cron lines that launch each cloud-sync task
+  (`midclt call cloudsync.sync <id>`);
+  Prometheus `up{job="truenas"}`, `alloy_build_info`, and Netdata
+  scraped by alloy.
 - Home Assistant: Loki `{hostname="homeassistant"}`; Prometheus `hass_*`.
 - slzb-mr4u: Loki, a heartbeat about every 30 minutes.
 - penguin: Loki `{host="penguin"}`; Prometheus `integrations/unix`.
@@ -199,6 +200,6 @@ Report node keys expiring within the due-soon horizon or already expired,
 and whether both exit nodes and `homeassistant` are online. List these
 expired or expiring keys under working:
 
-- Phones, tablets, Chromebooks, and `RogXboxAllyX`, the Windows handheld.
-  They renew at their next sign-in.
+- Phones, tablets, Chromebooks and `RogXboxAllyX`, which renew at their
+  next sign-in.
 - `penguin`, the workstation, which alunduil renews from the CLI.
