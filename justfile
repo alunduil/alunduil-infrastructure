@@ -100,3 +100,5 @@ test:
 test-terraform:
     terraform -chdir=terraform/modules/github_repository init -backend=false -input=false
     terraform -chdir=terraform/modules/github_repository test
+    terraform -chdir=terraform/modules/workflow_secret_reader init -backend=false -input=false
+    terraform -chdir=terraform/modules/workflow_secret_reader test
