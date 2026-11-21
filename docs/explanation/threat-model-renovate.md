@@ -54,13 +54,13 @@ The App needs:
 - **Installation:** `renovate-config` only.
 - **Its own provider:** a prefix match on `hook-fix-selftest.yml` in
   `renovate-config`. The self-test runs on pull requests, so its provider has
-  to admit any branch's copy. Without `Workflows`, and with `admin-only`
-  keeping it off the default branch, the key adds nothing beyond opening pull requests
+  to admit any branch's copy. The key lacks `Workflows`, and `admin-only` keeps
+  it off the default branch, so it adds nothing beyond opening pull requests
   and pushing branches in `renovate-config`.
 - **The hook-fix provider:** admits only Renovate's runs, so the self-test
   App's runs in `renovate-config` need an exception.
 - **The default branch:** `admin-only` stops the key merging its own pull
-  request into the branch every repository's Renovate policy comes from.
+  request there.
 
 A key with `Contents` write can still create a self-test branch at any commit
 already in `renovate-config`. The self-test exception would then admit that
@@ -86,14 +86,16 @@ Each unmitigated row cites one of these issues.
 
 ## Threats
 
-Priority ranks what the operator would stop to fix. In the Evidence column,
-`main.tf` is `terraform/modules/github_repository/main.tf`, `repositories.tf`
-is `terraform/alunduil/repositories.tf`, `hook_fix.tf` is
-`terraform/bootstrap/hook_fix.tf`, `register` is
-`docs/reference/asset-register.md`, `behaviour` is
-`docs/reference/release-control-behaviour.md`, and `workflow` and
-`default.json` are `.github/workflows/fix-renovate-hooks.yml` and
-`default.json` in `renovate-config`.
+Priority ranks what the operator would stop to fix. The Evidence column
+shortens these sources:
+
+- `main.tf`: `terraform/modules/github_repository/main.tf`
+- `repositories.tf`: `terraform/alunduil/repositories.tf`
+- `hook_fix.tf`: `terraform/bootstrap/hook_fix.tf`
+- `register`: `docs/reference/asset-register.md`
+- `behaviour`: `docs/reference/release-control-behaviour.md`
+- `workflow`: `.github/workflows/fix-renovate-hooks.yml` in `renovate-config`
+- `default.json`: `default.json` in `renovate-config`
 
 ### Context
 
