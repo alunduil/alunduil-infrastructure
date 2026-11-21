@@ -243,11 +243,13 @@ little. Hook-fix differs because it runs third-party code and commits the
 output, which needs no compromise at Mend.
 
 A path existing only through P-6 therefore needs no fix of its own. C-25 is
-one: its provider admits only pull request runs that Renovate started, and
-C-25 gives Renovate nothing it lacks. Such a run calls whichever commit of
-`fix-renovate-hooks.yml` the calling repository's default branch pins, so
-whoever lands a change there (#1282) or on `renovate-config`'s default branch
-(#1268) chooses the code that reads C-25.
+one. Its provider admits only Renovate's pull request runs, and C-25 gives
+Renovate nothing it lacks.
+
+Each of those runs calls the commit of `fix-renovate-hooks.yml` that its
+repository's default branch pins. Whoever merges into that branch chooses the
+code that reads C-25. #1282 covers callers with write collaborators, and #1268
+covers `renovate-config`, whose commits reach every caller.
 
 The Claude App (P-8) reaches tags, assets, and pull request branches on every
 repository. No ruleset names it, so it can't land on a default branch alone.

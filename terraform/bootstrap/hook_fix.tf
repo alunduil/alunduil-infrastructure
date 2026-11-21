@@ -59,9 +59,8 @@ resource "google_iam_workload_identity_pool_provider" "hook_fix" {
   }
 
   # job_workflow_ref names the called workflow at the SHA its caller pins, so
-  # only a prefix can match, and the caller chooses which commit runs. A
-  # Renovate branch carries its default branch's pin and nobody else can push
-  # to it, so a run Renovate started calls a commit a default branch chose.
+  # only a prefix can match. Nobody but Renovate can change a workflow on its
+  # branches, so its pull request runs call the SHA a default branch pins.
   attribute_condition = join(" && ", [
     "assertion.repository_owner == '${local.hook_fix_owner}'",
     "assertion.job_workflow_ref.startsWith('${local.hook_fix_workflow}@')",
