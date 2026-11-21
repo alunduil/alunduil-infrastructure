@@ -81,6 +81,8 @@ Each unmitigated row cites one of these issues.
 | A re-pointed third-party tag automerges with no wait | `renovate-config#82` |
 | Hook fixes can edit composite actions | `renovate-config#39` |
 | A write actor can delete a Renovate branch, which drops its update | #1269 |
+| A write actor can create a Renovate branch before Renovate does | #1281 |
+| A push after Code Owner approval merges unreviewed | #1282 |
 | Updated code in a pull request job reaches CI plan's credentials | #1063 |
 | A required check can be satisfied by any App reporting its name | #429 |
 
@@ -107,7 +109,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Dependency source | Spoofing | A stolen maintainer or registry account publishes a release under the real name | High | `minimumReleaseAge` holds a new release three days. `renovate-config#82` for re-pointed tags | Not Started | `default.json`, `minimumReleaseAge` |
 | Dependency source | Repudiation | A registry's record is the only one of who published a version | Low | Each Renovate pull request records the version and digest it took | Mitigated | register, D-09 |
 | Write actor | Spoofing | A stolen collaborator account, or a prompted Claude App session, runs its own copy of the hook-fix workflow and reads C-25 | High | The provider admits only pull request runs Renovate started | Mitigated | `hook_fix.tf`, `attribute_condition` |
-| Write actor | Repudiation | A write actor creates a `renovate/**` branch, and the hook-fix App commits to it in the App's name | Low | The provider refuses a run the write actor started | Mitigated | `hook_fix.tf`, `attribute_condition` checks `actor_id` |
+| Write actor | Repudiation | A write actor creates a `renovate/**` branch, and the hook-fix App commits to it in the App's name | Low | The provider refuses a run the write actor started. #1281 for a pull request Renovate opens from that branch | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
 | Operator | Spoofing | A stolen operator session merges or edits the preset | — | — | Not Applicable | Out of scope, #1066 |
 | Operator | Repudiation | The operator denies a change made with their own session | — | — | Not Applicable | register, P-1 |
 | 1.0 Propose update | Spoofing | Another actor claims Renovate's ruleset bypass | High | Rulesets name the App by its ID | Mitigated | `main.tf`, `local.renovate_actor` |
@@ -121,7 +123,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 2.0 Accept push | Repudiation | A pushed commit's author is free text | Medium | #1057 checks for Renovate's signed commits | Not Started | behaviour, Bot commit signing |
 | 2.0 Accept push | Information Disclosure | Branches are public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 2.0 Accept push | Denial of Service | A write actor deletes a Renovate branch, which closes its pull request, and Renovate then skips that update | Medium | #1269 | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
-| 2.0 Accept push | Elevation of Privilege | A write actor creates a `renovate/**` branch, which the ruleset doesn't block, and the hook-fix workflow runs on its pull request | Low | The provider refuses a run the write actor started | Mitigated | `hook_fix.tf`, `attribute_condition` checks `actor_id` |
+| 2.0 Accept push | Elevation of Privilege | A write actor creates a `renovate/**` branch, which the ruleset doesn't block, and the hook-fix workflow runs on its pull request | Medium | The provider refuses a run the write actor started. #1281 for a pull request Renovate opens from that branch | Not Started | `main.tf`, `github_repository_ruleset.renovate` sets only `update` |
 | 3.0 Run checks | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
 | 3.0 Run checks | Tampering | An updated action or hook changes the check it runs in, so it passes itself | Medium | `minimumReleaseAge`, and `renovate-config#82` for re-pointed tags | Not Started | `default.json`, `minimumReleaseAge` |
 | 3.0 Run checks | Repudiation | Run logs record each check, and a merged update stays in history | — | — | Not Applicable | register, D-09 |
@@ -140,7 +142,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 5.0 Push hook fixes | Repudiation | Hook-fix commits are pushed with git, so GitHub doesn't sign them, and Renovate compares only the author email | Medium | #1057 | Not Started | behaviour, Modified-branch detection |
 | 5.0 Push hook fixes | Information Disclosure | Code from the checkout reads the key | High | The job runs pinned actions and `git`, and nothing from the checkout | Mitigated | workflow, job `push` |
 | 5.0 Push hook fixes | Denial of Service | A branch moves while the push job runs | — | — | Not Applicable | workflow, step `Push fixes` skips a moved branch, and the newer run fixes it |
-| 5.0 Push hook fixes | Elevation of Privilege | Whoever lands a pin on a calling repository's default branch chooses what the job does with C-25 | High | #1268, `renovate-config#21` | Not Started | `hook_fix.tf`, comment on `attribute_condition` |
+| 5.0 Push hook fixes | Elevation of Privilege | Whoever lands a pin on a calling repository's default branch chooses what the job does with C-25 | High | #1268, #1282 | Not Started | `hook_fix.tf`, comment on `attribute_condition` |
 | 6.0 Admit workflow | Spoofing | A token from a fork-only commit, or from a `renovate-config` branch, passes the prefix match | High | Only a run Renovate started is admitted, and it calls the default branch's pin | Mitigated | `hook_fix.tf`, `attribute_condition` |
 | 6.0 Admit workflow | Tampering | Changing the condition needs the bootstrap layer, which only the operator applies | — | — | Not Applicable | `docs/how-to/bootstrap.md` |
 | 6.0 Admit workflow | Repudiation | Every admitted run acts as `hook-fix-reader`, so an unexpected read raises the same `Unexpected Data Access` warning as an expected one | Medium | Only Renovate's pull request runs are admitted, so each read belongs to one | Mitigated | `hook_fix.tf`, `attribute_condition` |
