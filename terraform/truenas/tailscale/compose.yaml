@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Terraform's templatefile and then Compose interpolate this file, and each
-# consumes one escape, so the TS_CERT_DOMAIN placeholder takes three dollar
-# signs. containerboot substitutes the node's tailnet name for it.
+# Terraform renders this template, then Compose interpolates the result. Each
+# strips one $, so the TS_CERT_DOMAIN placeholder is written with three.
+# containerboot replaces it with the node's tailnet name.
 
 ---
 services:
