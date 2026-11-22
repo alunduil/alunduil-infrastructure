@@ -19,8 +19,12 @@ register](../reference/asset-register.md) and [credential
 reachability](credential-reachability.md).
 
 The rows come from reading configuration, workflows, and GitHub's documentation.
-Nobody has tried these attacks, and #1065 tests what the planned controls
-assume.
+[Release control behaviour](../reference/release-control-behaviour.md)
+records the platform behaviour that the tag ruleset and the planned release
+gate rely on. That reference also records which commits an actor without `Workflows` can
+tag. [Release controls by
+actor](release-controls-by-actor.md) maps the recorded behaviour to each actor. Nobody has tried
+an attack against a managed repository.
 
 Out of scope:
 
@@ -32,9 +36,10 @@ Out of scope:
 
 ## Where the release App fits
 
-A per-repository App should create release tags. The release pull request may
-merge on a schedule, because the last human check is the publish
-environment's approval
+Each publishing repository gets its own GitHub App, the release App. It opens
+the release pull request and creates the release tag once that pull request
+merges. The release pull request may merge on a schedule, because the last human check is
+the publish environment's approval
 ([ADR 0004](../adr/0004-approve-each-release-before-it-publishes.md)).
 
 | Candidate | Who creates the tag | Result |
@@ -50,6 +55,8 @@ The App's design follows:
 - **Permissions:** `Contents` and `Pull requests` write. `Contents` write also
   allows pushing unprotected branches and replacing Release assets, which is
   why each repository gets its own App.
+- **Creation:** by hand, because GitHub has no API that creates an App. Each
+  publishing repository costs one App, one key, and one Secret Manager reader.
 - **Installation:** one repository per App. Each key sits in Secret Manager
   behind a reader that only that repository's default branch and `release`
   environment can use, rather than in Actions secrets.
@@ -60,44 +67,62 @@ The App's design follows:
 - **Environments:** `deployment_tags` stays, and #697 closes the last gap.
   It checks a name, so it only means something alongside #1055.
 - **Tag creation in the shared Hackage workflow:** the App creates the
-  prerelease after the merge, as `collection-json.hs#409` describes. The App
-  needs no merge bypass unless a repository merges its own pull request, which
-  is what #797 adds.
+  prerelease after the merge, as `collection-json.hs#409` describes.
+- **Merging the release pull request:** an App gets a merge bypass only where
+  its repository's release pull request merges on a schedule, as #797 adds for
+  `woodland-generators`.
 
-Three limits remain:
+Four limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
-  workflow check refuses that only because the App lacks `Workflows`
-  permission, so `zfs-replicate#827` and `network-arbitrary#172` have to carry
-  the check.
+  check inside the release workflow can't refuse such a tag, because the
+  tagged commit chooses the workflow ([release controls by
+  actor](release-controls-by-actor.md#why-the-check-lives-on-the-environment)).
+  The [release gate](release-controls-by-actor.md#what-the-two-controls-stop)
+  (#1251) checks from the publish environment.
+- Whoever holds the release gate's key, or can change its code, can approve
+  an off-branch publish. They still need a release tag and the operator's
+  approval, except on `collection-json.hs`'s `hackage-candidate`, which has no
+  approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- Nothing alerts on an unexpected tag or upload until #1064 lands.
+- Nothing alerts on an unexpected tag or upload until #1064 lands. Release
+  automation waits for it.
 
 ## Findings
 
 Every unmitigated row below points to one of these.
 
-| Finding | Issue |
-| --- | --- |
-| Anyone with `Contents` write can create a tag that publishes | #1055 |
-| A release workflow accepts a tag that isn't on the default branch | `zfs-replicate#827`, `network-arbitrary#172` |
-| Tokens acting as the account bypass the tag rule | #1076, #1069, #738 |
-| Hook-fix commits reach a default branch unreviewed | #1057 |
-| A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` |
-| A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` |
-| A required check can be satisfied by any App reporting its name | #429 |
-| A write collaborator can dispatch a publish on an existing tag | `collection-json.hs#406`, #1077 |
-| Build code shares a job with the Hackage token | `collection-json.hs#454`, `network-arbitrary#172` |
-| Build code shares a job with `Contents` write | `woodland-generators#922` |
-| A build can restore a poisoned cache | #1079 |
-| A Hackage token uploads every package its account can | #1093 |
-| Release assets can be replaced | `woodland-generators#915` |
-| A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` |
-| Nobody is told about an unexpected tag or upload | #1064 |
-| A published package can't be verified against its build | #1078 |
-| `siren-json.hs`'s `hackage` environment admits any ref | #697 |
-| A required check never reports on a `GITHUB_TOKEN` pull request | #556 |
+A finding's fix lands before a repository's release automation when any of
+these hold:
+
+- The automation creates its risk.
+- The automation removes the person who would notice it.
+- The fix detects a risk the automation creates.
+
+The rest can follow, because automation leaves them no worse.
+
+| Finding | Issue | Fix lands |
+| --- | --- | --- |
+| Anyone with `Contents` write can create a tag that publishes | #1055 | Before automation |
+| A release workflow accepts a tag that isn't on the default branch | #1251 | Before automation |
+| `woodland-generators`' release token acts as the account | #738 | With automation. The release App replaces the token |
+| Other tokens acting as the account bypass the tag rule | #1076, #1069 | After automation |
+| Hook-fix commits reach a default branch unreviewed | #1057 | Before automation |
+| A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` | Before automation |
+| A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` | Before automation |
+| A required check can be satisfied by any App reporting its name | #429 | After automation |
+| A write collaborator can dispatch a publish on an existing tag | `collection-json.hs#406`, #1077 | After automation, since #1121's approval stops the publish |
+| Build code shares a job with the Hackage token | `collection-json.hs#454`, `network-arbitrary#172` | Before automation, since the approval comes before the job runs |
+| Build code shares a job with `Contents` write | `woodland-generators#922` | Before automation |
+| A build can restore a poisoned cache | #1079 | Before automation |
+| A Hackage token uploads every package its account can | #1093 | After automation |
+| Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
+| A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
+| Nobody is told about an unexpected tag or upload | #1064 | Before automation, since the release App is a new actor that tags |
+| A published package can't be verified against its build | #1078 | After automation |
+| `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
+| A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Resolved by automation |
 
 ## Threats
 
@@ -119,9 +144,9 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Contributor | Spoofing | A stolen account opens a pull request as its owner, which still has to pass review | Low | Rulesets gate the merge | Mitigated | `main.tf`, `github_repository_ruleset.review` |
 | Contributor | Repudiation | A contributor denies a pull request, but it changes nothing until someone merges it | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
-| Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule |
+| Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1064 | Not Started | — |
-| Operator | Spoofing | A stolen C-13 or C-32 acts as the account and bypasses every ruleset | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
+| Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1064 | Not Started | `woodland-generators` releases report the account as author |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | #1064 compares registry versions with tags | Not Started | — |
@@ -131,24 +156,24 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Foundry world | Repudiation | A world takes no action the path depends on | — | — | Not Applicable | `woodland-generators` `release.yml`, job `verify-release` |
 | 1.0 Merge pull request | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
 | 1.0 Merge pull request | Tampering | A hook-fix commit lands on a default branch unreviewed | High | #1057 | Not Started | `main.tf`, `github_repository_ruleset.renovate` |
-| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval (#1121, #1122), and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `renovate_automerge` |
+| 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval (#1122 for asset releases), and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `publish_approval` and `renovate_automerge` |
 | 1.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 1.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 1.0 Merge pull request | Denial of Service | A pull request opened by P-11 runs no workflows, so required checks never report | Medium | #556 | Not Started | `main.tf`, `github_workflow_repository_permissions` |
 | 1.0 Merge pull request | Elevation of Privilege | A write collaborator merges past review | Medium | `admin-only` and `review`. On `zfs-replicate`, Code Owner review | Mitigated | `main.tf`, `github_repository_ruleset.admin_only` |
 | 3.0 Create tag or Release | Spoofing | GitHub treats whoever presents a valid credential as its owner, which the Write actor and Operator rows cover | — | — | Not Applicable | register, D-09 |
-| 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
+| 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, #1251 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Tampering | Someone moves or deletes a published tag | High | `immutable-tags` | Mitigated | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Repudiation | No record names who created a tag | Medium | #1064 | Not Started | — |
 | 3.0 Create tag or Release | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 3.0 Create tag or Release | Denial of Service | A failed smoke test leaves a tag only the admin can delete, which may burn the version | Medium | `collection-json.hs#161` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Denial of Service | A write actor creates a future version's tag on a junk commit, and immutability keeps it there | Low | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Elevation of Privilege | Tag creation gives a write actor the publish that review denies them | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
-| Repository commits | Tampering | An unreviewed commit on a side branch becomes a release through a tag | High | #1055, `zfs-replicate#827` | Not Started | `zfs-replicate` `release.yml`, job `build` |
+| Repository commits | Tampering | An unreviewed commit on a side branch becomes a release through a tag | High | #1055, #1251 | Not Started | `zfs-replicate` `release.yml`, job `build` |
 | Repository commits | Tampering | Someone rewrites or deletes the default branch | High | `default` blocks force pushes and deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Repository commits | Repudiation | A key holder can set any commit author, and Renovate compares only the email | Medium | #1057 | Not Started | — |
 | Repository commits | Information Disclosure | A secret is committed to a public repository | Medium | Push protection and secret scanning | Mitigated | `main.tf`, `github_repository.this` `security_and_analysis` |
-| Repository commits | Denial of Service | Someone deletes the default branch | High | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
+| Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
 | Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1064 | Not Started | — |
@@ -169,7 +194,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 2.0 Prepare release | Information Disclosure | C-32 appears in the job's logs | Low | Actions masks secrets | Mitigated | `woodland-generators` `release.yml`, `secrets.PAT_TOKEN` |
 | 2.0 Prepare release | Denial of Service | A failed run delays a release and loses nothing, since the next push repeats it | — | — | Not Applicable | `woodland-generators` `release.yml`, `on.push` |
 | 2.0 Prepare release | Elevation of Privilege | A third-party action holds a token with the account's ruleset bypasses | High | #738, #1076 | Not Started | register, C-32 |
-| 4.0 Build package | Spoofing | A write collaborator's dispatch runs the workflow on an existing tag | Medium | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, `on.workflow_dispatch` |
+| 4.0 Build package | Spoofing | A write collaborator's dispatch runs the workflow on an existing tag | High | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, `on.workflow_dispatch` |
 | 4.0 Build package | Tampering | A restored cache carries code a lower-trust run wrote | Medium | #1079 | Not Started | `zfs-replicate` `.github/actions/setup-poetry`, `cache: poetry` |
 | 4.0 Build package | Tampering | A moved action tag changes what the build runs | Medium | SHA pinning and an action allow-list | Mitigated | `main.tf`, `sha_pinning_required` |
 | 4.0 Build package | Repudiation | Run logs expire after 90 days, while a registry upload stays | Low | #1078 | Not Started | `gh api repos/alunduil/zfs-replicate/actions/permissions/artifact-and-log-retention` |
@@ -187,12 +212,12 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Build artifacts | Repudiation | Nothing proves which run produced an artifact once it expires | Low | #1078 | Not Started | — |
 | Build artifacts | Information Disclosure | An artifact holds only the package, which is public | — | — | Not Applicable | `zfs-replicate` `release.yml`, job `build` |
 | Build artifacts | Denial of Service | An expired artifact fails `Find candidate run`, and a new version recovers | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | #1055, and the publish environment's approval (#1121) | Not Started | `main.tf`, `github_repository_environment_deployment_policy` |
-| 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | `zfs-replicate#827`, `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, job `publish` |
+| 5.0 Upload package | Spoofing | Any run on a `v*` ref passes as a release | High | The publish environment's approval. #1055 limits who can create the tag | Mitigated | `terraform/alunduil/repositories.tf`, `publish_approval` |
+| 5.0 Upload package | Tampering | The package holds source from an off-branch tag | High | #1251 | Not Started | `network-arbitrary` `release.yml`, job `publish` |
 | 5.0 Upload package | Repudiation | A Hackage upload names the account, not the run | Medium | #1078 | Not Started | — |
 | 5.0 Upload package | Information Disclosure | `network-arbitrary` passes its key on the command line | Low | `network-arbitrary#172` | Not Started | `network-arbitrary` `release.yml`, step `cabal upload` |
 | 5.0 Upload package | Denial of Service | A registry outage fails the job, and a re-run keeps the tag | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
-| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | `collection-json.hs#406`, #1077, and the publish environment's approval (#1121) | Not Started | `collection-json.hs` `release.yml`, job `publish` |
+| 5.0 Upload package | Elevation of Privilege | A write collaborator's dispatch publishes a candidate the operator hasn't released | High | The publish environment's approval. `collection-json.hs#406` and #1077 remove the dispatch route | Mitigated | `terraform/alunduil/repositories.tf`, `publish_approval` |
 | 5.0 Upload package | Tampering | The release builds the package again after CI and uploads it untested | Medium | `zfs-replicate#848`, `network-arbitrary#172` | Not Started | `zfs-replicate` `release.yml`, job `pypi` needs only `build` |
 | F1 proposed commits | Tampering | GitHub carries this over TLS, so tampering needs a compromise of GitHub | — | — | Not Applicable | register, D-09 |
 | F1 proposed commits | Information Disclosure | Pull requests are public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
@@ -230,10 +255,10 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F12 release ref | Tampering | A re-run reuses the event payload, so stale Release data could steer it | Low | `metadata` reads the Release live | Mitigated | `collection-json.hs` `release.yml`, job `metadata` |
 | F12 release ref | Information Disclosure | The ref names a public tag | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F12 release ref | Denial of Service | A GitHub outage delays a release and loses nothing | — | — | Not Applicable | register, D-09 |
-| F13 source and workflow | Tampering | The tag selects the workflow that runs, so a writer able to change workflows can remove its checks | High | #1055 | Not Started | `collection-json.hs` `release.yml`, step `Require the tag on main` |
+| F13 source and workflow | Tampering | The tag selects the workflow that runs, so a writer able to change workflows can remove its checks | High | #1055, #1251 | Not Started | `collection-json.hs` `release.yml`, step `Require the tag on main` |
 | F13 source and workflow | Information Disclosure | The source is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F13 source and workflow | Denial of Service | A GitHub outage delays a release and loses nothing | — | — | Not Applicable | register, D-09 |
-| F14 dispatched ref | Tampering | The dispatcher picks the ref, and the environment checks only its name | Medium | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, `on.workflow_dispatch` |
+| F14 dispatched ref | Tampering | The dispatcher picks the ref, and the environment checks only its name | High | `collection-json.hs#406`, #1077 | Not Started | `collection-json.hs` `release.yml`, `on.workflow_dispatch` |
 | F14 dispatched ref | Information Disclosure | The ref names a public tag | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | F14 dispatched ref | Denial of Service | Repeated dispatches use runner minutes on a public repository and publish nothing new, since a version uploads once | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
 | F15 operator dispatched ref | Tampering | GitHub carries this over TLS, so tampering needs a compromise of GitHub | — | — | Not Applicable | register, D-09 |
@@ -255,7 +280,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | F20 candidate tarball | Information Disclosure | A candidate is public on Hackage | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `metadata` |
 | F20 candidate tarball | Denial of Service | A failed download stops the publish, which is the safe result | — | — | Not Applicable | `collection-json.hs` `release.yml`, job `publish` |
 | F21 PyPI publish request | Tampering | The request changes in transit | Low | TLS, by the pinned action | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |
-| F21 PyPI publish request | Information Disclosure | The Trusted Publisher accepts more than this workflow. A Terraform comment states what PyPI pins, but PyPI's settings are unread | Medium | The operator reads the Trusted Publisher on PyPI | Needs Investigation | `terraform/alunduil/repositories.tf`, `zfs-replicate` `environments` |
+| F21 PyPI publish request | Information Disclosure | The Trusted Publisher accepts more than this workflow | Medium | PyPI lists one publisher, pinned to `alunduil/zfs-replicate`, `release.yml`, and the `pypi` environment. The project has one collaborator and no API tokens | Mitigated | `zfs-replicate`'s PyPI publishing settings, read by the operator 2026-11-16 |
 | F21 PyPI publish request | Denial of Service | A renamed workflow or environment stops publishing, and nothing else | — | — | Not Applicable | `zfs-replicate` `release.yml`, job `pypi` |
 | F22 PyPI upload token | Tampering | The token changes in transit | Low | TLS, by the pinned action | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |
 | F22 PyPI upload token | Information Disclosure | The job holding the token runs other code | Medium | The `pypi` job checks nothing out and runs only pinned actions | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |

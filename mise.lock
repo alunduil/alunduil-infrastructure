@@ -2,6 +2,12 @@
 
 lockfile_version = 3
 
+[[tools.ansible-core]]
+version = "2.22.0"
+backend = "pypi:ansible-core"
+specifiers = ["2.22.0"]
+uv = { path = ".mise/locks/ansible-core/2.22.0", digest = "sha256:82b050102b9f5769232b8331e624f9385f28a5aa08468bd571b3d3c1cf27ff7f" }
+
 [[tools.bats]]
 version = "1.14.0"
 backend = "aqua:bats-core/bats-core"
@@ -23,21 +29,52 @@ url = "https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64
 url_api = "https://api.github.com/repos/casey/just/releases/assets/642949555"
 
 [[tools.prek]]
-version = "0.5.7"
+version = "0.5.10"
 backend = "aqua:j178/prek"
-specifiers = ["0.5.7"]
+specifiers = ["0.5.10"]
 
 [tools.prek."platforms.linux-x64"]
-checksum = "sha256:e238e5a6b4e384e8d18f33d3c3b1a329be0e1237f77ac6e021e641ddd3a2bab6"
-url = "https://github.com/j178/prek/releases/download/v0.5.7/prek-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/j178/prek/releases/assets/660929556"
+checksum = "sha256:5c832a9ccd0855b7c054320d8921d90165a37459d3ac175923bdf121ff1aa9b1"
+url = "https://github.com/j178/prek/releases/download/v0.5.10/prek-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/j178/prek/releases/assets/707839458"
+provenance = "github-attestations"
+
+[[tools.promtool]]
+version = "3.16.0"
+backend = "aqua:prometheus/prometheus"
+specifiers = ["3.16.0"]
+
+[tools.promtool."platforms.linux-x64"]
+checksum = "sha256:68727009472a2c02e1ff7f062fd5b3e637285bffc8fc2d340c76fb449d6e0f34"
+url = "https://github.com/prometheus/prometheus/releases/download/v3.16.0/prometheus-3.16.0.linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/prometheus/prometheus/releases/assets/713900575"
+
+[[tools.python]]
+version = "3.14.10"
+backend = "core:python"
+specifiers = ["3.14.10"]
+
+[tools.python."platforms.linux-x64"]
+checksum = "sha256:4d3c16c59ed0802a3d1d34d8bce504b15ceeaff39d62dadecc6a9fa803412aed"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.14.10+20261026-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.terraform]]
-version = "1.17.0"
+version = "1.17.2"
 backend = "aqua:hashicorp/terraform"
-specifiers = ["1.17.0"]
+specifiers = ["1.17.2"]
 
 [tools.terraform."platforms.linux-x64"]
-checksum = "sha256:c168cab7c637a8769fdb90089ddd19de701bc6ff8aca64dc2e2185fe46f59f67"
-url = "https://releases.hashicorp.com/terraform/1.17.0/terraform_1.17.0_linux_amd64.zip"
+checksum = "sha256:e6f16b2f0b137ee5729caa8c4e79a3bae4ee261acd198a1fcfa8584a6296605b"
+url = "https://releases.hashicorp.com/terraform/1.17.2/terraform_1.17.2_linux_amd64.zip"
+
+[[tools.uv]]
+version = "0.13.9"
+backend = "aqua:astral-sh/uv"
+specifiers = ["0.13.9"]
+
+[tools.uv."platforms.linux-x64"]
+checksum = "sha256:a7fbaff2b9a271d85c1bdb540941090fd1ce011797b4abeb48e4dcd39c2471d5"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.9/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/758513954"
+provenance = "github-attestations"

@@ -24,15 +24,23 @@ Install the tools CI uses with `mise install`, or open the repository
 in its devcontainer, which runs it for you. Then run `prek install`
 to enable the commit hooks.
 
-The three operator entrypoints:
+The five operator entrypoints:
 
 - `just bootstrap`—first-time setup, and rotation of the credentials
   Terraform generates. See
   [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just alunduil`—break-glass local `terraform apply` on the
   alunduil environment, for when CI is unavailable.
+- `just truenas`—`terraform apply` on the TrueNAS configuration,
+  which no workflow runs. See
+  [docs/how-to/apply-terraform-to-truenas.md](docs/how-to/apply-terraform-to-truenas.md).
 - `just projects`—Projects v2 board fields, after editing a spec in
   `github/projects/`. Needs only a `gh` login with the `project` scope.
+- `just nanopi-neo3`—Ansible configuration of the NanoPi-NEO3 over
+  the tailnet. Add `--check --diff` to preview. If it hangs while
+  connecting, run `tailscale ssh nanopi-neo3 true` and complete the
+  browser login it asks for. See
+  [docs/how-to/configure-the-nanopi-neo3.md](docs/how-to/configure-the-nanopi-neo3.md).
 
 ## Documentation
 
@@ -45,6 +53,7 @@ How-to guides for credentials:
 - [Create the Grafana Git Sync credentials](docs/how-to/create-grafana-git-sync-token.md)
 - [Create the Grafana GitHub data source App](docs/how-to/create-grafana-github-app.md)
 - [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
+- [Create the release gate GitHub App](docs/how-to/create-release-gate-github-app.md)
 - [Create the GitHub Projects sync token](docs/how-to/create-github-project-sync-token.md)
 - [Create the Tailscale trust credentials](docs/how-to/create-tailscale-trust-credential.md)
 - [Create the blog's Web Analytics site](docs/how-to/create-web-analytics-site.md)
@@ -52,6 +61,8 @@ How-to guides for credentials:
 How-to guides for hosts and services:
 
 - [Set the alloy push credential on the collector](docs/how-to/configure-alloy-push-credential.md)
+- [Apply Terraform to TrueNAS](docs/how-to/apply-terraform-to-truenas.md)
+- [Configure the NanoPi-NEO3](docs/how-to/configure-the-nanopi-neo3.md)
 - [Set the ACME token on TrueNAS](docs/how-to/configure-truenas-acme-token.md)
 - [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
 - [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)
@@ -72,6 +83,11 @@ Explanation:
   commit becomes a published package, and what crosses each trust boundary
 - [Release path threat model](docs/explanation/threat-model-release-path.md):
   what can go wrong on that path, and where the release App fits
+- [Renovate path data flow](docs/explanation/renovate-data-flow.md): how a
+  dependency update becomes a merged commit, and what crosses each trust
+  boundary
+- [Renovate path threat model](docs/explanation/threat-model-renovate.md):
+  what can go wrong on that path, and where the self-test App fits
 
 Decisions:
 

@@ -82,8 +82,8 @@ locals {
   # route enabled in the admin console but absent here gets disabled on the
   # next apply.
   tailscale_enabled_routes = {
-    "truenas-scale" = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
-    "nanopi-neo3"   = local.tailscale_exit_node_routes
+    "truenas"     = concat(["192.168.68.0/22"], local.tailscale_exit_node_routes)
+    "nanopi-neo3" = local.tailscale_exit_node_routes
   }
 
   tailscale_node_ids = {

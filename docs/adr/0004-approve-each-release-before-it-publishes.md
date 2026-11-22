@@ -44,8 +44,8 @@ lists routes to a publish that skip the merge:
   upload that can't be recalled.
 - **Every route.** The check holds for every route to a publish, not
   only the merge.
-- **What ships.** The check covers the bytes that publish, after they
-  are built and tested.
+- **What ships.** The check covers the bytes that publish, after
+  they're built and tested.
 - **Cadence.** Weekly releases need at most one human action each.
 
 ## Considered Options

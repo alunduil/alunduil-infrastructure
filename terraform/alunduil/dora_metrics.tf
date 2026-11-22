@@ -11,7 +11,14 @@ locals {
   dora_window_seconds   = 30 * 86400
   dora_interval_seconds = 3600
 
-  dora_missed_evaluations = 3
+  dora_missed_evaluations     = 3
+  dora_alert_interval_seconds = 300
+
+  # A new repository records nothing until its rule group first evaluates,
+  # up to an interval after creation. A short absence window followed by a
+  # pending period gives that evaluation time to land before the alert fires.
+  dora_absence_window_seconds = local.dora_interval_seconds + local.dora_alert_interval_seconds
+  dora_pending_seconds        = (local.dora_missed_evaluations - 1) * local.dora_interval_seconds
 
   # A push or merge deploy ships PRs merged moments before it, so a day past
   # the window covers them.
@@ -32,8 +39,9 @@ locals {
     86400, 172800, 345600, 604800, 1209600, 2419200, 4838400, 9676800,
   ]
 
-  # Kept free of module outputs: the alert rule reads it, and a new resource
-  # depending on module.repository cycles with the module's check block.
+  # The DORA locals read config, never module outputs. A rule depending on
+  # module.repository cycles with the module's check block whenever that
+  # repository is imported in the same plan.
   dora_repositories = [
     for name, repo in local.repositories : name
     if lookup(repo, "deploy", null) != null
@@ -43,7 +51,7 @@ locals {
     for name in local.dora_repositories : name => merge(
       { workflow = "", branch = "", event = "" },
       local.repositories[name].deploy,
-      { default_branch = module.repository[name].default_branch },
+      { default_branch = lookup(local.repositories[name], "default_branch", "main") },
     )
   }
 
@@ -172,12 +180,12 @@ data "grafana_data_source" "prometheus" {
 resource "grafana_rule_group" "dora_recording" {
   name             = "Alerts"
   folder_uid       = grafana_folder.dora.uid
-  interval_seconds = 300
+  interval_seconds = local.dora_alert_interval_seconds
 
   rule {
     name           = "DORA rules stopped recording"
     condition      = "C"
-    for            = "0s"
+    for            = "${local.dora_pending_seconds}s"
     no_data_state  = "OK"
     exec_err_state = "Error"
     labels         = { severity = "warning" }
@@ -198,7 +206,7 @@ resource "grafana_rule_group" "dora_recording" {
         # result, so each failing repository fires its own alert.
         expr = join(" or ", [
           for name in local.dora_repositories :
-          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_missed_evaluations * local.dora_interval_seconds}s])"
+          "absent_over_time(dora_deploys{repository=\"${name}\"}[${local.dora_absence_window_seconds}s])"
         ])
       })
     }

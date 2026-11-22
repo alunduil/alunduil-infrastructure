@@ -37,7 +37,7 @@
         {
           "name": "Blocked",
           "color": "RED",
-          "description": "Blocked by an open issue"
+          "description": "Blocked by an open issue or a date"
         },
         {
           "id": "c090564c",

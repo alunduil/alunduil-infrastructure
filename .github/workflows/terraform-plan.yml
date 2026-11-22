@@ -34,6 +34,7 @@ jobs:
       # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 2
 
       - id: diff
@@ -46,6 +47,7 @@ jobs:
             .github/actions/terraform-providers \
             scripts/export-terraform-credentials.sh \
             scripts/eval-recording-rules.sh \
+            scripts/test-dora-alert.sh \
             mise.toml \
             mise.lock
           then
@@ -79,10 +81,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - uses: ./.github/actions/mise
         with:
-          install_args: terraform
+          install_args: terraform promtool
 
       - uses: ./.github/actions/terraform-providers
 
@@ -179,6 +183,10 @@ jobs:
           terraform show -json tfplan > plan.json
           ../../scripts/eval-recording-rules.sh plan.json
 
+      - name: Test the DORA alert's timelines
+        working-directory: terraform/alunduil
+        run: ../../scripts/test-dora-alert.sh plan.json
+
       # Data sources read during apply change nothing.
       - id: resource-changes
         name: Count planned resource changes
@@ -189,21 +197,34 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # Gates renovate.json's lock file maintenance automerge, since Renovate
-  # waits for every check. Keep it out of the required checks so a person
-  # can still merge a plan that changes something.
-  lock-file-plan:
+  # Gates renovate.json's automerge of updates that trigger an apply.
+  # Renovate waits only for required checks, so this one is required, and
+  # the checks ruleset has no bypass. A pull request Renovate holds passes
+  # whatever its plan, or no one could merge it. Renovate states which kind
+  # each pull request is in its body.
+  #
+  # The default-branch ruleset requires this check by name, so renaming the
+  # job breaks the merge gate.
+  renovate-plan:
     name: Confirm lock file maintenance plans no changes
     needs: plan
-    if: github.head_ref == 'renovate/lock-file-maintenance'
+    if: startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-26.04
     timeout-minutes: 5
 
     steps:
       - name: Fail on planned changes
         env:
+          BODY: ${{ github.event.pull_request.body }}
           RESOURCE_CHANGES: ${{ needs.plan.outputs.resource_changes }}
         run: |
+          if [[ "${BODY}" == *'**Automerge**: Disabled'* ]]; then
+            exit 0
+          fi
+          if [[ "${BODY}" != *'**Automerge**: Enabled'* ]]; then
+            echo "::error::The body states neither automerge Enabled nor Disabled."
+            exit 1
+          fi
           if [[ "${RESOURCE_CHANGES}" != 0 ]]; then
             echo "::error::Merging applies the plan's ${RESOURCE_CHANGES} resource changes."
             exit 1

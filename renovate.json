@@ -38,6 +38,23 @@
       "groupName": "prek"
     },
     {
+      "description": "ansible-lint's hook and mise.toml pin the same ansible-core, so one pull request bumps both",
+      "matchDepNames": ["ansible-core"],
+      "groupName": "ansible-core"
+    },
+    {
+      "description": "The Ansible stand-in runs the NanoPi-NEO3's Debian major release, which apt never changes, so only point releases reach it",
+      "matchFileNames": ["ansible/Dockerfile"],
+      "matchDepNames": ["debian"],
+      "allowedVersions": "<13"
+    },
+    {
+      "description": "mise never builds ansible-core's dependencies from source, and PyYAML publishes no Python 3.15 wheels, so ansible-core can't install on 3.15 until they ship",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["python"],
+      "allowedVersions": "<3.15"
+    },
+    {
       "description": "The devcontainer and CI must run the same mise, so one pull request bumps every pin",
       "matchDepNames": ["mise"],
       "groupName": "mise"
@@ -48,21 +65,25 @@
       "automerge": false
     },
     {
-      "description": "Merging a change to any of terraform-apply.yml's paths applies it. One matching file holds the whole pull request, because Renovate automerges a branch only when every upgrade in it qualifies. Keep in step with terraform-apply.yml's paths",
+      "description": "Bootstrap runs the Terraform mise pins, and CI never plans bootstrap",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["terraform"],
+      "automerge": false
+    },
+    {
+      "description": "Merging a change to these terraform-apply.yml paths applies it. One matching file holds the whole pull request, because Renovate automerges a branch only when every upgrade in it qualifies. mise.toml and mise.lock, also apply paths, automerge only when terraform-plan.yml confirms the plan changes nothing",
       "matchFileNames": [
         "terraform/alunduil/**",
         "terraform/modules/**",
         ".github/workflows/terraform-apply.yml",
         ".github/actions/mise/**",
         ".github/actions/terraform-providers/**",
-        "scripts/export-terraform-credentials.sh",
-        "mise.toml",
-        "mise.lock"
+        "scripts/export-terraform-credentials.sh"
       ],
       "automerge": false
     },
     {
-      "description": "Lock file maintenance merges only when terraform-plan.yml confirms its plan changes nothing. Keep this rule last so it overrides both holds above",
+      "description": "Lock file maintenance merges only when terraform-plan.yml confirms its plan changes nothing. Keep this rule last so it overrides every hold above",
       "matchUpdateTypes": ["lockFileMaintenance"],
       "automerge": true
     }

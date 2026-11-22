@@ -1,0 +1,8 @@
+{# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> #}
+{# SPDX-License-Identifier: MIT #}
+[Unit]
+Description=UptimeRobot Heartbeat
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl -s --fail "{{ nanopi_neo3_heartbeat_url }}"

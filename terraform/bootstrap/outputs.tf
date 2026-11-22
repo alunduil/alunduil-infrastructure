@@ -40,13 +40,13 @@ output "cloudflare_api_token_deployer_rw_secret" {
 # configure-github-secrets.sh publishes these to blog.alunduil.com as Actions
 # secrets; its Pages build reads them by name.
 output "blog_analytics_workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.blog.name
+  value       = module.blog_analytics_reader.workload_identity_provider
   description = "Full resource name of the blog's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/blog/providers/github-provider"
   sensitive   = false
 }
 
 output "blog_analytics_reader_email" {
-  value       = google_service_account.blog_analytics_reader.email
+  value       = module.blog_analytics_reader.service_account_email
   description = "Email of the service account blog.alunduil.com's Pages build impersonates"
   sensitive   = false
 }
@@ -59,13 +59,13 @@ output "cloudflare_api_token_blog_analytics_ro_secret" {
 
 # renovate-config's fix-renovate-hooks.yml hard-codes these.
 output "hook_fix_workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.hook_fix.name
+  value       = module.hook_fix_reader.workload_identity_provider
   description = "Full resource name of the hook-fix WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix/providers/github-provider"
   sensitive   = false
 }
 
 output "hook_fix_reader_email" {
-  value       = google_service_account.hook_fix_reader.email
+  value       = module.hook_fix_reader.service_account_email
   description = "Email of the service account the reusable hook-fix workflow impersonates"
   sensitive   = false
 }
@@ -73,6 +73,25 @@ output "hook_fix_reader_email" {
 output "hook_fix_app_secrets" {
   value       = sort([for secret in google_secret_manager_secret.hook_fix_app : secret.secret_id])
   description = "Secret Manager short names holding the hook-fix GitHub App ID and private key; populated by scripts/configure-hook-fix-secrets.sh and fetched by the reusable hook-fix workflow"
+  sensitive   = false
+}
+
+# renovate-config's hook-fix-selftest.yml hard-codes these.
+output "hook_fix_selftest_workload_identity_provider" {
+  value       = module.hook_fix_selftest_reader.workload_identity_provider
+  description = "Full resource name of the hook-fix self-test WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/hook-fix-selftest/providers/github-provider"
+  sensitive   = false
+}
+
+output "hook_fix_selftest_reader_email" {
+  value       = module.hook_fix_selftest_reader.service_account_email
+  description = "Email of the service account renovate-config's hook-fix self-test impersonates"
+  sensitive   = false
+}
+
+output "hook_fix_selftest_app_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.hook_fix_selftest_app : secret.secret_id])
+  description = "Secret Manager short names holding the hook-fix self-test GitHub App ID and private key; populated by scripts/configure-hook-fix-selftest-secrets.sh and fetched by renovate-config's hook-fix self-test"
   sensitive   = false
 }
 
@@ -122,9 +141,9 @@ output "grafana_fleet_management_token_secrets" {
   sensitive   = false
 }
 
-output "grafana_alloy_push_token_secret" {
-  value       = google_secret_manager_secret.grafana_alloy_push_token.secret_id
-  description = "Secret Manager short name holding the access-policy token alloy pushes logs and metrics with; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
+output "grafana_alloy_push_token_secrets" {
+  value       = { for collector, secret in google_secret_manager_secret.grafana_alloy_push_token : collector => secret.secret_id }
+  description = "Secret Manager short name of each collector's alloy push token, keyed by collector; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"
   sensitive   = false
 }
 
@@ -143,5 +162,37 @@ output "grafana_gcp_reader_key_secret" {
 output "tailscale_client_id_secrets" {
   value       = sort([for secret in google_secret_manager_secret.tailscale_client_id : secret.secret_id])
   description = "Secret Manager short names holding the Tailscale trust credential client IDs, read-only for plan and read-write for apply; populated by scripts/configure-tailscale-secrets.sh and fetched via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
+# configure-github-secrets.sh publishes these to alunduil/release-gate as Actions
+# secrets; its deploy workflow reads them by name.
+output "release_gate_workload_identity_provider" {
+  value       = module.release_gate_reader.workload_identity_provider
+  description = "Full resource name of the release gate's WIF provider, e.g. projects/<num>/locations/global/workloadIdentityPools/release-gate/providers/github-provider"
+  sensitive   = false
+}
+
+output "release_gate_reader_email" {
+  value       = module.release_gate_reader.service_account_email
+  description = "Email of the service account the release gate's deploy workflow impersonates"
+  sensitive   = false
+}
+
+output "release_gate_app_private_key_secret" {
+  value       = google_secret_manager_secret.release_gate["app_private_key"].secret_id
+  description = "Secret Manager short name holding the release gate App's private key; populated by scripts/configure-release-gate-secrets.sh"
+  sensitive   = false
+}
+
+output "release_gate_webhook_secret_secret" {
+  value       = google_secret_manager_secret.release_gate["webhook_secret"].secret_id
+  description = "Secret Manager short name holding the release gate App's webhook secret"
+  sensitive   = false
+}
+
+output "cloudflare_api_token_release_gate_deploy_secret" {
+  value       = google_secret_manager_secret.release_gate["deploy_token"].secret_id
+  description = "Secret Manager short name holding the Cloudflare token the release gate's deploy workflow deploys its Worker with"
   sensitive   = false
 }

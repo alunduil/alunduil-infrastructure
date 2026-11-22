@@ -5,7 +5,8 @@
 
 Stands up CI authentication (Workload Identity Federation, deployer
 service accounts, Cloudflare deployer tokens) and populates the GitHub
-Actions secrets here and in `blog.alunduil.com`. Run when starting from
+Actions secrets here, in `blog.alunduil.com`, and in
+`release-gate`. Run when starting from
 scratch or rotating the core credentials.
 
 ## Prerequisites
@@ -20,6 +21,10 @@ scratch or rotating the core credentials.
   [create-git-sync-github-app.md](create-git-sync-github-app.md).
 - The hook-fix GitHub App created and installed—see
   [create-hook-fix-github-app.md](create-hook-fix-github-app.md).
+- The hook-fix self-test GitHub App created and installed—see
+  [create-hook-fix-selftest-github-app.md](create-hook-fix-selftest-github-app.md).
+- The release gate GitHub App created and installed—see
+  [create-release-gate-github-app.md](create-release-gate-github-app.md).
 - The Grafana GitHub data source App created and installed—see
   [create-grafana-github-app.md](create-grafana-github-app.md).
 - Two Tailscale trust credentials—see
@@ -69,6 +74,17 @@ It also prompts for the hook-fix App's ID and private key, and stores
 them in Secret Manager. Later runs prompt only for an empty one. Set
 `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY_FILE` to answer without
 the prompts, or press Enter at each to defer until the App exists.
+
+It then prompts the same way for the hook-fix self-test App's ID and
+private key. Set `HOOK_FIX_SELFTEST_APP_ID` and
+`HOOK_FIX_SELFTEST_APP_PRIVATE_KEY_FILE` to answer without the prompts.
+
+It also prompts for the release gate App's private key, and stores it in
+Secret Manager. Later runs skip it. Set `RELEASE_GATE_APP_PRIVATE_KEY_FILE`
+to answer without the prompt, or press Enter to defer until the App exists.
+After the apply, [set the webhook
+secret](create-release-gate-github-app.md#set-the-webhook-secret) in the
+App.
 
 The blog's Pages build needs wiring to the federation once, in
 `blog.alunduil.com`.

@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+- name: Configure unattended upgrades
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /etc/apt/apt.conf.d/{{ item }}
+    mode: "0644"
+  loop:
+    - 20auto-upgrades
+    - 50unattended-upgrades
