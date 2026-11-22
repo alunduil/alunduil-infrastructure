@@ -121,6 +121,7 @@ resource "grafana_rule_group" "gcp_audit_logs" {
 
     data {
       ref_id         = "A"
+      query_type     = "timeSeriesList"
       datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
       relative_time_range {
         from = local.audit_alert_window_seconds
