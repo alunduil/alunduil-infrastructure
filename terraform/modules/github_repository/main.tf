@@ -250,13 +250,15 @@ resource "github_repository_ruleset" "renovate" {
   conditions {
     ref_name {
       include = ["refs/heads/renovate/**"]
-      exclude = []
+      exclude = [for pattern in var.unprotected_renovate_branches : "refs/heads/${pattern}"]
     }
   }
 
   # Renovate pushes to its branches directly, so it needs mode "always" here.
   # The hook-fix App is the one other actor trusted to add commits that
-  # Renovate then merges past review.
+  # Renovate then merges past review. An App that pushes only to branches it
+  # opens gets those branches excluded instead, because a bypass reaches
+  # every Renovate branch.
   dynamic "bypass_actors" {
     for_each = [
       local.admin_bypass_actor,

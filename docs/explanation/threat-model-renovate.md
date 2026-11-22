@@ -61,6 +61,11 @@ The App needs:
   self-test App's in `renovate-config`.
 - **The default branch:** `admin-only` stops the key merging its own pull
   request there.
+- **Its own branches:** the `renovate` ruleset in `renovate-config` excludes
+  `renovate/hook-fix-selftest-*`, so the App can commit planted faults there.
+  The App has no bypass, so it can't push to a branch Renovate opened. Anyone
+  with write access can update the self-test branches too, but Renovate never
+  opens them, so nothing on them merges unreviewed.
 
 A key with `Contents` write can still create a self-test branch at any commit
 already in `renovate-config`. The self-test exception then admits that

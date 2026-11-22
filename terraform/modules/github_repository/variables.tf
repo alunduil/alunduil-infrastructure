@@ -107,6 +107,23 @@ variable "admin_only_updates" {
   EOT
 }
 
+variable "unprotected_renovate_branches" {
+  type        = list(string)
+  default     = []
+  nullable    = false
+  description = <<-EOT
+    Branch patterns under renovate/ that anyone with write access can
+    update, such as "renovate/hook-fix-selftest-*". List only branches
+    Renovate never opens, because Renovate merges every commit on its own
+    branches without review.
+  EOT
+
+  validation {
+    condition     = alltrue([for pattern in var.unprotected_renovate_branches : startswith(pattern, "renovate/")])
+    error_message = "unprotected_renovate_branches patterns must start with \"renovate/\"; the ruleset ignores any other branch."
+  }
+}
+
 variable "merge_method" {
   type        = string
   default     = "squash"
