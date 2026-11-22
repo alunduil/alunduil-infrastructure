@@ -36,3 +36,13 @@ run "unprotected_branches_leave_the_rest_protected" {
     error_message = "Every other Renovate branch must stay protected."
   }
 }
+
+run "patterns_outside_renovate_are_rejected" {
+  command = plan
+
+  variables {
+    unprotected_renovate_branches = ["hook-fix-selftest-*"]
+  }
+
+  expect_failures = [var.unprotected_renovate_branches]
+}

@@ -256,10 +256,9 @@ resource "github_repository_ruleset" "renovate" {
 
   # Renovate pushes to its branches directly, so it needs mode "always" here.
   # The hook-fix App is the one other actor trusted to add commits that
-  # Renovate then merges past review. Other Apps that push to branches of
-  # their own, such as the hook-fix self-test App, get those branches
-  # excluded through unprotected_renovate_branches rather than a bypass here,
-  # which would let them push to Renovate's branches too.
+  # Renovate then merges past review. Other Apps get their own branches
+  # through unprotected_renovate_branches, since a bypass here reaches every
+  # Renovate branch.
   dynamic "bypass_actors" {
     for_each = [
       local.admin_bypass_actor,

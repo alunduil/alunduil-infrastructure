@@ -117,6 +117,11 @@ variable "unprotected_renovate_branches" {
     update. List only branches Renovate never opens: a commit pushed to a
     Renovate pull request's branch merges with it, unreviewed.
   EOT
+
+  validation {
+    condition     = alltrue([for pattern in var.unprotected_renovate_branches : startswith(pattern, "renovate/")])
+    error_message = "unprotected_renovate_branches patterns must start with \"renovate/\"; the ruleset ignores any other branch."
+  }
 }
 
 variable "merge_method" {
