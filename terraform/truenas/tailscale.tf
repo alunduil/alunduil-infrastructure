@@ -45,7 +45,7 @@ resource "truenas_app" "tailscale" {
           type             = "host_path"
           read_only        = true
           mount_path       = "/config"
-          host_path_config = { acl_enable = false, path = truenas_dataset.tailscale.mountpoint }
+          host_path_config = { acl_enable = false, path = "/mnt/${truenas_dataset.tailscale.name}" }
         },
       ]
     }
