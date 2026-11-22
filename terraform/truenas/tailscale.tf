@@ -8,16 +8,6 @@ resource "truenas_dataset" "tailscale" {
   quota = 1024 * 1024 * 1024
 }
 
-# The copy logs in as alunduil, not root.
-data "truenas_user" "alunduil" {
-  username = "alunduil"
-}
-
-resource "truenas_filesystem_permissions" "tailscale" {
-  path = "/mnt/${truenas_dataset.tailscale.name}"
-  uid  = data.truenas_user.alunduil.uid
-}
-
 resource "truenas_app" "tailscale" {
   name        = "tailscale"
   catalog_app = "tailscale"
@@ -55,7 +45,7 @@ resource "truenas_app" "tailscale" {
           type             = "host_path"
           read_only        = true
           mount_path       = "/config"
-          host_path_config = { acl_enable = false, path = truenas_filesystem_permissions.tailscale.path }
+          host_path_config = { acl_enable = false, path = "/mnt/${truenas_dataset.tailscale.name}" }
         },
       ]
     }
