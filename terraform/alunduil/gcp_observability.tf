@@ -102,6 +102,10 @@ locals {
 
   # How long a single event keeps the alert firing.
   audit_alert_window_seconds = 600
+
+  # Grafana stores the query type on the data block and inside its model.
+  # Setting only one makes every plan rewrite the rule.
+  audit_alert_query_type = "timeSeriesList"
 }
 
 # Any event from an unexpected principal fires, the owner included. A count
@@ -121,6 +125,7 @@ resource "grafana_rule_group" "gcp_audit_logs" {
 
     data {
       ref_id         = "A"
+      query_type     = local.audit_alert_query_type
       datasource_uid = grafana_data_source.gcp_cloud_monitoring.uid
       relative_time_range {
         from = local.audit_alert_window_seconds
@@ -128,7 +133,7 @@ resource "grafana_rule_group" "gcp_audit_logs" {
       }
       model = jsonencode({
         refId     = "A"
-        queryType = "timeSeriesList"
+        queryType = local.audit_alert_query_type
         datasource = {
           type = "stackdriver"
           uid  = grafana_data_source.gcp_cloud_monitoring.uid
