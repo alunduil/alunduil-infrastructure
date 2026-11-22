@@ -107,6 +107,18 @@ variable "admin_only_updates" {
   EOT
 }
 
+variable "unprotected_renovate_branches" {
+  type        = list(string)
+  default     = []
+  nullable    = false
+  description = <<-EOT
+    Branch name patterns under renovate/, such as
+    "renovate/hook-fix-selftest-*", that anyone with write access can
+    update. List only branches Renovate never opens: a commit pushed to a
+    Renovate pull request's branch merges with it, unreviewed.
+  EOT
+}
+
 variable "merge_method" {
   type        = string
   default     = "squash"
