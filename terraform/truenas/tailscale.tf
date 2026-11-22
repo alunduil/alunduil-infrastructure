@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # TS_SERVE_CONFIG has to point inside this mount. containerboot treats a
-  # missing serve file as no serve config and logs no error.
+  # containerboot treats a missing serve file as no serve config and logs no
+  # error, so every path to the file comes from these values.
   tailscale_config_directory = "/config"
   tailscale_serve_file       = "serve.json"
 
@@ -61,9 +61,8 @@ import {
   id = "tailscale"
 }
 
-# The provider has no file resource, so this uploads serve.json through the
-# API's filesystem.put. The upload runs as a TrueNAS job, and curl sees only
-# that the job started, not that it finished.
+# The provider has no file resource. The upload runs as a TrueNAS job, and curl
+# sees only that the job started, not that it finished.
 resource "terraform_data" "tailscale_serve_config" {
   triggers_replace = [filesha256(local.tailscale_serve_source)]
 
@@ -75,7 +74,8 @@ resource "terraform_data" "tailscale_serve_config" {
       TARGET = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/${local.tailscale_serve_file}"
       URL    = "https://${local.truenas_host}/_upload"
     }
-    # The header file keeps the key out of the process list.
+    # Reading the header from a file descriptor keeps the key out of the
+    # process list.
     command = <<-EOT
       curl --fail-with-body --silent --show-error --insecure \
         --header @<(printf 'Authorization: Bearer %s\n' "$TRUENAS_API_KEY") \
