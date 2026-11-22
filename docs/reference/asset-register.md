@@ -118,8 +118,10 @@ principals that read or change an asset through Terraform.
 - Description: network storage and application host. Runs
   Plex, Netdata, alloy, Tailscale, `ddns-updater`, and Scrutiny.
   Advertises `192.168.68.0/22` to the tailnet as a subnet router, and
-  offers an exit node
-- Exposed to: T-2, via E-05. A-12 carries its only path from T-1
+  offers an exit node. Tailscale serves its web interface on its
+  tailnet name with a Tailscale certificate
+- Exposed to: T-2, via E-05. T-3, via E-09. A-12 carries its only path
+  from T-1
 - Terraform access: P-1, through `just truenas`
 
 ### A-02: `homeassistant`
