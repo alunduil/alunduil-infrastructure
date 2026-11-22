@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # containerboot reads a missing serve file as no serve config, without an
+  # error, so the variable and the mount share this path.
+  tailscale_config_directory = "/config"
+}
+
 resource "truenas_app" "tailscale" {
   name        = "tailscale"
   catalog_app = "tailscale"
@@ -24,7 +30,7 @@ resource "truenas_app" "tailscale" {
       extra_args          = []
       tailscaled_args     = []
       additional_envs = [
-        { name = "TS_SERVE_CONFIG", value = "/config/serve.json" },
+        { name = "TS_SERVE_CONFIG", value = "${local.tailscale_config_directory}/serve.json" },
       ]
     }
     network = { host_network = true }
@@ -39,7 +45,7 @@ resource "truenas_app" "tailscale" {
         {
           type             = "ix_volume"
           read_only        = true
-          mount_path       = "/config"
+          mount_path       = local.tailscale_config_directory
           ix_volume_config = { acl_enable = false, dataset_name = "config" }
         },
       ]
