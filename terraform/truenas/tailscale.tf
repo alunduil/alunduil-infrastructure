@@ -1,13 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Holds the serve config the tailscale app reads. The provider can't write
-# files, so tailscale/serve.json is copied here by hand.
-resource "truenas_dataset" "tailscale" {
-  name  = "volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/tailscale"
-  quota = 1024 * 1024 * 1024
-}
-
 resource "truenas_app" "tailscale" {
   name        = "tailscale"
   catalog_app = "tailscale"
@@ -40,12 +33,14 @@ resource "truenas_app" "tailscale" {
         type             = "ix_volume"
         ix_volume_config = { acl_enable = false, dataset_name = "state" }
       }
+      # The provider can't write files, so tailscale/serve.json is copied
+      # into this volume by hand.
       additional_storage = [
         {
-          type             = "host_path"
+          type             = "ix_volume"
           read_only        = true
           mount_path       = "/config"
-          host_path_config = { acl_enable = false, path = "/mnt/${truenas_dataset.tailscale.name}" }
+          ix_volume_config = { acl_enable = false, dataset_name = "config" }
         },
       ]
     }

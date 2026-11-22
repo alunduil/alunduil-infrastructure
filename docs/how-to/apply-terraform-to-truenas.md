@@ -51,11 +51,12 @@ matches TrueNAS.
 
 The provider can't write files, so `just truenas` neither copies
 `terraform/truenas/tailscale/serve.json` nor reports a stale copy. After the
-first apply, and after each edit to the file, copy it onto the box. The
-dataset belongs to root, so the second command installs the file with sudo:
+first apply, and after each edit to the file, copy it onto the box. The app's
+`config` volume belongs to root, so the second command installs the file with
+sudo:
 
 ```sh
-target=/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/tailscale/serve.json
+target=/mnt/.ix-apps/app_mounts/tailscale/config/serve.json
 scp terraform/truenas/tailscale/serve.json truenas:serve.json
 ssh -t truenas "sudo install -m 0644 serve.json ${target} && rm serve.json"
 ```
