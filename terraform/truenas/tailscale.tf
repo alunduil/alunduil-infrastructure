@@ -4,11 +4,11 @@
 locals {
   # containerboot treats a missing serve file as no serve config and logs no
   # error, so every path to the file comes from these values.
-  tailscale_config_directory = "/config"
   tailscale_serve_file       = "serve.json"
+  tailscale_serve_source     = "${path.module}/tailscale/${local.tailscale_serve_file}"
+  tailscale_config_directory = "/config"
 
   tailscale_config_volume = "config"
-  tailscale_serve_source  = "${path.module}/tailscale/${local.tailscale_serve_file}"
 }
 
 resource "truenas_app" "tailscale" {
