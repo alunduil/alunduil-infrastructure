@@ -197,13 +197,14 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # Gates renovate.json's lock file maintenance automerge. Renovate waits
-  # only for required checks, so this one is required. Merging a pull
-  # request whose plan changes something takes the admin bypass.
-  lock-file-plan:
-    name: Confirm lock file maintenance plans no changes
+  # Gates renovate.json's automerge of updates that trigger an apply.
+  # Renovate waits only for required checks, so this one is required.
+  # Merging a Renovate pull request whose plan changes something takes the
+  # admin bypass.
+  renovate-plan:
+    name: Confirm Renovate plans no changes
     needs: plan
-    if: github.head_ref == 'renovate/lock-file-maintenance'
+    if: startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-26.04
     timeout-minutes: 5
 
