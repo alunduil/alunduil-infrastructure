@@ -72,8 +72,7 @@ alunduil:
 # Credentials: gcloud CLI auth with secretAccessor on truenas-api-key, and
 # gcloud application-default for the GCS backend. Needs a route to TrueNAS.
 [doc("Plan and apply the TrueNAS configuration. No workflow runs this.")]
-[positional-arguments]
-truenas *args:
+truenas:
     #!/usr/bin/env bash
     set -euo pipefail
     # Assigned before export, so a failed fetch stops here rather than
@@ -81,7 +80,7 @@ truenas *args:
     TRUENAS_API_KEY="$(gcloud secrets versions access latest --secret=truenas-api-key --project=alunduil)"
     export TRUENAS_API_KEY
     terraform -chdir=terraform/truenas init
-    terraform -chdir=terraform/truenas apply "$@"
+    terraform -chdir=terraform/truenas apply
 
 # Credentials: gcloud CLI auth with secretAccessor on the box's Alloy push token
 # and Gmail app password, and read access to bootstrap-outputs.json.
