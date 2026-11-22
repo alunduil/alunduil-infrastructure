@@ -49,11 +49,8 @@ matches TrueNAS.
 
 ## Copy the Tailscale serve config
 
-The provider can't write files, so `just truenas` neither copies
-`terraform/truenas/tailscale/serve.json` nor reports a stale copy. After the
-first apply, and after each edit to the file, copy it onto the box. The app's
-`config` volume belongs to root, so the second command installs the file with
-sudo:
+`just truenas` doesn't copy `terraform/truenas/tailscale/serve.json` or check
+the copy on the box. Copy it after the first apply and after each edit:
 
 ```sh
 target=/mnt/.ix-apps/app_mounts/tailscale/config/serve.json

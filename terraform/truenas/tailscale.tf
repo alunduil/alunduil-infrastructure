@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  # containerboot reads a missing serve file as no serve config, without an
-  # error, so the variable and the mount share this path.
+  # TS_SERVE_CONFIG has to point inside this mount. containerboot treats a
+  # missing serve file as no serve config and logs no error.
   tailscale_config_directory = "/config"
 }
 
@@ -12,9 +12,9 @@ resource "truenas_app" "tailscale" {
   catalog_app = "tailscale"
   train       = "community"
 
-  # app.update replaces each top-level key it receives, so each is declared
-  # whole. auth_key is left empty: auth_once skips login while the node's
-  # state is logged in.
+  # Declare every top-level key whole. For each key app.update receives, it
+  # resets the fields left out to their chart defaults. auth_key stays empty,
+  # because auth_once skips login while the node's state is logged in.
   values = jsonencode({
     TZ     = "Europe/London"
     labels = []
