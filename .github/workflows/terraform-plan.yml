@@ -197,21 +197,34 @@ jobs:
             | length' plan.json)
           echo "count=${count}" >> "$GITHUB_OUTPUT"
 
-  # Gates renovate.json's lock file maintenance automerge. Renovate waits
-  # only for required checks, so this one is required. Merging a pull
-  # request whose plan changes something takes the admin bypass.
-  lock-file-plan:
+  # Gates renovate.json's automerge of updates that trigger an apply.
+  # Renovate waits only for required checks, so this one is required, and
+  # the checks ruleset has no bypass. A pull request Renovate holds passes
+  # whatever its plan, or no one could merge it. Renovate states which kind
+  # each pull request is in its body.
+  #
+  # The default-branch ruleset requires this check by name, so renaming the
+  # job breaks the merge gate.
+  renovate-plan:
     name: Confirm lock file maintenance plans no changes
     needs: plan
-    if: github.head_ref == 'renovate/lock-file-maintenance'
+    if: startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-26.04
     timeout-minutes: 5
 
     steps:
       - name: Fail on planned changes
         env:
+          BODY: ${{ github.event.pull_request.body }}
           RESOURCE_CHANGES: ${{ needs.plan.outputs.resource_changes }}
         run: |
+          if [[ "${BODY}" == *'**Automerge**: Disabled'* ]]; then
+            exit 0
+          fi
+          if [[ "${BODY}" != *'**Automerge**: Enabled'* ]]; then
+            echo "::error::The body states neither automerge Enabled nor Disabled."
+            exit 1
+          fi
           if [[ "${RESOURCE_CHANGES}" != 0 ]]; then
             echo "::error::Merging applies the plan's ${RESOURCE_CHANGES} resource changes."
             exit 1

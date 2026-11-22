@@ -64,8 +64,8 @@ locals {
           "Plan Terraform changes",
           "Confirm lock file maintenance plans no changes",
         ]
-        # renovate.json holds back every update that would trigger an apply,
-        # except lock file maintenance whose plan changes nothing.
+        # An update that triggers an apply automerges only when its plan
+        # changes nothing. renovate.json holds back the rest.
         renovate_automerge = true
       }
       # The Hourly Inbox sync reads GH_PROJECT_SYNC_TOKEN from this
