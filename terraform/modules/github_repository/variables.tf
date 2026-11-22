@@ -112,10 +112,10 @@ variable "unprotected_renovate_branches" {
   default     = []
   nullable    = false
   description = <<-EOT
-    Branch name patterns under renovate/, such as
-    "renovate/hook-fix-selftest-*", that anyone with write access can
-    update. List only branches Renovate never opens: a commit pushed to a
-    Renovate pull request's branch merges with it, unreviewed.
+    Branch patterns under renovate/ that anyone with write access can
+    update, such as "renovate/hook-fix-selftest-*". List only branches
+    Renovate never opens, because Renovate merges every commit on its own
+    branches without review.
   EOT
 
   validation {
