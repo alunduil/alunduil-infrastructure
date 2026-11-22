@@ -54,10 +54,6 @@ If an apply cuts the tailnet path to TrueNAS, sign in to the web UI on the
 home network at `https://192.168.68.63` and revert the change there. Revert it in
 `terraform/truenas/` too, or the next `just truenas` reapplies it.
 
-Disconnect Tailscale on the device you sign in from. A device that accepts
-TrueNAS's subnet route sends that address through TrueNAS's own Tailscale node,
-which is down.
-
 If the `tailscale` app fails, the web UI's tailnet address fails with it.
 Repair the app under **Apps** at the home-network address. The browser warns
 about the certificate there, because TrueNAS's certificate doesn't name the IP.
