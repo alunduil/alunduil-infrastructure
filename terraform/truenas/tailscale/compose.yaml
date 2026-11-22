@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Mirrors what the community catalog app rendered, plus TS_SERVE_CONFIG. The
+# catalog app could only mount a serve file placed on disk by hand.
+#
+# `$$` escapes Compose interpolation: containerboot substitutes
+# ${TS_CERT_DOMAIN} with the node's tailnet name itself.
+
+---
+services:
+  tailscale:
+    # yamllint disable-line rule:line-length
+    image: ghcr.io/tailscale/tailscale:v1.104.7@sha256:72c1e19e0aedca96b8533bbb0b4368564410ff20b17e53b804eb6c1f04a31be4
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_MODULE
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: Europe/London
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_SOCKET: /var/run/tailscale/tailscaled.sock
+      TS_HOSTNAME: truenas
+      TS_ACCEPT_DNS: "false"
+      TS_USERSPACE: "false"
+      TS_AUTH_ONCE: "true"
+      TS_ROUTES: 192.168.68.0/22
+      TS_EXTRA_ARGS: --advertise-exit-node=true --reset=false --accept-routes=false
+      TS_SERVE_CONFIG: /etc/tailscale/serve.json
+    volumes:
+      - /mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/tailscale:/var/lib/tailscale
+    tmpfs:
+      - /var/run/tailscale:mode=0755
+    configs:
+      - source: serve
+        target: /etc/tailscale/serve.json
+    healthcheck:
+      test: [CMD, tailscale, status]
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 256M
+
+configs:
+  serve:
+    # The web UI keeps its own 443 on the LAN address, which serve doesn't
+    # bind, so the LAN stays a way in when the tailnet is down.
+    content: |
+      {
+        "TCP": {"443": {"HTTPS": true}},
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": {"/": {"Proxy": "https+insecure://127.0.0.1:443"}}
+          }
+        }
+      }
