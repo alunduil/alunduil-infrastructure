@@ -45,10 +45,15 @@ just truenas
 
 Terraform shows the plan and waits for `yes` before applying. A plan reporting
 `No changes` with no error means the key authenticates and the configuration
-matches TrueNAS.
+matches TrueNAS. The plan doesn't read the Tailscale serve config back from the
+box, so it misses an edit made there.
 
 ## Recover from a bad apply
 
 If an apply cuts the tailnet path to TrueNAS, sign in to the web UI on the
 home network at `https://192.168.68.63` and revert the change there. Revert it in
 `terraform/truenas/` too, or the next `just truenas` reapplies it.
+
+If the `tailscale` app fails, the web UI's tailnet address fails with it.
+Repair the app under **Apps** at the home-network address. The browser warns
+about the certificate there, because TrueNAS's certificate doesn't name the IP.
