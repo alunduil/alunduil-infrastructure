@@ -5,8 +5,10 @@ locals {
   # TS_SERVE_CONFIG has to point inside this mount. containerboot treats a
   # missing serve file as no serve config and logs no error.
   tailscale_config_directory = "/config"
+  tailscale_serve_file       = "serve.json"
 
   tailscale_config_volume = "config"
+  tailscale_serve_source  = "${path.module}/tailscale/${local.tailscale_serve_file}"
 }
 
 resource "truenas_app" "tailscale" {
@@ -32,7 +34,7 @@ resource "truenas_app" "tailscale" {
       extra_args          = []
       tailscaled_args     = []
       additional_envs = [
-        { name = "TS_SERVE_CONFIG", value = "${local.tailscale_config_directory}/serve.json" },
+        { name = "TS_SERVE_CONFIG", value = "${local.tailscale_config_directory}/${local.tailscale_serve_file}" },
       ]
     }
     network = { host_network = true }
@@ -63,20 +65,21 @@ import {
 # API's filesystem.put. The upload runs as a TrueNAS job, and curl sees only
 # that the job started, not that it finished.
 resource "terraform_data" "tailscale_serve_config" {
-  triggers_replace = [filesha256("${path.module}/tailscale/serve.json")]
+  triggers_replace = [filesha256(local.tailscale_serve_source)]
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
     environment = {
-      SOURCE = abspath("${path.module}/tailscale/serve.json")
-      TARGET = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/serve.json"
+      MODE   = parseint("0644", 8)
+      SOURCE = abspath(local.tailscale_serve_source)
+      TARGET = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/${local.tailscale_serve_file}"
       URL    = "https://${local.truenas_host}/_upload"
     }
-    # The header file keeps the key out of the process list. 420 is 0644.
+    # The header file keeps the key out of the process list.
     command = <<-EOT
       curl --fail-with-body --silent --show-error --insecure \
         --header @<(printf 'Authorization: Bearer %s\n' "$TRUENAS_API_KEY") \
-        --form-string "data={\"method\":\"filesystem.put\",\"params\":[\"$TARGET\",{\"mode\":420}]}" \
+        --form-string "data={\"method\":\"filesystem.put\",\"params\":[\"$TARGET\",{\"mode\":$MODE}]}" \
         --form "file=@$SOURCE" \
         "$URL"
     EOT
