@@ -5,6 +5,8 @@ locals {
   # TS_SERVE_CONFIG has to point inside this mount. containerboot treats a
   # missing serve file as no serve config and logs no error.
   tailscale_config_directory = "/config"
+
+  tailscale_config_volume = "config"
 }
 
 resource "truenas_app" "tailscale" {
@@ -39,14 +41,12 @@ resource "truenas_app" "tailscale" {
         type             = "ix_volume"
         ix_volume_config = { acl_enable = false, dataset_name = "state" }
       }
-      # The provider can't write files, so tailscale/serve.json is copied
-      # into this volume by hand.
       additional_storage = [
         {
           type             = "ix_volume"
           read_only        = true
           mount_path       = local.tailscale_config_directory
-          ix_volume_config = { acl_enable = false, dataset_name = "config" }
+          ix_volume_config = { acl_enable = false, dataset_name = local.tailscale_config_volume }
         },
       ]
     }
@@ -57,4 +57,28 @@ resource "truenas_app" "tailscale" {
 import {
   to = truenas_app.tailscale
   id = "tailscale"
+}
+
+# The provider has no file resource, so this uploads serve.json through the
+# API's filesystem.put. The upload runs as a TrueNAS job, and curl sees only
+# that the job started, not that it finished.
+resource "terraform_data" "tailscale_serve_config" {
+  triggers_replace = [filesha256("${path.module}/tailscale/serve.json")]
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    environment = {
+      SOURCE = abspath("${path.module}/tailscale/serve.json")
+      TARGET = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/serve.json"
+      URL    = "https://${local.truenas_host}/_upload"
+    }
+    # The header file keeps the key out of the process list. 420 is 0644.
+    command = <<-EOT
+      curl --fail-with-body --silent --show-error --insecure \
+        --header @<(printf 'Authorization: Bearer %s\n' "$TRUENAS_API_KEY") \
+        --form-string "data={\"method\":\"filesystem.put\",\"params\":[\"$TARGET\",{\"mode\":420}]}" \
+        --form "file=@$SOURCE" \
+        "$URL"
+    EOT
+  }
 }

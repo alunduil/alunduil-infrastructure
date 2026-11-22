@@ -45,20 +45,8 @@ just truenas
 
 Terraform shows the plan and waits for `yes` before applying. A plan reporting
 `No changes` with no error means the key authenticates and the configuration
-matches TrueNAS.
-
-## Copy the Tailscale serve config
-
-`just truenas` doesn't copy `terraform/truenas/tailscale/serve.json` or check
-the copy on the box. Copy it after the first apply and after each edit:
-
-```sh
-target=/mnt/.ix-apps/app_mounts/tailscale/config/serve.json
-scp terraform/truenas/tailscale/serve.json truenas:serve.json
-ssh -t truenas "sudo install -m 0644 serve.json ${target} && rm serve.json"
-```
-
-The `tailscale` app applies the new file without a restart.
+matches TrueNAS. The plan doesn't read the Tailscale serve config back from the
+box, so it misses an edit made there.
 
 ## Recover from a bad apply
 

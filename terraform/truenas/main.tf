@@ -15,11 +15,15 @@ terraform {
   }
 }
 
+locals {
+  truenas_host = "192.168.68.63"
+}
+
 # The API key arrives as TRUENAS_API_KEY.
 #
 # The web UI's certificate names truenas.alunduil.com, which nothing resolves, so
 # verification against the LAN address fails.
 provider "truenas" {
-  endpoint = "wss://192.168.68.63/api/current"
+  endpoint = "wss://${local.truenas_host}/api/current"
   insecure = true
 }
