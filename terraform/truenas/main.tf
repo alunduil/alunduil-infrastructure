@@ -23,6 +23,3 @@ provider "truenas" {
   endpoint = "wss://192.168.68.63/api/current"
   insecure = true
 }
-
-# Proves a plan reaches the API and the key authenticates.
-data "truenas_system_general" "this" {}

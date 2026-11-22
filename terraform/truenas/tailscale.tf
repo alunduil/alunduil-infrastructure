@@ -9,11 +9,11 @@ resource "truenas_dataset" "tailscale" {
 }
 
 resource "truenas_app" "tailscale" {
-  name                         = "tailscale"
-  custom_app                   = true
-  custom_compose_config_string = file("${path.module}/tailscale/compose.yaml")
-
-  depends_on = [truenas_dataset.tailscale]
+  name       = "tailscale"
+  custom_app = true
+  custom_compose_config_string = templatefile("${path.module}/tailscale/compose.yaml", {
+    state_directory = truenas_dataset.tailscale.mountpoint
+  })
 }
 
 import {
