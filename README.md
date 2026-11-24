@@ -74,6 +74,8 @@ Reference:
   principals, entry points, dependencies, and credentials
 - [Delivery metrics](docs/reference/delivery-metrics.md): DORA and SPACE metric
   definitions against GitHub data
+- [Telemetry labels](docs/reference/telemetry-labels.md): the labels that trace
+  a metric or log to its host, collector and pipeline
 
 Explanation:
 

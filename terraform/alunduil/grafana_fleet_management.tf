@@ -28,6 +28,7 @@ resource "grafana_fleet_management_pipeline" "concern" {
   matchers = ["${each.key}=\"true\""]
 
   contents = templatefile("${path.module}/${each.key}.alloy.tftpl", {
+    pipeline           = each.key
     logs_url           = local.bootstrap.grafana_logs_url
     logs_user_id       = local.bootstrap.grafana_logs_user_id
     prometheus_url     = local.bootstrap.grafana_prometheus_remote_write_endpoint

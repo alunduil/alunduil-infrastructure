@@ -57,4 +57,10 @@ prometheus.remote_write "default" {
 			password = sys.env("GCLOUD_RW_API_KEY")
 		}
 	}
+
+	external_labels = {
+		"host"         = string.to_lower(constants.hostname),
+		"collector_id" = argument.attributes.value["collector.ID"],
+		"pipeline"     = "${pipeline}",
+	}
 }
