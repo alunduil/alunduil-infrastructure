@@ -60,17 +60,17 @@ variable "required_status_checks" {
     are unique on a PR — a name shared by several workflows can't be
     pinned to one of them.
 
-    admin_bypassable_contexts are also required, but the admin can merge a
-    pull request past them. Renovate can't. List a check only here or in
-    contexts, because contexts allows no bypass.
+    admin_bypassable_contexts are also required. Only the admin can bypass
+    them, and only by merging a pull request. If contexts lists the same
+    check, nobody can bypass it. Requires admin_only_updates = false.
 
     require_up_to_date makes every open pull request update and rerun CI
     after each merge, so it pays off only where merging to the default
     branch is the release.
 
     ci_results_check also requires the aggregator job "Check CI results".
-    A required check that stops reporting blocks merges indefinitely, the
-    admin's included.
+    If a required check stops reporting, it blocks merges indefinitely. The
+    admin can bypass it only if admin_bypassable_contexts lists it.
     Matrix leg names change with the versions they test, so a matrix repo
     requires the aggregator instead of its legs. The job must list every
     job it stands in for under needs: and run on pushes to the default

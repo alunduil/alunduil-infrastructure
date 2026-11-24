@@ -237,8 +237,7 @@ moved {
   to   = github_repository_ruleset.checks
 }
 
-# Separate from checks because bypass actors are per ruleset. Mode
-# "pull_request" keeps the checks on the admin's direct pushes.
+# With mode "pull_request", these checks also gate the admin's direct pushes.
 resource "github_repository_ruleset" "admin_bypassable_checks" {
   count = length(var.required_status_checks.admin_bypassable_contexts) > 0 ? 1 : 0
 
@@ -276,7 +275,7 @@ resource "github_repository_ruleset" "admin_bypassable_checks" {
   lifecycle {
     precondition {
       condition     = !var.admin_only_updates
-      error_message = "admin_only_updates makes every admin merge a bypass, which would skip admin_bypassable_contexts too."
+      error_message = "admin_bypassable_contexts needs admin_only_updates = false. Otherwise every admin merge skips those checks."
     }
   }
 }

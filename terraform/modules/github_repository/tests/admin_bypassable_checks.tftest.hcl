@@ -22,7 +22,7 @@ run "only_the_admin_bypasses_only_the_bypassable_checks" {
       for actor in github_repository_ruleset.admin_bypassable_checks[0].bypass_actors :
       "${actor.actor_type}:${actor.actor_id}:${actor.bypass_mode}"
     ] == ["RepositoryRole:5:pull_request"]
-    error_message = "The admin role, through a pull request, must be the only bypass."
+    error_message = "Only the admin role may bypass, and only through a pull request."
   }
 
   assert {
@@ -30,12 +30,12 @@ run "only_the_admin_bypasses_only_the_bypassable_checks" {
       for check in github_repository_ruleset.admin_bypassable_checks[0].rules[0].required_status_checks[0].required_check :
       check.context
     ] == ["Confirm"]
-    error_message = "The bypass must reach the bypassable contexts alone."
+    error_message = "The ruleset must require only the bypassable contexts."
   }
 
   assert {
     condition     = length(github_repository_ruleset.checks.bypass_actors) == 0
-    error_message = "The checks ruleset must keep no bypass."
+    error_message = "The checks ruleset must have no bypass actors."
   }
 
   assert {
@@ -43,7 +43,7 @@ run "only_the_admin_bypasses_only_the_bypassable_checks" {
       for check in github_repository_ruleset.checks.rules[0].required_status_checks[0].required_check :
       check.context
     ], "Confirm")
-    error_message = "The checks ruleset must leave out the bypassable contexts."
+    error_message = "The checks ruleset must not require the bypassable contexts."
   }
 }
 
