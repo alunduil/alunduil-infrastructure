@@ -55,5 +55,5 @@ run "admin_only_repositories_are_rejected" {
     admin_only_updates = true
   }
 
-  expect_failures = [var.required_status_checks]
+  expect_failures = [github_repository_ruleset.admin_bypassable_checks]
 }

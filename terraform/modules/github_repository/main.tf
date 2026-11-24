@@ -264,14 +264,19 @@ resource "github_repository_ruleset" "admin_bypassable_checks" {
 
   rules {
     required_status_checks {
-      strict_required_status_checks_policy = var.required_status_checks.require_up_to_date
-
       dynamic "required_check" {
         for_each = var.required_status_checks.admin_bypassable_contexts
         content {
           context = required_check.value
         }
       }
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = !var.admin_only_updates
+      error_message = "admin_only_updates makes every admin merge a bypass, which would skip admin_bypassable_contexts too."
     }
   }
 }

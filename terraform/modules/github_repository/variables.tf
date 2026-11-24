@@ -85,14 +85,6 @@ variable "required_status_checks" {
     review. GitHub enforces only required checks on that merge, so require
     every check a dependency update can break.
   EOT
-
-  validation {
-    condition = (
-      length(var.required_status_checks.admin_bypassable_contexts) == 0
-      || !var.admin_only_updates
-    )
-    error_message = "admin_only_updates makes every admin merge a bypass, which would skip admin_bypassable_contexts too."
-  }
 }
 
 variable "require_code_owner_review" {
