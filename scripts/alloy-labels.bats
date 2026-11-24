@@ -8,7 +8,16 @@ setup() {
 
   shopt -s nullglob
   templates=("${BATS_TEST_DIRNAME}"/../terraform/alunduil/*.alloy.tftpl)
-  copy="${BATS_TEST_TMPDIR}/copy.alloy.tftpl"
+  fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
+}
+
+# assert_reports takes a pattern for the fixture's only line of output.
+assert_reports() {
+  run missing_labels "${fixture}"
+  [ "${status}" -eq 1 ]
+  [ "${#lines[@]}" -eq 1 ]
+  # shellcheck disable=SC2053
+  [[ ${output} == $1 ]]
 }
 
 @test "every pipeline template sets every label" {
@@ -27,17 +36,14 @@ setup() {
   local template label
   for template in "${templates[@]}"; do
     for label in host collector_id pipeline; do
-      sed "/^\t\t\"${label}\" /d" "${template}" >"${copy}"
-      run missing_labels "${copy}"
-      [ "${status}" -eq 1 ]
-      [[ "${output}" == *" ${label}" ]]
-      [ "${#lines[@]}" -eq 1 ]
+      sed "/^\t\t\"${label}\" /d" "${template}" >"${fixture}"
+      assert_reports "* ${label}"
     done
   done
 }
 
 @test "each writer is checked on its own" {
-  cat >"${copy}" <<'ALLOY'
+  cat >"${fixture}" <<'ALLOY'
 prometheus.remote_write "default" {
 	external_labels = {
 		"host"         = "a",
@@ -51,21 +57,17 @@ loki.write "default" {
 	}
 }
 ALLOY
-  run missing_labels "${copy}"
+  run missing_labels "${fixture}"
   [ "${status}" -eq 1 ]
   [ "${lines[*]}" = "loki.write host loki.write collector_id loki.write pipeline" ]
 }
 
 @test "a pipeline named by a literal is reported" {
-  sed 's/"[$]{pipeline}"/"other"/' "${templates[0]}" >"${copy}"
-  run missing_labels "${copy}"
-  [ "${status}" -eq 1 ]
-  [[ "${output}" == *" pipeline" ]]
+  sed 's/"[$]{pipeline}"/"other"/' "${templates[0]}" >"${fixture}"
+  assert_reports "* pipeline"
 }
 
 @test "a template without a writer is reported" {
-  printf 'loki.source.journal "system" {\n}\n' >"${copy}"
-  run missing_labels "${copy}"
-  [ "${status}" -eq 1 ]
-  [ "${output}" = "no writer" ]
+  printf 'loki.source.journal "system" {\n}\n' >"${fixture}"
+  assert_reports "no writer"
 }
