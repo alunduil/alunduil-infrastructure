@@ -11,11 +11,11 @@ setup() {
   fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
 }
 
-# assert_reports takes a pattern for the fixture's only line of output.
 assert_reports() {
   run missing_labels "${fixture}"
   [ "${status}" -eq 1 ]
   [ "${#lines[@]}" -eq 1 ]
+  # $1 is a glob.
   # shellcheck disable=SC2053
   [[ ${output} == $1 ]]
 }

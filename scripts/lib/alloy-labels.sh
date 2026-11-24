@@ -2,11 +2,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Checks the labels docs/reference/telemetry-labels.md requires. Alloy accepts a
-# writer without external_labels, so an omission never fails a plan or an apply.
+# Enforces docs/reference/telemetry-labels.md. Alloy accepts a writer without
+# external_labels, so neither plan nor apply catches an omission.
 
-# Prints each label a template's writers leave out, as `<writer> <label>`.
-# Relies on `alloy fmt` style: a top-level component closes in column one.
+# Prints `<writer> <label>` for each label that is absent or has the wrong value.
+# Parses by indentation, so the template must follow `alloy fmt`.
 missing_labels() {
   awk '
     function report_missing(    i) {
@@ -16,7 +16,7 @@ missing_labels() {
     }
     BEGIN {
       count = split("host collector_id pipeline", required, " ")
-      # A required label without an entry takes any expression.
+      # A label without an entry may have any value.
       expected["collector_id"] = "argument.attributes.value[\"collector.ID\"]"
       expected["pipeline"] = "\"${pipeline}\""
     }
