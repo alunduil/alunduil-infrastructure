@@ -42,11 +42,12 @@ variable "default_branch" {
 
 variable "required_status_checks" {
   type = object({
-    ci_results_check      = optional(bool, false)
-    codecov_project_check = optional(bool, false)
-    contexts              = optional(list(string), [])
-    require_up_to_date    = optional(bool, false)
-    renovate_automerge    = optional(bool, false)
+    ci_results_check          = optional(bool, false)
+    codecov_project_check     = optional(bool, false)
+    contexts                  = optional(list(string), [])
+    admin_bypassable_contexts = optional(list(string), [])
+    require_up_to_date        = optional(bool, false)
+    renovate_automerge        = optional(bool, false)
   })
   default     = {}
   nullable    = false
@@ -58,6 +59,10 @@ variable "required_status_checks" {
     contexts are matched by check-run name. Only require check names that
     are unique on a PR — a name shared by several workflows can't be
     pinned to one of them.
+
+    admin_bypassable_contexts are also required, but the admin can merge a
+    pull request past them. Renovate can't. List a check only here or in
+    contexts, because contexts allows no bypass.
 
     require_up_to_date makes every open pull request update and rerun CI
     after each merge, so it pays off only where merging to the default
@@ -80,6 +85,14 @@ variable "required_status_checks" {
     review. GitHub enforces only required checks on that merge, so require
     every check a dependency update can break.
   EOT
+
+  validation {
+    condition = (
+      length(var.required_status_checks.admin_bypassable_contexts) == 0
+      || !var.admin_only_updates
+    )
+    error_message = "admin_only_updates makes every admin merge a bypass, which would skip admin_bypassable_contexts too."
+  }
 }
 
 variable "require_code_owner_review" {

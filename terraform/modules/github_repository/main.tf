@@ -237,6 +237,45 @@ moved {
   to   = github_repository_ruleset.checks
 }
 
+# Separate from checks because bypass actors are per ruleset. Mode
+# "pull_request" keeps the checks on the admin's direct pushes.
+resource "github_repository_ruleset" "admin_bypassable_checks" {
+  count = length(var.required_status_checks.admin_bypassable_contexts) > 0 ? 1 : 0
+
+  name        = "admin-bypassable-checks"
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  depends_on = [github_branch_default.this]
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = local.admin_bypass_actor.actor_id
+    actor_type  = local.admin_bypass_actor.actor_type
+    bypass_mode = "pull_request"
+  }
+
+  rules {
+    required_status_checks {
+      strict_required_status_checks_policy = var.required_status_checks.require_up_to_date
+
+      dynamic "required_check" {
+        for_each = var.required_status_checks.admin_bypassable_contexts
+        content {
+          context = required_check.value
+        }
+      }
+    }
+  }
+}
+
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
