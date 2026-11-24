@@ -58,6 +58,8 @@ prometheus.remote_write "default" {
 		}
 	}
 
+	// A label set at the source overrides its default here. In a container,
+	// constants.hostname is the container ID.
 	external_labels = {
 		"host"         = string.to_lower(constants.hostname),
 		"collector_id" = argument.attributes.value["collector.ID"],
