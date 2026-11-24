@@ -137,7 +137,7 @@ shortens these sources:
 | 3.0 Run checks | Tampering | An updated action or hook changes the check it runs in, so it passes itself | Medium | `minimumReleaseAge`, and `renovate-config#82` for re-pointed tags | Not Started | `default.json`, `minimumReleaseAge` |
 | 3.0 Run checks | Repudiation | Run logs record each check, and a merged update stays in history | — | — | Not Applicable | register, D-09 |
 | 3.0 Run checks | Information Disclosure | In `alunduil-infrastructure`, updated code reads CI plan's credentials | High | #1063 | Not Started | `credential-reachability.md`, What CI holds |
-| 3.0 Run checks | Denial of Service | A check that never reports blocks the merge, the admin's included, until it reports | — | — | Not Applicable | `terraform/modules/github_repository/variables.tf`, `required_status_checks` |
+| 3.0 Run checks | Denial of Service | A check never reports, which blocks the merge. The admin can bypass it only if `admin_bypassable_contexts` lists it | — | — | Not Applicable | `terraform/modules/github_repository/variables.tf`, `required_status_checks` |
 | 3.0 Run checks | Elevation of Privilege | In `alunduil-infrastructure`, updated code acts with CI plan's credentials before anyone reviews it | High | #1063 | Not Started | `.github/workflows/terraform-plan.yml`, `on.pull_request` |
 | 4.0 Run hooks | Spoofing | A fork's pull request feeds the push | High | The job runs only when the head repository is the base | Mitigated | workflow, job `hooks`, `if` |
 | 4.0 Run hooks | Tampering | Hook code writes any in-place edit into the diff, which the push job commits | High | #1057, `renovate-config#39` | Not Started | workflow, step `Capture fixes` |

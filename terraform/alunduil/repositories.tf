@@ -62,8 +62,9 @@ locals {
           # A failed detect job skips the plan, and a skipped job passes.
           "Detect Terraform changes",
           "Plan Terraform changes",
-          "Confirm lock file maintenance plans no changes",
         ]
+        # The admin reads the plan before bypassing this check.
+        admin_bypassable_contexts = ["Confirm lock file maintenance plans no changes"]
         # An update that triggers an apply automerges only when its plan
         # changes nothing. renovate.json holds back the rest.
         renovate_automerge = true
