@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 mock_provider "github" {
-  # The default_branch_rename check compares against this.
-  mock_data "github_repository" {
-    defaults = { default_branch = "main" }
-  }
+  source = "./tests/mocks"
 }
 
 variables {

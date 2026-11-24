@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 mock_provider "github" {
-  # The default_branch_rename check compares against this.
-  mock_data "github_repository" {
-    defaults = { default_branch = "main" }
-  }
+  source = "./tests/mocks"
 }
 
 variables {
@@ -37,14 +34,16 @@ run "only_the_admin_bypasses_only_the_bypassable_checks" {
   }
 
   assert {
-    condition = (
-      length(github_repository_ruleset.checks.bypass_actors) == 0
-      && !contains([
-        for check in github_repository_ruleset.checks.rules[0].required_status_checks[0].required_check :
-        check.context
-      ], "Confirm")
-    )
-    error_message = "The checks ruleset must keep no bypass and leave out the bypassable contexts."
+    condition     = length(github_repository_ruleset.checks.bypass_actors) == 0
+    error_message = "The checks ruleset must keep no bypass."
+  }
+
+  assert {
+    condition = !contains([
+      for check in github_repository_ruleset.checks.rules[0].required_status_checks[0].required_check :
+      check.context
+    ], "Confirm")
+    error_message = "The checks ruleset must leave out the bypassable contexts."
   }
 }
 
