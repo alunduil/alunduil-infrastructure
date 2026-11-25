@@ -4,8 +4,7 @@
 # Telemetry labels
 
 Every metric series and log stream from a Fleet Management pipeline in
-`terraform/alunduil/` must carry these labels. CI checks each template for
-`host`, `collector_id` and `pipeline`.
+`terraform/alunduil/` must carry these labels. CI checks each template for them.
 
 `host`
 : The machine that the data describes: its host name in lower case, or the
@@ -18,12 +17,10 @@ Every metric series and log stream from a Fleet Management pipeline in
 `pipeline`
 : The Fleet Management pipeline's name, which is also its template's name.
 
-`job` and `instance`
-: The scrape target's identity.
-
 ## Constraints
 
-- A label's value is constant for a pipeline and target.
-- Another label is allowed only for a question that these five can't answer.
-- Adaptive Metrics aggregation rules keep `host`, `collector_id` and
-  `pipeline`.
+- A label's value is constant for a pipeline and source.
+- Another label is allowed only for a question that these three can't answer.
+- Adaptive Metrics aggregation rules keep all three.
+- `job` and `instance` are outside this contract. Existing queries use them,
+  so a pipeline that sets them keeps them.

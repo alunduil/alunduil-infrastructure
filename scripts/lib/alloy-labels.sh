@@ -2,9 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Enforces the CI-checked labels in docs/reference/telemetry-labels.md. Alloy
-# accepts a writer without external_labels, so neither plan nor apply catches an
-# omission.
+# Enforces docs/reference/telemetry-labels.md. Alloy accepts a writer without
+# external_labels, so neither plan nor apply catches an omission.
 
 # Prints `<writer> <label>` for each label that is absent or has the wrong value.
 # Parses by indentation, so the template must follow `alloy fmt`.
