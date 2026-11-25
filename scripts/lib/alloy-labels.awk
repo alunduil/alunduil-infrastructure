@@ -4,8 +4,9 @@
 # Enforces docs/reference/telemetry-labels.md. Alloy accepts a writer without
 # external_labels, so neither plan nor apply catches an omission.
 #
-# Prints `<writer> <label>` for each absent or wrong label, or `no writer`.
-# Parses by indentation, so the template must follow `alloy fmt`.
+# Prints `<writer> <label>` for each absent or wrong label, and `no writer` for a
+# template without one. Parses by indentation, so the template must follow
+# `alloy fmt`.
 
 function report_violations(    i) {
   for (i = 1; i in required; i++) {

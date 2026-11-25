@@ -75,7 +75,7 @@ Reference:
 - [Delivery metrics](docs/reference/delivery-metrics.md): DORA and SPACE metric
   definitions against GitHub data
 - [Telemetry labels](docs/reference/telemetry-labels.md): the labels that every
-  metric and log must carry
+  Fleet Management pipeline must set
 
 Explanation:
 

@@ -65,7 +65,7 @@ ALLOY
   assert_reports "loki.write host" "loki.write collector_id" "loki.write pipeline"
 }
 
-@test "a literal in place of a fixed value is reported" {
+@test "a literal collector_id or pipeline is reported" {
   local label
   for label in collector_id pipeline; do
     sed -E "s/^(\t\t\"${label}\" *= ).*/\1\"other\",/" "${templates[0]}" >"${fixture}"
