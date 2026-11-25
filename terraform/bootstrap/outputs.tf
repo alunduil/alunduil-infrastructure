@@ -137,13 +137,7 @@ output "grafana_github_app_secrets" {
 
 output "grafana_fleet_management_token_secrets" {
   value       = sort([for secret in google_secret_manager_secret.grafana_fleet_management_token : secret.secret_id])
-  description = "Secret Manager short names holding the Fleet Management access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"
-  sensitive   = false
-}
-
-output "grafana_adaptive_metrics_token_secrets" {
-  value       = sort([for secret in google_secret_manager_secret.grafana_adaptive_metrics_token : secret.secret_id])
-  description = "Secret Manager short names of the Adaptive Metrics access-policy tokens, read-only for plan and read-write for apply"
+  description = "Secret Manager short names holding the Fleet Management and Adaptive Metrics access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"
   sensitive   = false
 }
 

@@ -482,7 +482,8 @@ Google Cloud's other credentials.
 ### C-20: `alunduil-infrastructure-fleet-management-ro`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `fleet-management:read` on the stack realm
+- Scope: `adaptive-metrics-config:read` and `fleet-management:read` on the
+  stack realm
 - Consumer: `terraform plan` in CI
 - Grants: P-2
 - Created by: Terraform
@@ -491,8 +492,8 @@ Google Cloud's other credentials.
 ### C-21: `alunduil-infrastructure-fleet-management-rw`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `fleet-management:read` and `fleet-management:write` on the
-  stack realm
+- Scope: read and write for `adaptive-metrics-config` and
+  `fleet-management` on the stack realm
 - Consumer: `terraform apply` in CI, and `just alunduil`
 - Grants: P-3, and P-1 through the break-glass path
 - Created by: Terraform
@@ -729,27 +730,6 @@ Google Cloud's other credentials.
 - Grants: P-14
 - Created by: Operator
 - Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
-
-### C-43: `alunduil-infrastructure-adaptive-metrics-ro`
-
-- Kind: Grafana Cloud access-policy token
-- Scope: `adaptive-metrics-config:read` on the stack realm
-- Consumer: none. The plan service account can read it
-- Grants: P-2
-- Created by: Terraform
-- Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`
-- Tracked by: #512
-
-### C-44: `alunduil-infrastructure-adaptive-metrics-rw`
-
-- Kind: Grafana Cloud access-policy token
-- Scope: `adaptive-metrics-config:read` and
-  `adaptive-metrics-config:write` on the stack realm
-- Consumer: none. The apply service account can read it
-- Grants: P-3
-- Created by: Terraform
-- Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`
-- Tracked by: #512
 
 ## Maintenance
 

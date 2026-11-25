@@ -1,21 +1,28 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Fleet Management answers on its own regional host, not the stack server, and
-# takes basic auth rather than a stack service-account token. The provisioner
-# token in grafana.tf reaches none of it, so the alunduil layer needs a second
-# Grafana credential: a Cloud access policy on this stack's realm.
+# Fleet Management and Adaptive Metrics answer on their own hosts, not the stack
+# server, and take basic auth rather than a stack service-account token. The
+# provisioner token in grafana.tf reaches neither, so the alunduil layer needs a
+# second Grafana credential: a Cloud access policy on this stack's realm. One
+# credential covers both products because the same deployer holds it.
 #
 # Split by role for the reason tailscale.tf gives. The stack Admin role has no
 # read-only variant; access-policy scopes do.
 locals {
   # Policy and token carry one name so the Cloud Portal shows which token came
-  # from which policy.
+  # from which policy. Renaming either, or the secret, replaces a live
+  # credential, so the names cover less than the scopes do.
   grafana_fleet_management_name = "alunduil-infrastructure-fleet-management"
 
   grafana_fleet_management_scopes = {
-    ro = ["fleet-management:read"]
-    rw = ["fleet-management:read", "fleet-management:write"]
+    ro = ["adaptive-metrics-config:read", "fleet-management:read"]
+    rw = [
+      "adaptive-metrics-config:read",
+      "adaptive-metrics-config:write",
+      "fleet-management:read",
+      "fleet-management:write",
+    ]
   }
 }
 
@@ -24,7 +31,7 @@ resource "grafana_cloud_access_policy" "fleet_management" {
 
   region       = data.grafana_cloud_stack.this.region_slug
   name         = "${local.grafana_fleet_management_name}-${each.key}"
-  display_name = "alunduil-infrastructure Fleet Management (${upper(each.key)})"
+  display_name = "alunduil-infrastructure deployer (${upper(each.key)})"
 
   scopes = each.value
 
