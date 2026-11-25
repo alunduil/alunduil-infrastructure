@@ -62,9 +62,12 @@ ALLOY
   [ "${lines[*]}" = "loki.write host loki.write collector_id loki.write pipeline" ]
 }
 
-@test "a pipeline named by a literal is reported" {
-  sed 's/"[$]{pipeline}"/"other"/' "${templates[0]}" >"${fixture}"
-  assert_reports "* pipeline"
+@test "a literal in place of a fixed value is reported" {
+  local label
+  for label in collector_id pipeline; do
+    sed -E "s/^(\t\t\"${label}\" *= ).*/\1\"other\",/" "${templates[0]}" >"${fixture}"
+    assert_reports "* ${label}"
+  done
 }
 
 @test "a template without a writer is reported" {
