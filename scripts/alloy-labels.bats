@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 setup() {
-  # shellcheck source=lib/alloy-labels.sh disable=SC1091
-  source "${BATS_TEST_DIRNAME}/lib/alloy-labels.sh"
-
   shopt -s nullglob
   templates=("${BATS_TEST_DIRNAME}"/../terraform/alunduil/*.alloy.tftpl)
   fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
+}
+
+label_violations() {
+  awk -f "${BATS_TEST_DIRNAME}/lib/alloy-labels.awk" "$1"
 }
 
 # Takes a glob for each reported line, in order.
