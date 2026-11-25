@@ -8,30 +8,37 @@
 # Parses by indentation, so the template must follow `alloy fmt`.
 
 function report_violations(    i) {
-  for (i = 1; i <= count; i++) {
+  for (i = 1; i in required; i++) {
     if (!(required[i] in valid)) { print writer, required[i]; failed = 1 }
   }
 }
+
 function accepts_any_value(label) { return !(label in expected) }
+
+function label_in(line,    quoted) { split(line, quoted, "\""); return quoted[2] }
+
+function expression_in(line) { sub(/^[^=]*=[ \t]*/, "", line); return line }
+
 BEGIN {
-  count = split("host collector_id pipeline", required, " ")
+  split("host collector_id pipeline", required, " ")
   expected["collector_id"] = "argument.attributes.value[\"collector.ID\"]"
   expected["pipeline"] = "\"${pipeline}\""
 }
+
 /^(loki\.write|prometheus\.remote_write) / {
-  writer = $1; writers++; delete valid
+  writer = $1; found_writer = 1; delete valid
 }
 writer && /^\texternal_labels[ \t]*=[ \t]*\{/ { in_labels = 1; next }
 /^\t\}/ { in_labels = 0 }
 in_labels && /^\t\t"[^"]+"[ \t]*=/ {
-  split($0, quoted, "\""); label = quoted[2]
-  expression = $0; sub(/^[^=]*=[ \t]*/, "", expression)
-  if (accepts_any_value(label) || expression == expected[label] ",") {
+  label = label_in($0)
+  if (accepts_any_value(label) || expression_in($0) == expected[label] ",") {
     valid[label] = 1
   }
 }
 writer && /^\}/ { report_violations(); writer = ""; in_labels = 0 }
+
 END {
-  if (!writers) { print "no writer"; failed = 1 }
+  if (!found_writer) { print "no writer"; failed = 1 }
   exit failed
 }
