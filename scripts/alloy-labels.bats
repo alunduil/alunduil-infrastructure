@@ -11,20 +11,24 @@ setup() {
   fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
 }
 
+# Each argument is a glob for one line of the report, in order.
 assert_reports() {
-  run missing_labels "${fixture}"
+  local line
+  run label_violations "${fixture}"
   [ "${status}" -eq 1 ]
-  [ "${#lines[@]}" -eq 1 ]
-  # $1 is a glob.
-  # shellcheck disable=SC2053
-  [[ ${output} == $1 ]]
+  [ "${#lines[@]}" -eq "$#" ]
+  for line in "${lines[@]}"; do
+    # shellcheck disable=SC2053
+    [[ ${line} == $1 ]]
+    shift
+  done
 }
 
 @test "every pipeline template sets every label" {
   local template found failed=0
   ((${#templates[@]} > 0))
   for template in "${templates[@]}"; do
-    if ! found="$(missing_labels "${template}")"; then
+    if ! found="$(label_violations "${template}")"; then
       printf '%s:\n%s\n' "${template##*/}" "${found}" >&2
       failed=1
     fi
@@ -57,9 +61,7 @@ loki.write "default" {
 	}
 }
 ALLOY
-  run missing_labels "${fixture}"
-  [ "${status}" -eq 1 ]
-  [ "${lines[*]}" = "loki.write host loki.write collector_id loki.write pipeline" ]
+  assert_reports "loki.write host" "loki.write collector_id" "loki.write pipeline"
 }
 
 @test "a literal in place of a fixed value is reported" {
