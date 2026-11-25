@@ -734,7 +734,7 @@ Google Cloud's other credentials.
 
 - Kind: Grafana Cloud access-policy token
 - Scope: `adaptive-metrics-config:read` on the stack realm
-- Consumer: none. Its secret admits the plan service account
+- Consumer: none. The plan service account can read it
 - Grants: P-2
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`
@@ -745,7 +745,7 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `adaptive-metrics-config:read` and
   `adaptive-metrics-config:write` on the stack realm
-- Consumer: none. Its secret admits the apply service account
+- Consumer: none. The apply service account can read it
 - Grants: P-3
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`

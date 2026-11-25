@@ -1,12 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The Adaptive Metrics API answers on the stack's metrics host with basic auth,
-# so the provisioner token in grafana.tf can't reach it. Split by role for the
-# reason tailscale.tf gives.
+# The Adaptive Metrics API takes basic auth on the stack's metrics host, so the
+# provisioner token in grafana.tf can't reach it. tailscale.tf says why
+# credentials split by role.
 locals {
-  # Covers the recommendations configuration alone. Rules and exemptions have
-  # scopes of their own.
   grafana_adaptive_metrics_scopes = {
     ro = ["adaptive-metrics-config:read"]
     rw = ["adaptive-metrics-config:read", "adaptive-metrics-config:write"]
@@ -28,7 +26,7 @@ resource "grafana_cloud_access_policy" "adaptive_metrics" {
   }
 }
 
-# No expires_at, for the reason grafana_fleet_management.tf gives.
+# grafana_fleet_management.tf says why there is no expires_at.
 resource "grafana_cloud_access_policy_token" "adaptive_metrics" {
   for_each = local.grafana_adaptive_metrics_scopes
 
