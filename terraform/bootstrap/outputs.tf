@@ -141,6 +141,12 @@ output "grafana_fleet_management_token_secrets" {
   sensitive   = false
 }
 
+output "grafana_adaptive_metrics_token_secrets" {
+  value       = sort([for secret in google_secret_manager_secret.grafana_adaptive_metrics_token : secret.secret_id])
+  description = "Secret Manager short names holding the Adaptive Metrics access-policy tokens, read-only for plan and read-write for apply; fetched via `gcloud secrets versions access`"
+  sensitive   = false
+}
+
 output "grafana_alloy_push_token_secrets" {
   value       = { for collector, secret in google_secret_manager_secret.grafana_alloy_push_token : collector => secret.secret_id }
   description = "Secret Manager short name of each collector's alloy push token, keyed by collector; read by an operator rather than CI, and set on the collector as GCLOUD_RW_API_KEY"

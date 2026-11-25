@@ -730,6 +730,27 @@ Google Cloud's other credentials.
 - Created by: Operator
 - Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
 
+### C-43: `alunduil-infrastructure-adaptive-metrics-ro`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `metrics:read` on the stack realm, so it also queries every metric
+- Consumer: none. Its secret admits the plan service account
+- Grants: P-2
+- Created by: Terraform
+- Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`
+- Tracked by: #512
+
+### C-44: `alunduil-infrastructure-adaptive-metrics-rw`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `metrics:read` and `metrics:write` on the stack realm, so it also
+  queries and pushes every metric
+- Consumer: none. Its secret admits the apply service account
+- Grants: P-3
+- Created by: Terraform
+- Source: `terraform/bootstrap/grafana_adaptive_metrics.tf`
+- Tracked by: #512
+
 ## Maintenance
 
 Adding or removing an asset, entry point, dependency, or credential

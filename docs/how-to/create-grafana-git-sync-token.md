@@ -18,8 +18,9 @@ for this infrastructure. Export it only to target a different stack.
 
 Used only to read the stack, install its data source plugins, and
 create the credentials that land in Secret Manager: the provisioning
-service-account token and the Fleet Management access-policy tokens.
-Create it by hand, and recreate it when you next need to run bootstrap.
+service-account token and the Fleet Management and Adaptive Metrics
+access-policy tokens. Create it by hand, and recreate it when you next
+need to run bootstrap.
 
 1. Cloud Portal (<https://grafana.com>, then your org) → **Security →
    Access Policies → Create access policy**. Give it a display name
@@ -33,10 +34,10 @@ Create it by hand, and recreate it when you next need to run bootstrap.
     - `stack-plugins` → **read**, **write**, **delete**
     - `accesspolicies` → **read**, **write**, **delete**
 
-   `accesspolicies` covers the Fleet Management policies and tokens
-   bootstrap creates. `delete` lets a replacement complete rather than
-   fail part-applied. Leave every other resource unchecked, then
-   **Create**.
+   `accesspolicies` covers the Fleet Management and Adaptive Metrics
+   policies and tokens bootstrap creates. `delete` lets a replacement
+   complete rather than fail part-applied. Leave every other resource
+   unchecked, then **Create**.
 3. Select the policy → **Add token** → name it, set a short expiration,
    **Create**, and copy the value—Grafana shows it once.
 
