@@ -11,7 +11,7 @@ setup() {
   fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
 }
 
-# Each argument is a glob for one line of the report, in order.
+# Takes a glob for each reported line, in order.
 assert_reports() {
   local line
   run label_violations "${fixture}"

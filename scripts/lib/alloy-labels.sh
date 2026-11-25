@@ -5,7 +5,7 @@
 # Enforces docs/reference/telemetry-labels.md. Alloy accepts a writer without
 # external_labels, so neither plan nor apply catches an omission.
 
-# Prints `<writer> <label>` for each label that is absent or has the wrong value.
+# Prints `<writer> <label>` for each absent or wrong label, or `no writer`.
 # Parses by indentation, so the template must follow `alloy fmt`.
 label_violations() {
   awk '

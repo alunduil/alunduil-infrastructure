@@ -7,21 +7,21 @@ Every metric series and log stream from a Fleet Management pipeline in
 `terraform/alunduil/` must carry these labels. CI checks each template for them.
 
 `host`
-: The machine that the data describes: its host name in lower case, or the
-  device's name if it has none. Relayed data takes the `host` of the machine
-  that it came from. Corresponds to OpenTelemetry's `host.name`.
+: The lower-case hostname of the machine that the data describes, or its device
+  name if it has no hostname. Relayed data names the originating machine.
+  Corresponds to OpenTelemetry's `host.name`.
 
 `collector_id`
 : The Fleet Management ID of the collector that shipped the data.
 
 `pipeline`
-: The Fleet Management pipeline's name, which is also its template's name.
+: The name of the Fleet Management pipeline. Its template is
+  `<pipeline>.alloy.tftpl`.
 
 ## Constraints
 
-- Each of these labels has one value for a pipeline and source.
-- This contract gains a label only for a question that these three can't
-  answer.
-- Adaptive Metrics aggregation rules keep all three.
-- `job` and `instance` are outside this contract. Existing queries use them,
-  so a pipeline that sets them keeps them.
+- Each label has one value per pipeline and source, so it multiplies no series.
+- A new required label must answer a question that these three can't.
+- Adaptive Metrics aggregation rules must keep all three.
+- `job` and `instance` aren't required. A pipeline that sets either must keep
+  it, because existing queries use both.

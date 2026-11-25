@@ -45,8 +45,8 @@ loki.write "default" {
 		}
 	}
 
-	// A label set at the source overrides its default here. In a container,
-	// constants.hostname is the container ID.
+	// The source's own labels override these. In a container, set host at the
+	// source, because constants.hostname is the container ID.
 	external_labels = {
 		"host"         = string.to_lower(constants.hostname),
 		"collector_id" = argument.attributes.value["collector.ID"],
