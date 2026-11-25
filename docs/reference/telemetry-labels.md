@@ -19,8 +19,9 @@ Every metric series and log stream from a Fleet Management pipeline in
 
 ## Constraints
 
-- A label's value is constant for a pipeline and source.
-- Another label is allowed only for a question that these three can't answer.
+- Each of these labels has one value for a pipeline and source.
+- This contract gains a label only for a question that these three can't
+  answer.
 - Adaptive Metrics aggregation rules keep all three.
 - `job` and `instance` are outside this contract. Existing queries use them,
   so a pipeline that sets them keeps them.
