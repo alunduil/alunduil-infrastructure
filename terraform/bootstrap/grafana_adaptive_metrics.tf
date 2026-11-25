@@ -7,11 +7,11 @@
 locals {
   grafana_adaptive_metrics_name = "alunduil-infrastructure-adaptive-metrics"
 
-  # Access policies have no Adaptive Metrics scope. Its API accepts the general
-  # metrics scopes, so rw can also push samples.
+  # Covers the recommendations configuration alone. Rules and exemptions have
+  # scopes of their own.
   grafana_adaptive_metrics_scopes = {
-    ro = ["metrics:read"]
-    rw = ["metrics:read", "metrics:write"]
+    ro = ["adaptive-metrics-config:read"]
+    rw = ["adaptive-metrics-config:read", "adaptive-metrics-config:write"]
   }
 }
 

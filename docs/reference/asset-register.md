@@ -733,7 +733,7 @@ Google Cloud's other credentials.
 ### C-43: `alunduil-infrastructure-adaptive-metrics-ro`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `metrics:read` on the stack realm, so it also queries every metric
+- Scope: `adaptive-metrics-config:read` on the stack realm
 - Consumer: none. Its secret admits the plan service account
 - Grants: P-2
 - Created by: Terraform
@@ -743,8 +743,8 @@ Google Cloud's other credentials.
 ### C-44: `alunduil-infrastructure-adaptive-metrics-rw`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `metrics:read` and `metrics:write` on the stack realm, so it also
-  queries and pushes every metric
+- Scope: `adaptive-metrics-config:read` and
+  `adaptive-metrics-config:write` on the stack realm
 - Consumer: none. Its secret admits the apply service account
 - Grants: P-3
 - Created by: Terraform
