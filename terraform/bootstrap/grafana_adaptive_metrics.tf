@@ -3,10 +3,8 @@
 
 # The Adaptive Metrics API answers on the stack's metrics host with basic auth,
 # so the provisioner token in grafana.tf can't reach it. Split by role for the
-# reason grafana_fleet_management.tf gives.
+# reason tailscale.tf gives.
 locals {
-  grafana_adaptive_metrics_name = "alunduil-infrastructure-adaptive-metrics"
-
   # Covers the recommendations configuration alone. Rules and exemptions have
   # scopes of their own.
   grafana_adaptive_metrics_scopes = {
@@ -19,7 +17,7 @@ resource "grafana_cloud_access_policy" "adaptive_metrics" {
   for_each = local.grafana_adaptive_metrics_scopes
 
   region       = data.grafana_cloud_stack.this.region_slug
-  name         = "${local.grafana_adaptive_metrics_name}-${each.key}"
+  name         = "alunduil-infrastructure-adaptive-metrics-${each.key}"
   display_name = "alunduil-infrastructure Adaptive Metrics (${upper(each.key)})"
 
   scopes = each.value
@@ -36,7 +34,7 @@ resource "grafana_cloud_access_policy_token" "adaptive_metrics" {
 
   region           = data.grafana_cloud_stack.this.region_slug
   access_policy_id = grafana_cloud_access_policy.adaptive_metrics[each.key].policy_id
-  name             = "${local.grafana_adaptive_metrics_name}-${each.key}"
+  name             = grafana_cloud_access_policy.adaptive_metrics[each.key].name
 }
 
 resource "google_secret_manager_secret" "grafana_adaptive_metrics_token" {
