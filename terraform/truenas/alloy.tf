@@ -73,28 +73,3 @@ import {
   to = truenas_app.alloy
   id = "alloy"
 }
-
-# Uploads like terraform_data.tailscale_serve_config. The config volume exists
-# only once the app update creates it, so alloy restarts on a missing file until
-# the upload lands. alloy reads the file only at start, so a later change takes
-# effect at the next app restart.
-resource "terraform_data" "alloy_config" {
-  triggers_replace = [sha256(local.alloy_config)]
-
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    environment = {
-      CONTENT = local.alloy_config
-      MODE    = parseint("0644", 8)
-      TARGET  = "/mnt/.ix-apps/app_mounts/${truenas_app.alloy.name}/${local.alloy_config_volume}/${local.alloy_config_file}"
-      URL     = "https://${local.truenas_host}/_upload"
-    }
-    command = <<-EOT
-      printf '%s' "$CONTENT" | curl --fail-with-body --silent --show-error --insecure \
-        --header @<(printf 'Authorization: Bearer %s\n' "$TRUENAS_API_KEY") \
-        --form-string "data={\"method\":\"filesystem.put\",\"params\":[\"$TARGET\",{\"mode\":$MODE}]}" \
-        --form "file=@-;filename=${local.alloy_config_file}" \
-        "$URL"
-    EOT
-  }
-}
