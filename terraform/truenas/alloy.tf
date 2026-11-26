@@ -6,8 +6,8 @@ locals {
   docker_socket = "/var/run/docker.sock"
 }
 
-# values reads back every key it declares into state, so envs stays out of it to
-# keep the push credential off the state bucket.
+# State records every key that values declares. envs holds the push credential,
+# so it stays undeclared.
 resource "truenas_app" "alloy" {
   name        = "alloy"
   catalog_app = "ix-app"

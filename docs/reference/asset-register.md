@@ -104,7 +104,7 @@ The TrueNAS catalogue entries for these containers run as root. A-12's
 configuration overrides that with a named user.
 
 alloy, Tailscale, and `ddns-updater` each keep a credential in their
-application configuration, which is what reading them would expose.
+application configuration. Reading that configuration exposes it.
 
 B-2 is unchecked.
 
