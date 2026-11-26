@@ -479,7 +479,7 @@ Google Cloud's other credentials.
 - Created by: Operator
 - Source: `None`
 
-### C-20: `alunduil-infrastructure-fleet-management-ro`
+### C-20: `alunduil-infrastructure-deployer-ro`
 
 - Kind: Grafana Cloud access-policy token
 - Scope: `adaptive-metrics-config:read` and `fleet-management:read` on the
@@ -489,7 +489,7 @@ Google Cloud's other credentials.
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_fleet_management.tf`
 
-### C-21: `alunduil-infrastructure-fleet-management-rw`
+### C-21: `alunduil-infrastructure-deployer-rw`
 
 - Kind: Grafana Cloud access-policy token
 - Scope: read and write for `adaptive-metrics-config` and

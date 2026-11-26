@@ -11,9 +11,9 @@
 # read-only variant; access-policy scopes do.
 locals {
   # Policy and token carry one name so the Cloud Portal shows which token came
-  # from which policy. Renaming either, or the secret, replaces a live
-  # credential, so the names cover less than the scopes do.
-  grafana_fleet_management_name = "alunduil-infrastructure-fleet-management"
+  # from which policy. Renaming either replaces a live credential. The secret
+  # ids keep the Fleet Management name because the CI export script reads them.
+  grafana_fleet_management_name = "alunduil-infrastructure-deployer"
 
   grafana_fleet_management_scopes = {
     ro = ["adaptive-metrics-config:read", "fleet-management:read"]
