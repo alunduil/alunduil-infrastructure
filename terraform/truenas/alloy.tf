@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  # The container_logs pipeline dials this path inside the container.
+  docker_socket = "/var/run/docker.sock"
+}
+
 # values reads back every key it declares into state, so envs stays out of it to
 # keep the push credential off the state bucket.
 resource "truenas_app" "alloy" {
@@ -27,8 +32,8 @@ resource "truenas_app" "alloy" {
       {
         type             = "host_path"
         read_only        = true
-        mount_path       = "/var/run/docker.sock"
-        host_path_config = { acl_enable = false, path = "/var/run/docker.sock" }
+        mount_path       = local.docker_socket
+        host_path_config = { acl_enable = false, path = local.docker_socket }
       },
     ]
   })

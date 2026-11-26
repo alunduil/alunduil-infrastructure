@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 // SPDX-License-Identifier: MIT
 
-// TrueNAS runs each app as the Compose project ix-<app>.
 discovery.docker "apps" {
 	host = "unix:///var/run/docker.sock"
 }
@@ -9,6 +8,7 @@ discovery.docker "apps" {
 discovery.relabel "apps" {
 	targets = []
 
+	// TrueNAS runs each app as the Compose project ix-<app>.
 	rule {
 		source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
 		regex         = "ix-(.*)"
