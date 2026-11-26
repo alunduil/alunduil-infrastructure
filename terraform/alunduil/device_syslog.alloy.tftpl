@@ -1,0 +1,34 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+loki.source.syslog "device" {
+	listener {
+		address       = "${listener.address}"
+		protocol      = "${listener.protocol}"
+		syslog_format = "${listener.syslog_format}"
+		labels        = { job = "${listener.device}", host = "${listener.device}" }
+	}
+	relabel_rules = loki.relabel.syslog.rules
+	forward_to    = [loki.write.default.receiver]
+}
+
+loki.relabel "syslog" {
+	forward_to = []
+
+	rule {
+		source_labels = ["__syslog_message_severity"]
+		target_label  = "level"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_app_name"]
+		target_label  = "app"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_facility"]
+		target_label  = "facility"
+	}
+}
+
+${loki_write}

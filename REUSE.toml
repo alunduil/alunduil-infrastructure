@@ -57,6 +57,14 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
 
+# Alloy writer fragments render into the middle of each pipeline, where an
+# inline header would repeat in the served configuration.
+[[annotations]]
+path = ["terraform/alunduil/loki_write.alloy.tftpl", "terraform/alunduil/prometheus_remote_write.alloy.tftpl"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
+SPDX-License-Identifier = "MIT"
+
 # JSON config files — JSON does not permit comments for inline headers. The
 # grafana/ glob also covers dashboards Git Sync writes back on UI edits, which
 # bypass pre-commit and would otherwise trip the REUSE hook.

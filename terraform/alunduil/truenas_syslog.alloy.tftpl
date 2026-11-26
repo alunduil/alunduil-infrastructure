@@ -66,22 +66,4 @@ loki.process "audit" {
 	}
 }
 
-loki.write "default" {
-	endpoint {
-		url = "${logs_url}/loki/api/v1/push"
-
-		basic_auth {
-			username = "${logs_user_id}"
-			password = sys.env("GCLOUD_RW_API_KEY")
-		}
-	}
-
-	// The source's own labels override these. In a container, set host at the
-	// source, unless it uses host networking, because constants.hostname is then
-	// the container ID.
-	external_labels = {
-		"host"         = string.to_lower(constants.hostname),
-		"collector_id" = argument.attributes.value["collector.ID"],
-		"pipeline"     = "${pipeline}",
-	}
-}
+${loki_write}

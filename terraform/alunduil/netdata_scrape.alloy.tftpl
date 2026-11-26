@@ -31,22 +31,4 @@ prometheus.relabel "netdata" {
 	}
 }
 
-prometheus.remote_write "default" {
-	endpoint {
-		url = "${prometheus_url}"
-
-		basic_auth {
-			username = "${prometheus_user_id}"
-			password = sys.env("GCLOUD_RW_API_KEY")
-		}
-	}
-
-	// The source's own labels override these. In a container, set host at the
-	// source, unless it uses host networking, because constants.hostname is then
-	// the container ID.
-	external_labels = {
-		"host"         = string.to_lower(constants.hostname),
-		"collector_id" = argument.attributes.value["collector.ID"],
-		"pipeline"     = "${pipeline}",
-	}
-}
+${prometheus_remote_write}
