@@ -28,14 +28,16 @@ import {
 }
 
 # A collector opts in to a pipeline by setting the attribute of the same name in
-# its remotecfg. The TrueNAS pipelines are disabled because the box's local
-# config binds the same syslog sockets and writes the same netdata series.
+# its remotecfg. The TrueNAS syslog and netdata pipelines are disabled because
+# the box's local config binds the same syslog sockets and writes the same
+# netdata series.
 resource "grafana_fleet_management_pipeline" "concern" {
   for_each = {
     journal_logs   = { enabled = true, template = "journal_logs", listener = null }
     node_metrics   = { enabled = true, template = "node_metrics", listener = null }
     truenas_syslog = { enabled = false, template = "truenas_syslog", listener = null }
     netdata_scrape = { enabled = false, template = "netdata_scrape", listener = null }
+    container_logs = { enabled = true, template = "container_logs", listener = null }
 
     slzb_syslog = {
       enabled  = false
