@@ -21,9 +21,9 @@ variable "grafana_service_account_token" {
   sensitive   = true
 }
 
-variable "grafana_fleet_management_token" {
+variable "grafana_deployer_token" {
   type        = string
-  description = "Grafana Cloud access-policy token authenticating the provider to Fleet Management, read-only for plan and read-write for apply. Export as TF_VAR_grafana_fleet_management_token."
+  description = "Grafana Cloud access-policy token authenticating the provider to Fleet Management, read-only for plan and read-write for apply. Export as TF_VAR_grafana_deployer_token."
   sensitive   = true
 }
 

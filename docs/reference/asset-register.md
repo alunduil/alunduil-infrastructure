@@ -487,7 +487,7 @@ Google Cloud's other credentials.
 - Consumer: `terraform plan` in CI
 - Grants: P-2
 - Created by: Terraform
-- Source: `terraform/bootstrap/grafana_fleet_management.tf`
+- Source: `terraform/bootstrap/grafana_deployer.tf`
 
 ### C-21: `alunduil-infrastructure-deployer-rw`
 
@@ -497,7 +497,7 @@ Google Cloud's other credentials.
 - Consumer: `terraform apply` in CI, and `just alunduil`
 - Grants: P-3, and P-1 through the break-glass path
 - Created by: Terraform
-- Source: `terraform/bootstrap/grafana_fleet_management.tf`
+- Source: `terraform/bootstrap/grafana_deployer.tf`
 
 ### C-22: `alunduil-infrastructure-alloy-push`
 

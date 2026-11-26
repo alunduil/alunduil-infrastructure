@@ -112,7 +112,7 @@ export_identifier TF_VAR_grafana_github_app_installation_id grafana-github-app-i
 
 # Fleet Management is a different Grafana API, out of the provisioner token's
 # reach, on a credential whose scopes split by role.
-export_role_secret TF_VAR_grafana_fleet_management_token grafana-fleet-management-token
+export_role_secret TF_VAR_grafana_deployer_token grafana-deployer-token
 
 # Masked though it is not a secret: it authenticates nothing without an OIDC
 # token the tailnet trusts, but these logs are public and naming a credential

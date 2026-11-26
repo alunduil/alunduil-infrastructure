@@ -57,7 +57,7 @@ provider "grafana" {
 provider "grafana" {
   alias                 = "fleet_management"
   fleet_management_url  = local.bootstrap.grafana_fleet_management_url
-  fleet_management_auth = "${local.bootstrap.grafana_fleet_management_user_id}:${var.grafana_fleet_management_token}"
+  fleet_management_auth = "${local.bootstrap.grafana_fleet_management_user_id}:${var.grafana_deployer_token}"
 }
 
 locals {
