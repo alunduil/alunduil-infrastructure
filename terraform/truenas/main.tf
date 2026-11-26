@@ -8,6 +8,10 @@
 terraform {
   required_version = ">= 1.11"
   required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 8.0"
+    }
     truenas = {
       source  = "truenas/truenas"
       version = "~> 1.9"
@@ -26,4 +30,9 @@ locals {
 provider "truenas" {
   endpoint = "wss://${local.truenas_host}/api/current"
   insecure = true
+}
+
+provider "google" {
+  project = "alunduil"
+  region  = "europe-west1"
 }
