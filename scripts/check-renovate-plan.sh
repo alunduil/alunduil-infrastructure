@@ -19,15 +19,15 @@ fi
 pull_request="$1"
 resource_changes="$2"
 
-# Calling input makes jq fail on an empty file instead of printing nothing
-# and succeeding.
-body="$(jq -nr 'input | .body // ""' "${pull_request}")"
-auto_merge="$(jq -nr 'input | .auto_merge != null' "${pull_request}")"
-
 if [[ ! ${resource_changes} =~ ^[0-9]+$ ]]; then
   echo "::error::The plan's resource change count reads as '${resource_changes}'."
   exit 1
 fi
+
+# Calling input makes jq fail on an empty file instead of printing nothing
+# and succeeding.
+body="$(jq -nr 'input | .body // ""' "${pull_request}")"
+auto_merge="$(jq -nr 'input | .auto_merge != null' "${pull_request}")"
 
 # The body quotes upstream release notes, which can include the Disabled
 # text, so Enabled wins.
