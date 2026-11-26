@@ -216,9 +216,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # Renovate pushes before it edits the body, so the event can carry the
-      # previous push's hold. Reading the pull request also lets a re-run see
-      # an edited body.
+      # Renovate pushes before it edits the body, so the event's body can be
+      # stale. Reading the pull request also lets a re-run see an edited body.
       - name: Fail on planned changes
         env:
           GH_TOKEN: ${{ github.token }}

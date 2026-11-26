@@ -4,12 +4,12 @@
 set -euo pipefail
 
 # Fails a Renovate update whose plan changes resources, unless Renovate holds
-# the update for the admin to merge.
+# it and auto-merge is off.
 #
 # Usage: scripts/check-renovate-plan.sh <pull-request.json> <resource-changes>
 #
 # <pull-request.json> is the response to GET /repos/{owner}/{repo}/pulls/{number}.
-# <resource-changes> is the plan's count of managed resources it changes.
+# <resource-changes> is the number of managed resources the plan changes.
 
 if [[ $# -ne 2 ]]; then
   echo "usage: ${0##*/} <pull-request.json> <resource-changes>" >&2
@@ -24,13 +24,12 @@ if [[ ! ${resource_changes} =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-# Calling input makes jq fail on an empty file instead of printing nothing
-# and succeeding.
+# jq exits 0 on an empty file unless the filter calls input.
 body="$(jq -nr 'input | .body // ""' "${pull_request}")"
 auto_merge="$(jq -nr 'input | .auto_merge != null' "${pull_request}")"
 
-# The body quotes upstream release notes, which can include the Disabled
-# text, so Enabled wins.
+# Release notes quoted in the body can contain the Disabled text, so Enabled
+# takes precedence.
 case "${body}" in
   *'**Automerge**: Enabled'*) held=false ;;
   *'**Automerge**: Disabled'*) held=true ;;
@@ -50,8 +49,8 @@ if [[ ${held} != true ]]; then
   exit 1
 fi
 
-# Renovate leaves GitHub auto-merge on when it starts holding an update, so
-# GitHub would merge it as soon as this check passed.
+# Renovate leaves auto-merge on when it holds an update, so passing here
+# would let GitHub merge the update.
 if [[ ${auto_merge} == true ]]; then
   echo "::error::This held update changes resources and auto-merge is on."
   echo "::notice::Turn auto-merge off, then re-run this job."
