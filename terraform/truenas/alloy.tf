@@ -22,6 +22,14 @@ resource "truenas_app" "alloy" {
         mount_path       = "/var/lib/alloy/data"
         ix_volume_config = { acl_enable = false, dataset_name = "storage_entry" }
       },
+      # read_only doesn't narrow the Docker API, so this grants control of every
+      # container on the box.
+      {
+        type             = "host_path"
+        read_only        = true
+        mount_path       = "/var/run/docker.sock"
+        host_path_config = { acl_enable = false, path = "/var/run/docker.sock" }
+      },
     ]
   })
 }
