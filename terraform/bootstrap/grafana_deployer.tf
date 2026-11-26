@@ -4,8 +4,8 @@
 # Fleet Management and Adaptive Metrics answer on their own hosts, not the stack
 # server, and take basic auth rather than a stack service-account token. The
 # provisioner token in grafana.tf reaches neither, so the alunduil layer needs a
-# second Grafana credential: a Cloud access policy on this stack's realm. One
-# credential covers both products because the same deployer holds it.
+# Cloud access-policy token on this stack's realm. Each deployer holds one token
+# covering both products.
 #
 # Split by role for the reason tailscale.tf gives. The stack Admin role has no
 # read-only variant; access-policy scopes do.
