@@ -116,8 +116,8 @@ principals that read or change an asset through Terraform.
 ### A-01: `truenas`
 
 - Description: network storage and application host. Runs
-  Plex, Netdata, alloy, Tailscale, `ddns-updater`, and Scrutiny. alloy
-  is enrolled in Fleet Management as collector `truenas`. Advertises
+  Plex, Netdata, alloy, Tailscale, `ddns-updater`, and Scrutiny. Its
+  alloy is enrolled in Fleet Management as collector `truenas`. Advertises
   `192.168.68.0/22` to the tailnet as a subnet router, and offers an
   exit node. Tailscale serve publishes the web interface on
   the host's tailnet name, with a Tailscale certificate

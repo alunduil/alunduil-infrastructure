@@ -30,8 +30,8 @@ loki.relabel "syslog" {
 	}
 }
 
-// TrueNAS audit events arrive as `@cee:` lines whose TNAUDIT field holds the
-// event, so the stored line is that event alone.
+// TrueNAS sends audit events as JSON after a `@cee:` cookie, with the event
+// under TNAUDIT.
 loki.process "audit" {
 	forward_to = [loki.write.default.receiver]
 

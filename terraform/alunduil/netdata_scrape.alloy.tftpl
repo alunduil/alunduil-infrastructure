@@ -19,7 +19,7 @@ prometheus.scrape "netdata" {
 	forward_to      = [prometheus.relabel.netdata.receiver]
 }
 
-// Grafana Cloud rejects these samples. Investigations want every other family,
+// Grafana Cloud rejects these samples. Investigations use every other family,
 // so drop more only to stay within the overage budget.
 prometheus.relabel "netdata" {
 	forward_to = [prometheus.remote_write.default.receiver]

@@ -3,7 +3,7 @@
 
 # Collectors evaluate pipeline contents themselves, so templates read the push
 # token from the collector's environment and it stays out of this state. Pipelines
-# can't share components, so each renders its own copy of a writer template.
+# can't share components, so every pipeline embeds its own copy of a writer.
 
 resource "grafana_fleet_management_collector" "nanopi_neo3" {
   provider = grafana.fleet_management
@@ -28,9 +28,8 @@ import {
 }
 
 # A collector opts in to a pipeline by setting the attribute of the same name in
-# its remotecfg. The TrueNAS pipelines stay disabled while the box's local
-# config binds the same syslog sockets and scrapes netdata under the same
-# labels; enable them in the change that removes those local components.
+# its remotecfg. The TrueNAS pipelines are disabled because the box's local
+# config binds the same syslog sockets and writes the same netdata series.
 resource "grafana_fleet_management_pipeline" "concern" {
   for_each = {
     journal_logs   = { enabled = true, template = "journal_logs", listener = null }
