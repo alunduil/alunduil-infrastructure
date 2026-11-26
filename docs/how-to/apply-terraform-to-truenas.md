@@ -48,8 +48,8 @@ Terraform shows the plan and waits for `yes` before applying. A plan reporting
 matches TrueNAS. The plan doesn't read the Tailscale serve config or the alloy
 config back from the box, so it misses an edit made there.
 
-alloy reads its config only at start. After an apply that changes
-`terraform/truenas/alloy/`, restart it under **Apps → alloy → Restart**.
+After an apply that changes `terraform/truenas/alloy/`, restart alloy under
+**Apps → alloy → Restart**. alloy reads its config only at start.
 
 ## Recover from a bad apply
 

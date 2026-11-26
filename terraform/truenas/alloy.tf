@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The local config is only a remotecfg bootstrap: Fleet Management serves the
-# pipelines from terraform/alunduil/grafana_fleet_management.tf.
+# alloy's local config is only a remotecfg bootstrap. Fleet Management serves
+# its pipelines, which terraform/alunduil/grafana_fleet_management.tf declares.
 locals {
   alloy_config_file      = "config.alloy"
   alloy_config_directory = "/etc/alloy"
@@ -13,7 +13,7 @@ locals {
     fleet_management_url     = local.bootstrap.grafana_fleet_management_url
     fleet_management_user_id = local.bootstrap.grafana_fleet_management_user_id
 
-    # terraform/alunduil/'s grafana_fleet_management_collector declares this ID.
+    # Matches grafana_fleet_management_collector.truenas in terraform/alunduil/.
     collector_id = "truenas"
 
     # One attribute per pipeline lets each move to its own collector without
@@ -28,12 +28,11 @@ resource "truenas_app" "alloy" {
   train       = "stable"
 
   # Declare every top-level key whole; see truenas_app.tailscale. envs is left
-  # out so GCLOUD_RW_API_KEY, set by hand from
-  # docs/how-to/configure-alloy-push-credential.md, stays out of this state.
+  # out to keep GCLOUD_RW_API_KEY out of this state.
+  # docs/how-to/configure-alloy-push-credential.md sets it by hand.
   #
-  # Host networking gives the container the host's hostname, which the served
-  # pipelines label telemetry with, and lets them bind listener ports without a
-  # matching edit here.
+  # With host networking, the served pipelines bind their listener ports without
+  # an edit here and label telemetry with the host's hostname.
   values = jsonencode({
     TZ = "Europe/London"
     image = {

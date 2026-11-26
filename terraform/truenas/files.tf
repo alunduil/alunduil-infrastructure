@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Config files apps read from their ix volumes. A volume exists only once the
-# app's update creates it, so each target names its app to order the upload
-# after it.
+# Each file lands in an app's ix volume. The volume exists only after the app's
+# update creates it, so each target references its app to upload after that
+# update.
 locals {
   truenas_files = {
     tailscale_serve = {
@@ -11,8 +11,8 @@ locals {
       target  = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/${local.tailscale_serve_file}"
     }
 
-    # alloy restarts on the missing file until this lands, and reads it only at
-    # start, so a later change takes effect at the next app restart.
+    # alloy crash-loops until this lands. It reads the file only at start, so a
+    # later change needs an app restart.
     alloy_config = {
       content = local.alloy_config
       target  = "/mnt/.ix-apps/app_mounts/${truenas_app.alloy.name}/${local.alloy_config_volume}/${local.alloy_config_file}"
