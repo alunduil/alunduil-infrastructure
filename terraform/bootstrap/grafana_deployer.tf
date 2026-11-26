@@ -10,11 +10,6 @@
 # Split by role for the reason tailscale.tf gives. The stack Admin role has no
 # read-only variant; access-policy scopes do.
 locals {
-  # Policy and token carry one name so the Cloud Portal shows which token came
-  # from which policy. Renaming either, or the secret, replaces a live
-  # credential.
-  grafana_deployer_name = "alunduil-infrastructure-deployer"
-
   grafana_deployer_scopes = {
     ro = ["adaptive-metrics-config:read", "fleet-management:read"]
     rw = [
@@ -30,7 +25,7 @@ resource "grafana_cloud_access_policy" "deployer" {
   for_each = local.grafana_deployer_scopes
 
   region       = data.grafana_cloud_stack.this.region_slug
-  name         = "${local.grafana_deployer_name}-${each.key}"
+  name         = "alunduil-infrastructure-deployer-${each.key}"
   display_name = "alunduil-infrastructure deployer (${upper(each.key)})"
 
   scopes = each.value
@@ -41,6 +36,9 @@ resource "grafana_cloud_access_policy" "deployer" {
   }
 }
 
+# Named after its policy so the Cloud Portal shows which token came from which
+# policy.
+#
 # No expires_at: a lapse would strand plan and apply, and nothing here renews
 # one. Rotation is a bootstrap re-run, which replaces the token and the Secret
 # Manager version together.
@@ -49,7 +47,7 @@ resource "grafana_cloud_access_policy_token" "deployer" {
 
   region           = data.grafana_cloud_stack.this.region_slug
   access_policy_id = grafana_cloud_access_policy.deployer[each.key].policy_id
-  name             = "${local.grafana_deployer_name}-${each.key}"
+  name             = grafana_cloud_access_policy.deployer[each.key].name
 }
 
 resource "google_secret_manager_secret" "grafana_deployer_token" {
