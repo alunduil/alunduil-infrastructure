@@ -45,8 +45,11 @@ just truenas
 
 Terraform shows the plan and waits for `yes` before applying. A plan reporting
 `No changes` with no error means the key authenticates and the configuration
-matches TrueNAS. The plan doesn't read the Tailscale serve config back from the
-box, so it misses an edit made there.
+matches TrueNAS. The plan doesn't read the Tailscale serve config or the alloy
+config back from the box, so it misses an edit made there.
+
+alloy reads its config only at start. After an apply that changes
+`terraform/truenas/alloy/`, restart it under **Apps → alloy → Restart**.
 
 ## Recover from a bad apply
 

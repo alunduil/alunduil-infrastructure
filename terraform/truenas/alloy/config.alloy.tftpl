@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+remotecfg {
+	url            = "${fleet_management_url}"
+	id             = "${collector_id}"
+	poll_frequency = "60s"
+	attributes     = {${join(", ", [for pipeline in pipelines : "\"${pipeline}\" = \"true\""])}}
+
+	basic_auth {
+		username = "${fleet_management_user_id}"
+		password = sys.env("GCLOUD_RW_API_KEY")
+	}
+}
