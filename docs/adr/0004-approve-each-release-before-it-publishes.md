@@ -88,8 +88,8 @@ dependency runs:
   calls, wait for review, because they run in the same job as the
   credential.
 - Updates to a release job's compiler and build tool pins wait for
-  review, because a tampered tool changes the package that publishes,
-  even when the build job lacks the credential.
+  review, even in a job without the credential, because a tampered
+  tool changes the package that publishes.
 - Updates to runtime dependencies a package bundles wait for review,
   because their code ships.
 
