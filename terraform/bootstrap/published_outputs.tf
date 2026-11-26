@@ -28,6 +28,7 @@ resource "google_storage_bucket_object" "published_outputs" {
     grafana_logs_url                         = data.grafana_cloud_stack.this.logs_url
     grafana_logs_user_id                     = data.grafana_cloud_stack.this.logs_user_id
     grafana_prometheus_remote_write_endpoint = data.grafana_cloud_stack.this.prometheus_remote_write_endpoint
+    grafana_prometheus_url                   = data.grafana_cloud_stack.this.prometheus_url
     grafana_prometheus_user_id               = data.grafana_cloud_stack.this.prometheus_user_id
   })
 }

@@ -145,8 +145,8 @@ flowchart LR
   c10["C-10 Git Sync App"]
   c11["C-11 Tailscale read"]
   c12["C-12 Tailscale write"]
-  c20["C-20 Fleet Management read"]
-  c21["C-21 Fleet Management write"]
+  c20["C-20 Grafana Cloud read"]
+  c21["C-21 Grafana Cloud write"]
   c27["C-27 Plan App"]
   c28["C-28 Apply App"]
   c05["C-05 Grafana's Google Cloud reader"]
@@ -179,7 +179,7 @@ creating a tag.
 
 The apply service account (C-04) admits only `terraform-apply.yml` on `main`,
 so a pull request branch runs with CI plan's credentials. That keeps it from
-the Apply App and from the Cloudflare, Tailscale, and Fleet Management write
+the Apply App and from the Cloudflare, Tailscale, and Grafana Cloud write
 credentials. CI plan still holds Grafana stack Admin (C-06) and the Git Sync
 App (C-10).
 

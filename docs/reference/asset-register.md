@@ -479,24 +479,25 @@ Google Cloud's other credentials.
 - Created by: Operator
 - Source: `None`
 
-### C-20: `alunduil-infrastructure-fleet-management-ro`
+### C-20: `alunduil-infrastructure-deployer-ro`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `fleet-management:read` on the stack realm
+- Scope: `adaptive-metrics-config:read` and `fleet-management:read` on the
+  stack realm
 - Consumer: `terraform plan` in CI
 - Grants: P-2
 - Created by: Terraform
-- Source: `terraform/bootstrap/grafana_fleet_management.tf`
+- Source: `terraform/bootstrap/grafana_deployer.tf`
 
-### C-21: `alunduil-infrastructure-fleet-management-rw`
+### C-21: `alunduil-infrastructure-deployer-rw`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `fleet-management:read` and `fleet-management:write` on the
-  stack realm
+- Scope: read and write for `adaptive-metrics-config` and
+  `fleet-management` on the stack realm
 - Consumer: `terraform apply` in CI, and `just alunduil`
 - Grants: P-3, and P-1 through the break-glass path
 - Created by: Terraform
-- Source: `terraform/bootstrap/grafana_fleet_management.tf`
+- Source: `terraform/bootstrap/grafana_deployer.tf`
 
 ### C-22: `alunduil-infrastructure-alloy-push`
 
