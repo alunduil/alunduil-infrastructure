@@ -5,6 +5,7 @@ locals {
   alloy_config_file      = "config.alloy"
   alloy_config_directory = "/etc/alloy"
   alloy_config_volume    = "config"
+  alloy_storage_path     = "/var/lib/alloy/data"
 
   alloy_config = templatefile("${path.module}/alloy/${local.alloy_config_file}.tftpl", {
     url     = local.bootstrap.grafana_fleet_management_url
@@ -26,7 +27,7 @@ resource "truenas_app" "alloy" {
   values = jsonencode({
     command = [
       "run",
-      "--storage.path=/var/lib/alloy/data",
+      "--storage.path=${local.alloy_storage_path}",
       "${local.alloy_config_directory}/${local.alloy_config_file}",
       "--server.http.listen-addr=0.0.0.0:12345",
     ]
@@ -42,7 +43,7 @@ resource "truenas_app" "alloy" {
       {
         type             = "ix_volume"
         read_only        = false
-        mount_path       = "/var/lib/alloy/data"
+        mount_path       = local.alloy_storage_path
         ix_volume_config = { acl_enable = false, dataset_name = "storage_entry" }
       },
     ]

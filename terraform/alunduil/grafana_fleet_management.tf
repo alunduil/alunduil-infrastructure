@@ -31,19 +31,17 @@ import {
 # its remotecfg.
 resource "grafana_fleet_management_pipeline" "concern" {
   for_each = {
-    journal_logs   = { enabled = true, template = "journal_logs", listener = null }
-    node_metrics   = { enabled = true, template = "node_metrics", listener = null }
-    truenas_syslog = { enabled = true, template = "truenas_syslog", listener = null }
-    netdata_scrape = { enabled = true, template = "netdata_scrape", listener = null }
+    journal_logs   = { template = "journal_logs", listener = null }
+    node_metrics   = { template = "node_metrics", listener = null }
+    truenas_syslog = { template = "truenas_syslog", listener = null }
+    netdata_scrape = { template = "netdata_scrape", listener = null }
 
     slzb_syslog = {
-      enabled  = true
       template = "device_syslog"
       listener = { device = "slzb-mr4u", address = "0.0.0.0:1514", protocol = "udp", syslog_format = "rfc3164" }
     }
 
     printer_syslog = {
-      enabled  = true
       template = "device_syslog"
       listener = { device = "printer", address = "0.0.0.0:1515", protocol = "tcp", syslog_format = "rfc5424" }
     }
@@ -52,7 +50,7 @@ resource "grafana_fleet_management_pipeline" "concern" {
   provider = grafana.fleet_management
 
   name     = each.key
-  enabled  = each.value.enabled
+  enabled  = true
   matchers = ["${each.key}=\"true\""]
 
   contents = templatefile("${path.module}/${each.value.template}.alloy.tftpl", {
