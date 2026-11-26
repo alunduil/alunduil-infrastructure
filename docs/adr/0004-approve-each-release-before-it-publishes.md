@@ -84,11 +84,12 @@ dependency runs:
 
 - Updates to development, test, and CI-only dependencies automerge after
   green checks.
-- Updates to anything a release job runs wait for review. The job's
-  actions and the composite actions it calls run in the same job as
-  the credential. Its compiler and build tool pins can change the
-  package that publishes, even when the build job lacks the
+- Updates to a release job's actions, and the composite actions it
+  calls, wait for review, because they run in the same job as the
   credential.
+- Updates to a release job's compiler and build tool pins wait for
+  review, because a tampered tool changes the package that publishes,
+  even when the build job lacks the credential.
 - Updates to runtime dependencies a package bundles wait for review,
   because their code ships.
 
