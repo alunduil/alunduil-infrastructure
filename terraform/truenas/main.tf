@@ -6,7 +6,7 @@
 # the home network.
 
 terraform {
-  # Actions landed in 1.14.
+  # Actions need 1.14.
   required_version = ">= 1.14"
   required_providers {
     google = {
@@ -37,8 +37,8 @@ provider "google" {
   project = "alunduil"
 }
 
-# Read as an object rather than through terraform_remote_state, because the full
-# bootstrap state holds plaintext tokens.
+# The bootstrap state holds plaintext tokens, so this layer reads only the
+# values bootstrap publishes.
 data "google_storage_bucket_object_content" "bootstrap" {
   bucket = "alunduil-tfstate"
   name   = "bootstrap-outputs.json"

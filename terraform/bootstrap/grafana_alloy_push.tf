@@ -17,10 +17,9 @@ locals {
   # from which policy.
   grafana_alloy_push_name = "alunduil-infrastructure-alloy-push"
 
-  # alloy ships logs and metrics and reads neither back, so there is no RO/RW
-  # split. Traces and profiles are absent because nothing sends them. Each box's
-  # remotecfg block authenticates to Fleet Management with its push token too,
-  # so the box holds one Grafana credential.
+  # Write scopes cover only what alloy ships; nothing sends traces or profiles.
+  # fleet-management:read lets each box's remotecfg block authenticate with the
+  # same token, so the box holds one Grafana credential.
   grafana_alloy_push_scopes = ["fleet-management:read", "logs:write", "metrics:write"]
 
   grafana_alloy_collectors = toset(["truenas", "nanopi-neo3"])

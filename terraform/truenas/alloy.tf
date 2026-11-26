@@ -14,8 +14,8 @@ locals {
 }
 
 # The config is only a remotecfg bootstrap; Fleet Management serves the
-# pipelines. GCLOUD_RW_API_KEY is set by hand and envs is left out of values, so
-# the token stays out of this state.
+# pipelines. GCLOUD_RW_API_KEY is set by hand in the app's environment, which
+# keeps the token out of this state.
 #
 # Host networking lets the served pipelines own their listener ports without a
 # matching edit here, and gives constants.hostname the host's name.

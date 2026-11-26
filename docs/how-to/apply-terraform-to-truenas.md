@@ -12,8 +12,7 @@ TrueNAS web UI and store in Secret Manager.
 
 - A route to `192.168.68.63`, the address the provider connects to.
 - `gcloud` authenticated with read access to the `truenas-api-key` secret,
-  and application-default credentials for the state bucket, including
-  `bootstrap-outputs.json` in it.
+  and application-default credentials for the state bucket.
 - `just bootstrap` applied, so the secret exists.
 
 ## Create the key
