@@ -21,10 +21,10 @@ locals {
   # no RO/RW split. Traces and profiles are absent because nothing sends them.
   grafana_alloy_push_scopes = ["logs:write", "metrics:write"]
 
+  # Each box's remotecfg block authenticates to Fleet Management with its push
+  # token too, so the box holds one Grafana credential.
   grafana_alloy_collectors = {
-    truenas = local.grafana_alloy_push_scopes
-    # The box's remotecfg block authenticates to Fleet Management with this
-    # token too, so the box holds one Grafana credential.
+    truenas     = concat(["fleet-management:read"], local.grafana_alloy_push_scopes)
     nanopi-neo3 = concat(["fleet-management:read"], local.grafana_alloy_push_scopes)
   }
 

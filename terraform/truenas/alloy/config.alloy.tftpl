@@ -1,0 +1,16 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+// Each attribute opts the collector in to the Fleet Management pipeline of the
+// same name in terraform/alunduil/grafana_fleet_management.tf.
+remotecfg {
+	url            = "${url}"
+	id             = "truenas"
+	poll_frequency = "60s"
+	attributes     = {"truenas_syslog" = "true", "netdata_scrape" = "true", "slzb_syslog" = "true", "printer_syslog" = "true"}
+
+	basic_auth {
+		username = "${user_id}"
+		password = sys.env("GCLOUD_RW_API_KEY")
+	}
+}

@@ -6,8 +6,13 @@
 # the home network.
 
 terraform {
-  required_version = ">= 1.11"
+  # Actions landed in 1.14.
+  required_version = ">= 1.14"
   required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 8.0"
+    }
     truenas = {
       source  = "truenas/truenas"
       version = "~> 1.9"
@@ -26,4 +31,19 @@ locals {
 provider "truenas" {
   endpoint = "wss://${local.truenas_host}/api/current"
   insecure = true
+}
+
+provider "google" {
+  project = "alunduil"
+}
+
+# Read as an object rather than through terraform_remote_state, because the full
+# bootstrap state holds plaintext tokens.
+data "google_storage_bucket_object_content" "bootstrap" {
+  bucket = "alunduil-tfstate"
+  name   = "bootstrap-outputs.json"
+}
+
+locals {
+  bootstrap = jsondecode(data.google_storage_bucket_object_content.bootstrap.content)
 }

@@ -503,9 +503,10 @@ Google Cloud's other credentials.
 ### C-22: `alunduil-infrastructure-alloy-push`
 
 - Kind: Grafana Cloud access-policy token
-- Scope: `logs:write` and `metrics:write` on the stack realm
-- Consumer: alloy on A-01, as the `GCLOUD_RW_API_KEY` its Fleet
-  Management pipelines authenticate with. No deployer reads it
+- Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
+  stack realm
+- Consumer: alloy on A-01, as the `GCLOUD_RW_API_KEY` its `remotecfg` block
+  and Fleet Management pipelines authenticate with. No deployer reads it
 - Grants: P-4
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`

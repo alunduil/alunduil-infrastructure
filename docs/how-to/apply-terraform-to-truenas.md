@@ -12,7 +12,8 @@ TrueNAS web UI and store in Secret Manager.
 
 - A route to `192.168.68.63`, the address the provider connects to.
 - `gcloud` authenticated with read access to the `truenas-api-key` secret,
-  and application-default credentials for the state bucket.
+  and application-default credentials for the state bucket, including
+  `bootstrap-outputs.json` in it.
 - `just bootstrap` applied, so the secret exists.
 
 ## Create the key
@@ -45,8 +46,8 @@ just truenas
 
 Terraform shows the plan and waits for `yes` before applying. A plan reporting
 `No changes` with no error means the key authenticates and the configuration
-matches TrueNAS. The plan doesn't read the Tailscale serve config back from the
-box, so it misses an edit made there.
+matches TrueNAS. The plan doesn't read the Tailscale serve config or the alloy
+config back from the box, so it misses an edit made there.
 
 ## Recover from a bad apply
 
