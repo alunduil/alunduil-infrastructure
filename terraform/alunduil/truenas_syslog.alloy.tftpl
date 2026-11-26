@@ -1,0 +1,87 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+loki.source.syslog "truenas" {
+	listener {
+		address  = "0.0.0.0:1514"
+		protocol = "tcp"
+		labels   = { job = "truenas" }
+	}
+	relabel_rules = loki.relabel.syslog.rules
+	forward_to    = [loki.process.audit.receiver]
+}
+
+loki.relabel "syslog" {
+	forward_to = []
+
+	rule {
+		source_labels = ["__syslog_message_severity"]
+		target_label  = "level"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_app_name"]
+		target_label  = "app"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_facility"]
+		target_label  = "facility"
+	}
+}
+
+// TrueNAS audit events arrive as `@cee:` lines whose TNAUDIT field holds the
+// event, so the stored line is that event alone.
+loki.process "audit" {
+	forward_to = [loki.write.default.receiver]
+
+	stage.replace {
+		expression = `^(?P<prefix>@cee:\s*)`
+		replace    = ""
+	}
+
+	stage.json {
+		expressions = { TNAUDIT = "" }
+	}
+
+	stage.json {
+		source      = "TNAUDIT"
+		expressions = {
+			svc     = "svc",
+			event   = "event",
+			success = "success",
+		}
+	}
+
+	stage.labels {
+		values = {
+			audit_service = "svc",
+			audit_event   = "event",
+			success       = "success",
+		}
+	}
+
+	stage.output {
+		source = "TNAUDIT"
+	}
+}
+
+loki.write "default" {
+	endpoint {
+		url = "${logs_url}/loki/api/v1/push"
+
+		basic_auth {
+			username = "${logs_user_id}"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+
+	// The source's own labels override these. In a container, set host at the
+	// source, unless it uses host networking, because constants.hostname is then
+	// the container ID.
+	external_labels = {
+		"host"         = string.to_lower(constants.hostname),
+		"collector_id" = argument.attributes.value["collector.ID"],
+		"pipeline"     = "${pipeline}",
+	}
+}

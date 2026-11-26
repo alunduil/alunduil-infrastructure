@@ -16,15 +16,35 @@ import {
   id = "NanoPi-NEO3"
 }
 
+resource "grafana_fleet_management_collector" "truenas" {
+  provider = grafana.fleet_management
+
+  id = "truenas"
+}
+
+import {
+  to = grafana_fleet_management_collector.truenas
+  id = "truenas"
+}
+
 # A collector opts in to a pipeline by setting the attribute of the same name in
-# its remotecfg.
+# its remotecfg. The TrueNAS pipelines stay disabled while the box's local
+# config binds the same syslog sockets and scrapes netdata under the same
+# labels; enable them in the change that removes those local components.
 resource "grafana_fleet_management_pipeline" "concern" {
-  for_each = toset(["journal_logs", "node_metrics"])
+  for_each = {
+    journal_logs   = true
+    node_metrics   = true
+    truenas_syslog = false
+    slzb_syslog    = false
+    printer_syslog = false
+    netdata_scrape = false
+  }
 
   provider = grafana.fleet_management
 
   name     = each.key
-  enabled  = true
+  enabled  = each.value
   matchers = ["${each.key}=\"true\""]
 
   contents = templatefile("${path.module}/${each.key}.alloy.tftpl", {

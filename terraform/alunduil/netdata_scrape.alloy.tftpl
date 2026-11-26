@@ -1,0 +1,52 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+discovery.relabel "netdata" {
+	targets = [{"__address__" = "192.168.68.63:20489"}]
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+}
+
+prometheus.scrape "netdata" {
+	targets         = discovery.relabel.netdata.output
+	metrics_path    = "/api/v1/allmetrics"
+	params          = { format = ["prometheus"] }
+	job_name        = "truenas"
+	scrape_interval = "60s"
+	forward_to      = [prometheus.relabel.netdata.receiver]
+}
+
+// Grafana Cloud rejects these samples. Investigations want every other family,
+// so drop more only to stay within the overage budget.
+prometheus.relabel "netdata" {
+	forward_to = [prometheus.remote_write.default.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "netdata_netdata_go_plugin_framework_chartengine_build_phase_duration_seconds_.*"
+		action        = "drop"
+	}
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "${prometheus_url}"
+
+		basic_auth {
+			username = "${prometheus_user_id}"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+
+	// The source's own labels override these. In a container, set host at the
+	// source, unless it uses host networking, because constants.hostname is then
+	// the container ID.
+	external_labels = {
+		"host"         = string.to_lower(constants.hostname),
+		"collector_id" = argument.attributes.value["collector.ID"],
+		"pipeline"     = "${pipeline}",
+	}
+}
