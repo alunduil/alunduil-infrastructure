@@ -4,7 +4,8 @@
 # Telemetry labels
 
 Every metric series and log stream from a Fleet Management pipeline in
-`terraform/alunduil/` must carry these labels. CI checks each template for them.
+`terraform/alunduil/` must carry these labels. CI checks that each template
+defines a writer setting them or embeds a shared writer that does.
 
 `host`
 : The lower-case hostname of the machine that the data describes, or its device
@@ -15,8 +16,8 @@ Every metric series and log stream from a Fleet Management pipeline in
 : The Fleet Management ID of the collector that shipped the data.
 
 `pipeline`
-: The name of the Fleet Management pipeline. Its template is
-  `<pipeline>.alloy.tftpl`.
+: The name of the Fleet Management pipeline, which is its key in
+  `grafana_fleet_management.tf`.
 
 ## Constraints
 

@@ -5,8 +5,8 @@
 # external_labels, so neither plan nor apply catches an omission.
 #
 # Prints `<writer> <label>` for each absent or wrong label, and `no writer` for a
-# template without one. Parses by indentation, so the template must follow
-# `alloy fmt`.
+# template that neither defines a writer nor embeds a shared one. Parses by
+# indentation, so the template must follow `alloy fmt`.
 
 function report_violations(    i) {
   for (i = 1; i in required; i++) {
@@ -25,6 +25,8 @@ BEGIN {
   expected["collector_id"] = "argument.attributes.value[\"collector.ID\"]"
   expected["pipeline"] = "\"${pipeline}\""
 }
+
+/^\$\{(loki_write|prometheus_remote_write)\}$/ { found_writer = 1 }
 
 /^(loki\.write|prometheus\.remote_write) / {
   writer = $1; found_writer = 1; delete valid

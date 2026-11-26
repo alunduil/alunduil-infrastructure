@@ -1,0 +1,34 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+discovery.relabel "netdata" {
+	targets = [{"__address__" = "192.168.68.63:20489"}]
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+}
+
+prometheus.scrape "netdata" {
+	targets         = discovery.relabel.netdata.output
+	metrics_path    = "/api/v1/allmetrics"
+	params          = { format = ["prometheus"] }
+	job_name        = "truenas"
+	scrape_interval = "60s"
+	forward_to      = [prometheus.relabel.netdata.receiver]
+}
+
+// Grafana Cloud rejects these samples. Investigations use every other family,
+// so drop more only to stay within the overage budget.
+prometheus.relabel "netdata" {
+	forward_to = [prometheus.remote_write.default.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "netdata_netdata_go_plugin_framework_chartengine_build_phase_duration_seconds_.*"
+		action        = "drop"
+	}
+}
+
+${prometheus_remote_write}

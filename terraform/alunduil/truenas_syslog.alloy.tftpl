@@ -1,0 +1,69 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+loki.source.syslog "truenas" {
+	listener {
+		address  = "0.0.0.0:1514"
+		protocol = "tcp"
+		labels   = { job = "truenas" }
+	}
+	relabel_rules = loki.relabel.syslog.rules
+	forward_to    = [loki.process.audit.receiver]
+}
+
+loki.relabel "syslog" {
+	forward_to = []
+
+	rule {
+		source_labels = ["__syslog_message_severity"]
+		target_label  = "level"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_app_name"]
+		target_label  = "app"
+	}
+
+	rule {
+		source_labels = ["__syslog_message_facility"]
+		target_label  = "facility"
+	}
+}
+
+// TrueNAS sends audit events as JSON after a `@cee:` cookie, with the event
+// under TNAUDIT.
+loki.process "audit" {
+	forward_to = [loki.write.default.receiver]
+
+	stage.replace {
+		expression = `^(?P<prefix>@cee:\s*)`
+		replace    = ""
+	}
+
+	stage.json {
+		expressions = { TNAUDIT = "" }
+	}
+
+	stage.json {
+		source      = "TNAUDIT"
+		expressions = {
+			svc     = "svc",
+			event   = "event",
+			success = "success",
+		}
+	}
+
+	stage.labels {
+		values = {
+			audit_service = "svc",
+			audit_event   = "event",
+			success       = "success",
+		}
+	}
+
+	stage.output {
+		source = "TNAUDIT"
+	}
+}
+
+${loki_write}

@@ -5,6 +5,11 @@
 setup() {
   shopt -s nullglob
   templates=("${BATS_TEST_DIRNAME}"/../terraform/alunduil/*.alloy.tftpl)
+  writers=()
+  local template
+  for template in "${templates[@]}"; do
+    grep -q external_labels "${template}" && writers+=("${template}")
+  done
   fixture="${BATS_TEST_TMPDIR}/fixture.alloy.tftpl"
 }
 
@@ -37,9 +42,10 @@ assert_reports() {
   ((failed == 0))
 }
 
-@test "removing any label from any template is reported" {
+@test "removing any label from any writer is reported" {
   local template label
-  for template in "${templates[@]}"; do
+  ((${#writers[@]} > 0))
+  for template in "${writers[@]}"; do
     for label in host collector_id pipeline; do
       sed "/^\t\t\"${label}\" /d" "${template}" >"${fixture}"
       assert_reports "* ${label}"
@@ -68,7 +74,7 @@ ALLOY
 @test "a literal collector_id or pipeline is reported" {
   local label
   for label in collector_id pipeline; do
-    sed -E "s/^(\t\t\"${label}\" *= ).*/\1\"other\",/" "${templates[0]}" >"${fixture}"
+    sed -E "s/^(\t\t\"${label}\" *= ).*/\1\"other\",/" "${writers[0]}" >"${fixture}"
     assert_reports "* ${label}"
   done
 }
@@ -76,4 +82,13 @@ ALLOY
 @test "a template without a writer is reported" {
   printf 'loki.source.journal "system" {\n}\n' >"${fixture}"
   assert_reports "no writer"
+}
+
+@test "an embedded shared writer counts as a writer" {
+  local placeholder
+  for placeholder in loki_write prometheus_remote_write; do
+    printf '%s\n' 'loki.source.journal "system" {' '}' '' "\${${placeholder}}" >"${fixture}"
+    run label_violations "${fixture}"
+    [ "${status}" -eq 0 ]
+  done
 }
