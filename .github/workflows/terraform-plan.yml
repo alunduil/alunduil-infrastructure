@@ -199,8 +199,8 @@ jobs:
 
   # Gates renovate.json's automerge of updates that trigger an apply.
   # Only required checks block Renovate's merge. Each pull request's body says
-  # whether Renovate automerges or holds it. A held pull request passes with
-  # any plan, because the admin merges it.
+  # whether Renovate automerges or holds it. A held pull request with
+  # auto-merge off passes with any plan, because the admin merges it.
   #
   # The admin-bypassable-checks ruleset requires this check by name, so
   # renaming the job breaks the merge gate.
@@ -212,20 +212,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Renovate pushes before it edits the body, so the event's body can be
+      # stale. Reading the pull request also lets a re-run see an edited body.
       - name: Fail on planned changes
         env:
-          BODY: ${{ github.event.pull_request.body }}
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
           RESOURCE_CHANGES: ${{ needs.plan.outputs.resource_changes }}
         run: |
-          if [[ "${BODY}" == *'**Automerge**: Disabled'* ]]; then
-            exit 0
-          fi
-          if [[ "${BODY}" != *'**Automerge**: Enabled'* ]]; then
-            echo "::error::The body states neither automerge Enabled nor Disabled."
-            exit 1
-          fi
-          if [[ "${RESOURCE_CHANGES}" != 0 ]]; then
-            echo "::error::Merging applies the plan's ${RESOURCE_CHANGES} resource changes."
-            echo "::notice::After reading the plan, the admin can bypass this check."
-            exit 1
-          fi
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${NUMBER}" > pull_request.json
+          scripts/check-renovate-plan.sh pull_request.json "${RESOURCE_CHANGES}"
