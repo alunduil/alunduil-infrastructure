@@ -28,25 +28,21 @@ import {
 }
 
 # A collector opts in to a pipeline by setting the attribute of the same name in
-# its remotecfg. The TrueNAS syslog and netdata pipelines are disabled because
-# the box's local config binds the same syslog sockets and writes the same
-# netdata series.
+# its remotecfg.
 resource "grafana_fleet_management_pipeline" "concern" {
   for_each = {
-    journal_logs   = { enabled = true, template = "journal_logs", listener = null }
-    node_metrics   = { enabled = true, template = "node_metrics", listener = null }
-    truenas_syslog = { enabled = false, template = "truenas_syslog", listener = null }
-    netdata_scrape = { enabled = false, template = "netdata_scrape", listener = null }
-    container_logs = { enabled = true, template = "container_logs", listener = null }
+    journal_logs   = { template = "journal_logs", listener = null }
+    node_metrics   = { template = "node_metrics", listener = null }
+    truenas_syslog = { template = "truenas_syslog", listener = null }
+    netdata_scrape = { template = "netdata_scrape", listener = null }
+    container_logs = { template = "container_logs", listener = null }
 
     slzb_syslog = {
-      enabled  = false
       template = "device_syslog"
       listener = { device = "slzb-mr4u", address = "0.0.0.0:1514", protocol = "udp", syslog_format = "rfc3164" }
     }
 
     printer_syslog = {
-      enabled  = false
       template = "device_syslog"
       listener = { device = "printer", address = "0.0.0.0:1515", protocol = "tcp", syslog_format = "rfc5424" }
     }
@@ -55,7 +51,7 @@ resource "grafana_fleet_management_pipeline" "concern" {
   provider = grafana.fleet_management
 
   name     = each.key
-  enabled  = each.value.enabled
+  enabled  = true
   matchers = ["${each.key}=\"true\""]
 
   contents = templatefile("${path.module}/${each.value.template}.alloy.tftpl", {

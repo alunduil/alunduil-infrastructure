@@ -1,30 +1,67 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+# alloy's local config is only a remotecfg bootstrap. Fleet Management serves
+# its pipelines, which terraform/alunduil/grafana_fleet_management.tf declares.
 locals {
+  alloy_config_file      = "config.alloy"
+  alloy_config_directory = "/etc/alloy"
+  alloy_config_volume    = "config"
+  alloy_data_directory   = "/var/lib/alloy/data"
+
+  alloy_config = templatefile("${path.module}/alloy/${local.alloy_config_file}.tftpl", {
+    fleet_management_url     = local.bootstrap.grafana_fleet_management_url
+    fleet_management_user_id = local.bootstrap.grafana_fleet_management_user_id
+
+    # Matches grafana_fleet_management_collector.truenas in terraform/alunduil/.
+    collector_id = "truenas"
+
+    # One attribute per pipeline lets each move to its own collector without
+    # editing the pipeline's matcher.
+    pipelines = ["container_logs", "netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
+  })
+
   # The container_logs pipeline dials this path inside the container.
   docker_socket = "/var/run/docker.sock"
 }
 
-# State records every key that values declares. envs holds the push credential,
-# so it stays undeclared.
 resource "truenas_app" "alloy" {
   name        = "alloy"
   catalog_app = "ix-app"
   train       = "stable"
 
+  # Declare every top-level key whole; see truenas_app.tailscale. envs is left
+  # out to keep GCLOUD_RW_API_KEY out of this state.
+  # docs/how-to/configure-alloy-push-credential.md sets it by hand.
+  #
+  # With host networking, the served pipelines bind their listener ports without
+  # an edit here and label telemetry with the host's hostname.
   values = jsonencode({
+    TZ = "Europe/London"
+    image = {
+      repository  = "grafana/alloy"
+      tag         = "latest"
+      pull_policy = "missing"
+    }
+    command = [
+      "run",
+      "--storage.path=${local.alloy_data_directory}",
+      "${local.alloy_config_directory}/${local.alloy_config_file}",
+      "--server.http.listen-addr=0.0.0.0:12345",
+    ]
+    host_network = true
+    ports        = []
     storage = [
       {
-        type             = "host_path"
+        type             = "ix_volume"
         read_only        = true
-        mount_path       = "/etc/alloy/config.alloy"
-        host_path_config = { acl_enable = false, path = "/mnt/volume-7e99f60b-f655-4fd1-b03a-099d965d2e30/alloy/config.alloy" }
+        mount_path       = local.alloy_config_directory
+        ix_volume_config = { acl_enable = false, dataset_name = local.alloy_config_volume }
       },
       {
         type             = "ix_volume"
         read_only        = false
-        mount_path       = "/var/lib/alloy/data"
+        mount_path       = local.alloy_data_directory
         ix_volume_config = { acl_enable = false, dataset_name = "storage_entry" }
       },
       # read_only doesn't narrow the Docker API, so this grants control of every
@@ -36,6 +73,10 @@ resource "truenas_app" "alloy" {
         host_path_config = { acl_enable = false, path = local.docker_socket }
       },
     ]
+    resources = {
+      enable_resource_limits = true
+      limits                 = { cpus = 2, memory = 512 }
+    }
   })
 }
 
