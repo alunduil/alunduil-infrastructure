@@ -21,6 +21,7 @@ terraform {
 
 locals {
   truenas_host = "192.168.68.63"
+  pool         = "volume-7e99f60b-f655-4fd1-b03a-099d965d2e30"
 }
 
 # The API key arrives as TRUENAS_API_KEY.
