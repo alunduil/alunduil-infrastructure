@@ -9,6 +9,9 @@ locals {
   alloy_config_volume    = "config"
   alloy_data_directory   = "/var/lib/alloy/data"
 
+  # The container_logs pipeline dials this path inside the container.
+  alloy_docker_socket = "/var/run/docker.sock"
+
   alloy_config = templatefile("${path.module}/alloy/${local.alloy_config_file}.tftpl", {
     fleet_management_url     = local.bootstrap.grafana_fleet_management_url
     fleet_management_user_id = local.bootstrap.grafana_fleet_management_user_id
@@ -18,7 +21,7 @@ locals {
 
     # One attribute per pipeline lets each move to its own collector without
     # editing the pipeline's matcher.
-    pipelines = ["netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
+    pipelines = ["container_logs", "netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
   })
 }
 
@@ -61,6 +64,14 @@ resource "truenas_app" "alloy" {
         mount_path       = local.alloy_data_directory
         ix_volume_config = { acl_enable = false, dataset_name = "storage_entry" }
       },
+      # read_only doesn't narrow the Docker API, so this grants control of every
+      # container on the box.
+      {
+        type             = "host_path"
+        read_only        = true
+        mount_path       = local.alloy_docker_socket
+        host_path_config = { acl_enable = false, path = local.alloy_docker_socket }
+      },
     ]
     resources = {
       enable_resource_limits = true
@@ -72,4 +83,10 @@ resource "truenas_app" "alloy" {
 import {
   to = truenas_app.alloy
   id = "alloy"
+}
+
+action "truenas_app_redeploy" "alloy" {
+  config {
+    app_name = truenas_app.alloy.name
+  }
 }

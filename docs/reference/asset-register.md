@@ -97,13 +97,14 @@ B-1 differs per container.
 | A-12 | No host mounts, media read-only, non-root | Its datasets |
 | Netdata | `/proc`, `/sys`, Docker socket, root | A-01 |
 | Scrutiny | `/dev`, `/run/udev`, `MKNOD`, root | A-01's disks |
-| alloy, Tailscale, `ddns-updater` | Unchecked | `Unverified` |
+| alloy | Host network, Docker socket | A-01 |
+| Tailscale, `ddns-updater` | Unchecked | `Unverified` |
 
 The TrueNAS catalogue entries for these containers run as root. A-12's
 configuration overrides that with a named user.
 
-The unchecked containers each keep a credential in their application
-configuration, which is what reading them would expose.
+alloy, Tailscale, and `ddns-updater` each keep a credential in their
+application configuration. Reading that configuration exposes it.
 
 B-2 is unchecked.
 
