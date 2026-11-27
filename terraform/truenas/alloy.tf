@@ -79,7 +79,7 @@ resource "truenas_app" "alloy" {
         type             = "host_path"
         read_only        = true
         mount_path       = local.alloy_plex_logs
-        host_path_config = { acl_enable = false, path = truenas_dataset.plex_logs.mountpoint }
+        host_path_config = { acl_enable = false, path = truenas_filesystem_permissions.plex_logs.path }
       },
     ]
     resources = {

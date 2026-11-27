@@ -2,21 +2,19 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  plex_user  = 972
-  plex_group = 3002
+  plex_user   = 972
+  plex_group  = 3002
+  plex_config = "/mnt/${local.pool}/plex"
 }
 
-# Plex writes its useful logs to files, not stdout. They live on their own
-# dataset so they survive restarts, alloy can read them, and the snapshot tasks
-# can leave them out.
-resource "truenas_dataset" "plex_logs" {
-  name = "${local.pool}/plex/logs"
-}
-
+# Plex writes its useful logs to files, not stdout. Keeping them where Plex puts
+# them in its config, instead of the chart's temporary default, lets them survive
+# restarts and alloy read them.
+#
 # The chart's host_path storage has no auto_permissions setting, so nothing else
-# hands the dataset to the Plex user.
+# hands the directory to the Plex user.
 resource "truenas_filesystem_permissions" "plex_logs" {
-  path = truenas_dataset.plex_logs.mountpoint
+  path = "${local.plex_config}/Library/Application Support/Plex Media Server/Logs"
   mode = "0755"
   uid  = local.plex_user
   gid  = local.plex_group
@@ -52,7 +50,7 @@ resource "truenas_app" "plex" {
     storage = {
       config = {
         type             = "host_path"
-        host_path_config = { acl_enable = false, path = "/mnt/${local.pool}/plex" }
+        host_path_config = { acl_enable = false, path = local.plex_config }
       }
       data = {
         type             = "ix_volume"
