@@ -1,0 +1,46 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+// Plex renames a full log to .1.log through .5.log. Tailing those would re-send
+// every line under the new name.
+local.file_match "plex" {
+	path_targets = [{
+		__path__         = "/var/log/plex/*.log",
+		__path_exclude__ = "/var/log/plex/*.[0-9].log",
+		job              = "plex",
+	}]
+}
+
+loki.source.file "plex" {
+	targets    = local.file_match.plex.targets
+	forward_to = [loki.process.plex.receiver]
+}
+
+loki.process "plex" {
+	forward_to = [loki.write.default.receiver]
+
+	// Plex documents no log format. Lines read
+	// `Nov 27, 2026 10:15:32.123 [140234] INFO - ...`, and the level's case and
+	// dash have varied between versions. A line that doesn't match keeps no level.
+	stage.regex {
+		expression = `^\w{3} \d{2}, \d{4} [\d:.]+ \[\d+\] (?P<level>\w+) [-—] `
+	}
+
+	stage.template {
+		source   = "level"
+		template = "{{ if .Value }}{{ ToLower .Value }}{{ end }}"
+	}
+
+	// Plex enables debug logging by default.
+	stage.drop {
+		source              = "level"
+		expression          = "^(debug|verbose)$"
+		drop_counter_reason = "debug"
+	}
+
+	stage.labels {
+		values = { level = "" }
+	}
+}
+
+${loki_write}
