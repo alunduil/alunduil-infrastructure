@@ -52,9 +52,7 @@ For the Grafana Alloy add-on on A-02, which isn't enrolled in Fleet
 Management, open **Settings → Add-ons → Grafana Alloy → Configuration**.
 Replace the password in `loki_url`, and the `prometheus.remote_write`
 password inside `additional_config`, with the token. Save and restart the
-add-on. Confirm with
-`{hostname="homeassistant"}` logs and `up{job="home-assistant"}` instead of
-`alloy_build_info`.
+add-on.
 
 ## Confirm it worked
 
@@ -67,3 +65,13 @@ label confirms both that the credential authenticates and that the collector is
 applying remote configuration. An empty result after a few minutes means the
 pipelines are still failing to push—check the token scopes in the Cloud Portal
 before suspecting the collector.
+
+The Home Assistant add-on runs no self-monitoring pipelines, so confirm its
+pushes instead:
+
+```sh
+gcx logs query '{hostname="homeassistant"}'
+gcx metrics query 'up{job="home-assistant"}'
+```
+
+Both return data within a few minutes of the restart when the token works.
