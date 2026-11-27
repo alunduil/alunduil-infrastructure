@@ -33,6 +33,10 @@ resource "truenas_app" "tailscale" {
       extra_args          = []
       tailscaled_args     = []
       additional_envs = [
+        # Expect "localListener failed" lines for port 443: the chart drops
+        # NET_BIND_SERVICE and has no setting to restore it. Only requests
+        # from TrueNAS to its own serve URL use that listener; peers reach
+        # serve without it.
         { name = "TS_SERVE_CONFIG", value = "${local.tailscale_config_directory}/${local.tailscale_serve_file}" },
       ]
     }
