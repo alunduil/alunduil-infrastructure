@@ -32,6 +32,10 @@ resource "truenas_app" "tailscale" {
       advertise_routes    = ["192.168.68.0/22"]
       extra_args          = []
       tailscaled_args     = []
+      # The chart drops NET_BIND_SERVICE and exposes no setting to add it, so
+      # tailscaled logs "localListener failed to listen on <tailnet IP>:443"
+      # on every retry. That listener only carries connections from TrueNAS
+      # to its own serve URL; netstack answers serve traffic from peers.
       additional_envs = [
         { name = "TS_SERVE_CONFIG", value = "${local.tailscale_config_directory}/${local.tailscale_serve_file}" },
       ]
