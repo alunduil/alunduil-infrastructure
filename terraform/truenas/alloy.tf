@@ -12,6 +12,11 @@ locals {
   # The container_logs pipeline dials this path inside the container.
   alloy_docker_socket = "/var/run/docker.sock"
 
+  # The job_logs pipeline reads /var/log/jobs under this path. Middleware deletes
+  # and recreates that directory when it starts, which would leave a mount of
+  # the directory itself pointing at the deleted copy.
+  alloy_host_logs = "/host/var/log"
+
   alloy_config = templatefile("${path.module}/alloy/${local.alloy_config_file}.tftpl", {
     fleet_management_url     = local.bootstrap.grafana_fleet_management_url
     fleet_management_user_id = local.bootstrap.grafana_fleet_management_user_id
@@ -21,7 +26,7 @@ locals {
 
     # One attribute per pipeline lets each move to its own collector without
     # editing the pipeline's matcher.
-    pipelines = ["container_logs", "netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
+    pipelines = ["container_logs", "job_logs", "netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
   })
 }
 
@@ -71,6 +76,12 @@ resource "truenas_app" "alloy" {
         read_only        = true
         mount_path       = local.alloy_docker_socket
         host_path_config = { acl_enable = false, path = local.alloy_docker_socket }
+      },
+      {
+        type             = "host_path"
+        read_only        = true
+        mount_path       = local.alloy_host_logs
+        host_path_config = { acl_enable = false, path = "/var/log" }
       },
     ]
     resources = {

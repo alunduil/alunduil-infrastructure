@@ -1,0 +1,47 @@
+// SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+// SPDX-License-Identifier: MIT
+
+// Middleware writes each job's output to /var/log/jobs/<job id>.log. The file
+// holds the raw rsync or rclone output and names neither the job's method nor
+// its task.
+local.file_match "jobs" {
+	path_targets = [{
+		"__path__" = "/host/var/log/jobs/*.log",
+		"job"      = "truenas_jobs",
+	}]
+}
+
+loki.source.file "jobs" {
+	targets    = local.file_match.jobs.targets
+	forward_to = [loki.process.jobs.receiver]
+}
+
+loki.process "jobs" {
+	forward_to = [loki.write.default.receiver]
+
+	// Every run gets a new job id, so the id goes in structured metadata rather
+	// than a label to keep one stream per pipeline. Middleware restarts its ids
+	// from 1, so an id is unique only alongside the time.
+	stage.regex {
+		source     = "filename"
+		expression = "/(?P<job_id>[0-9]+)\\.log$"
+	}
+
+	stage.structured_metadata {
+		values = {job_id = ""}
+	}
+
+	stage.label_drop {
+		values = ["filename"]
+	}
+
+	// The cap stops one verbose rsync spending the overage budget.
+	// loki_process_dropped_lines_total counts the lines it drops.
+	stage.limit {
+		rate  = 5
+		burst = 200
+		drop  = true
+	}
+}
+
+${loki_write}
