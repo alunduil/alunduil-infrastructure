@@ -9,6 +9,9 @@ locals {
   alloy_config_volume    = "config"
   alloy_data_directory   = "/var/lib/alloy/data"
 
+  # The container_logs pipeline dials this path inside the container.
+  alloy_docker_socket = "/var/run/docker.sock"
+
   alloy_config = templatefile("${path.module}/alloy/${local.alloy_config_file}.tftpl", {
     fleet_management_url     = local.bootstrap.grafana_fleet_management_url
     fleet_management_user_id = local.bootstrap.grafana_fleet_management_user_id
@@ -20,9 +23,6 @@ locals {
     # editing the pipeline's matcher.
     pipelines = ["container_logs", "netdata_scrape", "printer_syslog", "slzb_syslog", "truenas_syslog"]
   })
-
-  # The container_logs pipeline dials this path inside the container.
-  docker_socket = "/var/run/docker.sock"
 }
 
 resource "truenas_app" "alloy" {
@@ -69,8 +69,8 @@ resource "truenas_app" "alloy" {
       {
         type             = "host_path"
         read_only        = true
-        mount_path       = local.docker_socket
-        host_path_config = { acl_enable = false, path = local.docker_socket }
+        mount_path       = local.alloy_docker_socket
+        host_path_config = { acl_enable = false, path = local.alloy_docker_socket }
       },
     ]
     resources = {
