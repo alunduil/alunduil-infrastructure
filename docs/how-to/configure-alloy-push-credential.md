@@ -48,11 +48,14 @@ just nanopi-neo3
 See [configure-the-nanopi-neo3.md](configure-the-nanopi-neo3.md) for the
 prerequisites.
 
-For the Grafana Alloy add-on on A-02, which isn't enrolled in Fleet
-Management, open **Settings → Add-ons → Grafana Alloy → Configuration**.
-Replace the password in `loki_url`, and the `prometheus.remote_write`
-password inside `additional_config`, with the token. Save and restart the
-add-on.
+For Home Assistant, open **Settings → Add-ons → Grafana Alloy →
+Configuration** and replace two passwords with the token:
+
+- The password in `loki_url`.
+- The password in the `prometheus.remote_write` block inside
+  `additional_config`.
+
+Save, then restart the add-on.
 
 ## Confirm it worked
 
@@ -74,4 +77,4 @@ gcx logs query '{hostname="homeassistant"}'
 gcx metrics query 'up{job="home-assistant"}'
 ```
 
-Both return data within a few minutes of the restart when the token works.
+Both return data within a few minutes of the restart.
