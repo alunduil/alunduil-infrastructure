@@ -8,9 +8,9 @@ discovery.docker "apps" {
 discovery.relabel "apps" {
 	targets = discovery.docker.apps.targets
 
-	// A container's read position is stored under its target's labels. Address
-	// and port labels change when a container restarts onto a new IP, and the
-	// changed key makes Alloy re-send the container's whole log.
+	// Alloy keys a container's read position on its target's labels. A restart
+	// onto a new IP changes the address and port labels, and Alloy then re-sends
+	// the container's whole log.
 	rule {
 		action = "labeldrop"
 		regex  = "__address__|__meta_docker_network_.+|__meta_docker_port_.+"
@@ -39,9 +39,9 @@ loki.source.docker "apps" {
 loki.process "apps" {
 	forward_to = [loki.write.default.receiver]
 
-	// Live lines are seconds old. Older ones are history that Alloy re-sends
-	// after a container stops, or a silent container's last lines, which it
-	// repeats indefinitely.
+	// Live lines are seconds old. Older lines are replays: Alloy re-sends a
+	// container's history after it stops, and repeats a silent container's last
+	// lines indefinitely.
 	stage.drop {
 		older_than          = "1h"
 		drop_counter_reason = "replayed"
