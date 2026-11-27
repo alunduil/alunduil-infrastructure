@@ -10,8 +10,8 @@ Secret Manager. You put it on the collector by hand. A Fleet Management
 collector reads it as `GCLOUD_RW_API_KEY`, the only name Grafana's generated
 `self_monitoring_*` pipelines accept.
 
-Run this when a collector is first enrolled and after a bootstrap re-run
-rotates the token.
+Run this when a collector first gets a token and after a bootstrap re-run
+rotates it.
 
 ## Prerequisites
 
