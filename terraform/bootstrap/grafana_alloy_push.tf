@@ -17,12 +17,21 @@ locals {
   # from which policy.
   grafana_alloy_push_name = "alunduil-infrastructure-alloy-push"
 
-  # A box's remotecfg login and its pushes share this token, so each box holds
-  # one Grafana credential. Traces and profiles are absent because nothing sends
-  # them.
-  grafana_alloy_push_scopes = ["fleet-management:read", "logs:write", "metrics:write"]
+  # Traces and profiles are absent because nothing sends them.
+  grafana_alloy_push_scopes = ["logs:write", "metrics:write"]
 
-  grafana_alloy_collectors = toset(["truenas", "nanopi-neo3"])
+  # Boxes whose remotecfg login shares the push token, so each holds one Grafana
+  # credential.
+  grafana_alloy_fleet_collectors = toset(["truenas", "nanopi-neo3"])
+
+  grafana_alloy_collectors = setunion(local.grafana_alloy_fleet_collectors, ["homeassistant"])
+
+  grafana_alloy_push_scopes_by_collector = {
+    for collector in local.grafana_alloy_collectors : collector => concat(
+      contains(local.grafana_alloy_fleet_collectors, collector) ? ["fleet-management:read"] : [],
+      local.grafana_alloy_push_scopes,
+    )
+  }
 
   # Renaming a policy or a secret replaces it, and the collector's token with
   # it, so truenas's names carry no suffix.
@@ -59,7 +68,7 @@ resource "grafana_cloud_access_policy" "alloy_push" {
   name         = "${local.grafana_alloy_push_name}${local.grafana_alloy_collector_suffixes[each.key]}"
   display_name = "alunduil-infrastructure alloy push${local.grafana_alloy_collector_suffixes[each.key] == "" ? "" : " (${each.key})"}"
 
-  scopes = local.grafana_alloy_push_scopes
+  scopes = local.grafana_alloy_push_scopes_by_collector[each.key]
 
   realm {
     type       = "stack"

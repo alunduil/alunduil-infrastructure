@@ -6,12 +6,12 @@
 Fleet Management sends a collector the text of its pipelines and lets the
 collector evaluate them, so the credential a pipeline pushes with can never
 travel inside one. Terraform creates a token per collector and stores it in
-Secret Manager. You put it on the collector by hand, under the name
-`GCLOUD_RW_API_KEY`. Grafana's generated `self_monitoring_*` pipelines have that
-name hardcoded, so no other name works.
+Secret Manager. You put it on the collector by hand. A Fleet Management
+collector reads it as `GCLOUD_RW_API_KEY`, the only name Grafana's generated
+`self_monitoring_*` pipelines accept.
 
-Run this when a collector is first enrolled and after a bootstrap re-run
-rotates the token.
+Run this when a collector first gets a token and after a bootstrap re-run
+rotates it.
 
 ## Prerequisites
 
@@ -25,6 +25,7 @@ Replace `<secret>` with the collector's secret:
 
 - TrueNAS: `grafana-alloy-push-token`
 - NanoPi-NEO3: `grafana-alloy-push-token-nanopi-neo3`
+- Home Assistant: `grafana-alloy-push-token-homeassistant`
 
 ```sh
 gcloud secrets versions access latest \
@@ -47,6 +48,15 @@ just nanopi-neo3
 See [configure-the-nanopi-neo3.md](configure-the-nanopi-neo3.md) for the
 prerequisites.
 
+For Home Assistant, open **Settings → Add-ons → Grafana Alloy →
+Configuration** and replace two passwords with the token:
+
+- The password in `loki_url`.
+- The password in the `prometheus.remote_write` block inside
+  `additional_config`.
+
+Save, then restart the add-on.
+
 ## Confirm it worked
 
 ```sh
@@ -58,3 +68,13 @@ label confirms both that the credential authenticates and that the collector is
 applying remote configuration. An empty result after a few minutes means the
 pipelines are still failing to push—check the token scopes in the Cloud Portal
 before suspecting the collector.
+
+The Home Assistant add-on runs no self-monitoring pipelines, so confirm its
+pushes instead:
+
+```sh
+gcx logs query '{hostname="homeassistant"}'
+gcx metrics query 'up{job="home-assistant"}'
+```
+
+Both return data within a few minutes of the restart.
