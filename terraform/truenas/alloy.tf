@@ -84,3 +84,9 @@ import {
   to = truenas_app.alloy
   id = "alloy"
 }
+
+action "truenas_app_redeploy" "alloy" {
+  config {
+    app_name = truenas_app.alloy.name
+  }
+}

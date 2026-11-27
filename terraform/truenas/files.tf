@@ -26,12 +26,6 @@ moved {
 
 # The provider has no file resource. The upload runs as a TrueNAS job, and curl
 # sees only that the job started, not that it finished.
-action "truenas_app_redeploy" "alloy" {
-  config {
-    app_name = truenas_app.alloy.name
-  }
-}
-
 resource "terraform_data" "file" {
   for_each = local.truenas_files
 
