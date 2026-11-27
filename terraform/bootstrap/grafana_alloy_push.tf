@@ -20,8 +20,8 @@ locals {
   # Traces and profiles are absent because nothing sends them.
   grafana_alloy_push_scopes = ["logs:write", "metrics:write"]
 
-  # A Fleet Management box's remotecfg login and its pushes share one token, so
-  # each box holds one Grafana credential.
+  # Boxes whose remotecfg login shares the push token, so each holds one Grafana
+  # credential.
   grafana_alloy_fleet_collectors = toset(["truenas", "nanopi-neo3"])
 
   grafana_alloy_collectors = setunion(local.grafana_alloy_fleet_collectors, ["homeassistant"])

@@ -6,9 +6,9 @@
 Fleet Management sends a collector the text of its pipelines and lets the
 collector evaluate them, so the credential a pipeline pushes with can never
 travel inside one. Terraform creates a token per collector and stores it in
-Secret Manager. You put it on the collector by hand, under the name
-`GCLOUD_RW_API_KEY`. Grafana's generated `self_monitoring_*` pipelines have that
-name hardcoded, so no other name works.
+Secret Manager. You put it on the collector by hand. A Fleet Management
+collector reads it as `GCLOUD_RW_API_KEY`, the only name Grafana's generated
+`self_monitoring_*` pipelines accept.
 
 Run this when a collector is first enrolled and after a bootstrap re-run
 rotates the token.
