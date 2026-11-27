@@ -11,8 +11,7 @@ locals {
       target  = "/mnt/.ix-apps/app_mounts/${truenas_app.tailscale.name}/${local.tailscale_config_volume}/${local.tailscale_serve_file}"
     }
 
-    # alloy crash-loops until this lands. It reads the file only at start, so a
-    # later change needs an app restart.
+    # alloy crash-loops until this lands, and reads it only at start.
     alloy_config = {
       content = local.alloy_config
       target  = "/mnt/.ix-apps/app_mounts/${truenas_app.alloy.name}/${local.alloy_config_volume}/${local.alloy_config_file}"
@@ -27,10 +26,25 @@ moved {
 
 # The provider has no file resource. The upload runs as a TrueNAS job, and curl
 # sees only that the job started, not that it finished.
+action "truenas_app_redeploy" "alloy" {
+  config {
+    app_name = truenas_app.alloy.name
+  }
+}
+
 resource "terraform_data" "file" {
   for_each = local.truenas_files
 
   triggers_replace = [sha256(each.value.content)]
+
+  # A changed file replaces this resource, so after_create follows each upload.
+  lifecycle {
+    action_trigger {
+      events    = [after_create]
+      condition = each.key == "alloy_config"
+      actions   = [action.truenas_app_redeploy.alloy]
+    }
+  }
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]

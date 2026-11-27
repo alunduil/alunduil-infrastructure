@@ -48,14 +48,15 @@ Terraform shows the plan and waits for `yes` before applying. A plan reporting
 matches TrueNAS. The plan doesn't read the Tailscale serve config or the alloy
 config back from the box, so it misses an edit made there.
 
-After an apply that changes `terraform/truenas/alloy/`, restart alloy under
-**Apps → alloy → Restart**. alloy reads its config only at start.
-
 ## Recover from a bad apply
 
 If an apply cuts the tailnet path to TrueNAS, sign in to the web UI on the
 home network at `https://192.168.68.63` and revert the change there. Revert it in
 `terraform/truenas/` too, or the next `just truenas` reapplies it.
+
+An apply that uploads a new alloy config redeploys the alloy app. If that
+redeploy fails, the next apply doesn't retry it. Restart alloy under
+**Apps → alloy → Restart** instead.
 
 If the `tailscale` app fails, the web UI's tailnet address fails with it.
 Repair the app under **Apps** at the home-network address. The browser warns
