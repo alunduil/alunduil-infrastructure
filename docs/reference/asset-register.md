@@ -8,7 +8,7 @@ trust boundaries, assets, entry points, external dependencies, and
 credentials. [Credential reachability](../explanation/credential-reachability.md)
 follows what each credential leads to.
 
-Verified 2026-11-21.
+Verified 2026-11-27.
 
 ## Scope
 
@@ -733,6 +733,17 @@ Google Cloud's other credentials.
 - Grants: P-14
 - Created by: Operator
 - Source: [`create-hook-fix-selftest-github-app.md`](../how-to/create-hook-fix-selftest-github-app.md)
+
+### C-43: `alunduil-infrastructure-alloy-push-homeassistant`
+
+- Kind: Grafana Cloud access-policy token
+- Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
+  stack realm
+- Consumer: the alloy add-on on A-02, for its log and metric pushes. No
+  deployer reads it
+- Grants: P-4
+- Created by: Terraform
+- Source: `terraform/bootstrap/grafana_alloy_push.tf`
 
 ## Maintenance
 

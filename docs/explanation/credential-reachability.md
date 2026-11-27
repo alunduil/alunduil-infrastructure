@@ -57,7 +57,8 @@ issue tracking that path.
 The graphs leave out what connects to nothing:
 
 - C-07, C-08, C-14, C-15, C-16, C-17, C-18, C-19, C-22, C-23, C-24, C-35,
-  C-36, and C-37 have no edge apart from P-1 and the host that consumes them.
+  C-36, C-37, and C-43 have no edge apart from P-1 and the host that consumes
+  them.
 - C-34, C-39, C-40, and C-41 have no edge because nothing reads them.
 - C-38 has no mapped edge, but it signs in to the whole Google account that
   receives A-05's mail. What that account's mail can reset is `Unverified`.

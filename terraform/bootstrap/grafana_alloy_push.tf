@@ -22,7 +22,7 @@ locals {
   # them.
   grafana_alloy_push_scopes = ["fleet-management:read", "logs:write", "metrics:write"]
 
-  grafana_alloy_collectors = toset(["truenas", "nanopi-neo3"])
+  grafana_alloy_collectors = toset(["truenas", "nanopi-neo3", "homeassistant"])
 
   # Renaming a policy or a secret replaces it, and the collector's token with
   # it, so truenas's names carry no suffix.

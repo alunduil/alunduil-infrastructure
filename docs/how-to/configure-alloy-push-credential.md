@@ -25,6 +25,7 @@ Replace `<secret>` with the collector's secret:
 
 - TrueNAS: `grafana-alloy-push-token`
 - NanoPi-NEO3: `grafana-alloy-push-token-nanopi-neo3`
+- Home Assistant: `grafana-alloy-push-token-homeassistant`
 
 ```sh
 gcloud secrets versions access latest \
@@ -46,6 +47,13 @@ just nanopi-neo3
 
 See [configure-the-nanopi-neo3.md](configure-the-nanopi-neo3.md) for the
 prerequisites.
+
+For the alloy add-on on A-02, which isn't enrolled in Fleet Management, open
+**Settings → Add-ons → alloy → Configuration**. Replace the password in
+`loki_url` and the Prometheus remote-write password in the YAML
+configuration with the token, then save and restart the add-on. Confirm with
+`{hostname="homeassistant"}` logs and `up{job="home-assistant"}` instead of
+`alloy_build_info`.
 
 ## Confirm it worked
 
