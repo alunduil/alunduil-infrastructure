@@ -739,8 +739,9 @@ Google Cloud's other credentials.
 - Kind: Grafana Cloud access-policy token
 - Scope: `fleet-management:read`, `logs:write`, and `metrics:write` on the
   stack realm
-- Consumer: the alloy add-on on A-02, for its log and metric pushes. No
-  deployer reads it
+- Consumer: the alloy add-on on A-02, for its log and metric pushes. The
+  add-on isn't enrolled in Fleet Management, so `fleet-management:read` goes
+  unused. No deployer reads it
 - Grants: P-4
 - Created by: Terraform
 - Source: `terraform/bootstrap/grafana_alloy_push.tf`
