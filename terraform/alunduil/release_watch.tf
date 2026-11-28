@@ -90,12 +90,13 @@ locals {
           model      = local.release_github_models[name]
         },
       ]
+      labels = ["version"]
+      value  = "untagged"
       sql = join("\n", compact([
         "SELECT version, 1 AS untagged FROM R",
         "WHERE version NOT IN (SELECT name FROM T)",
         "AND CONCAT('v', version) NOT IN (SELECT name FROM T)",
         target.untagged_sql != "" ? "AND version NOT IN (${target.untagged_sql})" : "",
-        "UNION ALL SELECT '' AS version, 0 AS untagged",
       ]))
     }
   }
@@ -113,14 +114,22 @@ locals {
         from       = local.release_window_seconds
         model      = local.release_github_models[name]
       }]
-      sql = join("\n", [
-        "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})",
-        "UNION ALL SELECT '' AS tag, '' AS created_by, 0 AS unexpected",
-      ])
+      labels = ["tag", "created_by"]
+      value  = "unexpected"
+      sql    = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
     }
   }
 
-  release_rules = merge(local.release_untagged_rules, local.release_creator_rules)
+  # An empty SQL result skips the conversion to alert instances and fails the
+  # evaluation, so every rule's SQL ends with a row valued 0.
+  release_rules = {
+    for name, rule in merge(local.release_untagged_rules, local.release_creator_rules) : name => merge(rule, {
+      expression = join("\n", [
+        rule.sql,
+        "UNION ALL SELECT ${join(", ", concat([for l in rule.labels : "'' AS ${l}"], ["0 AS ${rule.value}"]))}",
+      ])
+    })
+  }
 }
 
 # Grafana Cloud pre-provisions the Infinity plugin, so bootstrap doesn't install
@@ -180,8 +189,7 @@ resource "grafana_rule_group" "release_watch" {
 
       # Grafana accepts a SQL expression only as a rule's last step. Each row
       # it returns is an alert instance, firing while its numeric column is
-      # non-zero. An empty result skips that conversion and fails the
-      # evaluation, so each rule's SQL appends a row valued 0.
+      # non-zero.
       data {
         ref_id         = "OUT"
         datasource_uid = "__expr__"
@@ -194,7 +202,7 @@ resource "grafana_rule_group" "release_watch" {
           type       = "sql"
           datasource = { type = "__expr__", uid = "__expr__" }
           format     = "alerting"
-          expression = rule.value.sql
+          expression = rule.value.expression
         })
       }
     }
