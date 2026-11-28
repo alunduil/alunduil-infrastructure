@@ -48,7 +48,7 @@ This matches what #888 found.
 - **Renovate merges unattended.** A green Renovate pull request merges
   without the operator, and required checks still bind it.
 - **Collaborators merge after review.** An approved write collaborator
-  can merge without the admin, as #1112 asks.
+  can merge without the admin (#1112).
 - **Every merge path is known.** Each kind of actor has one stated way
   to approve and merge.
 
@@ -63,6 +63,14 @@ This matches what #888 found.
 - **Let GitHub's automatic merging land Renovate's pull requests.** This
   fails the unattended Renovate requirement, because automatic merging
   never applies Renovate's bypass (#1424, #888).
+- **Replace code-owner review with a required approval check, so
+  automatic merging works.** The check would pass when every commit is a
+  verified Renovate commit and Renovate turned on the merge, or when the
+  operator approved the head. A pull request can add its own job under
+  the check's name, and nobody has tested whether GitHub accepts that
+  copy. If it does, a write collaborator can merge on a spoofed pass.
+  Renovate's own merge, about an hour on `zfs-replicate#955`, is fast
+  enough, so the check buys nothing worth that risk.
 
 ## Decision Outcome
 
@@ -111,7 +119,13 @@ Bad / accepted:
 - A fast-releasing dependency merges only on a Renovate run that doesn't
   push. `renovatebot/pre-commit-hooks` publishes about 7 releases a day,
   so its updates often wait for the operator
-  (`alunduil/renovate-config#151`).
+  (`alunduil/renovate-config#151`). No Renovate setting fixes this:
+  - A daily update window can't help, so `alunduil/renovate-config#154`
+    closed unmerged. Every Renovate hold setting returns before the
+    merge step: `schedule` with `updateNotScheduled: false`,
+    `rebaseWhen: never` and `stopUpdatingLabel`.
+  - Taking only x.y.0 releases still leaves about 2 a day, 23 of the 81
+    releases from 2026-11-16 to 2026-11-27, against 4–6 Renovate runs.
 - Renovate is trusted outright, as the [Renovate path threat
   model](../explanation/threat-model-renovate.md) already accepts.
 - These gaps stay open: #1281, #1269 and #429.
