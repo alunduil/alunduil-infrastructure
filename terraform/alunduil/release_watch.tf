@@ -139,9 +139,11 @@ resource "grafana_rule_group" "release_watch" {
   dynamic "rule" {
     for_each = local.release_rules
 
+    # Grafana rejects a SQL expression feeding another expression, so OUT is
+    # the condition: each row fires while its numeric column is non-zero.
     content {
       name           = rule.key
-      condition      = "C"
+      condition      = "OUT"
       for            = "0s"
       no_data_state  = "OK"
       exec_err_state = "Error"
@@ -182,22 +184,6 @@ resource "grafana_rule_group" "release_watch" {
           datasource = { type = "__expr__", uid = "__expr__" }
           format     = "alerting"
           expression = rule.value.sql
-        })
-      }
-
-      data {
-        ref_id         = "C"
-        datasource_uid = "__expr__"
-        relative_time_range {
-          from = rule.value.window
-          to   = 0
-        }
-        model = jsonencode({
-          refId      = "C"
-          type       = "threshold"
-          datasource = { type = "__expr__", uid = "__expr__" }
-          expression = "OUT"
-          conditions = [{ evaluator = { type = "gt", params = [0] } }]
         })
       }
     }
