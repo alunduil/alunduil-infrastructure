@@ -44,8 +44,8 @@ this repository, which runs `terraform apply`. Reach depends on the whole
 graph, so reviewing credentials one at a time misses it.
 
 Keeping a new credential to one repository contains a leak only if nothing
-else joins that repository to the others. The hook-fix key and the Projects
-token (C-13) both join repositories this way.
+else joins that repository to the others. The hook-fix key joins
+repositories this way.
 
 ## How credentials connect
 
@@ -64,6 +64,9 @@ The graphs leave out what connects to nothing:
   receives A-05's mail. What that account's mail can reset is `Unverified`.
 - C-33 and the Codecov App (P-9) lead nowhere further, though any P-7 on a
   repository holding a C-33 token can read it.
+- C-13 leads nowhere further. Any merge to `main` in this repository reaches
+  it, because the hourly job runs its script from `main`, but it writes only
+  Projects v2 boards.
 
 ### From a foothold to a release
 
@@ -79,7 +82,6 @@ flowchart LR
   c42["C-42 Self-test App"]
   c10["C-10 Git Sync App"]
   c28["C-28 Apply App"]
-  c13["C-13 Projects token"]
   c32["C-32 woodland-generators token"]
   tokens["C-29, C-30 Hackage tokens"]
   p2["P-2 CI plan"]
@@ -102,7 +104,6 @@ flowchart LR
 
   p6 -.->|"writes"| refs
   c28 -->|"administers every repository"| refs
-  c13 -->|"as the account, no workflow scope"| refs
   c32 -->|"as the account, scope Unverified"| refs
 
   p8 -.->|"pushes workflow changes"| pr
@@ -124,7 +125,6 @@ flowchart LR
 
   pr -->|"plan runs the branch's script"| p2
   infra -->|"terraform-apply.yml runs"| p3
-  infra -->|"Hourly job reads, #1069"| c13
   job --> tokens
   job -->|"trusted publishing"| d13
   tokens --> d12
@@ -208,9 +208,9 @@ tags, and `immutable-tags` blocks updating and deleting a tag but not creating
 one. Environment tag patterns don't help, because whoever creates the tag
 chooses its name.
 
-## Why one hub is necessary and two aren't
+## Why one hub is necessary and the other isn't
 
-Three nodes connect most of the graph. Only the Apply App's reach comes from
+Two nodes connect most of the graph. Only the Apply App's reach comes from
 its job.
 
 The Apply App (C-28) administers every repository because Terraform manages
@@ -225,14 +225,6 @@ repository's default branch and release. It reaches other repositories only
 when that repository is `alunduil-infrastructure`. Removing the edge from
 `renovate/**` to the default branches disconnects hook code from everything
 else.
-
-The Projects token (C-13) updates one board and only reads repositories. Its
-`repo` scope still covers every repository the account can write to, in other
-organizations too. No test, documentation, or source shows whether the admin
-role's ruleset bypass exempts a classic token such as C-13 ([not
-established](../reference/release-control-behaviour.md#not-established)). Any
-merge to `main` reaches C-13, because the hourly job runs its script from
-`main`, and no review hold covers that script.
 
 ## Why Renovate and the Claude App are accepted
 

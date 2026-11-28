@@ -141,7 +141,8 @@ ruleset](../reference/release-control-behaviour.md#ruleset-edits-by-tokens-actin
 The register lists its scope as `Unverified`. The ruleset can't stop C-32, so
 issue #738 tracks removing the token.
 
-C-13 is a classic token. No test, documentation, or source shows whether the
-admin role's bypass exempts a classic token ([not
+C-13 is a classic token without `repo` or `public_repo`, so it can't create a
+tag whatever the ruleset does. No test, documentation, or source shows whether
+the admin role's bypass exempts a classic token that holds those scopes ([not
 established](../reference/release-control-behaviour.md#not-established)), so
-issues #1076 and #1069 shouldn't assume either answer.
+issue #1076 shouldn't assume either answer.

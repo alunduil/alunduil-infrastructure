@@ -414,15 +414,14 @@ Google Cloud's other credentials.
 ### C-13: `GH_PROJECT_SYNC_TOKEN`
 
 - Kind: GitHub classic personal access token
-- Scope: `project`, `repo`, and `read:org`, as the account, without
-  `workflow`. `repo` lets it write to every repository the account can. The
-  sync only reads them
+- Scope: `project` and `read:org`, as the account, without `repo`,
+  `public_repo`, or `workflow`. It writes every Projects v2 board the account
+  can and reads public repositories, but can't write to any repository
 - Consumer: the hourly Projects v2 sync, from the `project-sync`
   environment on `main`
 - Grants: the admin role, within those scopes
 - Created by: Operator
 - Source: [`create-github-project-sync-token.md`](../how-to/create-github-project-sync-token.md)
-- Tracked by: #1069
 
 ### C-14: Web Analytics beacon
 

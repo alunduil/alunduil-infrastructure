@@ -274,8 +274,7 @@ Source:
 
 No test, documentation, or source covers these:
 
-- Whether a classic personal access token, such as C-13, gets the admin role's
-  bypass.
+- Whether a classic personal access token gets the admin role's bypass.
 - Whether `POST /git/refs` and `git push` accept a tag name outside the
   pattern.
 - Whether the tag ruleset refuses `GITHUB_TOKEN`.
