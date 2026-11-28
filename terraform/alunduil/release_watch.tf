@@ -49,16 +49,15 @@ locals {
   release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
   release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
 
-  # A draft has no published_at. Publishing sets updated_at to published_at,
-  # and every later edit, prerelease flip included, moves updated_at on. A
-  # deletion leaves both alone. collection-json.hs's release workflow promotes
-  # its prerelease as github-actions[bot].
-  release_changed_jinja = join(" and ", [
-    "payload.release.published_at",
-    "(payload.action in [\"deleted\", \"unpublished\"] or payload.release.updated_at != payload.release.published_at)",
-    "not (payload.action == \"released\" and payload.sender.login == \"github-actions[bot]\")",
-  ])
-  release_changed_title = "{{ payload.repository.name }} Release {{ payload.release.tag_name }} {{ payload.action }} by {{ payload.sender.login }}"
+  # A draft has no published_at.
+  release_published_jinja = "payload.release.published_at"
+  # Publishing sets updated_at to published_at, and every later edit,
+  # prerelease flip included, moves updated_at on. A deletion leaves both alone.
+  release_changed_since_publish_jinja = "(payload.action in [\"deleted\", \"unpublished\"] or payload.release.updated_at != payload.release.published_at)"
+  # collection-json.hs's release workflow promotes its prerelease this way.
+  release_promoted_by_workflow_jinja = "(payload.action == \"released\" and payload.sender.login == \"github-actions[bot]\")"
+  release_changed_jinja              = "${local.release_published_jinja} and ${local.release_changed_since_publish_jinja} and not ${local.release_promoted_by_workflow_jinja}"
+  release_changed_title              = "{{ payload.repository.name }} Release {{ payload.release.tag_name }} {{ payload.action }} by {{ payload.sender.login }}"
 
   release_github_models = {
     for name in keys(local.release_watch) : name => { owner = "alunduil", repository = name, options = {} }
