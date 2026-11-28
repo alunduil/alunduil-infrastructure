@@ -32,7 +32,7 @@
     },
     {
       "customType": "regex",
-      "description": "TrueNAS ix-app images are a repository/tag pair inside jsonencode, which the terraform manager can't read",
+      "description": "Renovate's terraform manager skips the image pins in TrueNAS app values",
       "managerFilePatterns": ["/^terraform/truenas/.+\\.tf$/"],
       "matchStrings": [
         "repository\\s*=\\s*\"(?<depName>[^\"]+)\"\\s+tag\\s*=\\s*\"(?<currentValue>[^@\"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?\""
@@ -92,7 +92,7 @@
       "automerge": false
     },
     {
-      "description": "terraform/truenas/ applies only through just truenas, so a merge changes nothing on the box until someone runs it",
+      "description": "terraform/truenas/ applies only through just truenas, so merging changes nothing on the box",
       "matchFileNames": ["terraform/truenas/**"],
       "automerge": false
     },
