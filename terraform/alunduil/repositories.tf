@@ -56,7 +56,7 @@ locals {
 
     "alunduil-homeassistant" = {
       description            = "Automate your Home Assistant with alunduil's reusable blueprints."
-      topics                 = ["home-assistant", "home-assistant-blueprints", "claude-code"]
+      topics                 = ["home-assistant", "home-assistant-blueprints"]
       required_status_checks = local.no_test_job_required_status_checks
       deploy                 = { class = "merge" }
     }
