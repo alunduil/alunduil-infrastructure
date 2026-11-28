@@ -38,6 +38,7 @@ Create each App at <https://github.com/settings/apps/new> with:
   | `Contents` | Read-only | Read and write |
   | `Metadata` | Read-only | Read-only |
   | `Pages` | Read-only | Read and write |
+  | `Webhooks` | Read-only | Read and write |
 
 Then, for each App:
 

@@ -22,8 +22,8 @@ Out of scope:
 
 ## Evidence
 
-- **Tested**: run in a scratch personal-account repository for #1065 and
-  #1174.
+- **Tested**: run in a scratch personal-account repository for #1065,
+  #1174, and #1400.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
@@ -84,6 +84,36 @@ Tested: [#1065, test 3](https://github.com/alunduil/alunduil-infrastructure/issu
 - `OrganizationAdmin` isn't available on personal-account repositories.
 
 Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
+
+## Who pushed a tag
+
+### Rule suites
+
+`GET /repos/{owner}/{repo}/rulesets/rule-suites` records the pushing account
+as `actor_name` for every tag any ruleset matches. That includes a ruleset
+whose rules the tag passes, such as one blocking only updates and deletion. A
+tag no ruleset matches leaves no record. The record is the same whichever
+credential acted as the account.
+
+Tested: [#1400, tests 1 and
+2](https://github.com/alunduil/alunduil-infrastructure/issues/1400#issuecomment-7239819071),
+over `git push` and `POST /git/refs`.
+
+### Create webhook
+
+A repository webhook's `create` delivery for a tag carries `ref_type: tag`
+and the pushing account as `sender.login`.
+
+Tested: [#1400, test
+3](https://github.com/alunduil/alunduil-infrastructure/issues/1400#issuecomment-7239819071).
+
+### Pushes of more than three tags
+
+A `git push` of more than three tags sends no `create` or `push` webhook and
+starts no workflow. Rule suites still record each tag.
+
+Tested: [#1400, test
+4](https://github.com/alunduil/alunduil-infrastructure/issues/1400#issuecomment-7239819071).
 
 ## Tagging without `Workflows`
 
@@ -283,3 +313,5 @@ No test, documentation, or source covers these:
   fork.
 - How long a job waits on an unanswered custom deployment protection rule
   before it times out, and how the run then ends.
+- Which login a tag pushed by a GitHub App carries as `sender.login`.
+- Whether the Events API records a tag's `CreateEvent`, and after what delay.

@@ -86,8 +86,10 @@ Four limits remain:
   approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- Nothing alerts on a tag from an unexpected actor until #1400 lands. Release
-  automation waits for it.
+- The tag alert rides on one webhook delivery, which GitHub doesn't retry. A
+  push of more than three tags sends none, but it starts no release workflow
+  either ([release control
+  behaviour](../reference/release-control-behaviour.md#pushes-of-more-than-three-tags)).
 
 ## Findings
 
@@ -119,7 +121,6 @@ The rest can follow, because automation leaves them no worse.
 | A Hackage token uploads every package its account can | #1093 | After automation |
 | Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
 | A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
-| Nobody is told about a tag from an unexpected actor | #1400 | Before automation, since the release App is a new actor that tags |
 | Nobody is told about an edited or deleted Release | #1404 | Before automation, since the release App holds `Contents` write |
 | A published package can't be verified against its build | #1078 | After automation |
 | `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
@@ -146,9 +147,9 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Contributor | Repudiation | A contributor denies a pull request, but it changes nothing until someone merges it | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
-| Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | #1400 | Not Started | — |
+| Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | Rule suites record the pusher, and IRM pages on a tag from an unexpected account | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_tags` |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
-| Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076, #1400 | Not Started | `woodland-generators` releases report the account as author |
+| Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076 | Not Started | `woodland-generators` releases report the account as author. Rule suites and the create webhook name the account whichever credential pushed |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | A Grafana alert fires on a version with no matching tag | Mitigated | `terraform/alunduil/release_watch.tf`, `grafana_rule_group.release_watch` |
 | PyPI | Spoofing | Something impersonates PyPI to the publish action | Low | TLS, by the pinned action | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |
@@ -165,7 +166,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 3.0 Create tag or Release | Spoofing | GitHub treats whoever presents a valid credential as its owner, which the Write actor and Operator rows cover | — | — | Not Applicable | register, D-09 |
 | 3.0 Create tag or Release | Tampering | A `Contents` write actor creates a matching tag on any commit, which picks the source that publishes | High | #1055, #1251 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Tampering | Someone moves or deletes a published tag | High | `immutable-tags` | Mitigated | `main.tf`, `github_repository_ruleset.immutable_tags` |
-| 3.0 Create tag or Release | Repudiation | No record names who created a tag | Medium | #1400 | Not Started | — |
+| 3.0 Create tag or Release | Repudiation | No record names who created a tag | Medium | Rule suites record every tag's pusher, because `immutable-tags` matches every tag | Mitigated | `main.tf`, `github_repository_ruleset.immutable_tags`. `gh api repos/alunduil/<repo>/rulesets/rule-suites` |
 | 3.0 Create tag or Release | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | 3.0 Create tag or Release | Denial of Service | A failed smoke test leaves a tag only the admin can delete, which may burn the version | Medium | `collection-json.hs#161` | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | 3.0 Create tag or Release | Denial of Service | A write actor creates a future version's tag on a junk commit, and immutability keeps it there | Low | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
