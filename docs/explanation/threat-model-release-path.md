@@ -120,6 +120,7 @@ The rest can follow, because automation leaves them no worse.
 | Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
 | A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
 | Nobody is told about a tag from an unexpected actor | #1400 | Before automation, since the release App is a new actor that tags |
+| Nobody is told about an edited or deleted Release | #1404 | Before automation, since the release App holds `Contents` write |
 | A published package can't be verified against its build | #1078 | After automation |
 | `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
 | A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Resolved by automation |
@@ -176,9 +177,9 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
-| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1064 | Not Started | — |
+| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1404 | Not Started | — |
 | Tags and Releases | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
-| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | #1064 | Not Started | `woodland-generators` `release.yml`, job `verify-release` |
+| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | #1404 | Not Started | `woodland-generators` `release.yml`, job `verify-release` |
 | Repository secrets | Tampering | Changing a secret needs the admin role, which reaches everything anyway | — | — | Not Applicable | register, P-1 |
 | Repository secrets | Repudiation | Nothing records which run read C-32 | Medium | #738 removes it | Not Started | `woodland-generators` `release.yml`, job `release-please` |
 | Repository secrets | Information Disclosure | Any workflow on any branch can read C-32, because no environment holds it | High | #738 | Not Started | `woodland-generators` `release.yml`, job `release-please` |
