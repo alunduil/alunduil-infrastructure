@@ -3,16 +3,15 @@
 
 # Respond to an unexpected release
 
-Use this when one of these alerts fires:
+Use this when an alert fires in Grafana's **Releases** folder or the IRM
+**Release tags** integration:
 
-- **`<repository>` version has no tag**, in Grafana's **Releases** folder,
-  fires when Hackage or PyPI holds a version that matches no tag in the
-  repository.
-- **`<repository>` Release by an unexpected account**, in the same folder,
-  fires for a day after someone other than the operator publishes a Release.
-- **`<repository>` tag `<tag>` pushed by `<account>`**, from the IRM **Release
-  tags** integration, fires when an account other than the operator pushes a
-  tag.
+- **`<repository>` version has no tag** fires when Hackage or PyPI holds a
+  version that matches no tag in the repository.
+- **`<repository>` Release by an unexpected account** fires for a day after
+  someone other than the operator publishes a Release.
+- **`<repository>` tag `<tag>` pushed by `<account>`** fires when someone
+  other than the operator pushes a tag.
 
 Neither registry can take back a download. Deprecating or yanking a version
 only stops new installs from choosing it, so revoke the credential before
@@ -43,8 +42,8 @@ withdrawing the version.
      --jq '.[] | select(.ref == "refs/tags/<tag>") | {actor_name, pushed_at}'
    ```
 
-   A tag pushed with a token acting as your account shows your account here
-   too. If you didn't push it, treat it as unexpected.
+   A token acting as your account also shows as your account, so treat a tag
+   you didn't push as unexpected.
 
 5. If you made the release yourself without a tag, create the tag on the
    commit you released and stop here. If that commit is gone, add the version

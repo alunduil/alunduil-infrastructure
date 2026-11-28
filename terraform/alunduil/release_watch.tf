@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a registry version with no matching tag, a Release from an
-# unexpected account, or a tag pushed by an unexpected account.
-# docs/how-to/respond-to-an-unexpected-release.md covers the response.
+# Alerts on a registry version with no matching tag, and on a Release or tag
+# from an unexpected account. docs/how-to/respond-to-an-unexpected-release.md
+# covers the response.
 
 locals {
   # untagged exempts versions published without a tag.
@@ -16,7 +16,6 @@ locals {
     "zfs-replicate"       = { registry = "pypi", package = "zfs-replicate", untagged = ["1.1.6", "1.2.1", "1.2.2", "1.2.3"] }
   }
 
-  # Accounts that may publish a Release or push a tag.
   release_expected_accounts = ["alunduil"]
 
   release_watch_interval_seconds = 3600
@@ -45,7 +44,8 @@ locals {
 
   release_expected_accounts_sql = join(", ", [for login in local.release_expected_accounts : "'${login}'"])
 
-  # A create event's sender is the account that pushed the ref.
+  # A create event's sender is the account that pushed the ref. A tag's
+  # tagger is whatever the pusher wrote.
   release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
   release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
 
@@ -196,8 +196,8 @@ resource "grafana_rule_group" "release_watch" {
   }
 }
 
-# Every create event lands here. Tags from an expected account, and branches,
-# resolve on arrival and notify nobody.
+# GitHub can't limit create events to tags, so every new branch arrives here
+# too.
 resource "grafana_oncall_integration" "release_tags" {
   name = "Release tags"
   type = "webhook"

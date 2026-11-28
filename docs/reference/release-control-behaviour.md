@@ -90,10 +90,10 @@ Documented: [Rules](https://docs.github.com/en/rest/repos/rules).
 ### Rule suites
 
 `GET /repos/{owner}/{repo}/rulesets/rule-suites` records the pushing account
-as `actor_name` for every tag any ruleset matches. That includes a ruleset
-whose rules the tag passes, such as one blocking only updates and deletion. A
-tag no ruleset matches leaves no record. The record is the same whichever
-credential acted as the account.
+as `actor_name` for every tag that a ruleset matches, even when the tag
+passes every rule. A ruleset that blocks only updates and deletion is enough.
+A tag that no ruleset matches leaves no record. The record names the account,
+not the credential acting as it.
 
 Tested: [#1400, tests 1 and
 2](https://github.com/alunduil/alunduil-infrastructure/issues/1400#issuecomment-7239819071),
@@ -313,5 +313,5 @@ No test, documentation, or source covers these:
   fork.
 - How long a job waits on an unanswered custom deployment protection rule
   before it times out, and how the run then ends.
-- Which login a tag pushed by a GitHub App carries as `sender.login`.
+- Which login `sender.login` carries when a GitHub App pushes a tag.
 - Whether the Events API records a tag's `CreateEvent`, and after what delay.

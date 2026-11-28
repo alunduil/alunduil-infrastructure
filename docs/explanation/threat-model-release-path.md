@@ -86,9 +86,9 @@ Four limits remain:
   approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- The tag alert rides on one webhook delivery, which GitHub doesn't retry. A
-  push of more than three tags sends none, but it starts no release workflow
-  either ([release control
+- The tag alert depends on a single webhook delivery, which GitHub doesn't
+  retry. A push of more than three tags sends no delivery, but it starts no
+  release workflow either ([release control
   behaviour](../reference/release-control-behaviour.md#pushes-of-more-than-three-tags)).
 
 ## Findings
@@ -149,7 +149,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | Rule suites record the pusher, and IRM pages on a tag from an unexpected account | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_tags` |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
-| Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076 | Not Started | `woodland-generators` releases report the account as author. Rule suites and the create webhook name the account whichever credential pushed |
+| Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076 | Not Started | `woodland-generators` releases report the account as author. Rule suites and the create webhook name the account, not the credential acting as it |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
 | Hackage | Repudiation | Hackage's record is the only one of what it accepted | Low | A Grafana alert fires on a version with no matching tag | Mitigated | `terraform/alunduil/release_watch.tf`, `grafana_rule_group.release_watch` |
 | PyPI | Spoofing | Something impersonates PyPI to the publish action | Low | TLS, by the pinned action | Mitigated | `zfs-replicate` `release.yml`, job `pypi` |
