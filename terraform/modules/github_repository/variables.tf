@@ -99,6 +99,18 @@ variable "require_code_owner_review" {
   EOT
 }
 
+variable "allow_auto_merge" {
+  type        = bool
+  default     = false
+  nullable    = false
+  description = <<-EOT
+    Let a pull request merge itself once its required checks pass.
+    Renovate enables auto-merge on every pull request it marks for
+    automerge, so it merges as soon as checks pass instead of waiting for a
+    Renovate run that doesn't push to the branch.
+  EOT
+}
+
 variable "admin_only_updates" {
   type        = bool
   default     = false
