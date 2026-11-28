@@ -11,8 +11,8 @@ Use this when an alert in Grafana's **Releases** folder fires:
   other than the operator published a Release in the last day.
 
 Neither registry can take back a download. Deprecating or yanking a version
-only stops new installs from choosing it. That makes rotating the credential
-the most urgent step.
+only stops new installs from choosing it, so revoke the credential before
+withdrawing the version.
 
 ## Decide whether the release is yours
 
@@ -54,9 +54,9 @@ only one package is affected.
   gh secret set HACKAGE_API_KEY --repo alunduil/network-arbitrary --env hackage
   ```
 
-- **PyPI:** `zfs-replicate` publishes through a trusted publisher and holds no
-  token. Remove the publisher under the project's **Publishing** settings on
-  PyPI until you know which run published.
+- **PyPI:** `zfs-replicate` holds no token. Remove its trusted publisher from
+  the project's **Publishing** settings on PyPI, and restore it once you know
+  which run published.
 - **`woodland-generators`:** delete the `PAT_TOKEN` personal access token
   under GitHub's **Settings > Developer settings**, then create a new one and
   set it:
@@ -74,13 +74,11 @@ only one package is affected.
   PyPI. An exact `==` pin still installs a yanked release. Deleting the release
   instead is permanent, and PyPI never accepts that version's filename again.
 - **`woodland-generators`:** Foundry installs from the latest Release, so
-  delete the Release and its tag:
+  delete the Release and its tag. Deleting a tag needs the admin role.
 
   ```sh
   gh release delete <tag> --repo alunduil/woodland-generators --cleanup-tag
   ```
-
-The tag rulesets allow only the admin to delete a tag.
 
 ## Check what else it reached
 
@@ -92,10 +90,8 @@ The tag rulesets allow only the admin to delete a tag.
    ```
 
 2. Check every other publishing repository's registry page and Releases for
-   versions from the same period. A Hackage token reaches every package its
-   user maintains.
+   versions from the same period.
 
 3. File an issue recording what was published, how, and which credential
-   published it. If the credential came from a flow in the [release path
-   threat model](../explanation/threat-model-release-path.md), link that
-   finding's issue.
+   published it. Link the matching finding's issue in the [release path
+   threat model](../explanation/threat-model-release-path.md).

@@ -1,15 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a published version or Release that no expected flow created.
-# docs/how-to/respond-to-an-unexpected-release.md says what to do when one
-# fires. A registry upload can't be recalled, so these alerts decide how long
-# a bad one goes unnoticed.
+# Alerts on a registry version or Release that no expected flow created.
+# docs/how-to/respond-to-an-unexpected-release.md covers the response.
 
 locals {
-  # A registry version matches the tag named after it, with or without a
-  # leading v. untagged lists versions published without a tag before this
-  # check existed.
+  # untagged exempts versions published without a tag.
   release_watch = {
     "collection-json.hs"  = { registry = "hackage", package = "collection-json", untagged = ["0.1.0.0"] }
     "network-arbitrary"   = { registry = "hackage", package = "network-arbitrary" }
@@ -23,15 +19,15 @@ locals {
 
   release_watch_interval_seconds = 3600
 
-  # Releases created inside the window fire, so one fires for a day.
+  # How long an unexpected Release keeps firing.
   release_window_seconds = 86400
 
-  # The Tags query drops tags dated outside the rule's time range, by tagger
-  # or commit date, so the range reaches back past every tag.
+  # The Tags query drops any tag whose tagger or commit date falls outside the
+  # rule's time range.
   release_tag_lookback_seconds = 20 * 365 * 86400
 
-  # Hackage's preferred-versions document lists deprecated versions apart
-  # from the rest, and a deprecated version still installs when pinned.
+  # Hackage lists deprecated versions separately, and a pinned build still
+  # installs one.
   release_registry_queries = {
     hackage = {
       url     = "https://hackage.haskell.org/package/%s/preferred"
