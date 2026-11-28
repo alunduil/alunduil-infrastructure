@@ -55,6 +55,13 @@ locals {
       deploy = { class = "merge" }
     }
 
+    "alunduil-homeassistant" = {
+      description            = "Import alunduil's Home Assistant automation blueprints, or open the Claude Code workspace that reads a live Home Assistant config over a read-only mount."
+      topics                 = ["home-assistant", "home-assistant-blueprints", "claude-code"]
+      required_status_checks = local.readme_only_required_status_checks
+      deploy                 = { class = "merge" }
+    }
+
     "alunduil-infrastructure" = {
       required_status_checks = {
         ci_results_check = true
@@ -313,7 +320,7 @@ module "repository" {
 locals {
   # Repositories created with gh that Terraform hasn't imported yet. Drop a
   # name once the apply on main has imported it.
-  adopted_repositories = toset(["agent-plugins", "release-gate", "vale-styles"])
+  adopted_repositories = toset(["agent-plugins", "alunduil-homeassistant", "release-gate", "vale-styles"])
 }
 
 import {
