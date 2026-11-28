@@ -16,8 +16,7 @@ locals {
     renovate_automerge = true
   }
 
-  # A README-only repository has no test job to require.
-  readme_only_required_status_checks = {}
+  no_test_job_required_status_checks = {}
 
   # A registry upload or an attached release asset can't be recalled, so the
   # operator approves each one (ADR 0004).
@@ -32,7 +31,7 @@ locals {
     "agent-plugins" = {
       description            = "Install alunduil's agent skills, hooks, and MCP servers on any host by adding this repository as a plugin marketplace."
       topics                 = ["agent-plugins", "agent-skills", "claude-code", "claude-code-plugins"]
-      required_status_checks = local.readme_only_required_status_checks
+      required_status_checks = local.no_test_job_required_status_checks
       deploy                 = { class = "merge" }
     }
 
@@ -58,7 +57,7 @@ locals {
     "alunduil-homeassistant" = {
       description            = "Import alunduil's Home Assistant automation blueprints, or open the Claude Code workspace that reads a live Home Assistant config over a read-only mount."
       topics                 = ["home-assistant", "home-assistant-blueprints", "claude-code"]
-      required_status_checks = local.readme_only_required_status_checks
+      required_status_checks = local.no_test_job_required_status_checks
       deploy                 = { class = "merge" }
     }
 
@@ -176,7 +175,7 @@ locals {
     "release-gate" = {
       description            = "Approve a deployment only when its commit is on the repository's default branch, by answering GitHub's custom deployment protection rule from a Cloudflare Worker."
       topics                 = ["github-app", "cloudflare-workers", "deployment-protection-rules", "supply-chain-security"]
-      required_status_checks = local.readme_only_required_status_checks
+      required_status_checks = local.no_test_job_required_status_checks
     }
 
     "renovate-config" = {
@@ -211,7 +210,7 @@ locals {
     "vale-styles" = {
       description            = "Lint docs, code comments, and AI guidance against one set of house rules by adding this Vale package to any repository's .vale.ini."
       topics                 = ["vale", "vale-style", "prose-linting", "style-guide"]
-      required_status_checks = local.readme_only_required_status_checks
+      required_status_checks = local.no_test_job_required_status_checks
     }
 
     "woodland-generators" = {
@@ -318,7 +317,7 @@ module "repository" {
 }
 
 locals {
-  # Repositories created with gh that Terraform hasn't imported yet. Drop a
+  # Existing repositories that Terraform hasn't imported yet. Drop a
   # name once the apply on main has imported it.
   adopted_repositories = toset(["agent-plugins", "alunduil-homeassistant", "release-gate", "vale-styles"])
 }
