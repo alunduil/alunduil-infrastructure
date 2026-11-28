@@ -120,8 +120,9 @@ locals {
     }
   }
 
-  # An empty SQL result skips the conversion to alert instances and fails the
-  # evaluation, so every rule's SQL ends with a row valued 0.
+  # Grafana puts a rule in Error when its SQL returns no rows, so each rule gets
+  # an extra row valued 0, which never fires. labels and value name that row's
+  # columns and must match the rule's SELECT in order.
   release_rules = {
     for name, rule in merge(local.release_untagged_rules, local.release_creator_rules) : name => merge(rule, {
       expression = join("\n", [
