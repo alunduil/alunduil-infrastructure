@@ -29,6 +29,15 @@
       "packageNameTemplate": "jdx/mise",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Renovate's terraform manager skips the image pins in TrueNAS app values",
+      "managerFilePatterns": ["/^terraform/truenas/.+\\.tf$/"],
+      "matchStrings": [
+        "repository\\s*=\\s*\"(?<depName>[^\"]+)\"\\s+tag\\s*=\\s*\"(?<currentValue>[^@\"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?\""
+      ],
+      "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
@@ -80,6 +89,11 @@
         ".github/actions/terraform-providers/**",
         "scripts/export-terraform-credentials.sh"
       ],
+      "automerge": false
+    },
+    {
+      "description": "terraform/truenas/ applies only through just truenas, so merging changes nothing on the box",
+      "matchFileNames": ["terraform/truenas/**"],
       "automerge": false
     },
     {
