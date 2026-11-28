@@ -11,8 +11,8 @@ permissions: {}
 
 jobs:
   # A failed required check stays failed after another run of the same name
-  # passes, so the failed runs themselves must re-run. This covers the held
-  # Terraform plan as well as the Renovate commit check.
+  # passes, so the failed runs themselves must re-run. The re-run clears both
+  # the held Terraform plan and the Renovate commit check.
   rerun-renovate-commit-checks:
     name: Re-run Renovate commit checks
     permissions:

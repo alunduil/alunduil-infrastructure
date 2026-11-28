@@ -9,8 +9,8 @@ locals {
   # that never reports blocks every merge.
   shared_required_checks = ["Run pre-commit hooks"]
 
-  # Fails on a Renovate branch carrying a commit Renovate didn't make, until
-  # the admin approves its head. Skipped, and so passing, on other branches.
+  # The check fails on a Renovate branch with a commit Renovate didn't make
+  # until the admin approves the head. Other branches skip it, which passes.
   renovate_commits_check = "Check Renovate branch commits / Hold others' commits on the Renovate branch"
 }
 

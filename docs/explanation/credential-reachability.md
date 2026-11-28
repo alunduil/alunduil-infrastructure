@@ -39,9 +39,9 @@ Out of scope:
 
 The register lists what each credential is granted, while reach adds
 whatever that grant can obtain in turn. The hook-fix key (C-25) holds
-`Contents` write to push formatting fixes. That grant also creates tags, and
-the workflow at a tag publishes a release. Reach depends on the whole graph,
-so reviewing credentials one at a time misses it.
+`Contents` write to push formatting fixes. The same grant can create a tag,
+and the workflow at that tag publishes a release. Reach depends on the whole
+graph, so reviewing credentials one at a time misses it.
 
 Keeping a new credential to one repository contains a leak only if nothing
 else joins that repository to the others. The hook-fix key and the Projects
@@ -192,8 +192,8 @@ release reaches those credentials with no compromise at Mend. Until the admin
 approves an update's head commit, `Detect Terraform changes` keeps plan from
 running it.
 
-A Renovate branch carrying a commit other than a verified `renovate[bot]`
-commit, such as a hook fix, waits for the admin to approve its head.
+A hook fix, or any other commit that isn't a verified `renovate[bot]` commit,
+holds its Renovate branch until the admin approves the head.
 `Check Renovate branch commits` fails until then, and the approval re-runs
 it. A key holder can set a commit's author but can't get GitHub's signature
 on it, so a forged author still fails.
@@ -227,8 +227,8 @@ reaches everything else.
 
 The hook-fix key (C-25) connects repositories because one reusable workflow
 serves them all with one key. Hook code alone is more contained: its fix is
-pushed with an App token covering one repository, and it reaches that
-repository's default branch only once the admin approves it.
+pushed with an App token covering one repository, and reaches that
+repository's default branch only after the admin approves.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other

@@ -83,9 +83,9 @@ variable "required_status_checks" {
 
     renovate_automerge lets Renovate merge its own pull requests without
     review. GitHub enforces only required checks on that merge, so require
-    every check a dependency update can break. It also requires the
-    caller job "Check Renovate branch commits" from renovate-config's
-    check-renovate-commits.yml, which the repo must run before this is set.
+    every check a dependency update can break. It also requires "Check
+    Renovate branch commits", so the repo must call renovate-config's
+    check-renovate-commits.yml under that job name before setting it.
   EOT
 }
 

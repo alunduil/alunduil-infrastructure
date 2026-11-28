@@ -62,8 +62,9 @@ jobs:
       # install.
       setup: scripts/install-terraform.sh
 
-  # The default-branch ruleset requires this check by name. An approval clears
-  # it only through the re-run in pull-request-review.yml.
+  # The default-branch ruleset requires this check by name, so renaming the
+  # job breaks the merge gate. Approval clears it only through the re-run in
+  # pull-request-review.yml.
   check-renovate-commits:
     name: Check Renovate branch commits
     permissions:
