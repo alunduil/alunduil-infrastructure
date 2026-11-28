@@ -102,6 +102,7 @@ locals {
   release_rules = merge(local.release_untagged_rules, local.release_creator_rules)
 }
 
+# Grafana Cloud pre-provisions the Infinity plugin, and refuses to install it.
 resource "grafana_data_source" "registries" {
   type = "yesoreyeram-infinity-datasource"
   name = "Package registries"

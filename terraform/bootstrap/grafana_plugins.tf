@@ -20,10 +20,3 @@ resource "grafana_cloud_plugin_installation" "github" {
   slug       = "grafana-github-datasource"
   version    = "2.11.0"
 }
-
-# For the registry data source in terraform/alunduil/release_watch.tf.
-resource "grafana_cloud_plugin_installation" "infinity" {
-  stack_slug = data.grafana_cloud_stack.this.slug
-  slug       = "yesoreyeram-infinity-datasource"
-  version    = "4.1.8"
-}
