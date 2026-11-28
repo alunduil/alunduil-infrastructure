@@ -7,8 +7,8 @@ Use this when an alert in Grafana's **Releases** folder fires:
 
 - **`<repository>` version has no tag** fires when Hackage or PyPI holds a
   version that matches no tag in the repository.
-- **`<repository>` Release by an unexpected account** fires when someone
-  other than the operator published a Release in the last day.
+- **`<repository>` Release by an unexpected account** fires for a day after
+  someone other than the operator publishes a Release.
 
 Neither registry can take back a download. Deprecating or yanking a version
 only stops new installs from choosing it, so revoke the credential before

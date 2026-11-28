@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a registry version or Release that no expected flow created.
-# docs/how-to/respond-to-an-unexpected-release.md covers the response.
+# Alerts on a registry version with no matching tag, or a Release from an
+# unexpected account. docs/how-to/respond-to-an-unexpected-release.md covers
+# the response.
 
 locals {
   # untagged exempts versions published without a tag.
@@ -113,7 +114,8 @@ locals {
   release_rules = merge(local.release_untagged_rules, local.release_creator_rules)
 }
 
-# Grafana Cloud pre-provisions the Infinity plugin, and refuses to install it.
+# Grafana Cloud pre-provisions the Infinity plugin, so bootstrap doesn't install
+# it.
 resource "grafana_data_source" "registries" {
   type = "yesoreyeram-infinity-datasource"
   name = "Package registries"
