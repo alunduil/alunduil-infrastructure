@@ -90,6 +90,8 @@ locals {
           model      = local.release_github_models[name]
         },
       ]
+      labels = ["version"]
+      value  = "untagged"
       sql = join("\n", compact([
         "SELECT version, 1 AS untagged FROM R",
         "WHERE version NOT IN (SELECT name FROM T)",
@@ -112,11 +114,23 @@ locals {
         from       = local.release_window_seconds
         model      = local.release_github_models[name]
       }]
-      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
+      labels = ["tag", "created_by"]
+      value  = "unexpected"
+      sql    = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
     }
   }
 
-  release_rules = merge(local.release_untagged_rules, local.release_creator_rules)
+  # Grafana puts a rule in Error when its SQL returns no rows, so each rule gets
+  # an extra row valued 0, which never fires. labels and value name that row's
+  # columns and must match the rule's SELECT in order.
+  release_rules = {
+    for name, rule in merge(local.release_untagged_rules, local.release_creator_rules) : name => merge(rule, {
+      expression = join("\n", [
+        rule.sql,
+        "UNION ALL SELECT ${join(", ", concat([for l in rule.labels : "'' AS ${l}"], ["0 AS ${rule.value}"]))}",
+      ])
+    })
+  }
 }
 
 # Grafana Cloud pre-provisions the Infinity plugin, so bootstrap doesn't install
@@ -189,7 +203,7 @@ resource "grafana_rule_group" "release_watch" {
           type       = "sql"
           datasource = { type = "__expr__", uid = "__expr__" }
           format     = "alerting"
-          expression = rule.value.sql
+          expression = rule.value.expression
         })
       }
     }
