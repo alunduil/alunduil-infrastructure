@@ -55,7 +55,7 @@ locals {
     }
 
     "alunduil-homeassistant" = {
-      description            = "Import alunduil's Home Assistant blueprints, or read a live Home Assistant config with Claude Code through a read-only mount."
+      description            = "Automate your Home Assistant with alunduil's reusable blueprints."
       topics                 = ["home-assistant", "home-assistant-blueprints", "claude-code"]
       required_status_checks = local.no_test_job_required_status_checks
       deploy                 = { class = "merge" }
