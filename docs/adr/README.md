@@ -18,3 +18,4 @@ Records (MADR) for substantive records).
 | [0005](0005-configure-remote-hosts-with-ansible.md) | Configure remote hosts with Ansible over the tailnet |
 | [0006](0006-bake-only-ssh-access-into-the-nanopi-neo3-image.md) | Bake only SSH access into the NanoPi-NEO3 image |
 | [0007](0007-retire-the-nanopi-neo3-backup.md) | Retire the NanoPi-NEO3 backup |
+| [0008](0008-gate-every-merge-on-code-owner-review.md) | Gate every merge on code-owner review |
