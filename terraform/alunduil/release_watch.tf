@@ -16,7 +16,8 @@ locals {
     "zfs-replicate"       = { registry = "pypi", package = "zfs-replicate", untagged = ["1.1.6", "1.2.1", "1.2.2", "1.2.3"] }
   }
 
-  release_expected_creators = ["alunduil"]
+  # Accounts that may publish a Release or push a tag.
+  release_expected_accounts = ["alunduil"]
 
   release_watch_interval_seconds = 3600
 
@@ -42,13 +43,11 @@ locals {
     }
   }
 
-  release_expected_creators_sql = join(", ", [for login in local.release_expected_creators : "'${login}'"])
+  release_expected_accounts_sql = join(", ", [for login in local.release_expected_accounts : "'${login}'"])
 
-  # A create event's sender is the account that pushed the ref. GitHub sends
-  # no create event for a push of more than three tags, but such a push
-  # starts no workflow either, so it can't publish.
-  release_tag_expected_jinja = "payload.ref_type != \"tag\" or payload.sender.login in ${jsonencode(local.release_expected_creators)}"
-  release_tag_title          = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
+  # A create event's sender is the account that pushed the ref.
+  release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
+  release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
 
   release_github_models = {
     for name in keys(local.release_watch) : name => { owner = "alunduil", repository = name, options = {} }
@@ -113,7 +112,7 @@ locals {
         from       = local.release_window_seconds
         model      = local.release_github_models[name]
       }]
-      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_creators_sql})"
+      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
     }
   }
 
@@ -207,7 +206,7 @@ resource "grafana_oncall_integration" "release_tags" {
 
   templates {
     grouping_key   = "{{ payload.repository.full_name }} {{ payload.ref_type }} {{ payload.ref }}"
-    resolve_signal = "{{ ${local.release_tag_expected_jinja} }}"
+    resolve_signal = "{{ not (${local.release_tag_unexpected_jinja}) }}"
     source_link    = "{{ payload.repository.html_url }}/releases/tag/{{ payload.ref }}"
 
     web {
@@ -232,10 +231,12 @@ resource "grafana_oncall_route" "release_tag_unexpected" {
   integration_id      = grafana_oncall_integration.release_tags.id
   escalation_chain_id = grafana_oncall_escalation_chain.alunduil.id
   routing_type        = "jinja2"
-  routing_regex       = "{{ not (${local.release_tag_expected_jinja}) }}"
+  routing_regex       = "{{ ${local.release_tag_unexpected_jinja} }}"
   position            = 0
 }
 
+# GitHub sends no create event for a push of more than three tags, but such a
+# push starts no workflow either, so it can't publish.
 resource "github_repository_webhook" "release_tags" {
   for_each = local.release_watch
 
