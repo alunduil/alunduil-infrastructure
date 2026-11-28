@@ -10,10 +10,9 @@
 ## Context and Problem Statement
 
 Every managed repository needs one answer to who may approve and merge
-a pull request. Until now that answer has been spread across seven
-issues: #709, #888, #1057, #1282, #445, #1112 and #1361. It has been
-reassessed several times. The live settings have drifted from it. A check on
-2026-11-28 found:
+a pull request. Seven issues each hold part of that answer
+(#709, #888, #1057, #1282, #445, #1112 and #1361), and the live
+settings have drifted from them. A check on 2026-11-28 found:
 
 - 9 of the 16 source repositories have no CODEOWNERS file, and their
   `review` ruleset requires no review: `agent-plugins`,
@@ -55,22 +54,23 @@ This matches what #888 found.
 ## Considered Options
 
 - **Keep `admin-only` where write collaborators exist.** Only the admin
-  and Renovate can update the default branch, so a collaborator can't
-  merge even after approval. This fails the collaborator requirement,
-  and it gives repositories two different gates.
+  and Renovate can update the default branch, so an approved collaborator
+  still can't merge. Repositories would also keep two different gates.
 - **Gate merges on code-owner review everywhere.** This meets all four
   requirements.
-- **Let GitHub's automatic merging land Renovate's pull requests.** This
-  fails the unattended Renovate requirement, because automatic merging
-  never applies Renovate's bypass (#1424, #888).
+- **Let GitHub's automatic merging land Renovate's pull requests.**
+  Automatic merging never applies Renovate's bypass, so Renovate's pull
+  requests wait for review.
 - **Replace code-owner review with a required approval check, so
-  automatic merging works.** The check would pass when every commit is a
-  verified Renovate commit and Renovate turned on the merge, or when the
-  operator approved the head. A pull request can add its own job under
-  the check's name, and nobody has tested whether GitHub accepts that
-  copy. If it does, a write collaborator can merge on a spoofed pass.
-  Renovate's own merge, about an hour on `zfs-replicate#955`, is fast
-  enough, so the check buys nothing worth that risk.
+  automatic merging works.** The check would pass in two cases:
+  - Every commit is a verified Renovate commit, and Renovate turned on
+    the merge.
+  - The operator approved the head.
+
+  A pull request can add its own job under the check's name, and nobody
+  has tested whether GitHub accepts that copy. If it does, a write
+  collaborator can merge on a spoofed pass. Renovate's own merge, on its
+  next run, is fast enough that the check isn't worth that risk.
 
 ## Decision Outcome
 
@@ -82,8 +82,7 @@ Every managed repository applies these rulesets and settings:
   (#1282). CODEOWNERS owns every path and is managed from Terraform.
   The admin role bypasses it with mode `always`, and Renovate
   (Integration 2740) with mode `pull_request`.
-- No `admin-only` ruleset. Code-owner review is the one merge gate, and
-  an approved write collaborator may merge (#1112).
+- No `admin-only` ruleset, so `review` is the only merge gate.
 - `checks`: required checks with no bypass.
 - `renovate/**`: the `update` rule, which Renovate and the hook-fix App
   bypass. `check-renovate-commits` holds any other commit until the
@@ -93,14 +92,14 @@ Every managed repository applies these rulesets and settings:
 
 Under these rules, each kind of actor approves and merges like this:
 
-| Actor | Approves | Merges | Notes |
+| Actor | Who approves | Who merges | Notes |
 | --- | --- | --- | --- |
 | External contributor, from a fork | The code owner must | The operator, or a write collaborator after approval | A push after approval needs approval again |
-| Renovate | Skips review through its bypass | Renovate, on its next run that doesn't push | Required checks still bind it. Hook-fix commits and held updates wait for the operator |
+| Renovate | Skips review through its bypass | Renovate, on its next run that doesn't push | Required checks still bind it. Hook-fix commits, and updates the shared preset holds for review, wait for the operator |
 | Operator | Not needed | Through the admin bypass | |
 | Agents under the operator's login | Not needed | Through the admin bypass | The policy doesn't separate them from the operator until #1361 |
-| Agent identity, from a fork | As for an external contributor | As for an external contributor | Recommended default |
-| Agent identity, as a write collaborator | The code owner must | After approval, with no bypass | Gains repository secrets in its branch workflows, and can create (#1281) or delete (#1269) Renovate branches |
+| Agent with its own account, from a fork | As for an external contributor | As for an external contributor | Recommended default |
+| Agent with its own account, as a write collaborator | The code owner must | After approval, with no bypass | Gains repository secrets in its branch workflows, and can create (#1281) or delete (#1269) Renovate branches |
 
 `dungeon-studio` and `qua-world` adopt this policy and record only where
 they differ. #709 applies it across repositories.
@@ -109,8 +108,8 @@ they differ. #709 applies it across repositories.
 
 Good:
 
-- One ruleset gates every person's merge, so a repository's access
-  follows from its CODEOWNERS file and collaborator list.
+- A repository's access follows from its CODEOWNERS file and
+  collaborator list.
 - A write collaborator can land approved work without the operator.
 
 Bad / accepted:
@@ -120,22 +119,17 @@ Bad / accepted:
   push. `renovatebot/pre-commit-hooks` publishes about 7 releases a day,
   so its updates often wait for the operator
   (`alunduil/renovate-config#151`). No Renovate setting fixes this:
-  - A daily update window can't help, so `alunduil/renovate-config#154`
-    closed unmerged. Every Renovate hold setting returns before the
-    merge step: `schedule` with `updateNotScheduled: false`,
-    `rebaseWhen: never` and `stopUpdatingLabel`.
-  - Taking only x.y.0 releases still leaves about 2 a day, 23 of the 81
-    releases from 2026-11-16 to 2026-11-27, against 4–6 Renovate runs.
+  - A daily update window can't help, because every Renovate hold
+    setting returns before the merge step: `schedule` with
+    `updateNotScheduled: false`, `rebaseWhen: never` and
+    `stopUpdatingLabel` (`alunduil/renovate-config#154`).
+  - Taking only x.y.0 releases still leaves about 2 a day against 4–6
+    Renovate runs: 23 of the 81 releases from 2026-11-16 to 2026-11-27.
 - Renovate is trusted outright, as the [Renovate path threat
   model](../explanation/threat-model-renovate.md) already accepts.
 - These gaps stay open: #1281, #1269 and #429.
 
 Neutral:
 
-- Merging through Renovate's own call took about an hour on
-  `zfs-replicate#955`, the time to Renovate's next run.
-
-## More Information
-
-The automatic-merging test evidence is on #1424. #709 applies the
-rulesets and settings.
+- A green Renovate pull request waits for Renovate's next run to merge,
+  about an hour on `zfs-replicate#955`.
