@@ -31,7 +31,10 @@ resource "github_repository" "this" {
   delete_branch_on_merge      = true
   archive_on_destroy          = true
 
-  allow_auto_merge = var.allow_auto_merge
+  # GitHub auto-merge doesn't apply Renovate's ruleset bypass, so it never
+  # merges Renovate's pull requests. Disallowing it leaves Renovate's own
+  # merge call, which does.
+  allow_auto_merge = false
 
   security_and_analysis {
     secret_scanning {
