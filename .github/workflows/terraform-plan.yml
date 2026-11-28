@@ -23,37 +23,54 @@ jobs:
   # Plan queues for the terraform-state slot before its first step, so
   # filtering inside it would hold every pull request behind an in-flight
   # apply.
+  #
+  # This job runs no action and nothing from the checkout, so an update under
+  # review can't change its result. The hook-fix App can't edit workflows, so
+  # its logic stays inline.
   changes:
     name: Detect Terraform changes
     runs-on: ubuntu-26.04
     timeout-minutes: 5
+    permissions:
+      pull-requests: read
     outputs:
       changed: ${{ steps.diff.outputs.changed }}
 
     steps:
-      # HEAD is the pull request's merge commit, so HEAD^1 is the base tip.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-          fetch-depth: 2
-
       - id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if git diff --quiet HEAD^1 HEAD -- \
-            terraform/alunduil \
-            terraform/modules \
-            .github/workflows/terraform-plan.yml \
-            .github/actions/mise \
-            .github/actions/terraform-providers \
-            scripts/export-terraform-credentials.sh \
-            scripts/eval-recording-rules.sh \
-            scripts/test-dora-alert.sh \
-            mise.toml \
-            mise.lock
-          then
-            echo changed=false >> "$GITHUB_OUTPUT"
-          else
+          files="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${NUMBER}/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)')"
+          paths='^(terraform/alunduil/|terraform/modules/|\.github/actions/mise/|\.github/actions/terraform-providers/|(\.github/workflows/terraform-plan\.yml|scripts/export-terraform-credentials\.sh|scripts/eval-recording-rules\.sh|scripts/test-dora-alert\.sh|mise\.toml|mise\.lock)$)'
+          if grep -Eq "${paths}" <<<"${files}"; then
             echo changed=true >> "$GITHUB_OUTPUT"
+          else
+            echo changed=false >> "$GITHUB_OUTPUT"
+          fi
+
+      # Plan runs an update's actions, tools, and providers with its
+      # credentials, so an update waits until the admin approves its head
+      # commit. pull-request-review.yml then re-runs this job, and plan with
+      # it.
+      - name: Hold a Renovate update until the admin approves it
+        if: steps.diff.outputs.changed == 'true' && startsWith(github.head_ref, 'renovate/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          state="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${NUMBER}/reviews" \
+            --jq '.[] | select(.user.login == env.OWNER and .commit_id == env.HEAD_SHA)
+              | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED") | .state' \
+            | tail -n 1)"
+          if [[ ${state} != APPROVED ]]; then
+            echo "::error::Plan would run this update's code with its credentials."
+            echo "::notice::Read the update, then approve ${HEAD_SHA} to run the plan."
+            exit 1
           fi
 
   # The default-branch ruleset requires this check by name, so renaming the

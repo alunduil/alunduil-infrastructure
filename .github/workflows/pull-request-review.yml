@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: Pull Request Review
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions: {}
+
+jobs:
+  # A failed run of a required check keeps it failing even after another run
+  # of the same name passes, so the held run itself has to re-run.
+  rerun-held-plan:
+    name: Re-run the held Terraform plan
+    if: >-
+      github.event.review.state == 'approved'
+      && github.event.review.user.login == github.repository_owner
+      && startsWith(github.event.pull_request.head.ref, 'renovate/')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+
+    steps:
+      - name: Re-run failed Terraform plans on the head commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          runs="repos/${GITHUB_REPOSITORY}/actions/workflows/terraform-plan.yml/runs"
+          ids="$(gh api "${runs}?event=pull_request&status=failure&head_sha=${HEAD_SHA}" \
+            --jq '.workflow_runs[].id')"
+          for id in ${ids}; do
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/rerun-failed-jobs"
+          done

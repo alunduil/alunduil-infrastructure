@@ -72,6 +72,7 @@ The next graph continues from P-2 and P-3.
 ```mermaid
 flowchart LR
   hook["Hook code in a Renovate update"]
+  upstream["Action, tool, or provider code in a Renovate update"]
   p7["P-7 Write collaborator"]
   p6["P-6 Renovate"]
   p8["P-8 Claude App"]
@@ -98,6 +99,7 @@ flowchart LR
   end
 
   hook -->|"fix pushed as C-25, one repository"| branch
+  upstream -->|"Renovate pins it"| branch
   p7 -->|"creates a tag, #1055"| tag
 
   p6 -.->|"writes"| refs
@@ -123,6 +125,7 @@ flowchart LR
   other --> job
 
   pr -->|"plan runs the branch's script"| p2
+  branch -->|"plan runs it once the admin approves"| p2
   infra -->|"terraform-apply.yml runs"| p3
   infra -->|"Hourly job reads, #1069"| c13
   job --> tokens
@@ -183,6 +186,11 @@ so a pull request branch runs with CI plan's credentials. That keeps it from
 the Apply App and from the Cloudflare, Tailscale, and Grafana Cloud write
 credentials. CI plan still holds Grafana stack Admin (C-06) and the Git Sync
 App (C-10).
+
+A Renovate update brings code nobody here wrote, so a moved tag or a
+compromised release reaches those credentials without a compromise at Mend.
+`Detect Terraform changes` holds every Renovate update that plan would run
+until the admin approves its head commit.
 
 Hook-fix commits cross this boundary without review, and neither of these
 controls stops them:
