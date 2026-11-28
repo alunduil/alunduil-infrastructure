@@ -565,8 +565,8 @@ Google Cloud's other credentials.
 ### C-27: `alunduil-terraform-plan`
 
 - Kind: GitHub App ID and private key
-- Scope: read-only `Administration`, `Contents`, `Metadata`, and
-  `Pages`, installed on every `alunduil` repository
+- Scope: read-only `Administration`, `Contents`, `Metadata`, `Pages`, and
+  `Webhooks`, installed on every `alunduil` repository
 - Consumer: the `integrations/github` provider in `terraform plan`.
   `terraform-plan.yml` reads the App's ID and key from Secret Manager as
   C-03
@@ -577,8 +577,8 @@ Google Cloud's other credentials.
 ### C-28: `alunduil-terraform-apply`
 
 - Kind: GitHub App ID and private key
-- Scope: `Administration`, `Contents`, and `Pages` write, installed on
-  every `alunduil` repository
+- Scope: `Administration`, `Contents`, `Pages`, and `Webhooks` write,
+  installed on every `alunduil` repository
 - Consumer: the `integrations/github` provider in `terraform apply`.
   `terraform-apply.yml` reads the App's ID and key from Secret Manager as
   C-04

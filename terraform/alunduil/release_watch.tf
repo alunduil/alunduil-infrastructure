@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a registry version with no matching tag, or a Release from an
-# unexpected account. docs/how-to/respond-to-an-unexpected-release.md covers
-# the response.
+# Alerts on a registry version with no matching tag, and on a Release or tag
+# from an unexpected account. docs/how-to/respond-to-an-unexpected-release.md
+# covers the response.
 
 locals {
   # untagged exempts versions published without a tag.
@@ -16,7 +16,7 @@ locals {
     "zfs-replicate"       = { registry = "pypi", package = "zfs-replicate", untagged = ["1.1.6", "1.2.1", "1.2.2", "1.2.3"] }
   }
 
-  release_expected_creators = ["alunduil"]
+  release_expected_accounts = ["alunduil"]
 
   release_watch_interval_seconds = 3600
 
@@ -42,7 +42,12 @@ locals {
     }
   }
 
-  release_expected_creators_sql = join(", ", [for login in local.release_expected_creators : "'${login}'"])
+  release_expected_accounts_sql = join(", ", [for login in local.release_expected_accounts : "'${login}'"])
+
+  # A create event's sender is the account that pushed the ref. A tag's
+  # tagger is whatever the pusher wrote.
+  release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
+  release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
 
   release_github_models = {
     for name in keys(local.release_watch) : name => { owner = "alunduil", repository = name, options = {} }
@@ -107,7 +112,7 @@ locals {
         from       = local.release_window_seconds
         model      = local.release_github_models[name]
       }]
-      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_creators_sql})"
+      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
     }
   }
 
@@ -188,5 +193,59 @@ resource "grafana_rule_group" "release_watch" {
         })
       }
     }
+  }
+}
+
+# GitHub can't limit create events to tags, so every new branch arrives here
+# too.
+resource "grafana_oncall_integration" "release_tags" {
+  name = "Release tags"
+  type = "webhook"
+
+  default_route {}
+
+  templates {
+    grouping_key   = "{{ payload.repository.full_name }} {{ payload.ref_type }} {{ payload.ref }}"
+    resolve_signal = "{{ not (${local.release_tag_unexpected_jinja}) }}"
+    source_link    = "{{ payload.repository.html_url }}/releases/tag/{{ payload.ref }}"
+
+    web {
+      title = local.release_tag_title
+    }
+    mobile_app {
+      title = local.release_tag_title
+    }
+    sms {
+      title = local.release_tag_title
+    }
+    phone_call {
+      title = local.release_tag_title
+    }
+    email {
+      title = local.release_tag_title
+    }
+  }
+}
+
+resource "grafana_oncall_route" "release_tag_unexpected" {
+  integration_id      = grafana_oncall_integration.release_tags.id
+  escalation_chain_id = grafana_oncall_escalation_chain.alunduil.id
+  routing_type        = "jinja2"
+  routing_regex       = "{{ ${local.release_tag_unexpected_jinja} }}"
+  position            = 0
+}
+
+# GitHub sends no create event for a push of more than three tags, but such a
+# push starts no workflow either, so it can't publish.
+resource "github_repository_webhook" "release_tags" {
+  for_each = local.release_watch
+
+  repository = each.key
+  events     = ["create"]
+
+  configuration {
+    url          = grafana_oncall_integration.release_tags.link
+    content_type = "json"
+    insecure_ssl = false
   }
 }
