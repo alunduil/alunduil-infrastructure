@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a registry version with no matching tag, and on a Release or tag
-# from an unexpected account. docs/how-to/respond-to-an-unexpected-release.md
-# covers the response.
+# Alerts on a registry version with no matching tag, on a Release or tag from
+# an unexpected account, and on a published Release that changes.
+# docs/how-to/respond-to-an-unexpected-release.md covers the response.
 
 locals {
   # untagged exempts versions published without a tag.
@@ -47,7 +47,49 @@ locals {
   # A create event's sender is the account that pushed the ref. A tag's
   # tagger is whatever the pusher wrote.
   release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
-  release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
+
+  # A draft has no published_at.
+  release_published_jinja = "payload.release.published_at"
+  # A publish leaves updated_at equal to published_at. Every later change
+  # except deletion advances updated_at, and GitHub sends a prerelease flip
+  # with the same action as a publish.
+  release_changed_since_publish_jinja = "(payload.action in [\"deleted\", \"unpublished\"] or payload.release.updated_at != payload.release.published_at)"
+  # collection-json.hs's release workflow promotes every prerelease it
+  # publishes.
+  release_promoted_by_workflow_jinja = "(payload.action == \"released\" and payload.sender.login == \"github-actions[bot]\")"
+  release_changed_jinja              = "${local.release_published_jinja} and ${local.release_changed_since_publish_jinja} and not ${local.release_promoted_by_workflow_jinja}"
+
+  # An event that doesn't page resolves on arrival, and so resolves every alert
+  # sharing its grouping key.
+  release_webhook_alerts = {
+    # GitHub can't limit create events to tags, so every new branch arrives
+    # here too. GitHub sends no create event for a push of more than three
+    # tags, but such a push starts no workflow either, so it can't publish.
+    tags = {
+      name         = "Release tags"
+      event        = "create"
+      page         = local.release_tag_unexpected_jinja
+      title        = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
+      grouping_key = "{{ payload.repository.full_name }} {{ payload.ref_type }} {{ payload.ref }}"
+      source_link  = "{{ payload.repository.html_url }}/releases/tag/{{ payload.ref }}"
+    }
+    # A Release's later events must not share a change's grouping key.
+    changes = {
+      name         = "Release changes"
+      event        = "release"
+      page         = local.release_changed_jinja
+      title        = "{{ payload.repository.name }} Release {{ payload.release.tag_name }} {{ payload.action }} by {{ payload.sender.login }}"
+      grouping_key = "{{ payload.repository.full_name }} {{ payload.release.id }} {{ payload.action }} {{ payload.release.updated_at }}"
+      source_link  = "{{ payload.release.html_url }}"
+    }
+  }
+
+  release_webhooks = {
+    for pair in setproduct(keys(local.release_webhook_alerts), keys(local.release_watch)) : "${pair[0]} ${pair[1]}" => {
+      alert      = pair[0]
+      repository = pair[1]
+    }
+  }
 
   release_github_models = {
     for name in keys(local.release_watch) : name => { owner = "alunduil", repository = name, options = {} }
@@ -210,56 +252,96 @@ resource "grafana_rule_group" "release_watch" {
   }
 }
 
-# GitHub can't limit create events to tags, so every new branch arrives here
-# too.
-resource "grafana_oncall_integration" "release_tags" {
-  name = "Release tags"
+resource "grafana_oncall_integration" "release_webhook" {
+  for_each = local.release_webhook_alerts
+
+  name = each.value.name
   type = "webhook"
 
   default_route {}
 
   templates {
-    grouping_key   = "{{ payload.repository.full_name }} {{ payload.ref_type }} {{ payload.ref }}"
-    resolve_signal = "{{ not (${local.release_tag_unexpected_jinja}) }}"
-    source_link    = "{{ payload.repository.html_url }}/releases/tag/{{ payload.ref }}"
+    grouping_key   = each.value.grouping_key
+    resolve_signal = "{{ not (${each.value.page}) }}"
+    source_link    = each.value.source_link
 
     web {
-      title = local.release_tag_title
+      title = each.value.title
     }
     mobile_app {
-      title = local.release_tag_title
+      title = each.value.title
     }
     sms {
-      title = local.release_tag_title
+      title = each.value.title
     }
     phone_call {
-      title = local.release_tag_title
+      title = each.value.title
     }
     email {
-      title = local.release_tag_title
+      title = each.value.title
     }
   }
 }
 
-resource "grafana_oncall_route" "release_tag_unexpected" {
-  integration_id      = grafana_oncall_integration.release_tags.id
+resource "grafana_oncall_route" "release_webhook" {
+  for_each = local.release_webhook_alerts
+
+  integration_id      = grafana_oncall_integration.release_webhook[each.key].id
   escalation_chain_id = grafana_oncall_escalation_chain.alunduil.id
   routing_type        = "jinja2"
-  routing_regex       = "{{ ${local.release_tag_unexpected_jinja} }}"
+  routing_regex       = "{{ ${each.value.page} }}"
   position            = 0
 }
 
-# GitHub sends no create event for a push of more than three tags, but such a
-# push starts no workflow either, so it can't publish.
-resource "github_repository_webhook" "release_tags" {
-  for_each = local.release_watch
+resource "github_repository_webhook" "release_webhook" {
+  for_each = local.release_webhooks
 
-  repository = each.key
-  events     = ["create"]
+  repository = each.value.repository
+  events     = [local.release_webhook_alerts[each.value.alert].event]
 
   configuration {
-    url          = grafana_oncall_integration.release_tags.link
+    url          = grafana_oncall_integration.release_webhook[each.value.alert].link
     content_type = "json"
     insecure_ssl = false
   }
+}
+
+moved {
+  from = grafana_oncall_integration.release_tags
+  to   = grafana_oncall_integration.release_webhook["tags"]
+}
+
+moved {
+  from = grafana_oncall_route.release_tag_unexpected
+  to   = grafana_oncall_route.release_webhook["tags"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["collection-json.hs"]
+  to   = github_repository_webhook.release_webhook["tags collection-json.hs"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["network-arbitrary"]
+  to   = github_repository_webhook.release_webhook["tags network-arbitrary"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["siren-json.hs"]
+  to   = github_repository_webhook.release_webhook["tags siren-json.hs"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["woodland-generators"]
+  to   = github_repository_webhook.release_webhook["tags woodland-generators"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["zellij-claude-pair"]
+  to   = github_repository_webhook.release_webhook["tags zellij-claude-pair"]
+}
+
+moved {
+  from = github_repository_webhook.release_tags["zfs-replicate"]
+  to   = github_repository_webhook.release_webhook["tags zfs-replicate"]
 }

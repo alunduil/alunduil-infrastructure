@@ -23,7 +23,7 @@ Out of scope:
 ## Evidence
 
 - **Tested**: run in a scratch personal-account repository for #1065,
-  #1174, and #1400.
+  #1174, #1400, and #1404.
 - **Documented**: quoted from GitHub's docs at
   [`github/docs@d59b263`](https://github.com/github/docs/tree/d59b2631959db46d71ca5f7748ec04311c6d0870).
 - **Source**: read from Renovate at
@@ -114,6 +114,28 @@ starts no workflow. Rule suites still record each tag.
 
 Tested: [#1400, test
 4](https://github.com/alunduil/alunduil-infrastructure/issues/1400#issuecomment-7239819071).
+
+## Who changed a Release
+
+A repository webhook's `release` delivery names the acting account as
+`sender.login`. A workflow's `GITHUB_TOKEN` appears as `github-actions[bot]`.
+
+A publish and a later prerelease flip both send `released` or `prereleased`.
+The timestamps separate them: a publish leaves `release.updated_at` equal to
+`release.published_at`, and every later change except deletion advances
+`updated_at`.
+
+- **Publish:** `published`, plus `released` or `prereleased`. A Release
+  created without a draft also sends `created`.
+- **Notes or name edit:** `edited`, with the old value under `changes`.
+- **Prerelease flip:** `prereleased` or `released` alone. GitHub sends no
+  `edited`.
+- **Unpublish:** `unpublished`, keeping `published_at`.
+- **Delete:** `deleted`, carrying the whole Release with its notes.
+- **Draft:** every delivery has `published_at: null`.
+
+Tested: [#1404, tests 1 to
+6](https://github.com/alunduil/alunduil-infrastructure/issues/1404#issuecomment-7241506869).
 
 ## Tagging without `Workflows`
 

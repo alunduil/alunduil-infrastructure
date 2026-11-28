@@ -72,7 +72,7 @@ The App's design follows:
   its repository's release pull request merges on a schedule, as #797 adds for
   `woodland-generators`.
 
-Four limits remain:
+Five limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
   check inside the release workflow can't refuse such a tag, because the
@@ -86,10 +86,14 @@ Four limits remain:
   approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- The tag alert depends on a single webhook delivery, which GitHub doesn't
-  retry. A push of more than three tags sends no delivery, but it starts no
-  release workflow either ([release control
+- The tag and Release change alerts each depend on a single webhook
+  delivery, which GitHub doesn't retry. A push of more than three tags sends
+  no delivery, but it starts no release workflow either ([release control
   behaviour](../reference/release-control-behaviour.md#pushes-of-more-than-three-tags)).
+- A prerelease promoted by `github-actions[bot]` doesn't page, since
+  `collection-json.hs`'s release workflow promotes every release. Any
+  workflow holding `contents: write` in a watched repository can promote one
+  unseen.
 
 ## Findings
 
@@ -121,7 +125,6 @@ The rest can follow, because automation leaves them no worse.
 | A Hackage token uploads every package its account can | #1093 | After automation |
 | Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
 | A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
-| Nobody is told about an edited or deleted Release | #1404 | Before automation, since the release App holds `Contents` write |
 | A published package can't be verified against its build | #1078 | After automation |
 | `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
 | A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Resolved by automation |
@@ -147,7 +150,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Contributor | Repudiation | A contributor denies a pull request, but it changes nothing until someone merges it | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
 | Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
-| Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | Rule suites record the pusher, and IRM pages on a tag from an unexpected account | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_tags` |
+| Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | Rule suites record the pusher, and IRM pages on a tag from an unexpected account | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `tags` |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
 | Operator | Repudiation | Actions by C-13 and C-32 look like the operator's own | Medium | #1076 | Not Started | `woodland-generators` releases report the account as author. Rule suites and the create webhook name the account, not the credential acting as it |
 | Hackage | Spoofing | Something impersonates Hackage to `cabal upload` | Low | cabal upgrades Hackage's URL to HTTPS, and exits if its transport lacks HTTPS | Mitigated | `haskell/cabal`, `Distribution.Client.Upload.upload` calls `remoteRepoTryUpgradeToHttps` |
@@ -178,9 +181,9 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
-| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1404 | Not Started | — |
+| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | IRM records each change to a published Release and the account behind it. Every change pages except a workflow promoting a prerelease | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `changes` |
 | Tags and Releases | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
-| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | #1404 | Not Started | `woodland-generators` `release.yml`, job `verify-release` |
+| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | IRM pages on the deletion, and the delivery holds the notes to recreate it | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `changes` |
 | Repository secrets | Tampering | Changing a secret needs the admin role, which reaches everything anyway | — | — | Not Applicable | register, P-1 |
 | Repository secrets | Repudiation | Nothing records which run read C-32 | Medium | #738 removes it | Not Started | `woodland-generators` `release.yml`, job `release-please` |
 | Repository secrets | Information Disclosure | Any workflow on any branch can read C-32, because no environment holds it | High | #738 | Not Started | `woodland-generators` `release.yml`, job `release-please` |
