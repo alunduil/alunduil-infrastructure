@@ -8,6 +8,10 @@ locals {
   # Only jobs that report on every pull request belong here; a required check
   # that never reports blocks every merge.
   shared_required_checks = ["Run pre-commit hooks"]
+
+  # Fails on a Renovate branch carrying a commit Renovate didn't make, until
+  # the admin approves its head. Skipped, and so passing, on other branches.
+  renovate_commits_check = "Check Renovate branch commits / Hold others' commits on the Renovate branch"
 }
 
 resource "github_repository" "this" {
@@ -222,6 +226,7 @@ resource "github_repository_ruleset" "checks" {
           local.shared_required_checks,
           var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
           var.required_status_checks.codecov_project_check ? ["codecov/project"] : [],
+          var.required_status_checks.renovate_automerge ? [local.renovate_commits_check] : [],
           var.required_status_checks.contexts,
         )
         content {
