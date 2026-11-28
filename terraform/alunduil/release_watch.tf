@@ -139,8 +139,6 @@ resource "grafana_rule_group" "release_watch" {
   dynamic "rule" {
     for_each = local.release_rules
 
-    # Grafana rejects a SQL expression feeding another expression, so OUT is
-    # the condition: each row fires while its numeric column is non-zero.
     content {
       name           = rule.key
       condition      = "OUT"
@@ -171,6 +169,9 @@ resource "grafana_rule_group" "release_watch" {
         }
       }
 
+      # Grafana accepts a SQL expression only as a rule's last step. Each row
+      # it returns is an alert instance, firing while its numeric column is
+      # non-zero.
       data {
         ref_id         = "OUT"
         datasource_uid = "__expr__"
