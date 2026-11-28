@@ -25,14 +25,17 @@ Probe: `list-monitors`.
   and retry once.
 - Report each monitor's status, and its uptime computed from incident
   durations — the stats call returns only an aggregate.
+- UptimeRobot records no incidents for the Saturday restart while its "Weekly
+  Deco Restart" maintenance window is active.
 - Read the resolved IP from each Plex incident's request log, then classify:
   - All timeouts, and the IP moves from the fibre range to the mobile
     backup range: failover. DDNS then publishes a CGNAT address.
   - `no route to host` → `connection refused` → `503` → `200`, IP stable:
     TrueNAS restarting.
-  - 1–4 minutes of `connection timed out` on a stable fibre IP: a WAN blip.
-    Saturday ~05:00Z (BST) or ~06:00Z (GMT) is most likely the Deco's
-    weekly restart.
+  - `connection timed out` on a stable fibre IP:
+    - Starting Saturday 06:00 local (05:00Z in BST, 06:00Z in GMT) and
+      lasting up to 8 minutes: the Deco's weekly restart.
+    - 1–4 minutes at any other time: a WAN blip.
   - Cause `100001`: DNS resolution.
   - Anything else: unclassified.
 - An unclassified overnight drop or failover goes in as a question for
