@@ -36,6 +36,7 @@ resource "grafana_fleet_management_pipeline" "concern" {
     truenas_syslog = { template = "truenas_syslog", listener = null }
     netdata_scrape = { template = "netdata_scrape", listener = null }
     container_logs = { template = "container_logs", listener = null }
+    job_logs       = { template = "job_logs", listener = null }
 
     slzb_syslog = {
       template = "device_syslog"

@@ -97,7 +97,7 @@ B-1 differs per container.
 | A-12 | No host mounts, media read-only, non-root | Its datasets |
 | Netdata | `/proc`, `/sys`, Docker socket, root | A-01 |
 | Scrutiny | `/dev`, `/run/udev`, `MKNOD`, root | A-01's disks |
-| alloy | Host network, Docker socket | A-01 |
+| alloy | Host network, Docker socket, `/var/log` read-only | A-01 |
 | Tailscale, `ddns-updater` | Unchecked | `Unverified` |
 
 The TrueNAS catalogue entries for these containers run as root. A-12's
