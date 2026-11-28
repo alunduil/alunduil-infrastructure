@@ -104,10 +104,9 @@ variable "allow_auto_merge" {
   default     = false
   nullable    = false
   description = <<-EOT
-    Let a pull request merge itself once its required checks pass.
-    Renovate enables auto-merge on every pull request it marks for
-    automerge, so it merges as soon as checks pass instead of waiting for a
-    Renovate run that doesn't push to the branch.
+    Allow pull requests to merge automatically once their required checks
+    pass; unrequired checks don't hold the merge. Renovate enables
+    auto-merge on each pull request it marks for automerge.
   EOT
 }
 
