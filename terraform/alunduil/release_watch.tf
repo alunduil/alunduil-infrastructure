@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Alerts on a registry version with no matching tag, and on a Release or tag
-# from an unexpected account. docs/how-to/respond-to-an-unexpected-release.md
-# covers the response.
+# Alerts on a registry version with no matching tag, on a Release or tag from
+# an unexpected account, and on a published Release that changes.
+# docs/how-to/respond-to-an-unexpected-release.md covers the response.
 
 locals {
   # untagged exempts versions published without a tag.
@@ -48,6 +48,17 @@ locals {
   # tagger is whatever the pusher wrote.
   release_tag_unexpected_jinja = "payload.ref_type == \"tag\" and payload.sender.login not in ${jsonencode(local.release_expected_accounts)}"
   release_tag_title            = "{{ payload.repository.name }} tag {{ payload.ref }} pushed by {{ payload.sender.login }}"
+
+  # A draft has no published_at. Publishing sets updated_at to published_at,
+  # and every later edit, prerelease flip included, moves updated_at on. A
+  # deletion leaves both alone. collection-json.hs's release workflow promotes
+  # its prerelease as github-actions[bot].
+  release_changed_jinja = join(" and ", [
+    "payload.release.published_at",
+    "(payload.action in [\"deleted\", \"unpublished\"] or payload.release.updated_at != payload.release.published_at)",
+    "not (payload.action == \"released\" and payload.sender.login == \"github-actions[bot]\")",
+  ])
+  release_changed_title = "{{ payload.repository.name }} Release {{ payload.release.tag_name }} {{ payload.action }} by {{ payload.sender.login }}"
 
   release_github_models = {
     for name in keys(local.release_watch) : name => { owner = "alunduil", repository = name, options = {} }
@@ -259,6 +270,58 @@ resource "github_repository_webhook" "release_tags" {
 
   configuration {
     url          = grafana_oncall_integration.release_tags.link
+    content_type = "json"
+    insecure_ssl = false
+  }
+}
+
+# A resolving event resolves its whole alert group, so the key separates each
+# change from the events that follow it.
+resource "grafana_oncall_integration" "release_changes" {
+  name = "Release changes"
+  type = "webhook"
+
+  default_route {}
+
+  templates {
+    grouping_key   = "{{ payload.repository.full_name }} {{ payload.release.id }} {{ payload.action }} {{ payload.release.updated_at }}"
+    resolve_signal = "{{ not (${local.release_changed_jinja}) }}"
+    source_link    = "{{ payload.release.html_url }}"
+
+    web {
+      title = local.release_changed_title
+    }
+    mobile_app {
+      title = local.release_changed_title
+    }
+    sms {
+      title = local.release_changed_title
+    }
+    phone_call {
+      title = local.release_changed_title
+    }
+    email {
+      title = local.release_changed_title
+    }
+  }
+}
+
+resource "grafana_oncall_route" "release_changed" {
+  integration_id      = grafana_oncall_integration.release_changes.id
+  escalation_chain_id = grafana_oncall_escalation_chain.alunduil.id
+  routing_type        = "jinja2"
+  routing_regex       = "{{ ${local.release_changed_jinja} }}"
+  position            = 0
+}
+
+resource "github_repository_webhook" "release_changes" {
+  for_each = local.release_watch
+
+  repository = each.key
+  events     = ["release"]
+
+  configuration {
+    url          = grafana_oncall_integration.release_changes.link
     content_type = "json"
     insecure_ssl = false
   }

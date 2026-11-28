@@ -72,7 +72,7 @@ The App's design follows:
   its repository's release pull request merges on a schedule, as #797 adds for
   `woodland-generators`.
 
-Four limits remain:
+Five limits remain:
 
 - The App still lets a leaked key create a tag on an off-branch commit. A
   check inside the release workflow can't refuse such a tag, because the
@@ -86,10 +86,13 @@ Four limits remain:
   approval.
 - Per-repository Apps don't separate the Hackage packages, because each token
   acts as a Hackage user (#1093).
-- The tag alert depends on a single webhook delivery, which GitHub doesn't
-  retry. A push of more than three tags sends no delivery, but it starts no
-  release workflow either ([release control
+- The tag and Release change alerts each depend on a single webhook
+  delivery, which GitHub doesn't retry. A push of more than three tags sends
+  no delivery, but it starts no release workflow either ([release control
   behaviour](../reference/release-control-behaviour.md#pushes-of-more-than-three-tags)).
+- A workflow holding `contents: write` in a watched repository can promote a
+  prerelease to a release without a page, because `collection-json.hs`'s
+  release workflow does that on every release.
 
 ## Findings
 
@@ -121,7 +124,6 @@ The rest can follow, because automation leaves them no worse.
 | A Hackage token uploads every package its account can | #1093 | After automation |
 | Release assets can be replaced | `woodland-generators#915` | Before automation, since the release App holds `Contents` write |
 | A failed smoke test leaves a tag only the admin can remove | `collection-json.hs#161` | After automation |
-| Nobody is told about an edited or deleted Release | #1404 | Before automation, since the release App holds `Contents` write |
 | A published package can't be verified against its build | #1078 | After automation |
 | `siren-json.hs`'s `hackage` environment admits any ref | #697 | Before automation |
 | A required check never reports on a `GITHUB_TOKEN` pull request | #556 | Resolved by automation |
@@ -178,9 +180,9 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
-| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | #1404 | Not Started | — |
+| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | IRM records every change to a published Release with its account, and pages on all but a workflow promoting a prerelease | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_changes` |
 | Tags and Releases | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
-| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | #1404 | Not Started | `woodland-generators` `release.yml`, job `verify-release` |
+| Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | IRM pages on the deletion, and the delivery holds the notes to recreate it | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_changes` |
 | Repository secrets | Tampering | Changing a secret needs the admin role, which reaches everything anyway | — | — | Not Applicable | register, P-1 |
 | Repository secrets | Repudiation | Nothing records which run read C-32 | Medium | #738 removes it | Not Started | `woodland-generators` `release.yml`, job `release-please` |
 | Repository secrets | Information Disclosure | Any workflow on any branch can read C-32, because no environment holds it | High | #738 | Not Started | `woodland-generators` `release.yml`, job `release-please` |
