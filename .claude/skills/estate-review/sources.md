@@ -25,8 +25,8 @@ Probe: `list-monitors`.
   and retry once.
 - Report each monitor's status, and its uptime computed from incident
   durations — the stats call returns only an aggregate.
-- While UptimeRobot's "Weekly Deco Restart" maintenance window is active, it
-  records no incidents for the Saturday restart.
+- UptimeRobot records no incidents for the Saturday restart while its "Weekly
+  Deco Restart" maintenance window is active.
 - Read the resolved IP from each Plex incident's request log, then classify:
   - All timeouts, and the IP moves from the fibre range to the mobile
     backup range: failover. DDNS then publishes a CGNAT address.
