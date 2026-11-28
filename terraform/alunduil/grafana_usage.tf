@@ -31,6 +31,10 @@ locals {
   # this one.
   usage_stack_selector = "{stack_id=\"1273682\"}"
 
+  # Every rejection log line carries a Mimir error ID, whose message wording
+  # varies by reason.
+  rejected_series_query = "{instance_type=\"metrics\"} |= \"err-mimir-\""
+
   usage_anomalies = [
     for anomaly in [
       { product = "Metrics", uid = "dg3gvdzuups00f", selector = "grafanacloud_instance_active_series${local.usage_stack_selector}" },
@@ -165,10 +169,8 @@ resource "grafana_rule_group" "ingestion" {
     exec_err_state = "Error"
     labels         = { severity = "warning" }
     annotations = {
-      summary = "Grafana Cloud is rejecting samples, so metrics are missing."
-      # Every rejection log line carries a Mimir error ID, whose message
-      # wording varies by reason.
-      description = "To list the rejected series, query the grafanacloud-usage-insights data source for {instance_type=\"metrics\"} |= \"err-mimir-\"."
+      summary     = "Grafana Cloud is rejecting samples, so metrics are missing."
+      description = "To list the rejected series, query the grafanacloud-usage-insights data source for ${local.rejected_series_query}."
     }
 
     data {
