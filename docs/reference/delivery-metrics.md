@@ -120,6 +120,7 @@ ships nothing.
 | `renovate-config` | Merge | — | — |
 | `alunduil-chezmoi` | Merge | — | — |
 | `agent-plugins` | Merge | — | — |
+| `alunduil-homeassistant` | Merge | — | — |
 | `projects-v2-sync` | No deploy | — | — |
 | `release-gate` | No deploy | — | — |
 | `zellij-claude-pair` | No deploy | — | — |
