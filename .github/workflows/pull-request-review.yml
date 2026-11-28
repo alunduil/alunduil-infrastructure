@@ -11,27 +11,11 @@ permissions: {}
 
 jobs:
   # A failed required check stays failed after another run of the same name
-  # passes, so the failed run itself must re-run.
-  rerun-held-plan:
-    name: Re-run the held Terraform plan
-    if: >-
-      github.event.review.state == 'approved'
-      && github.event.review.user.login == github.repository_owner
-      && startsWith(github.event.pull_request.head.ref, 'renovate/')
-    runs-on: ubuntu-26.04
-    timeout-minutes: 5
+  # passes, so the failed runs themselves must re-run. The re-run clears both
+  # the held Terraform plan and the Renovate commit check.
+  rerun-renovate-commit-checks:
+    name: Re-run Renovate commit checks
     permissions:
       actions: write
-
-    steps:
-      - name: Re-run failed Terraform plans on the head commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          runs="repos/${GITHUB_REPOSITORY}/actions/workflows/terraform-plan.yml/runs"
-          ids="$(gh api "${runs}?event=pull_request&status=failure&head_sha=${HEAD_SHA}" \
-            --jq '.workflow_runs[].id')"
-          for id in ${ids}; do
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/rerun-failed-jobs"
-          done
+    # yamllint disable-line rule:line-length
+    uses: alunduil/renovate-config/.github/workflows/rerun-renovate-commit-checks.yml@6052341d076d02929cd58ba8a5245d4cf13955af # main

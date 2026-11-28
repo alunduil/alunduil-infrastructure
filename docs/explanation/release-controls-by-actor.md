@@ -66,17 +66,16 @@ them. Review gates their merges.
 The tag ruleset refuses the hook-fix App's release tags, because no bypass
 entry names it.
 
-The required job planned in #1057 would stop a hook-fix commit reaching a
-default branch until the operator approves it. Without the job, Renovate
-automerges a branch carrying hook-fix commits. Renovate [treats a branch as
-unmodified when the author email of every commit is in
-`gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection),
+The required check `Check Renovate branch commits` stops a hook-fix commit
+reaching a default branch until the operator approves it. Renovate itself
+doesn't hold the branch, because it [treats a branch as unmodified when
+the author email of every commit is in `gitIgnoredAuthors`](../reference/release-control-behaviour.md#modified-branch-detection),
 and the shared preset lists the hook-fix App's email there
 ([`renovate-config@a67936f`, `default.json:12-14`](https://github.com/alunduil/renovate-config/blob/a67936f66c9a2dfa4d38f99a64822e19ee35474f/default.json#L12-L14)).
 In `alunduil/projects-v2-sync#49`, `renovate[bot]` merged an
 `alunduil-hook-fix[bot]` commit with no review.
 
-The job would rely on three behaviours:
+The check relies on three behaviours:
 
 - [A failed run keeps the check
   failing](../reference/release-control-behaviour.md#failed-runs-of-a-required-check)

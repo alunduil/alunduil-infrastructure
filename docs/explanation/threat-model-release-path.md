@@ -46,7 +46,7 @@ the publish environment's approval
 | --- | --- | --- |
 | Operator by hand | P-1 | No new credential, but every release needs the operator to cut it |
 | `GITHUB_TOKEN` | P-11 | Its Release starts no workflow and its pull request runs no checks. A dispatch would start a run, but #1055's bypass list would then have to admit P-11, which GitHub's documentation doesn't list as an option |
-| One App per repository | P-12 | Chosen. A leak reaches one repository, provided #1057 and #1076 close the routes between repositories |
+| One App per repository | P-12 | Chosen. A leak reaches one repository, provided #1076 closes the route between repositories |
 | One App across repositories | P-12 | Rejected. One leaked key would tag and publish in all of them |
 | Tag as a record, publish from `main` (`network-arbitrary#241`) | P-12 | Rejected. A leaked tag credential can't publish, but anyone able to dispatch can, and `hackage` can't then be scoped to tags |
 
@@ -110,7 +110,6 @@ The rest can follow, because automation leaves them no worse.
 | A release workflow accepts a tag that isn't on the default branch | #1251 | Before automation |
 | `woodland-generators`' release token acts as the account | #738 | With automation. The release App replaces the token |
 | Other tokens acting as the account bypass the tag rule | #1076, #1069 | After automation |
-| Hook-fix commits reach a default branch unreviewed | #1057 | Before automation |
 | A dependency update can merge and ship with nobody looking | #1121, #1122, `renovate-config#49` | Before automation |
 | A release uploads a package no test ran against | `zfs-replicate#848`, `network-arbitrary#172` | Before automation |
 | A required check can be satisfied by any App reporting its name | #429 | After automation |
@@ -145,7 +144,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | --- | --- | --- | --- | --- | --- | --- |
 | Contributor | Spoofing | A stolen account opens a pull request as its owner, which still has to pass review | Low | Rulesets gate the merge | Mitigated | `main.tf`, `github_repository_ruleset.review` |
 | Contributor | Repudiation | A contributor denies a pull request, but it changes nothing until someone merges it | — | — | Not Applicable | `main.tf`, `github_repository_ruleset.review` |
-| Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | #1057, #1055 | Not Started | register, C-25 |
+| Write actor | Spoofing | A leaked C-25 key acts as P-5 in any repository the App is installed on | High | Its commits on a Renovate branch wait for the admin's approval. #1055 for tags | Not Started | register, C-25 |
 | Write actor | Spoofing | A stolen collaborator account creates a tag as that person | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` has no creation rule. `gh api repos/alunduil/<repo>/collaborators` lists write collaborators |
 | Write actor | Repudiation | A lightweight tag records no creator, so its creator can deny it | Medium | Rule suites record the pusher, and IRM pages on a tag from an unexpected account | Mitigated | `terraform/alunduil/release_watch.tf`, `github_repository_webhook.release_tags` |
 | Operator | Spoofing | A stolen C-13 or C-32 acts as the account. On a personal-account repository, C-32 bypasses every tag ruleset that exempts the admin role. No test, documentation, or source shows whether C-13 does | High | #1076, #1069, #738 | Not Started | register, C-13 and C-32 |
@@ -157,7 +156,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Foundry world | Spoofing | A world authenticates to nothing and holds nothing here | — | — | Not Applicable | `woodland-generators` `release.yml`, job `verify-release` |
 | Foundry world | Repudiation | A world takes no action the path depends on | — | — | Not Applicable | `woodland-generators` `release.yml`, job `verify-release` |
 | 1.0 Merge pull request | Spoofing | An App reporting a required check's name satisfies it | Medium | #429 | Not Started | `main.tf`, `github_repository_ruleset.checks` |
-| 1.0 Merge pull request | Tampering | A hook-fix commit lands on a default branch unreviewed | High | #1057 | Not Started | `main.tf`, `github_repository_ruleset.renovate` |
+| 1.0 Merge pull request | Tampering | A hook-fix commit lands on a default branch unreviewed | High | `checks` requires the Renovate commit check, which fails until the admin approves the head | Mitigated | `main.tf`, `local.renovate_commits_check`, and `.github/workflows/check-renovate-commits.yml` in `renovate-config`, job `commits` |
 | 1.0 Merge pull request | Tampering | A compromised dependency update automerges and ships in the next release | High | The publish environment's approval (#1122 for asset releases), and Renovate holding release-job and bundled updates (`renovate-config#49`) | Not Started | `terraform/alunduil/repositories.tf`, `publish_approval` and `renovate_automerge` |
 | 1.0 Merge pull request | Repudiation | GitHub records the merger and the merged head on the pull request | — | — | Not Applicable | register, D-09 |
 | 1.0 Merge pull request | Information Disclosure | Every repository here is public | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
@@ -173,7 +172,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | 3.0 Create tag or Release | Elevation of Privilege | Tag creation gives a write actor the publish that review denies them | High | #1055 | Not Started | `main.tf`, `github_repository_ruleset.immutable_tags` |
 | Repository commits | Tampering | An unreviewed commit on a side branch becomes a release through a tag | High | #1055, #1251 | Not Started | `zfs-replicate` `release.yml`, job `build` |
 | Repository commits | Tampering | Someone rewrites or deletes the default branch | High | `default` blocks force pushes and deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
-| Repository commits | Repudiation | A key holder can set any commit author, and Renovate compares only the email | Medium | #1057 | Not Started | — |
+| Repository commits | Repudiation | A key holder can set any commit author, and Renovate compares only the email | Medium | The Renovate commit check counts a commit as Renovate's only when GitHub verified it and its author is `renovate[bot]` | Mitigated | `main.tf`, `local.renovate_commits_check`, and `.github/workflows/check-renovate-commits.yml` in `renovate-config`, job `commits` |
 | Repository commits | Information Disclosure | A secret is committed to a public repository | Medium | Push protection and secret scanning | Mitigated | `main.tf`, `github_repository.this` `security_and_analysis` |
 | Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
