@@ -16,8 +16,8 @@ Use this when an alert fires in Grafana's **Releases** folder or the IRM
   anyone edits, unpublishes, or deletes a published Release, or flips its
   prerelease flag. It fires for your own changes too.
 
-For a changed Release that you didn't change, [restore the
-Release](#restore-a-changed-release), then carry on from [revoke the
+If you didn't make the change, [restore the
+Release](#restore-a-changed-release), then [revoke the
 credential](#revoke-the-credential-that-published-it).
 
 Neither registry can take back a download. Deprecating or yanking a version
@@ -111,13 +111,15 @@ only one package is affected.
 
 ## Restore a changed Release
 
-The alert's payload, under the alert group's **Raw** view in IRM, holds the
-Release as GitHub sent it.
+The alert group in IRM keeps the webhook payload, which holds the Release as
+GitHub sent it.
 
-- **Edited notes or name:** the old value is under `changes`. Put it back:
+- **Edited notes or name:** the payload's `changes` holds the old value. Set
+  it back:
 
   ```sh
-  gh release edit <tag> --repo alunduil/<repository> --notes-file <old-notes>
+  gh release edit <tag> --repo alunduil/<repository> \
+    --title <old-name> --notes-file <old-notes>
   ```
 
 - **Flipped prerelease flag:** set it back with `--prerelease=true` or
@@ -129,17 +131,24 @@ Release as GitHub sent it.
   gh release edit <tag> --repo alunduil/<repository> --draft=false
   ```
 
-- **Deleted:** recreate it as a draft from the payload's `release.name` and
-  `release.body`. Its assets went with it.
+- **Deleted:** the deletion also removed its assets. Recreate it as a draft
+  from the payload's `release.name` and `release.body`:
 
   ```sh
   gh release create <tag> --repo alunduil/<repository> --verify-tag --draft \
     --title <name> --notes-file <notes>
   ```
 
-  On `woodland-generators`, re-run the tag's **Tag** workflow run, which
-  attaches the assets and publishes the draft. Elsewhere, publish the draft
-  with `gh release edit <tag> --draft=false`.
+  On `woodland-generators`, re-run the tag's `tag.yml` run, which attaches
+  the assets and publishes the draft:
+
+  ```sh
+  gh run list --repo alunduil/woodland-generators --workflow tag.yml \
+    --branch <tag> --json databaseId --jq '.[0].databaseId'
+  gh run rerun <run-id> --repo alunduil/woodland-generators
+  ```
+
+  Elsewhere, publish the draft with `gh release edit <tag> --draft=false`.
 
 ## Check what else it reached
 

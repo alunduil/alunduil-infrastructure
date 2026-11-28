@@ -50,15 +50,17 @@ locals {
 
   # A draft has no published_at.
   release_published_jinja = "payload.release.published_at"
-  # Publishing sets updated_at to published_at, and every later edit,
-  # prerelease flip included, moves updated_at on. A deletion leaves both alone.
+  # A publish leaves updated_at equal to published_at. Every later change
+  # except deletion advances updated_at, and GitHub sends a prerelease flip
+  # with the same action as a publish.
   release_changed_since_publish_jinja = "(payload.action in [\"deleted\", \"unpublished\"] or payload.release.updated_at != payload.release.published_at)"
-  # collection-json.hs's release workflow promotes its prerelease this way.
+  # collection-json.hs's release workflow promotes every prerelease it
+  # publishes.
   release_promoted_by_workflow_jinja = "(payload.action == \"released\" and payload.sender.login == \"github-actions[bot]\")"
   release_changed_jinja              = "${local.release_published_jinja} and ${local.release_changed_since_publish_jinja} and not ${local.release_promoted_by_workflow_jinja}"
 
-  # Each alert pages on events matching page. The rest resolve on arrival, and
-  # a resolving event resolves its whole alert group.
+  # An event that doesn't page resolves on arrival, and so resolves every alert
+  # sharing its grouping key.
   release_webhook_alerts = {
     # GitHub can't limit create events to tags, so every new branch arrives
     # here too. GitHub sends no create event for a push of more than three
@@ -71,7 +73,7 @@ locals {
       grouping_key = "{{ payload.repository.full_name }} {{ payload.ref_type }} {{ payload.ref }}"
       source_link  = "{{ payload.repository.html_url }}/releases/tag/{{ payload.ref }}"
     }
-    # The key separates each change from the events that follow it.
+    # A Release's later events must not share a change's grouping key.
     changes = {
       name         = "Release changes"
       event        = "release"

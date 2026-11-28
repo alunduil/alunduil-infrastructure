@@ -120,19 +120,18 @@ Tested: [#1400, test
 A repository webhook's `release` delivery names the acting account as
 `sender.login`. A workflow's `GITHUB_TOKEN` appears as `github-actions[bot]`.
 
-The action alone can't tell a publish from a later change, because both send
-`released` or `prereleased`. Comparing `release.updated_at` with
-`release.published_at` can:
+A publish and a later prerelease flip both send `released` or `prereleased`.
+The timestamps separate them: a publish leaves `release.updated_at` equal to
+`release.published_at`, and every later change except deletion advances
+`updated_at`.
 
-- **Publish:** `published`, `released`, and sometimes `created` or
-  `prereleased`, all with the two times equal.
-- **Notes or name edit:** `edited`, with the old value under `changes`, and
-  `updated_at` past `published_at`.
-- **Prerelease flip:** only `prereleased` or `released`, with `updated_at`
-  past `published_at`. No `edited` is sent.
+- **Publish:** `published`, plus `released` or `prereleased`. A Release
+  created without a draft also sends `created`.
+- **Notes or name edit:** `edited`, with the old value under `changes`.
+- **Prerelease flip:** `prereleased` or `released` alone. GitHub sends no
+  `edited`.
 - **Unpublish:** `unpublished`, keeping `published_at`.
-- **Delete:** `deleted`, carrying the whole Release with its notes. The two
-  times stay equal.
+- **Delete:** `deleted`, carrying the whole Release with its notes.
 - **Draft:** every delivery has `published_at: null`.
 
 Tested: [#1404, tests 1 to

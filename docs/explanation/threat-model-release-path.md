@@ -90,9 +90,10 @@ Five limits remain:
   delivery, which GitHub doesn't retry. A push of more than three tags sends
   no delivery, but it starts no release workflow either ([release control
   behaviour](../reference/release-control-behaviour.md#pushes-of-more-than-three-tags)).
-- A workflow holding `contents: write` in a watched repository can promote a
-  prerelease to a release without a page, because `collection-json.hs`'s
-  release workflow does that on every release.
+- A prerelease promoted by `github-actions[bot]` doesn't page, since
+  `collection-json.hs`'s release workflow promotes every release. Any
+  workflow holding `contents: write` in a watched repository can promote one
+  unseen.
 
 ## Findings
 
@@ -180,7 +181,7 @@ Priority ranks what the operator would stop to fix. In the Evidence column,
 | Repository commits | Denial of Service | Someone deletes the default branch. Clones and pull requests keep its history | Medium | `default` blocks deletion | Mitigated | `main.tf`, `github_repository_ruleset.default` |
 | Tags and Releases | Tampering | A `Contents` write actor replaces a published module's assets | High | `woodland-generators#915` | Not Started | `gh api repos/alunduil/woodland-generators/immutable-releases` reports disabled |
 | Tags and Releases | Tampering | A write actor edits a Release's prerelease flag or notes, which `metadata` reads live | Low | #1078 | Not Started | `collection-json.hs` `release.yml`, job `metadata` |
-| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | IRM records every change to a published Release with its account, and pages on all but a workflow promoting a prerelease | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `changes` |
+| Tags and Releases | Repudiation | A Release edit leaves nobody a record the operator can read | Medium | IRM records each change to a published Release and the account behind it. Every change pages except a workflow promoting a prerelease | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `changes` |
 | Tags and Releases | Information Disclosure | Tags and published Releases are public by design | — | — | Not Applicable | `main.tf`, `github_repository.this` `visibility` |
 | Tags and Releases | Denial of Service | A write actor deletes a Release, which breaks Foundry's latest-release manifest URL | Medium | IRM pages on the deletion, and the delivery holds the notes to recreate it | Mitigated | `terraform/alunduil/release_watch.tf`, `local.release_webhook_alerts` `changes` |
 | Repository secrets | Tampering | Changing a secret needs the admin role, which reaches everything anyway | — | — | Not Applicable | register, P-1 |
