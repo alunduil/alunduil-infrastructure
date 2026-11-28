@@ -40,8 +40,8 @@ pull request. Several forces shape it:
 
 ## Decision Outcome
 
-Chosen option: **code-owner review everywhere.** Every managed repository
-requires a code owner's approval of the last push before a merge, and
+Chosen option: **code-owner review everywhere.** Before a merge, every
+managed repository requires a code owner to approve the last push, and
 CODEOWNERS owns every path. The admin role bypasses the review, and
 Renovate bypasses it only when merging a pull request. Required checks
 bind everyone, and automatic merging stays off. Issue #709 applies this
@@ -62,9 +62,9 @@ GitHub's automatic merging starts applying ruleset bypasses.
 - An agent with its own account fits best as a fork contributor. As a
   write collaborator it would still need approval to merge, but it would
   hold repository secrets and could create or delete Renovate's branches.
-- A fast-releasing dependency, such as `renovatebot/pre-commit-hooks` at
-  about 7 releases a day, rarely gets a run that doesn't push, so it
-  often waits for the operator. No Renovate setting fixes this: every
+- A fast-releasing dependency often waits for the operator, because it
+  rarely gets a Renovate run that doesn't push. `renovatebot/pre-commit-hooks`
+  releases about 7 times a day. No Renovate setting fixes this: every
   hold setting returns before the merge step, and x.y.0 releases alone
   still come about twice a day (`alunduil/renovate-config#151`).
 - Renovate is trusted outright, as the [Renovate path threat
