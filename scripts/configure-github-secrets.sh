@@ -67,13 +67,13 @@ token_scopes() {
 }
 
 # check_project_sync_token <token>: fail unless the token holds exactly
-# `project` and `read:org`. `repo` or `public_repo` would let it write to
-# every repository the account can.
+# `project`. `repo` or `public_repo` would let it write to every repository
+# the account can.
 check_project_sync_token() {
   local scopes
   scopes="$(token_scopes "$1")"
-  if [[ ${scopes} != "project,read:org" ]]; then
-    echo "error: GH_PROJECT_SYNC_TOKEN has scopes '${scopes}', not exactly project and read:org;" \
+  if [[ ${scopes} != "project" ]]; then
+    echo "error: GH_PROJECT_SYNC_TOKEN has scopes '${scopes}', not exactly project;" \
       "see docs/how-to/create-github-project-sync-token.md" >&2
     return 1
   fi

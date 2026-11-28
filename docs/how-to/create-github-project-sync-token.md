@@ -10,23 +10,22 @@ both for first-time setup and for rotation.
 ## Generate the token
 
 1. Open <https://github.com/settings/tokens> and select
-   **Generate new token (classic)**. A fine-grained token can't write
-   a user-owned Projects v2 board.
-2. **Note**: any (for example, `alunduil-infrastructure-project-sync`).
-3. **Expiration**: 1 year.
-4. Select scopes:
-    - **`project`**—add and update board items.
-    - **`read:org`**—resolve the org-owned sources. `gh project`
-      also needs it to look up the board's owner, even a user one.
-5. Select **Generate token** and copy the value.
+   **Generate new token** → **Generate new token (classic)**. A
+   fine-grained token can't write a user-owned Projects v2 board.
+2. Fill in the form:
+    - **Note**: `alunduil-infrastructure-project-sync`.
+    - **Expiration**: **Custom**, a date one year out.
+    - **Select scopes**: tick **`project`** only. Its `read:project`
+      sub-scope ticks with it. Leave every other box clear.
+3. Select **Generate token** and copy the value. GitHub shows it once.
 
-Keep the scope set to `project` + `read:org` on rotation. Adding
-`repo` or `public_repo` lets the token write to every repository the
-account can. Without them, the sync reads public repositories only,
-so issues and pull requests in private repositories stay off the
-board. If `dungeon-studio` or `qua-world` restricts classic-token
-access in its org settings, approve this token there too or its items
-won't sync.
+`project` is all the sync needs: the board's items, fields, and owner
+lookup, and reads of public issues and pull requests. Adding `repo` or
+`public_repo` lets the token write to every repository the account
+can. Without them, issues and pull requests in private repositories
+stay off the board. If `dungeon-studio` or `qua-world` restricts
+classic-token access in its org settings, approve this token there
+too or its items won't sync.
 
 ## Install the token
 
@@ -37,8 +36,8 @@ export GH_PROJECT_SYNC_TOKEN=<paste-here>
 scripts/configure-github-secrets.sh
 ```
 
-The script refuses a token whose scopes aren't exactly `project` and
-`read:org`, before it writes any secret. Without the export, it keeps
+The script refuses a token whose scopes aren't exactly `project`,
+before it writes any secret. Without the export, it keeps
 the secret already set. It upserts the secret, so re-running with the
 same value is a no-op. It stores the token on the `project-sync` deployment
 environment (restricted to `main`), not as a repo secret, so only the

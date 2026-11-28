@@ -62,27 +62,27 @@ stub_user_endpoint() {
   }
 }
 
-@test "check_project_sync_token accepts exactly project and read:org" {
-  stub_user_endpoint ghp_new "read:org, project"
+@test "check_project_sync_token accepts exactly project" {
+  stub_user_endpoint ghp_new "project"
   run check_project_sync_token ghp_new
   [[ ${status} -eq 0 ]]
 }
 
 @test "check_project_sync_token rejects a token that can write repositories" {
-  stub_user_endpoint ghp_new "project, read:org, repo"
+  stub_user_endpoint ghp_new "project, repo"
   run check_project_sync_token ghp_new
   [[ ${status} -eq 1 ]]
-  [[ ${output} == *"'project,read:org,repo'"* ]]
+  [[ ${output} == *"'project,repo'"* ]]
 }
 
-@test "check_project_sync_token rejects a token missing read:org" {
-  stub_user_endpoint ghp_new "project"
+@test "check_project_sync_token rejects a token that can read org membership" {
+  stub_user_endpoint ghp_new "read:org, project"
   run check_project_sync_token ghp_new
   [[ ${status} -eq 1 ]]
 }
 
 @test "check_project_sync_token checks the new token, not ambient auth" {
-  stub_user_endpoint ghp_new "project, read:org"
+  stub_user_endpoint ghp_new "project"
   GH_TOKEN=ghp_ambient
   run check_project_sync_token ghp_new
   [[ ${status} -eq 0 ]]
