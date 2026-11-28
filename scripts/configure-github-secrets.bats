@@ -4,10 +4,11 @@
 #
 # Unit tests for the sourceable helpers in configure-github-secrets.sh: the
 # needs_token_prompt precedence, the resolve_project_sync_token value/__KEEP__
-# handling, and the command set_secret builds against a stubbed gh. The paths
-# that reach the network or prompt (terraform, real gh, interactive read) are
-# not exercised — they're covered by running the script against the live
-# repo, which alunduil performs out-of-band.
+# handling, the Projects token's scope check, and the command set_secret
+# builds against a stubbed gh. The paths that reach the network or prompt
+# (terraform, real gh, interactive read) are not exercised — they're covered
+# by running the script against the live repo, which alunduil performs
+# out-of-band.
 
 # shellcheck disable=SC2034 # these globals are read by the sourced helpers
 setup() {
@@ -45,6 +46,46 @@ gh() { echo "gh $*"; }
   existing_env_secrets=$'GH_PROJECT_SYNC_TOKEN'
   result="$(resolve_project_sync_token 2>/dev/null)"
   [[ ${result} == "__KEEP__" ]]
+}
+
+# --- check_project_sync_token ---------------------------------------------
+
+# Answers `gh api --include user` with the scopes in stub_scopes, and only
+# for the token in stub_token, so a check made with ambient auth fails.
+stub_user_endpoint() {
+  stub_token="$1"
+  stub_scopes="$2"
+  # shellcheck disable=SC2329 # called by token_scopes
+  gh() {
+    [[ ${GH_TOKEN:-} == "${stub_token}" ]] || return 1
+    printf 'HTTP/2.0 200 OK\r\nX-Oauth-Scopes: %s\r\n\r\n{"login":"x"}\n' "${stub_scopes}"
+  }
+}
+
+@test "check_project_sync_token accepts exactly project and read:org" {
+  stub_user_endpoint ghp_new "read:org, project"
+  run check_project_sync_token ghp_new
+  [[ ${status} -eq 0 ]]
+}
+
+@test "check_project_sync_token rejects a token that can write repositories" {
+  stub_user_endpoint ghp_new "project, read:org, repo"
+  run check_project_sync_token ghp_new
+  [[ ${status} -eq 1 ]]
+  [[ ${output} == *"'project,read:org,repo'"* ]]
+}
+
+@test "check_project_sync_token rejects a token missing read:org" {
+  stub_user_endpoint ghp_new "project"
+  run check_project_sync_token ghp_new
+  [[ ${status} -eq 1 ]]
+}
+
+@test "check_project_sync_token checks the new token, not ambient auth" {
+  stub_user_endpoint ghp_new "project, read:org"
+  GH_TOKEN=ghp_ambient
+  run check_project_sync_token ghp_new
+  [[ ${status} -eq 0 ]]
 }
 
 # --- set_secret -----------------------------------------------------------

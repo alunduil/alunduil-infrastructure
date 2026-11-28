@@ -28,21 +28,6 @@ board. If `dungeon-studio` or `qua-world` restricts classic-token
 access in its org settings, approve this token there too or its items
 won't sync.
 
-## Check the token can't write
-
-Before installing it, confirm a write to a repository is refused:
-
-```sh
-GH_TOKEN=<paste-here> gh api -X POST \
-  repos/alunduil/alunduil-infrastructure/git/refs \
-  -f ref=refs/heads/project-sync-write-check \
-  -f sha="$(git rev-parse origin/main)"
-```
-
-Expect the call to fail with `403` or `404`. A `201` means the token
-can write: delete the branch, regenerate the token with only the
-scopes above, and repeat.
-
 ## Install the token
 
 Export the value and run the secrets script:
@@ -52,15 +37,17 @@ export GH_PROJECT_SYNC_TOKEN=<paste-here>
 scripts/configure-github-secrets.sh
 ```
 
-The script upserts the secret, so re-running with the same value is a
-no-op. It stores the token on the `project-sync` deployment
+The script refuses a token whose scopes aren't exactly `project` and
+`read:org`, before it writes any secret. Without the export, it keeps
+the secret already set. It upserts the secret, so re-running with the
+same value is a no-op. It stores the token on the `project-sync` deployment
 environment (restricted to `main`), not as a repo secret, so only the
 sync workflow—which declares that environment—can read it. The
 other CI secrets stay repo-level.
 
 ## Rotate
 
-1. Repeat **Generate the token** and **Check the token can't write**.
+1. Repeat **Generate the token**.
 2. Re-run **Install the token** with the new value.
 3. Dispatch the Hourly workflow and confirm the sync job succeeds:
 

@@ -58,6 +58,27 @@ resolve_project_sync_token() {
   fi
 }
 
+# token_scopes <token>: print a classic token's scopes, as GitHub reports
+# them in X-OAuth-Scopes, sorted and comma-joined.
+token_scopes() {
+  GH_TOKEN="$1" gh api --include user \
+    | grep -i '^x-oauth-scopes:' | cut -d: -f2- | tr -d ' \r' \
+    | tr ',' '\n' | grep -v '^$' | sort | paste -sd, -
+}
+
+# check_project_sync_token <token>: fail unless the token holds exactly
+# `project` and `read:org`. `repo` or `public_repo` would let it write to
+# every repository the account can.
+check_project_sync_token() {
+  local scopes
+  scopes="$(token_scopes "$1")"
+  if [[ ${scopes} != "project,read:org" ]]; then
+    echo "error: GH_PROJECT_SYNC_TOKEN has scopes '${scopes}', not exactly project and read:org;" \
+      "see docs/how-to/create-github-project-sync-token.md" >&2
+    return 1
+  fi
+}
+
 tf_output() {
   terraform -chdir="${BOOTSTRAP_DIR}" output -raw "$1"
 }
@@ -154,6 +175,9 @@ if needs_token_prompt; then
 fi
 
 GH_PROJECT_SYNC_TOKEN_VALUE="$(resolve_project_sync_token)"
+if [[ "${GH_PROJECT_SYNC_TOKEN_VALUE}" != "__KEEP__" ]]; then
+  check_project_sync_token "${GH_PROJECT_SYNC_TOKEN_VALUE}" || exit 1
+fi
 
 declare -A SECRETS=(
   [GCP_RO_WORKLOAD_IDENTITY_PROVIDER]="${WIF_PROVIDER}"
