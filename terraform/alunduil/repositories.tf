@@ -183,6 +183,7 @@ locals {
       }
       # Every repository reads its Renovate policy from this default branch.
       admin_only_updates = true
+      allow_auto_merge   = true
       # The self-test App commits planted faults to the branches it opens.
       unprotected_renovate_branches = ["renovate/hook-fix-selftest-*"]
       deploy                        = { class = "merge" }
@@ -276,6 +277,7 @@ locals {
       # .github/CODEOWNERS assigns every path to @alunduil, so this gates every
       # non-owner pull request but Renovate's.
       require_code_owner_review = true
+      allow_auto_merge          = true
       # PyPI pins the Trusted Publisher it accepts to repo + workflow +
       # environment, so the publish job has to run in this one. A `release`
       # event runs from the release's tag, which no branch pattern matches.
@@ -297,6 +299,7 @@ module "repository" {
   required_status_checks        = lookup(each.value, "required_status_checks", null)
   require_code_owner_review     = lookup(each.value, "require_code_owner_review", null)
   admin_only_updates            = lookup(each.value, "admin_only_updates", null)
+  allow_auto_merge              = lookup(each.value, "allow_auto_merge", null)
   unprotected_renovate_branches = lookup(each.value, "unprotected_renovate_branches", null)
   merge_method                  = lookup(each.value, "merge_method", null)
   has_discussions               = lookup(each.value, "has_discussions", null)
