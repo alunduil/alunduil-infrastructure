@@ -67,6 +67,7 @@ How-to guides for hosts and services:
 - [Connect Grafana Cloud to Google Cloud metrics and audit logs](docs/how-to/connect-grafana-to-gcp.md)
 - [Configure the TrueNAS config backup](docs/how-to/configure-truenas-config-backup.md)
 - [Configure the Google Takeout backup on TrueNAS](docs/how-to/configure-truenas-takeout-backup.md)
+- [Respond to an unexpected release](docs/how-to/respond-to-an-unexpected-release.md)
 
 Reference:
 
