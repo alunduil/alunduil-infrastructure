@@ -39,9 +39,9 @@ Out of scope:
 
 The register lists what each credential is granted, while reach adds
 whatever that grant can obtain in turn. The hook-fix key (C-25) holds
-`Contents` write to push formatting fixes. Its fix can automerge to `main` in
-this repository, which runs `terraform apply`. Reach depends on the whole
-graph, so reviewing credentials one at a time misses it.
+`Contents` write to push formatting fixes. That grant also creates tags, and
+the workflow at a tag publishes a release. Reach depends on the whole graph,
+so reviewing credentials one at a time misses it.
 
 Keeping a new credential to one repository contains a leak only if nothing
 else joins that repository to the others. The hook-fix key and the Projects
@@ -119,8 +119,8 @@ flowchart LR
   c42 -->|"opens a self-test pull request whose run reads"| c25
   c42 -->|"creates in renovate-config, #1055"| tag
 
-  branch -->|"Renovate automerges, #1057"| infra
-  branch -->|"Renovate automerges, #1057"| other
+  branch -->|"automerges, after approval if others committed"| infra
+  branch -->|"automerges, after approval if others committed"| other
   tag -->|"workflow at the tag runs"| job
   other --> job
 
@@ -192,15 +192,14 @@ release reaches those credentials with no compromise at Mend. Until the admin
 approves an update's head commit, `Detect Terraform changes` keeps plan from
 running it.
 
-Hook-fix commits cross this boundary without review, and neither of these
-controls stops them:
+A Renovate branch carrying a commit other than a verified `renovate[bot]`
+commit, such as a hook fix, waits for the admin to approve its head.
+`Check Renovate branch commits` fails until then, and the approval re-runs
+it. A key holder can set a commit's author but can't get GitHub's signature
+on it, so a forged author still fails.
 
-- Required checks don't inspect who wrote a commit or what it means. They also
-  match by name, so an App that can report checks, such as Codecov (P-9), could
-  satisfy one (#429).
-- `renovate.json` holds back updates that touch `terraform-apply.yml`'s paths.
-  It judges only the files Renovate's upgrade changes, so it doesn't hold a
-  later commit on the branch.
+Required checks match by name, so an App that can report checks, such as
+Codecov (P-9), could satisfy that check too (#429).
 
 ### Tagging
 
@@ -228,11 +227,8 @@ reaches everything else.
 
 The hook-fix key (C-25) connects repositories because one reusable workflow
 serves them all with one key. Hook code alone is more contained: its fix is
-pushed with an App token covering one repository, so it reaches that
-repository's default branch and release. It reaches other repositories only
-when that repository is `alunduil-infrastructure`. Removing the edge from
-`renovate/**` to the default branches disconnects hook code from everything
-else.
+pushed with an App token covering one repository, and it reaches that
+repository's default branch only once the admin approves it.
 
 The Projects token (C-13) updates one board and only reads repositories. Its
 `repo` scope still covers every repository the account can write to, in other
