@@ -164,7 +164,12 @@ resource "grafana_rule_group" "ingestion" {
     no_data_state  = "OK"
     exec_err_state = "Error"
     labels         = { severity = "warning" }
-    annotations    = { summary = "Grafana Cloud is rejecting samples, so metrics are missing." }
+    annotations = {
+      summary = "Grafana Cloud is rejecting samples, so metrics are missing."
+      # Every rejection log line carries a Mimir error ID, whose message
+      # wording varies by reason.
+      description = "To list the rejected series, query the grafanacloud-usage-insights data source for {instance_type=\"metrics\"} |= \"err-mimir-\"."
+    }
 
     data {
       ref_id         = "A"
@@ -178,7 +183,7 @@ resource "grafana_rule_group" "ingestion" {
         datasource = local.usage_data_source
         instant    = true
         range      = false
-        expr       = "sum by (reason) (grafanacloud_instance_samples_discarded_per_second)"
+        expr       = "sum by (reason) (grafanacloud_instance_samples_discarded_per_second${local.usage_stack_selector})"
       })
     }
 
