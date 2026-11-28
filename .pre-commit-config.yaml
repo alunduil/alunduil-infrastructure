@@ -54,7 +54,7 @@ repos:
 
   # Ansible linting
   - repo: https://github.com/ansible/ansible-lint
-    rev: v26.11.0
+    rev: v26.11.1
     hooks:
       - id: ansible-lint
         args: [ansible/]
