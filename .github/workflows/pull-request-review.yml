@@ -10,8 +10,8 @@ on:
 permissions: {}
 
 jobs:
-  # A failed run of a required check keeps it failing even after another run
-  # of the same name passes, so the held run itself has to re-run.
+  # A failed required check stays failed after another run of the same name
+  # passes, so the failed run itself must re-run.
   rerun-held-plan:
     name: Re-run the held Terraform plan
     if: >-

@@ -253,9 +253,9 @@ every private IPv4 range, so a client already in T-2 reaches it without
 signing in.
 
 E-04 reaches P-2's credentials, because `terraform-plan.yml` triggers on
-`pull_request` with no environment gate. A Renovate update waits until the
-admin approves its head commit. A fork's token matches nothing,
-because the pool in `terraform/bootstrap/github_oidc.tf` requires this
+`pull_request` with no environment gate. For a Renovate update, plan waits
+until the admin approves the update's head commit. A fork's token matches
+nothing, because the pool in `terraform/bootstrap/github_oidc.tf` requires this
 repository.
 
 ## External dependencies

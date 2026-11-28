@@ -24,9 +24,9 @@ jobs:
   # filtering inside it would hold every pull request behind an in-flight
   # apply.
   #
-  # This job runs no action and nothing from the checkout, so an update under
-  # review can't change its result. The hook-fix App can't edit workflows, so
-  # its logic stays inline.
+  # This job runs no action and no repository file, so an update under review
+  # can't change its result. The hook-fix App can edit scripts but not
+  # workflows, so the logic lives here.
   changes:
     name: Detect Terraform changes
     runs-on: ubuntu-26.04
@@ -62,10 +62,9 @@ jobs:
           fi
           echo "changed=${changed}" >> "$GITHUB_OUTPUT"
 
-      # Plan runs an update's actions, tools, and providers with its
-      # credentials, so an update waits until the admin approves its head
-      # commit. pull-request-review.yml then re-runs this job, and plan with
-      # it.
+      # Plan runs an update's actions, tools, and providers with plan's
+      # credentials. Approving starts pull-request-review.yml, which re-runs
+      # this job and plan.
       - name: Hold a Renovate update until the admin approves it
         if: steps.diff.outputs.changed == 'true' && startsWith(github.head_ref, 'renovate/')
         env:
@@ -77,7 +76,7 @@ jobs:
               | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED") | .state' \
             | tail -n 1)"
           if [[ ${state} != APPROVED ]]; then
-            echo "::error::Plan would run this update's code with its credentials."
+            echo "::error::This update's code would run with plan's credentials."
             echo "::notice::Read the update, then approve ${HEAD_SHA} to run the plan."
             exit 1
           fi

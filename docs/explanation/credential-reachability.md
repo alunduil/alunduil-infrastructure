@@ -187,10 +187,10 @@ the Apply App and from the Cloudflare, Tailscale, and Grafana Cloud write
 credentials. CI plan still holds Grafana stack Admin (C-06) and the Git Sync
 App (C-10).
 
-A Renovate update brings code nobody here wrote, so a moved tag or a
-compromised release reaches those credentials without a compromise at Mend.
-`Detect Terraform changes` holds every Renovate update that plan would run
-until the admin approves its head commit.
+Renovate updates bring third-party code, so a moved tag or a compromised
+release reaches those credentials with no compromise at Mend. Until the admin
+approves an update's head commit, `Detect Terraform changes` keeps plan from
+running it.
 
 Hook-fix commits cross this boundary without review, and neither of these
 controls stops them:
