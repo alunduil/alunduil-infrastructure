@@ -55,12 +55,12 @@ network is back; it keeps its context.
   renewal, a scheduled router restart — goes in as a question, not a
   finding. Settled answers live in the brief for their source in
   `sources.md`; add each new one there.
-- Correlate across sources by timestamp before classifying. An event two
-  sources saw in the same minute is one finding.
-- Planned tests are Grafana IRM drills. List the window's with
+- Planned tests are Grafana IRM drills. List the window's drills with
   `GRAFANA_ORG_ID=1 gcx irm incidents list --query "isdrill:true"
   --from <start> --to <end>`. A drop inside a drill goes under working,
   citing the drill.
+- Correlate across sources by timestamp before classifying. An event two
+  sources saw in the same minute is one finding.
 - Search both repos (open and closed) for each finding before calling it
   untracked. Match on the error string and the component, then read the
   candidate issue's body and comments.
