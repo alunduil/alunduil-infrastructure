@@ -21,12 +21,15 @@ workflow_paths() {
   ' "$1"
 }
 
-# Echo each path terraform-plan.yml's change detection diffs.
+# Echo each path terraform-plan.yml's change detection matches, as a plain
+# path rather than its anchored pattern.
 planned_paths() {
   awk '
-    /git diff --quiet HEAD\^1 HEAD --/ { on = 1; next }
-    on && /^ *then/ { exit }
-    on { gsub(/[ \\]/, ""); if ($0 != "") print }
+    /if grep -Eq/ { on = 1; next }
+    on && /<<</ { exit }
+    on && /-e / {
+      sub(/^ *-e '\''\^/, ""); sub(/[\/$]?'\'' *\\$/, ""); gsub(/\\\./, "."); print
+    }
   ' "$1"
 }
 
