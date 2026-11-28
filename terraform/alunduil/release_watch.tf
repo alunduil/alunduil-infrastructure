@@ -95,6 +95,7 @@ locals {
         "WHERE version NOT IN (SELECT name FROM T)",
         "AND CONCAT('v', version) NOT IN (SELECT name FROM T)",
         target.untagged_sql != "" ? "AND version NOT IN (${target.untagged_sql})" : "",
+        "UNION ALL SELECT '' AS version, 0 AS untagged",
       ]))
     }
   }
@@ -112,7 +113,10 @@ locals {
         from       = local.release_window_seconds
         model      = local.release_github_models[name]
       }]
-      sql = "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})"
+      sql = join("\n", [
+        "SELECT tag, created_by, 1 AS unexpected FROM R WHERE created_by NOT IN (${local.release_expected_accounts_sql})",
+        "UNION ALL SELECT '' AS tag, '' AS created_by, 0 AS unexpected",
+      ])
     }
   }
 
@@ -176,7 +180,8 @@ resource "grafana_rule_group" "release_watch" {
 
       # Grafana accepts a SQL expression only as a rule's last step. Each row
       # it returns is an alert instance, firing while its numeric column is
-      # non-zero.
+      # non-zero. An empty result skips that conversion and fails the
+      # evaluation, so each rule's SQL appends a row valued 0.
       data {
         ref_id         = "OUT"
         datasource_uid = "__expr__"
